@@ -1,54 +1,56 @@
 """
-Herald - Adaptive Trading Intelligence
+Herald Autonomous Trading System
 
-Main entry point for the trading bot.
+Main orchestrator implementing Phase 2 autonomous trading loop per build_plan.md.
 """
 
 import sys
-import argparse
+import time
+import signal
 import logging
+import argparse
 from pathlib import Path
+from typing import Dict, Any, List, Optional
+from datetime import datetime
+import MetaTrader5 as mt5
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from __init__ import __version__
+from connector.mt5_connector import MT5Connector, ConnectionConfig
+from data.layer import DataLayer
+from strategy.base import Strategy, SignalType
+from execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
+from risk.manager import RiskManager, RiskLimits
+from position.manager import PositionManager
+from persistence.database import Database, TradeRecord, SignalRecord
+from observability.logger import setup_logger
+from observability.metrics import MetricsCollector
+
+# Exit strategies
+from exit.trailing_stop import TrailingStop
+from exit.time_based import TimeBasedExit
+from exit.profit_target import ProfitTargetExit
+from exit.adverse_movement import AdverseMovementExit
+
+# Indicators
+from indicators.rsi import RSI
+from indicators.macd import MACD
+from indicators.bollinger import BollingerBands
+from indicators.stochastic import StochasticOscillator
+from indicators.adx import ADX
 
 
-def setup_logging(log_level: str = "INFO"):
-    """Configure logging."""
-    logging.basicConfig(
-        level=getattr(logging, log_level.upper()),
-        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+# Global shutdown flag
+shutdown_requested = False
 
 
-def main():
-    """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description=f"Herald Trading Bot v{__version__}",
-        formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-    
-    parser.add_argument(
-        '--config',
-        default='config/config.yaml',
-        help='Path to configuration file (default: config/config.yaml)'
-    )
-    
-    parser.add_argument(
-        '--dry-run',
-        action='store_true',
-        help='Run in simulation mode (no real orders)'
-    )
-    
-    parser.add_argument(
-        '--log-level',
-        default='INFO',
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
-        help='Logging level (default: INFO)'
-    )
+def signal_handler(signum, frame):
+    """Handle shutdown signals gracefully."""
+    global shutdown_requested
+    shutdown_requested = True
+    print("\nShutdown signal received, closing positions...")
     
     parser.add_argument(
         '--health-check',
