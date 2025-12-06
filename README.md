@@ -43,7 +43,7 @@ Built with focus on incremental development, robust risk management, and product
 
 ## Overview
 
-Herald implements a staged, modular approach to automated trading per the system build_plan.md specification.
+Herald implements a staged, modular approach to automated trading.
 The architecture emphasizes clear boundaries, testability, and safety with pluggable components that can be 
 enhanced without disrupting core functionality.
 
