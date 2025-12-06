@@ -6,7 +6,7 @@ Main orchestrator implementing Phase 2 autonomous trading loop per build_plan.md
 
 import sys
 import time
-import signal
+import signal as sig_module
 import logging
 import argparse
 from pathlib import Path
@@ -17,7 +17,8 @@ import MetaTrader5 as mt5
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from __init__ import __version__
+__version__ = "2.0.0"
+
 from connector.mt5_connector import MT5Connector, ConnectionConfig
 from data.layer import DataLayer
 from strategy.base import Strategy, SignalType
@@ -38,7 +39,7 @@ from exit.adverse_movement import AdverseMovementExit
 from indicators.rsi import RSI
 from indicators.macd import MACD
 from indicators.bollinger import BollingerBands
-from indicators.stochastic import StochasticOscillator
+from indicators.stochastic import Stochastic
 from indicators.adx import ADX
 
 
@@ -71,12 +72,12 @@ def load_config(config_path: str) -> Dict[str, Any]:
     return config
 
 
-def load_indicators(indicator_configs: List[Dict[str, Any]]) -> List:
+def load_indicators(indicator_configs: Dict[str, Any]) -> List:
     """
     Load and configure indicators.
     
     Args:
-        indicator_configs: List of indicator configurations
+        indicator_configs: Dictionary of indicator configurations
         
     Returns:
         List of configured indicator instances
@@ -86,16 +87,15 @@ def load_indicators(indicator_configs: List[Dict[str, Any]]) -> List:
         'rsi': RSI,
         'macd': MACD,
         'bollinger': BollingerBands,
-        'stochastic': StochasticOscillator,
+        'stochastic': Stochastic,
         'adx': ADX
     }
     
-    for config in indicator_configs:
-        indicator_type = config['type'].lower()
-        params = config.get('params', {})
+    for indicator_type, params in indicator_configs.items():
+        indicator_type_lower = indicator_type.lower()
         
-        if indicator_type in indicator_map:
-            indicator = indicator_map[indicator_type](**params)
+        if indicator_type_lower in indicator_map:
+            indicator = indicator_map[indicator_type_lower](**params)
             indicators.append(indicator)
             
     return indicators
@@ -111,23 +111,22 @@ def load_strategy(strategy_config: Dict[str, Any]) -> Strategy:
     Returns:
         Configured strategy instance
     """
-    from strategy.sma_crossover import SMACrossover
+    from strategy.sma_crossover import SmaCrossover
     
     strategy_type = strategy_config['type'].lower()
-    params = strategy_config.get('params', {})
     
     if strategy_type == 'sma_crossover':
-        return SMACrossover(**params)
+        return SmaCrossover(config=strategy_config)
     else:
         raise ValueError(f"Unknown strategy type: {strategy_type}")
 
 
-def load_exit_strategies(exit_configs: List[Dict[str, Any]]) -> List:
+def load_exit_strategies(exit_configs: Dict[str, Any]) -> List:
     """
     Load and configure exit strategies.
     
     Args:
-        exit_configs: List of exit strategy configurations
+        exit_configs: Dictionary of exit strategy configurations
         
     Returns:
         List of configured exit strategy instances, sorted by priority (highest first)
@@ -140,15 +139,12 @@ def load_exit_strategies(exit_configs: List[Dict[str, Any]]) -> List:
         'adverse_movement': AdverseMovementExit
     }
     
-    for config in exit_configs:
-        exit_type = config['type'].lower()
-        params = config.get('params', {})
+    for exit_type, config in exit_configs.items():
+        exit_type_lower = exit_type.lower()
         enabled = config.get('enabled', True)
         
-        if exit_type in exit_map:
-            strategy = exit_map[exit_type](params)
-            if not enabled:
-                strategy.disable()
+        if exit_type_lower in exit_map and enabled:
+            strategy = exit_map[exit_type_lower](config)
             exit_strategies.append(strategy)
             
     # Sort by priority (highest first)
@@ -181,8 +177,8 @@ def main():
     )
     
     # Register signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    sig_module.signal(sig_module.SIGINT, signal_handler)
+    sig_module.signal(sig_module.SIGTERM, signal_handler)
     
     logger.info("=" * 70)
     logger.info(f"Herald Autonomous Trading System v{__version__} - Phase 2")
