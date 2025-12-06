@@ -64,30 +64,31 @@ class MT5Connector:
                 try:
                     self.logger.info(f"Connecting to MT5 (attempt {attempt}/{self.config.max_retries})...")
                     
-                    # Initialize MT5
-                    init_params = {}
-                    if self.config.path:
-                        init_params['path'] = self.config.path
-                    if self.config.portable:
-                        init_params['portable'] = self.config.portable
-                        
-                    if not mt5.initialize(**init_params):
-                        error = mt5.last_error()
-                        raise ConnectionError(f"MT5 initialize failed: {error}")
+                    # Initialize MT5 with credentials directly (most reliable method)
+                    self.logger.info("Initializing MT5 with credentials...")
                     
-                    # Login to account
-                    if not mt5.login(
+                    init_result = mt5.initialize(
                         login=self.config.login,
                         password=self.config.password,
                         server=self.config.server,
                         timeout=self.config.timeout
-                    ):
+                    )
+                    
+                    if not init_result:
                         error = mt5.last_error()
-                        mt5.shutdown()
-                        raise ConnectionError(f"MT5 login failed: {error}")
+                        raise ConnectionError(f"MT5 initialize failed: {error}")
+                    
+                    # Verify connection
+                    account_info = mt5.account_info()
+                    if not account_info:
+                        raise ConnectionError("Connected but cannot retrieve account info")
+                    
+                    if account_info.login != self.config.login:
+                        raise ConnectionError(f"Connected to wrong account: {account_info.login}")
                     
                     self.connected = True
                     self.logger.info(f"Connected to {self.config.server} (account: {self.config.login})")
+                    self.logger.info(f"Balance: ${account_info.balance:.2f}, Trade allowed: {account_info.trade_allowed}")
                     return True
                     
                 except Exception as e:

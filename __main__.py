@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import MetaTrader5 as mt5
+import pandas as pd
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -91,12 +92,24 @@ def load_indicators(indicator_configs: Dict[str, Any]) -> List:
         'adx': ADX
     }
     
-    for indicator_type, params in indicator_configs.items():
-        indicator_type_lower = indicator_type.lower()
-        
-        if indicator_type_lower in indicator_map:
-            indicator = indicator_map[indicator_type_lower](**params)
-            indicators.append(indicator)
+    # Handle both list and dict formats
+    if isinstance(indicator_configs, list):
+        # List format: [{"type": "rsi", "params": {...}}, ...]
+        for indicator_config in indicator_configs:
+            indicator_type = indicator_config.get('type', '').lower()
+            params = indicator_config.get('params', {})
+            
+            if indicator_type in indicator_map:
+                indicator = indicator_map[indicator_type](**params)
+                indicators.append(indicator)
+    else:
+        # Dict format: {"rsi": {...}, "macd": {...}}
+        for indicator_type, params in indicator_configs.items():
+            indicator_type_lower = indicator_type.lower()
+            
+            if indicator_type_lower in indicator_map:
+                indicator = indicator_map[indicator_type_lower](**params)
+                indicators.append(indicator)
             
     return indicators
 
@@ -139,13 +152,25 @@ def load_exit_strategies(exit_configs: Dict[str, Any]) -> List:
         'adverse_movement': AdverseMovementExit
     }
     
-    for exit_type, config in exit_configs.items():
-        exit_type_lower = exit_type.lower()
-        enabled = config.get('enabled', True)
-        
-        if exit_type_lower in exit_map and enabled:
-            strategy = exit_map[exit_type_lower](config)
-            exit_strategies.append(strategy)
+    # Handle both list and dict formats
+    if isinstance(exit_configs, list):
+        # List format: [{"type": "trailing_stop", "enabled": true, ...}, ...]
+        for exit_config in exit_configs:
+            exit_type = exit_config.get('type', '').lower()
+            enabled = exit_config.get('enabled', True)
+            
+            if exit_type in exit_map and enabled:
+                strategy = exit_map[exit_type](exit_config)
+                exit_strategies.append(strategy)
+    else:
+        # Dict format: {"trailing_stop": {...}, "time_based": {...}}
+        for exit_type, config in exit_configs.items():
+            exit_type_lower = exit_type.lower()
+            enabled = config.get('enabled', True)
+            
+            if exit_type_lower in exit_map and enabled:
+                strategy = exit_map[exit_type_lower](config)
+                exit_strategies.append(strategy)
             
     # Sort by priority (highest first)
     exit_strategies.sort(key=lambda x: x.priority, reverse=True)
@@ -155,6 +180,11 @@ def load_exit_strategies(exit_configs: Dict[str, Any]) -> List:
 
 def main():
     """Main autonomous trading loop per build_plan.md Phase 2."""
+    
+    # Load environment variables from .env
+    from dotenv import load_dotenv
+    import os
+    load_dotenv()
     
     # Parse arguments
     parser = argparse.ArgumentParser(
@@ -188,6 +218,20 @@ def main():
     try:
         config = load_config(args.config)
         logger.info(f"Configuration loaded from {args.config}")
+        
+        # Override MT5 credentials from environment variables (security best practice)
+        mt5_login = os.getenv('MT5_LOGIN')
+        mt5_password = os.getenv('MT5_PASSWORD')
+        mt5_server = os.getenv('MT5_SERVER')
+        
+        if mt5_login and mt5_password and mt5_server:
+            config['mt5']['login'] = int(mt5_login)
+            config['mt5']['password'] = mt5_password
+            config['mt5']['server'] = mt5_server
+            logger.info("MT5 credentials loaded from .env file")
+        else:
+            logger.warning("MT5 credentials not found in .env - using config file values")
+            
     except Exception as e:
         logger.error(f"Failed to load configuration: {e}")
         return 1
@@ -205,7 +249,14 @@ def main():
         
         # 3. Risk Manager
         logger.info("Initializing risk manager...")
-        risk_limits = RiskLimits(**config['risk'])
+        risk_config = config['risk']
+        risk_limits = RiskLimits()
+        risk_limits.max_position_size_pct = risk_config.get('max_position_size_pct', 0.02)
+        risk_limits.max_total_exposure_pct = risk_config.get('max_total_exposure_pct', 0.10)
+        risk_limits.max_daily_loss_pct = risk_config.get('max_daily_loss_pct', 0.05)
+        risk_limits.max_positions_per_symbol = risk_config.get('max_positions_per_symbol', 1)
+        risk_limits.max_total_positions = risk_config.get('max_total_positions', 3)
+        risk_limits.min_risk_reward_ratio = risk_config.get('min_risk_reward_ratio', 1.0)
         risk_manager = RiskManager(risk_limits)
         
         # 4. Execution Engine
@@ -309,13 +360,25 @@ def main():
                 
             # 5. Calculate indicators
             try:
+                # Calculate SMA indicators for strategy (required by sma_crossover)
+                df['sma_20'] = df['close'].rolling(window=20).mean()
+                df['sma_50'] = df['close'].rolling(window=50).mean()
+                
+                # Calculate ATR for stop loss calculation
+                high_low = df['high'] - df['low']
+                high_close = (df['high'] - df['close'].shift()).abs()
+                low_close = (df['low'] - df['close'].shift()).abs()
+                true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+                df['atr'] = true_range.rolling(window=14).mean()
+                
+                # Calculate additional indicators from config
                 for indicator in indicators:
                     indicator_data = indicator.calculate(df)
                     # Merge indicator data into main DataFrame
                     if indicator_data is not None:
                         df = df.join(indicator_data, how='left')
                         
-                logger.debug(f"Calculated {len(indicators)} indicators")
+                logger.debug(f"Calculated SMA, ATR, and {len(indicators)} additional indicators")
                 
             except Exception as e:
                 logger.error(f"Indicator calculation error: {e}", exc_info=True)
