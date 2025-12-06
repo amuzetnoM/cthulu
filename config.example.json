@@ -19,7 +19,7 @@
     "circuit_breaker_threshold_pct": 3.0
   },
   "trading": {
-    "symbol": "EURUSD",
+    "symbol": "BTCUSD#",
     "timeframe": "TIMEFRAME_H1",
     "poll_interval": 60,
     "lookback_bars": 500
@@ -29,7 +29,7 @@
     "params": {
       "fast_period": 10,
       "slow_period": 30,
-      "symbol": "EURUSD"
+      "symbol": "BTCUSD#"
     }
   },
   "indicators": [
