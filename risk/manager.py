@@ -9,7 +9,7 @@ import logging
 from typing import Optional, Dict, Any, Tuple
 from dataclasses import dataclass
 from datetime import date
-from herald.strategy.base import Signal, SignalType
+from strategy.base import Signal, SignalType
 
 
 @dataclass

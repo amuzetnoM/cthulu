@@ -12,7 +12,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from herald import __version__
+from __init__ import __version__
 
 
 def setup_logging(log_level: str = "INFO"):

@@ -10,7 +10,7 @@ import MetaTrader5 as mt5
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from herald.strategy.base import Strategy, Signal, SignalType
+from strategy.base import Strategy, Signal, SignalType
 
 
 class SmaCrossover(Strategy):

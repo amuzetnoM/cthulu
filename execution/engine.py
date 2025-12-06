@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from herald.strategy.base import Signal, SignalType
+from strategy.base import Signal, SignalType
 
 
 class OrderType(Enum):
