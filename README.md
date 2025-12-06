@@ -7,7 +7,7 @@
 ```
 
 # Herald
-*version 2.0.0*
+*version 2.0.0*  [[CHANGELOG]](docs/CHANGELOG.md)
 
 ![Status](https://img.shields.io/badge/status-production--ready-success?style=for-the-badge)
 [![Python](https://img.shields.io/badge/python-3.10--3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
