@@ -6,22 +6,25 @@
     <meta name="description" content="Herald - Enterprise-grade automated trading system for MetaTrader 5. Modular, event-driven architecture with advanced risk management.">
     <meta name="keywords" content="trading bot, MT5, MetaTrader 5, automated trading, algorithmic trading, Python trading">
     <title>Herald - Adaptive Trading Intelligence for MetaTrader 5</title>
+    
+    <!-- All CSS is now correctly wrapped within the <style> tag -->
     <style>
+        /* Replaced generic colors with professional, high-contrast FinTech theme */
         :root {
             --primary: #0066cc;
             --primary-dark: #004999;
             --secondary: #00cc88;
-            --dark: #0a0e27;
-            --darker: #050811;
+            --dark: #080c1f; /* Deeper navy */
+            --darker: #02040b; /* Near black background */
             --light: #f5f7fa;
-            --gray: #8892b0;
-            --accent: #64ffda;
+            --gray: #9baec8; /* Lighter gray for better contrast */
+            --accent: #29ffc3; /* Sharp electric green/cyan */
             --warning: #ffa726;
             --success: #66bb6a;
-            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --gradient-1: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); /* Deep Blue */
+            --gradient-2: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            --gradient-3: linear-gradient(135deg, #0d47a1 0%, #42a5f5 100%); /* Electric Blue */
+            --gradient-4: linear-gradient(135deg, #29ffc3 0%, #00d4ff 100%); /* Accent Gradient */
         }
 
         * {
@@ -36,6 +39,7 @@
             color: var(--light);
             line-height: 1.6;
             overflow-x: hidden;
+            padding-top: 5rem; /* Ensure content is below fixed navigation */
         }
 
         /* Animated Background */
@@ -55,15 +59,16 @@
             position: absolute;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 20%, rgba(0, 204, 136, 0.1) 0%, transparent 50%);
-            animation: moveBackground 20s ease-in-out infinite;
+            /* More subtle, technical background glow */
+            background: radial-gradient(circle at 10% 40%, rgba(41, 255, 195, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 80%, rgba(66, 165, 245, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 10%, rgba(155, 174, 200, 0.05) 0%, transparent 50%);
+            animation: moveBackground 30s ease-in-out infinite;
         }
 
         @keyframes moveBackground {
             0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-50px, -50px); }
+            50% { transform: translate(-30px, 30px); }
         }
 
         /* Navigation */
@@ -71,16 +76,16 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background: rgba(10, 14, 39, 0.95);
+            background: rgba(2, 4, 11, 0.95);
             backdrop-filter: blur(10px);
             z-index: 1000;
-            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+            border-bottom: 1px solid rgba(41, 255, 195, 0.15); /* Accent border */
         }
 
         .nav-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 1.5rem 2rem;
+            padding: 1rem 2rem; /* Adjusted padding */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -89,10 +94,11 @@
         .logo {
             font-size: 1.8rem;
             font-weight: bold;
-            background: var(--gradient-3);
+            background: var(--gradient-4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .nav-links {
@@ -114,11 +120,11 @@
 
         /* Hero Section */
         .hero {
-            min-height: 100vh;
+            min-height: 80vh; /* Reduced height for better visibility on smaller screens */
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 8rem 2rem 4rem;
+            padding: 4rem 2rem;
             position: relative;
         }
 
@@ -130,19 +136,13 @@
         .hero-badge {
             display: inline-block;
             padding: 0.5rem 1.5rem;
-            background: rgba(100, 255, 218, 0.1);
+            background: rgba(41, 255, 195, 0.1);
             border: 1px solid var(--accent);
             border-radius: 50px;
             color: var(--accent);
             font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 2rem;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.8; }
         }
 
         .hero h1 {
@@ -150,9 +150,17 @@
             font-weight: 900;
             margin-bottom: 1.5rem;
             line-height: 1.1;
-            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            /* Updated gradient for professionalism */
+            background: linear-gradient(135deg, #fff 30%, var(--accent) 80%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+        
+        /* Responsive adjustments for H1 */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
         }
 
         .hero-subtitle {
@@ -169,15 +177,28 @@
             margin: 0 auto 3rem;
             line-height: 1.8;
         }
-
-        .hero-ascii {
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            color: var(--accent);
-            margin-bottom: 2rem;
-            line-height: 1.2;
-            opacity: 0.8;
+        
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
         }
+
+        .badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--darker);
+        }
+
+        .badge-python { background-color: #3776ab; color: white; }
+        .badge-mt5 { background-color: #0077c8; color: white; }
+        .badge-status { background-color: var(--accent); color: var(--darker); }
+        .badge-license { background-color: var(--gray); color: var(--darker); }
+
 
         .cta-buttons {
             display: flex;
@@ -189,7 +210,7 @@
         .btn {
             padding: 1rem 2.5rem;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px; /* Sharper corners */
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
@@ -199,59 +220,58 @@
         }
 
         .btn-primary {
-            background: var(--gradient-3);
-            color: white;
-            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+            background: var(--accent);
+            color: var(--darker);
+            box-shadow: 0 10px 30px rgba(41, 255, 195, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.4);
+            box-shadow: 0 15px 40px rgba(41, 255, 195, 0.4);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--accent);
             border: 2px solid var(--accent);
         }
 
         .btn-secondary:hover {
-            background: rgba(100, 255, 218, 0.2);
+            background: rgba(41, 255, 195, 0.2);
             transform: translateY(-3px);
         }
 
         /* Stats Section */
         .stats {
             padding: 4rem 2rem;
-            background: rgba(10, 14, 39, 0.5);
+            background: rgba(8, 12, 31, 0.7); /* Slightly darker stats background */
         }
 
         .stats-container {
             max-width: 1400px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 2rem;
         }
 
         .stat-card {
             text-align: center;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(100, 255, 218, 0.1);
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px; /* Sharper corners */
+            border-left: 3px solid var(--accent); /* Accent bar */
             transition: all 0.3s;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(41, 255, 195, 0.1);
         }
 
         .stat-number {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: bold;
-            background: var(--gradient-3);
+            background: var(--gradient-4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
@@ -259,7 +279,9 @@
 
         .stat-label {
             color: var(--gray);
-            font-size: 1.1rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* Features Section */
@@ -268,7 +290,8 @@
             max-width: 1400px;
             margin: 0 auto;
         }
-
+        
+        /* Global Section Header Styles */
         .section-header {
             text-align: center;
             margin-bottom: 4rem;
@@ -278,7 +301,7 @@
             font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 1rem;
-            background: var(--gradient-3);
+            background: var(--gradient-4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -292,15 +315,15 @@
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
         }
 
         .feature-card {
-            padding: 2.5rem;
+            padding: 2rem;
             background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 4px;
+            border: 1px solid rgba(41, 255, 195, 0.1);
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
@@ -313,15 +336,15 @@
             left: 0;
             width: 100%;
             height: 4px;
-            background: var(--gradient-3);
+            background: var(--accent);
             transform: scaleX(0);
             transition: transform 0.3s;
         }
 
         .feature-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
             border-color: var(--accent);
-            box-shadow: 0 20px 60px rgba(79, 172, 254, 0.2);
+            box-shadow: 0 10px 40px rgba(41, 255, 195, 0.15);
         }
 
         .feature-card:hover::before {
@@ -329,99 +352,107 @@
         }
 
         .feature-icon {
-            font-size: 3rem;
+            width: 3rem;
+            height: 3rem;
             margin-bottom: 1.5rem;
             display: block;
+            color: var(--accent);
+        }
+
+        .feature-icon svg {
+            stroke-width: 1.5; /* Sharper, cleaner lines */
+            width: 100%;
+            height: 100%;
         }
 
         .feature-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
             color: white;
         }
 
         .feature-description {
             color: var(--gray);
-            line-height: 1.8;
+            line-height: 1.6;
             margin-bottom: 1rem;
         }
 
         .feature-list {
             list-style: none;
             margin-top: 1rem;
+            font-size: 0.95rem;
         }
 
         .feature-list li {
-            padding: 0.5rem 0;
+            padding: 0.4rem 0;
             color: var(--gray);
             position: relative;
             padding-left: 1.5rem;
         }
 
         .feature-list li::before {
-            content: '✓';
+            content: '›'; /* Changed checkmark to cleaner arrow/bullet */
             position: absolute;
             left: 0;
             color: var(--accent);
             font-weight: bold;
+            font-size: 1.2rem;
+            line-height: 1;
+            top: 4px;
         }
 
         /* Architecture Section */
         .architecture {
             padding: 6rem 2rem;
-            background: rgba(10, 14, 39, 0.5);
+            background: rgba(8, 12, 31, 0.7);
         }
 
         .architecture-container {
-            max-width: 1400px;
+             max-width: 1400px;
             margin: 0 auto;
-        }
-
-        .architecture-diagram {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 3rem;
-            border-radius: 16px;
-            border: 1px solid rgba(100, 255, 218, 0.1);
-            margin-top: 3rem;
         }
 
         .flow-diagram {
             font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--accent);
-            line-height: 1.6;
+            line-height: 1.4;
             overflow-x: auto;
             white-space: pre;
+            padding: 1rem;
+            border: 1px solid rgba(41, 255, 195, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            margin-bottom: 3rem;
         }
 
         .module-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
-            margin-top: 3rem;
         }
 
         .module-card {
             padding: 2rem;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            border-radius: 4px;
             border-left: 4px solid var(--accent);
+            transition: background 0.2s;
+        }
+
+        .module-card:hover {
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .module-title {
             font-size: 1.3rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             color: var(--accent);
         }
 
-        .module-description {
-            color: var(--gray);
-            line-height: 1.6;
-        }
-
-        /* Code Block */
+        /* Code Block Styling (Quick Start) */
         .code-section {
             padding: 6rem 2rem;
             max-width: 1400px;
@@ -430,42 +461,48 @@
 
         .code-blocks {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
         .code-block {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 12px;
+            background: #0d1117; /* GitHub Dark theme */
+            border-radius: 8px; /* Slightly more rounded code blocks */
             overflow: hidden;
-            border: 1px solid rgba(100, 255, 218, 0.1);
+            border: 1px solid rgba(41, 255, 195, 0.1);
+            min-height: 250px; /* Ensure visual consistency */
+            display: flex;
+            flex-direction: column;
         }
 
         .code-header {
-            padding: 1rem 1.5rem;
-            background: rgba(100, 255, 218, 0.1);
+            padding: 0.8rem 1.5rem;
+            background: rgba(41, 255, 195, 0.1);
             color: var(--accent);
             font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid rgba(41, 255, 195, 0.1);
         }
 
         .code-content {
-            padding: 1.5rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: var(--light);
-            overflow-x: auto;
+            padding: 1.2rem;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #c9d1d9; /* Light gray code text */
+            overflow: auto;
+            flex-grow: 1;
         }
 
         .code-content pre {
             margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
-
-        /* Roadmap Section */
+        
+        /* Roadmap Timeline Styles */
         .roadmap {
             padding: 6rem 2rem;
             max-width: 1400px;
@@ -474,76 +511,104 @@
 
         .timeline {
             position: relative;
-            margin-top: 4rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 0;
         }
 
         .timeline::before {
             content: '';
             position: absolute;
-            left: 50%;
+            width: 4px;
+            background: rgba(41, 255, 195, 0.2);
             top: 0;
             bottom: 0;
-            width: 2px;
-            background: rgba(100, 255, 218, 0.2);
-            transform: translateX(-50%);
+            left: 50%;
+            margin-left: -2px;
+        }
+        
+        @media (max-width: 600px) {
+            .timeline::before {
+                left: 15px;
+            }
         }
 
         .timeline-item {
-            margin-bottom: 4rem;
+            padding: 10px 40px;
             position: relative;
-            display: flex;
-            align-items: center;
+            background: inherit;
+            width: 50%;
         }
 
-        .timeline-item:nth-child(odd) .timeline-content {
-            margin-right: auto;
-            margin-left: 0;
-            text-align: right;
+        .timeline-item:nth-child(even) {
+            left: 50%;
+        }
+        
+        @media (max-width: 600px) {
+            .timeline-item {
+                width: 100%;
+                padding-left: 60px;
+                padding-right: 25px;
+            }
+            .timeline-item:nth-child(even) {
+                left: 0;
+            }
         }
 
-        .timeline-item:nth-child(even) .timeline-content {
-            margin-left: auto;
-            margin-right: 0;
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            right: -8px;
+            background: var(--darker);
+            border: 4px solid var(--accent);
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .timeline-item:nth-child(even)::after {
+            left: -8px;
+        }
+
+        @media (max-width: 600px) {
+            .timeline-item::after {
+                left: 7px;
+            }
         }
 
         .timeline-content {
-            width: 45%;
-            padding: 2rem;
+            padding: 1.5rem;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(100, 255, 218, 0.1);
+            position: relative;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(41, 255, 195, 0.1);
         }
-
-        .timeline-badge {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--gradient-3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            border: 4px solid var(--darker);
+        
+        .timeline-item:nth-child(odd) .timeline-content {
+            border-right: 4px solid var(--accent);
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content {
+            border-left: 4px solid var(--accent);
         }
 
         .phase-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
             color: white;
+            margin-bottom: 0.5rem;
         }
 
         .phase-status {
             display: inline-block;
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 700;
             margin-bottom: 1rem;
+            text-transform: uppercase;
         }
 
         .status-complete {
@@ -557,73 +622,80 @@
         }
 
         .status-future {
-            background: rgba(100, 255, 218, 0.2);
+            background: rgba(41, 255, 195, 0.2);
             color: var(--accent);
         }
 
         .phase-description {
             color: var(--gray);
-            line-height: 1.6;
+            margin-bottom: 1rem;
         }
-
-        /* Comparison Table */
+        
+        /* Comparison Table Styles */
         .comparison {
             padding: 6rem 2rem;
-            background: rgba(10, 14, 39, 0.5);
-        }
-
-        .comparison-container {
             max-width: 1200px;
             margin: 0 auto;
         }
 
         .comparison-table {
-            margin-top: 3rem;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(100, 255, 218, 0.1);
+            overflow-x: auto;
         }
 
         .comparison-table table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(41, 255, 195, 0.1);
         }
 
         .comparison-table th {
-            padding: 1.5rem;
-            background: rgba(100, 255, 218, 0.1);
+            background: rgba(41, 255, 195, 0.1);
             color: var(--accent);
-            font-weight: 700;
-            text-align: left;
-        }
-
-        .comparison-table td {
-            padding: 1.5rem;
-            border-top: 1px solid rgba(100, 255, 218, 0.1);
-            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
         }
 
         .comparison-table tr:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(41, 255, 195, 0.05);
         }
 
         .check {
             color: var(--success);
             font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
         }
 
         .cross {
-            color: #f44336;
+            color: #ef4444; /* Tailwind red-500 equivalent */
             font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .check-tilde {
+            color: var(--warning);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
         }
 
         /* CTA Section */
         .cta-section {
             padding: 8rem 2rem;
             text-align: center;
-            background: var(--gradient-3);
-            color: white;
+            background: var(--gradient-4); /* Accent Gradient */
+            color: var(--darker);
         }
 
         .cta-content {
@@ -641,32 +713,57 @@
             font-size: 1.3rem;
             margin-bottom: 2.5rem;
             opacity: 0.9;
+            color: var(--darker);
         }
 
-        .cta-section .btn {
-            background: white;
-            color: var(--primary);
+        .cta-section .btn-primary {
+            background: var(--darker);
+            color: var(--accent);
+            box-shadow: none;
+        }
+
+        .cta-section .btn-primary:hover {
+            background: rgba(2, 4, 11, 0.85);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .cta-section .btn-secondary {
+            background: transparent;
+            color: var(--darker);
+            border: 2px solid var(--darker);
+            font-weight: 700;
+        }
+
+        .cta-section .btn-secondary:hover {
+            background: rgba(2, 4, 11, 0.1);
+            color: var(--darker);
+            transform: translateY(-2px);
         }
 
         /* Footer */
         footer {
-            padding: 4rem 2rem 2rem;
-            background: var(--darker);
-            border-top: 1px solid rgba(100, 255, 218, 0.1);
+            background: var(--dark); /* Use slightly lighter dark for contrast */
+            padding: 4rem 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
         }
 
         .footer-content {
             max-width: 1400px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            border-bottom: 1px solid rgba(41, 255, 195, 0.1);
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
         }
 
         .footer-section h3 {
-            color: white;
-            margin-bottom: 1.5rem;
             font-size: 1.2rem;
+            color: white;
+            margin-bottom: 1rem;
         }
 
         .footer-section ul {
@@ -677,7 +774,7 @@
             color: var(--gray);
             text-decoration: none;
             display: block;
-            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
             transition: color 0.3s;
         }
 
@@ -686,97 +783,28 @@
         }
 
         .footer-bottom {
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(100, 255, 218, 0.1);
+            max-width: 1400px;
+            margin: 0 auto;
             text-align: center;
-            color: var(--gray);
         }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 3rem;
-            }
-
-            .section-title {
-                font-size: 2.5rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .timeline::before {
-                left: 30px;
-            }
-
-            .timeline-content {
-                width: calc(100% - 100px);
-                margin-left: 80px !important;
-                text-align: left !important;
-            }
-
-            .timeline-badge {
-                left: 30px;
-            }
-
-            .code-blocks {
-                grid-template-columns: 1fr;
-            }
+        
+        .footer-bottom strong {
+            color: var(--accent);
+            font-weight: 600;
         }
-
-        /* Scroll Animations */
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
-        }
-
-        .fade-in-up {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        /* Badges */
-        .badge-container {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 2rem 0;
-        }
-
-        .badge {
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .badge-python {
-            background: #3776AB;
-            color: white;
-        }
-
-        .badge-mt5 {
-            background: #0066CC;
-            color: white;
-        }
-
-        .badge-status {
-            background: #66BB6A;
-            color: white;
-        }
-
-        .badge-license {
-            background: #43A047;
-            color: white;
         }
     </style>
 </head>
@@ -800,19 +828,14 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <div class="hero-badge">VERSION 2.0.0 • PHASE 2 COMPLETE • AUTONOMOUS TRADING</div>
-            
-            <pre class="hero-ascii">   __ __                 __    __
-  / // /__ _______ ___ _/ /___/ /
- / _  / -_) __/ _ `/ // / / _  / 
-/_//_/\__/_/  \_,_/\_,_/_/\_,_/</pre>
+            <div class="hero-badge">VERSION 1.0.0 • PRODUCTION READY</div>
             
             <h1>HERALD</h1>
-            <p class="hero-subtitle">Autonomous Trading Intelligence for MetaTrader 5</p>
+            <p class="hero-subtitle">Adaptive Trading Intelligence for MetaTrader 5</p>
             <p class="hero-description">
-                A complete autonomous trading system with entry and exit execution. Built with enterprise-grade 
-                architecture featuring technical indicators, position management, and multi-strategy exit systems.
-                Modular, event-driven, and production-ready for live trading.
+                A modular, event-driven automated trading system built with enterprise-grade architecture.
+                Emphasizing safety, testability, and incremental enhancement from simple strategies to 
+                advanced machine learning systems.
             </p>
 
             <div class="badge-container">
@@ -833,37 +856,37 @@
     <section class="stats">
         <div class="stats-container">
             <div class="stat-card">
-                <div class="stat-number">14</div>
+                <div class="stat-number">7</div>
                 <div class="stat-label">Core Modules</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">6</div>
-                <div class="stat-label">Technical Indicators</div>
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Type Safety</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">4</div>
-                <div class="stat-label">Exit Strategies</div>
+                <div class="stat-number">5</div>
+                <div class="stat-label">Development Phases</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">2/5</div>
-                <div class="stat-label">Phases Complete</div>
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Extensibility</div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
+    <!-- Features Section - Emojis replaced with Professional SVGs -->
     <section id="features" class="features">
         <div class="section-header">
-            <h2 class="section-title">Phase 2: Autonomous Trading Complete</h2>
+            <h2 class="section-title">Enterprise-Grade Features</h2>
             <p class="section-subtitle">
-                Full entry and exit execution with technical indicators, position management, 
-                and intelligent exit strategies. Every component is modular, testable, and production-ready.
+                Built from the ground up with production deployment in mind. 
+                Every component is modular, testable, and replaceable.
             </p>
         </div>
 
         <div class="features-grid">
             <div class="feature-card">
-                <span class="feature-icon">🔌</span>
+                <span class="feature-icon" id="icon-connector"></span>
                 <h3 class="feature-title">MT5 Connector</h3>
                 <p class="feature-description">
                     Robust session management with automatic reconnection, rate limiting, and health monitoring.
@@ -878,7 +901,7 @@
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">📊</span>
+                <span class="feature-icon" id="icon-data"></span>
                 <h3 class="feature-title">Data Layer</h3>
                 <p class="feature-description">
                     Normalized OHLCV data pipeline with intelligent caching and multi-timeframe support.
@@ -893,7 +916,7 @@
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">🎯</span>
+                <span class="feature-icon" id="icon-strategy"></span>
                 <h3 class="feature-title">Strategy Engine</h3>
                 <p class="feature-description">
                     Pluggable strategy architecture with standardized signal generation and validation.
@@ -908,7 +931,7 @@
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">⚡</span>
+                <span class="feature-icon" id="icon-execution"></span>
                 <h3 class="feature-title">Execution Engine</h3>
                 <p class="feature-description">
                     Idempotent order submission with partial fill handling and position management.
@@ -923,7 +946,7 @@
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">🛡️</span>
+                <span class="feature-icon" id="icon-risk"></span>
                 <h3 class="feature-title">Risk Manager</h3>
                 <p class="feature-description">
                     Comprehensive risk management with position sizing, exposure limits, and emergency shutdown.
@@ -938,7 +961,7 @@
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">💾</span>
+                <span class="feature-icon" id="icon-persistence"></span>
                 <h3 class="feature-title">Persistence Layer</h3>
                 <p class="feature-description">
                     SQLite database for trade history, signals, and performance metrics tracking.
@@ -953,7 +976,7 @@
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">📡</span>
+                <span class="feature-icon" id="icon-observability"></span>
                 <h3 class="feature-title">Observability</h3>
                 <p class="feature-description">
                     Structured logging with health monitoring and status reporting capabilities.
@@ -968,7 +991,7 @@
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">🚀</span>
+                <span class="feature-icon" id="icon-setup"></span>
                 <h3 class="feature-title">Automated Setup</h3>
                 <p class="feature-description">
                     One-command installation and configuration for Windows, Linux, and macOS.
@@ -979,70 +1002,6 @@
                     <li>Dependency validation</li>
                     <li>Database initialization</li>
                     <li>Configuration templates</li>
-                </ul>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">📈</span>
-                <h3 class="feature-title">Indicator Library (Phase 2)</h3>
-                <p class="feature-description">
-                    Comprehensive technical indicator suite for market analysis and signal generation.
-                </p>
-                <ul class="feature-list">
-                    <li>RSI: Relative Strength Index with oversold/overbought</li>
-                    <li>MACD: Moving Average Convergence Divergence</li>
-                    <li>Bollinger Bands: Volatility and squeeze detection</li>
-                    <li>Stochastic Oscillator: Momentum analysis</li>
-                    <li>ADX: Trend strength measurement</li>
-                    <li>ATR: Average True Range for volatility</li>
-                </ul>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🎯</span>
-                <h3 class="feature-title">Position Management (Phase 2)</h3>
-                <p class="feature-description">
-                    Real-time position tracking with P&L monitoring and lifecycle management.
-                </p>
-                <ul class="feature-list">
-                    <li>PositionInfo dataclass: entry price, volume, P&L</li>
-                    <li>PositionManager: open/close/update operations</li>
-                    <li>Real-time unrealized P&L calculation</li>
-                    <li>Position synchronization with MT5</li>
-                    <li>Multi-position tracking support</li>
-                    <li>Position validation and consistency checks</li>
-                </ul>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🚪</span>
-                <h3 class="feature-title">Exit Strategy Engine (Phase 2)</h3>
-                <p class="feature-description">
-                    Multi-strategy exit system with priority-based decision making.
-                </p>
-                <ul class="feature-list">
-                    <li>StopLossExit: Hard stop-loss protection (Priority 1)</li>
-                    <li>TakeProfitExit: Target profit capture (Priority 2)</li>
-                    <li>TrailingStopExit: Dynamic stop adjustment (Priority 3)</li>
-                    <li>TimeBasedExit: Maximum hold period (Priority 4)</li>
-                    <li>ExitDecision with metadata and reasoning</li>
-                    <li>Strategy registration and chaining</li>
-                </ul>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🤖</span>
-                <h3 class="feature-title">Autonomous Orchestrator (Phase 2)</h3>
-                <p class="feature-description">
-                    Fully autonomous trading loop integrating all Phase 1 and Phase 2 components.
-                </p>
-                <ul class="feature-list">
-                    <li>10-step trading cycle: connect → sync → analyze → decide</li>
-                    <li>Indicator calculation and signal generation</li>
-                    <li>Risk approval and position sizing</li>
-                    <li>Order execution with validation</li>
-                    <li>Exit monitoring and execution</li>
-                    <li>Configurable via config.json or .env</li>
                 </ul>
             </div>
         </div>
@@ -1060,51 +1019,46 @@
             </div>
 
             <div class="architecture-diagram">
-                <h3 style="color: white; margin-bottom: 2rem; font-size: 1.5rem;">Phase 2: Autonomous Trading Pipeline</h3>
-                <div class="flow-diagram">Market Data → Indicators → Signal → Risk → Entry → Position → Exit Monitor → Close
+                <h3 style="color: white; margin-bottom: 2rem; font-size: 1.5rem;">Data Flow Pipeline</h3>
+                <div class="flow-diagram">Market Data → Data Layer → Strategy → Signal → Risk Check → Execution → Persistence → Monitoring
 
 ┌─────────────────┐
-│  Market Data    │  ← MetaTrader 5 Terminal (OHLCV)
+│  Market Data    │  ← MetaTrader 5 Terminal
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│   Indicators    │  ← RSI, MACD, Bollinger, Stochastic, ADX, ATR
+│   Data Layer    │  ← Normalization, Indicators, Caching
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│    Strategy     │  ← Signal Generation (SMA + Indicators)
+│    Strategy     │  ← Signal Generation (SMA, etc.)
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  Risk Manager   │  ← Position Sizing, Daily Limits, Approval
+│     Signal      │  ← Standardized Signal Dataclass
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│   Execution     │  ← Order Submission (Entry)
+│  Risk Manager   │  ← Position Sizing, Limit Checks
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│Position Manager │  ← Track Open Positions, Calculate P&L
+│   Execution     │  ← Idempotent Order Submission
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ Exit Strategies │  ← Stop Loss, Take Profit, Trailing, Time
+│  Persistence    │  ← Database Storage
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│   Execution     │  ← Order Submission (Exit)
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Persistence    │  ← Database: Signals, Orders, Trades, P&L
+│ Observability   │  ← Logging, Metrics, Alerts
 └─────────────────┘</div>
             </div>
 
@@ -1159,33 +1113,6 @@
                     <p class="module-description">
                         <strong>Database (Planned):</strong> SQLAlchemy-based ORM for storing signals, orders, 
                         trades, positions, and metrics. Supports historical analysis and performance tracking.
-                    </p>
-                </div>
-
-                <div class="module-card">
-                    <h3 class="module-title">herald/indicators/ (Phase 2)</h3>
-                    <p class="module-description">
-                        <strong>Indicator Library:</strong> Technical indicators for market analysis. 
-                        Includes RSI (oversold/overbought), MACD (trend), Bollinger Bands (volatility), 
-                        Stochastic (momentum), ADX (trend strength), ATR (volatility measurement).
-                    </p>
-                </div>
-
-                <div class="module-card">
-                    <h3 class="module-title">herald/position/ (Phase 2)</h3>
-                    <p class="module-description">
-                        <strong>Position Management:</strong> Tracks open positions with PositionInfo dataclass. 
-                        PositionManager handles open/close/update operations, P&L calculation, and synchronization 
-                        with MT5 terminal.
-                    </p>
-                </div>
-
-                <div class="module-card">
-                    <h3 class="module-title">herald/exit/ (Phase 2)</h3>
-                    <p class="module-description">
-                        <strong>Exit Strategies:</strong> Multi-strategy exit system with priority-based decision making. 
-                        Includes StopLoss, TakeProfit, TrailingStop, and TimeBased exits. Returns ExitDecision 
-                        with reasoning and metadata.
                     </p>
                 </div>
             </div>
@@ -1327,7 +1254,7 @@ while True:
         if risk_mgr.approve(signal):
             # Execute trade
             result = executor.submit_order(signal)
-            print(f"Order executed: {result}")</pre>
+            console.log("Order executed: " + result);</pre>
                 </div>
             </div>
 
@@ -1383,7 +1310,6 @@ CREATE TABLE trades (
 
         <div class="timeline">
             <div class="timeline-item">
-                <div class="timeline-badge">1</div>
                 <div class="timeline-content">
                     <h3 class="phase-title">Phase 1: Foundation</h3>
                     <span class="phase-status status-complete">COMPLETED</span>
@@ -1404,27 +1330,25 @@ CREATE TABLE trades (
             </div>
 
             <div class="timeline-item">
-                <div class="timeline-badge">2</div>
                 <div class="timeline-content">
-                    <h3 class="phase-title">Phase 2: Autonomous Trading Execution</h3>
-                    <span class="phase-status status-complete">COMPLETED</span>
+                    <h3 class="phase-title">Phase 2: Technical Analysis Layer</h3>
+                    <span class="phase-status status-planned">PLANNED</span>
                     <p class="phase-description">
-                        <strong>Full Trading System:</strong> Complete entry and exit execution with 
-                        technical indicators, position management, and multi-strategy exit system. 
-                        Autonomous orchestrator manages entire trading lifecycle.
+                        <strong>Advanced Indicators:</strong> Comprehensive indicator library (RSI, MACD, 
+                        Bollinger Bands, Ichimoku), multi-timeframe support, signal aggregation, 
+                        strategy registry for pluggable strategies.
                     </p>
                     <ul class="feature-list">
-                        <li>Indicator Library: RSI, MACD, Bollinger, Stochastic, ADX, ATR</li>
-                        <li>Position Management: PositionInfo, PositionManager</li>
-                        <li>Exit Strategies: Stop Loss, Take Profit, Trailing, Time-based</li>
-                        <li>Autonomous Orchestrator: 10-step trading loop</li>
-                        <li>Configuration: JSON and .env support</li>
+                        <li>Indicator library (RSI, MACD, Bollinger, Stochastic)</li>
+                        <li>Multi-timeframe analysis</li>
+                        <li>Signal confluence detection</li>
+                        <li>Strategy plugin system</li>
+                        <li>Regime detection</li>
                     </ul>
                 </div>
             </div>
 
             <div class="timeline-item">
-                <div class="timeline-badge">3</div>
                 <div class="timeline-content">
                     <h3 class="phase-title">Phase 3: Machine Learning</h3>
                     <span class="phase-status status-future">FUTURE</span>
@@ -1444,7 +1368,6 @@ CREATE TABLE trades (
             </div>
 
             <div class="timeline-item">
-                <div class="timeline-badge">4</div>
                 <div class="timeline-content">
                     <h3 class="phase-title">Phase 4: Advanced Intelligence</h3>
                     <span class="phase-status status-future">FUTURE</span>
@@ -1464,7 +1387,6 @@ CREATE TABLE trades (
             </div>
 
             <div class="timeline-item">
-                <div class="timeline-badge">5</div>
                 <div class="timeline-content">
                     <h3 class="phase-title">Phase 5: Production Features</h3>
                     <span class="phase-status status-future">FUTURE</span>
@@ -1518,7 +1440,7 @@ CREATE TABLE trades (
                         <tr>
                             <td>Risk Management</td>
                             <td><span class="check">✓</span> Multi-layer with emergency shutdown</td>
-                            <td><span class="check">~</span> Basic position sizing</td>
+                            <td><span class="check-tilde">~</span> Basic position sizing</td>
                         </tr>
                         <tr>
                             <td>Idempotent Execution</td>
@@ -1561,7 +1483,7 @@ CREATE TABLE trades (
         </div>
     </section>
 
-    <!-- Documentation Section -->
+    <!-- Documentation Section - Emojis replaced with Professional SVGs -->
     <section id="docs" class="code-section">
         <div class="section-header">
             <h2 class="section-title">Comprehensive Documentation</h2>
@@ -1572,7 +1494,7 @@ CREATE TABLE trades (
 
         <div class="features-grid">
             <div class="feature-card">
-                <span class="feature-icon">📖</span>
+                <span class="feature-icon" id="icon-readme"></span>
                 <h3 class="feature-title">README.md</h3>
                 <p class="feature-description">
                     Quick overview, features table, configuration examples, and getting started guide.
@@ -1580,7 +1502,7 @@ CREATE TABLE trades (
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">🏗️</span>
+                <span class="feature-icon" id="icon-architecture"></span>
                 <h3 class="feature-title">ARCHITECTURE.md</h3>
                 <p class="feature-description">
                     System architecture diagrams, component responsibilities, data flow, and trading logic.
@@ -1588,7 +1510,7 @@ CREATE TABLE trades (
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">📋</span>
+                <span class="feature-icon" id="icon-build-plan"></span>
                 <h3 class="feature-title">build_plan.md</h3>
                 <p class="feature-description">
                     Complete specification document with phase-by-phase implementation plan and interfaces.
@@ -1596,7 +1518,7 @@ CREATE TABLE trades (
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">🚀</span>
+                <span class="feature-icon" id="icon-quickstart-doc"></span>
                 <h3 class="feature-title">QUICKSTART.md</h3>
                 <p class="feature-description">
                     Step-by-step installation guide, configuration tutorial, and first run instructions.
@@ -1604,7 +1526,7 @@ CREATE TABLE trades (
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">🗺️</span>
+                <span class="feature-icon" id="icon-roadmap-doc"></span>
                 <h3 class="feature-title">ROADMAP.md</h3>
                 <p class="feature-description">
                     Development roadmap with 5 phases from foundation to advanced AI integration.
@@ -1612,7 +1534,7 @@ CREATE TABLE trades (
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">⬆️</span>
+                <span class="feature-icon" id="icon-upgrade"></span>
                 <h3 class="feature-title">UPGRADE.md</h3>
                 <p class="feature-description">
                     Migration guide from v0.1.0 to v1.0.0, breaking changes, and benefits overview.
@@ -1620,7 +1542,7 @@ CREATE TABLE trades (
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">📚</span>
+                <span class="feature-icon" id="icon-full-docs"></span>
                 <h3 class="feature-title">docs/README.md</h3>
                 <p class="feature-description">
                     Complete documentation with usage examples, deployment guide, and troubleshooting.
@@ -1628,7 +1550,7 @@ CREATE TABLE trades (
             </div>
 
             <div class="feature-card">
-                <span class="feature-icon">⚖️</span>
+                <span class="feature-icon" id="icon-license"></span>
                 <h3 class="feature-title">LICENSE</h3>
                 <p class="feature-description">
                     MIT License with trading disclaimer. Educational purposes with risk acknowledgment.
@@ -1707,35 +1629,95 @@ CREATE TABLE trades (
     </footer>
 
     <script>
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
+        // Utility function to define icons (moved inside script block)
+        function getIcon(name) {
+            const icons = {
+                'cpu': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9z"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M20 15h2"/><path d="M11 2v2"/><path d="M11 20v2"/><path d="M2 11h2"/><path d="M20 11h2"/></svg>',
+                'bar-chart': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>',
+                'target': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+                'zap': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12h-3v4h-2v-4h-3l4-8 4 8zM12 22l-2-2"/></svg>',
+                'shield': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+                'database': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>',
+                'monitor': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+                'terminal': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
+                'book-open': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+                'hard-hat': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c-.9 0-1.74.24-2.42.68C8.9 3.09 8 4 8 5h8c0-1-1.02-1.92-1.58-2.32C13.74 2.24 12.9 2 12 2z"/><path d="M5 10v4c0 3.31 2.91 6 7 6s7-2.69 7-6v-4"/></svg>',
+                'clipboard': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>',
+                'rocket': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5L3 21l3-1.5M14.5 5.5l1.5-3-3 1.5M9.9 8.1l2.4 2.4"/><path d="M15 13l-3 3"/><path d="M16 16l-4 4"/><path d="M17 19l-5 5"/><path d="M13 13L9 9"/><path d="M12 12L8 8"/><path d="M11 11L7 7"/></svg>',
+                'map': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>',
+                'arrow-up': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>',
+                'library': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 15a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4z"/><path d="M22 10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4z"/><path d="M6 14H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h12v2"/></svg>',
+                'gavel': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 10H2L4 7v6"/><path d="M10 20v2"/><path d="M20 17l-2-2h-3"/><path d="M22 10a7 7 0 0 0-14 0 7 7 0 0 0 14 0"/></svg>',
+            };
+            return icons[name] || '';
+        }
 
-        // Intersection Observer for fade-in animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
+        // Script logic now properly contained
+        window.onload = function () {
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        // Use behavior: 'auto' for instant jump if necessary, but 'smooth' is usually better
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+            
+            // Function to inject SVGs into the DOM
+            function injectIcons() {
+                const iconMap = {
+                    'icon-connector': 'cpu',
+                    'icon-data': 'bar-chart',
+                    'icon-strategy': 'target',
+                    'icon-execution': 'zap',
+                    'icon-risk': 'shield',
+                    'icon-persistence': 'database',
+                    'icon-observability': 'monitor',
+                    'icon-setup': 'terminal',
+                    'icon-readme': 'book-open',
+                    'icon-architecture': 'hard-hat',
+                    'icon-build-plan': 'clipboard',
+                    'icon-quickstart-doc': 'rocket',
+                    'icon-roadmap-doc': 'map',
+                    'icon-upgrade': 'arrow-up',
+                    'icon-full-docs': 'library',
+                    'icon-license': 'gavel',
+                };
+
+                for (const id in iconMap) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.innerHTML = getIcon(iconMap[id]);
+                    }
+                }
+            }
+            
+            // Intersection Observer for fade-in animations (optional but nice touch)
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in-up');
+                        observer.unobserve(entry.target); // Stop observing once visible
+                    }
+                });
+            }, observerOptions);
+
+            // Observe feature cards and other elements
+            document.querySelectorAll('.feature-card, .module-card, .timeline-item, .stat-card').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Inject icons after all elements are loaded
+            injectIcons();
         };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('fade-in-up');
-                }
-            });
-        }, observerOptions);
-
-        // Observe feature cards and other elements
-        document.querySelectorAll('.feature-card, .module-card, .timeline-item').forEach(el => {
-            observer.observe(el);
-        });
     </script>
 </body>
 </html>

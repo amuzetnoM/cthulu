@@ -106,28 +106,72 @@
           └──────────────────────┘
 ```
 
-## 🔄 Trading Flow
+## 🔄 Autonomous Trading Flow (Phase 2)
 
 ```
-1. Bot Initialization
-   └─> Load configuration
-   └─> Setup logging
-   └─> Connect to MT5
-   └─> Initialize components
-   └─> Load strategy
+1. Initialization (Orchestrator)
+   └─> Load config.json or .env
+   └─> Setup structured logging
+   └─> Initialize MT5 connector
+   └─> Initialize all components:
+       ├─> DataLayer
+       ├─> RiskManager
+       ├─> ExecutionEngine
+       ├─> PositionManager
+       └─> ExitStrategyManager
 
-2. Main Loop (every 60 seconds)
+2. Main Loop (10-Step Cycle)
+   
+   Step 1: Connection Health
    └─> Check MT5 connection
-       │
-       ├─> Fetch market data
-       │   └─> Get historical candles
-       │   └─> Calculate indicators
-       │
-       ├─> Strategy Analysis
-       │   └─> MA crossover detection
-       │   └─> Apply filters
-       │   └─> Generate signal
-       │
+   └─> Reconnect if needed
+   
+   Step 2: Position Synchronization
+   └─> Sync positions from MT5
+   └─> Update PositionManager state
+   
+   Step 3: Market Data Fetch
+   └─> Get OHLCV data for symbol
+   └─> Normalize to DataFrame
+   
+   Step 4: Indicator Calculation
+   └─> Calculate RSI, MACD, Bollinger
+   └─> Calculate Stochastic, ADX, ATR
+   
+   Step 5: Entry Signal Generation
+   └─> Run strategy analysis
+   └─> Generate entry signal (if any)
+   
+   Step 6: Risk Approval (Entry)
+   └─> Position sizing calculation
+   └─> Check daily loss limits
+   └─> Approve or reject signal
+   
+   Step 7: Entry Execution
+   └─> Submit order to MT5
+   └─> Track order status
+   └─> Update PositionManager
+   
+   Step 8: Exit Signal Generation
+   └─> Check all open positions
+   └─> Run exit strategies (priority order):
+       ├─> P1: Stop Loss Exit
+       ├─> P2: Take Profit Exit
+       ├─> P3: Trailing Stop Exit
+       └─> P4: Time-based Exit
+   
+   Step 9: Exit Execution
+   └─> Submit close orders
+   └─> Track fill status
+   └─> Update P&L records
+   
+   Step 10: Persistence & Logging
+   └─> Save signals to database
+   └─> Log trade history
+   └─> Update metrics
+   
+   └─> Sleep interval (e.g., 60s)
+   └─> Repeat
        ├─> Position Management
        │   └─> Check existing positions
        │   └─> Evaluate exit conditions
