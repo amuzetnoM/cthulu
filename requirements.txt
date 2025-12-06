@@ -1,0 +1,16 @@
+# Herald - Core Dependencies
+MetaTrader5>=5.0.45
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Configuration
+PyYAML>=6.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+
+# Logging
+structlog>=23.1.0

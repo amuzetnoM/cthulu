@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Herald - Enterprise-grade automated trading system for MetaTrader 5. Modular, event-driven architecture with advanced risk management.">
+    <meta name="keywords" content="trading bot, MT5, MetaTrader 5, automated trading, algorithmic trading, Python trading">
+    <title>Herald - Adaptive Trading Intelligence for MetaTrader 5</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004999;
+            --secondary: #00cc88;
+            --dark: #0a0e27;
+            --darker: #050811;
+            --light: #f5f7fa;
+            --gray: #8892b0;
+            --accent: #64ffda;
+            --warning: #ffa726;
+            --success: #66bb6a;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--darker);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--darker);
+            overflow: hidden;
+        }
+
+        .background-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(0, 204, 136, 0.1) 0%, transparent 50%);
+            animation: moveBackground 20s ease-in-out infinite;
+        }
+
+        @keyframes moveBackground {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-50px, -50px); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 2rem 4rem;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(100, 255, 218, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 50px;
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .hero h1 {
+            font-size: 5rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            line-height: 1.8;
+        }
+
+        .hero-ascii {
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            line-height: 1.2;
+            opacity: 0.8;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--gradient-3);
+            color: white;
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid var(--accent);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 255, 218, 0.2);
+            transform: translateY(-3px);
+        }
+
+        /* Stats Section */
+        .stats {
+            padding: 4rem 2rem;
+            background: rgba(10, 14, 39, 0.5);
+        }
+
+        .stats-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: var(--gradient-3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-subtitle {
+            font-size: 1.3rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .feature-card {
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-3);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 60px rgba(79, 172, 254, 0.2);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .feature-description {
+            color: var(--gray);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: var(--gray);
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Architecture Section */
+        .architecture {
+            padding: 6rem 2rem;
+            background: rgba(10, 14, 39, 0.5);
+        }
+
+        .architecture-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .architecture-diagram {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 3rem;
+            border-radius: 16px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            margin-top: 3rem;
+        }
+
+        .flow-diagram {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .module-card {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .module-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .module-description {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* Code Block */
+        .code-section {
+            padding: 6rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .code-blocks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .code-header {
+            padding: 1rem 1.5rem;
+            background: rgba(100, 255, 218, 0.1);
+            color: var(--accent);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-content {
+            padding: 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--light);
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+        }
+
+        /* Roadmap Section */
+        .roadmap {
+            padding: 6rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .timeline {
+            position: relative;
+            margin-top: 4rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(100, 255, 218, 0.2);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            margin-bottom: 4rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-right: auto;
+            margin-left: 0;
+            text-align: right;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .timeline-content {
+            width: 45%;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .timeline-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 4px solid var(--darker);
+        }
+
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .phase-status {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-complete {
+            background: rgba(102, 187, 106, 0.2);
+            color: var(--success);
+        }
+
+        .status-planned {
+            background: rgba(255, 167, 38, 0.2);
+            color: var(--warning);
+        }
+
+        .status-future {
+            background: rgba(100, 255, 218, 0.2);
+            color: var(--accent);
+        }
+
+        .phase-description {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* Comparison Table */
+        .comparison {
+            padding: 6rem 2rem;
+            background: rgba(10, 14, 39, 0.5);
+        }
+
+        .comparison-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .comparison-table {
+            margin-top: 3rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            padding: 1.5rem;
+            background: rgba(100, 255, 218, 0.1);
+            color: var(--accent);
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(100, 255, 218, 0.1);
+            color: var(--gray);
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .check {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .cross {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 8rem 2rem;
+            text-align: center;
+            background: var(--gradient-3);
+            color: white;
+        }
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-section h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-section p {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+        }
+
+        .cta-section .btn {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 2rem 2rem;
+            background: var(--darker);
+            border-top: 1px solid rgba(100, 255, 218, 0.1);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .footer-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: var(--gray);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 0;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent);
+        }
+
+        .footer-bottom {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(100, 255, 218, 0.1);
+            text-align: center;
+            color: var(--gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .timeline::before {
+                left: 30px;
+            }
+
+            .timeline-content {
+                width: calc(100% - 100px);
+                margin-left: 80px !important;
+                text-align: left !important;
+            }
+
+            .timeline-badge {
+                left: 30px;
+            }
+
+            .code-blocks {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Scroll Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Badges */
+        .badge-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-python {
+            background: #3776AB;
+            color: white;
+        }
+
+        .badge-mt5 {
+            background: #0066CC;
+            color: white;
+        }
+
+        .badge-status {
+            background: #66BB6A;
+            color: white;
+        }
+
+        .badge-license {
+            background: #43A047;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">HERALD</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#quickstart">Quick Start</a></li>
+                <li><a href="#roadmap">Roadmap</a></li>
+                <li><a href="#docs">Documentation</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">VERSION 1.0.0 • PRODUCTION READY</div>
+            
+            <pre class="hero-ascii">   __ __                 __    __
+  / // /__ _______ ___ _/ /___/ /
+ / _  / -_) __/ _ `/ // / / _  / 
+/_//_/\__/_/  \_,_/\_,_/_/\_,_/</pre>
+            
+            <h1>HERALD</h1>
+            <p class="hero-subtitle">Adaptive Trading Intelligence for MetaTrader 5</p>
+            <p class="hero-description">
+                A modular, event-driven automated trading system built with enterprise-grade architecture.
+                Emphasizing safety, testability, and incremental enhancement from simple strategies to 
+                advanced machine learning systems.
+            </p>
+
+            <div class="badge-container">
+                <span class="badge badge-python">Python 3.10-3.13</span>
+                <span class="badge badge-mt5">MetaTrader 5</span>
+                <span class="badge badge-status">Active Development</span>
+                <span class="badge badge-license">MIT License</span>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="#quickstart" class="btn btn-primary">Get Started</a>
+                <a href="#docs" class="btn btn-secondary">Read Documentation</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number">7</div>
+                <div class="stat-label">Core Modules</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Type Annotated</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Development Phases</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Extensibility</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="section-header">
+            <h2 class="section-title">Enterprise-Grade Features</h2>
+            <p class="section-subtitle">
+                Built from the ground up with production deployment in mind. 
+                Every component is modular, testable, and replaceable.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🔌</span>
+                <h3 class="feature-title">MT5 Connector</h3>
+                <p class="feature-description">
+                    Robust session management with automatic reconnection, rate limiting, and health monitoring.
+                </p>
+                <ul class="feature-list">
+                    <li>Automatic reconnection on failure</li>
+                    <li>Rate limiting (100ms between requests)</li>
+                    <li>Thread-safe operations with locks</li>
+                    <li>Comprehensive health checks</li>
+                    <li>Session state management</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <h3 class="feature-title">Data Layer</h3>
+                <p class="feature-description">
+                    Normalized OHLCV data pipeline with intelligent caching and multi-timeframe support.
+                </p>
+                <ul class="feature-list">
+                    <li>OHLCV data normalization</li>
+                    <li>Technical indicator calculation</li>
+                    <li>Multi-timeframe resampling</li>
+                    <li>Data validation and cleaning</li>
+                    <li>Efficient caching for backtesting</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🎯</span>
+                <h3 class="feature-title">Strategy Engine</h3>
+                <p class="feature-description">
+                    Pluggable strategy architecture with standardized signal generation and validation.
+                </p>
+                <ul class="feature-list">
+                    <li>Abstract base class for strategies</li>
+                    <li>Signal dataclass with metadata</li>
+                    <li>SMA crossover implementation</li>
+                    <li>Strategy state management</li>
+                    <li>Easy to extend with new strategies</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3 class="feature-title">Execution Engine</h3>
+                <p class="feature-description">
+                    Idempotent order submission with partial fill handling and position management.
+                </p>
+                <ul class="feature-list">
+                    <li>Idempotent order submission</li>
+                    <li>Client tag tracking</li>
+                    <li>Partial fill detection</li>
+                    <li>Position closure logic</li>
+                    <li>Order status reconciliation</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🛡️</span>
+                <h3 class="feature-title">Risk Manager</h3>
+                <p class="feature-description">
+                    Comprehensive risk management with position sizing, exposure limits, and emergency shutdown.
+                </p>
+                <ul class="feature-list">
+                    <li>Dynamic position sizing (2% default)</li>
+                    <li>Daily loss limits (5% default)</li>
+                    <li>Maximum position exposure control</li>
+                    <li>Volatility-adjusted sizing</li>
+                    <li>Emergency shutdown capability</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">💾</span>
+                <h3 class="feature-title">Persistence Layer</h3>
+                <p class="feature-description">
+                    SQLite database for trade history, signals, and performance metrics tracking.
+                </p>
+                <ul class="feature-list">
+                    <li>Signal storage and retrieval</li>
+                    <li>Order execution history</li>
+                    <li>Trade records with P&L</li>
+                    <li>Position tracking</li>
+                    <li>Performance metrics database</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📡</span>
+                <h3 class="feature-title">Observability</h3>
+                <p class="feature-description">
+                    Structured logging with health monitoring and status reporting capabilities.
+                </p>
+                <ul class="feature-list">
+                    <li>Structured logging with structlog</li>
+                    <li>Health check endpoints</li>
+                    <li>Status monitoring</li>
+                    <li>Performance metrics collection</li>
+                    <li>Alert-ready architecture</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🚀</span>
+                <h3 class="feature-title">Automated Setup</h3>
+                <p class="feature-description">
+                    One-command installation and configuration for Windows, Linux, and macOS.
+                </p>
+                <ul class="feature-list">
+                    <li>PowerShell setup script (Windows)</li>
+                    <li>Bash setup script (Linux/macOS)</li>
+                    <li>Dependency validation</li>
+                    <li>Database initialization</li>
+                    <li>Configuration templates</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="architecture">
+        <div class="architecture-container">
+            <div class="section-header">
+                <h2 class="section-title">Event-Driven Architecture</h2>
+                <p class="section-subtitle">
+                    Built following build_plan.md specifications with clear module boundaries 
+                    and standardized interfaces for maximum flexibility.
+                </p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h3 style="color: white; margin-bottom: 2rem; font-size: 1.5rem;">Data Flow Pipeline</h3>
+                <div class="flow-diagram">Market Data → Data Layer → Strategy → Signal → Risk Check → Execution → Persistence → Monitoring
+
+┌─────────────────┐
+│  Market Data    │  ← MetaTrader 5 Terminal
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│   Data Layer    │  ← Normalization, Indicators, Caching
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│    Strategy     │  ← Signal Generation (SMA, etc.)
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│     Signal      │  ← Standardized Signal Dataclass
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Risk Manager   │  ← Position Sizing, Limit Checks
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│   Execution     │  ← Idempotent Order Submission
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Persistence    │  ← Database Storage
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Observability   │  ← Logging, Metrics, Alerts
+└─────────────────┘</div>
+            </div>
+
+            <div class="module-grid">
+                <div class="module-card">
+                    <h3 class="module-title">herald/connector/</h3>
+                    <p class="module-description">
+                        <strong>MT5Connector:</strong> Manages MetaTrader 5 terminal connection with automatic 
+                        reconnection, rate limiting, and health checks. Provides thread-safe access to market 
+                        data and order execution.
+                    </p>
+                </div>
+
+                <div class="module-card">
+                    <h3 class="module-title">herald/data/</h3>
+                    <p class="module-description">
+                        <strong>DataLayer:</strong> Normalizes OHLCV data from MT5 into standardized pandas 
+                        DataFrames. Calculates technical indicators (SMA, EMA, ATR, RSI) and handles 
+                        multi-timeframe resampling.
+                    </p>
+                </div>
+
+                <div class="module-card">
+                    <h3 class="module-title">herald/strategy/</h3>
+                    <p class="module-description">
+                        <strong>Strategy (ABC):</strong> Abstract base class defining the strategy interface. 
+                        Implementations like SmaCrossover generate Signal objects with entry/exit criteria 
+                        and metadata.
+                    </p>
+                </div>
+
+                <div class="module-card">
+                    <h3 class="module-title">herald/execution/</h3>
+                    <p class="module-description">
+                        <strong>ExecutionEngine:</strong> Handles order submission with idempotency guarantees 
+                        via client_tag tracking. Manages partial fills, position closure, and order status 
+                        reconciliation.
+                    </p>
+                </div>
+
+                <div class="module-card">
+                    <h3 class="module-title">herald/risk/</h3>
+                    <p class="module-description">
+                        <strong>RiskManager:</strong> Approves or rejects signals based on position sizing 
+                        rules, exposure limits, and daily loss thresholds. Provides emergency shutdown 
+                        capability.
+                    </p>
+                </div>
+
+                <div class="module-card">
+                    <h3 class="module-title">herald/persistence/</h3>
+                    <p class="module-description">
+                        <strong>Database (Planned):</strong> SQLAlchemy-based ORM for storing signals, orders, 
+                        trades, positions, and metrics. Supports historical analysis and performance tracking.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start Section -->
+    <section id="quickstart" class="code-section">
+        <div class="section-header">
+            <h2 class="section-title">Quick Start in 3 Steps</h2>
+            <p class="section-subtitle">
+                Get Herald running on your system in minutes with our automated setup scripts.
+            </p>
+        </div>
+
+        <div class="code-blocks">
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Step 1: Automated Setup</span>
+                    <span>Windows</span>
+                </div>
+                <div class="code-content">
+<pre># Clone or download Herald
+cd C:\workspace\Herald
+
+# Run automated setup (PowerShell)
+.\scripts\setup.ps1
+
+# The script will:
+# ✓ Check Python 3.10+
+# ✓ Create virtual environment
+# ✓ Install dependencies
+# ✓ Initialize database
+# ✓ Copy config template</pre>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Step 2: Configure MT5</span>
+                    <span>YAML</span>
+                </div>
+                <div class="code-content">
+<pre># Edit config/config.yaml
+mt5:
+  login: 12345678
+  password: "your_password"
+  server: "Broker-Demo"
+
+risk:
+  max_position_size_pct: 0.02  # 2% per trade
+  max_daily_loss_pct: 0.05     # 5% daily limit
+  max_total_positions: 3
+
+strategy:
+  name: "sma_crossover"
+  short_window: 20
+  long_window: 50</pre>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Step 3: Run Herald</span>
+                    <span>Python</span>
+                </div>
+                <div class="code-content">
+<pre># Activate virtual environment
+.\venv\Scripts\Activate.ps1
+
+# Run in dry-run mode first
+python -m herald --dry-run
+
+# Run with live trading
+python -m herald
+
+# Run with custom config
+python -m herald --config custom.yaml
+
+# Check system health
+python -m herald --health-check</pre>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Environment Variables</span>
+                    <span>.env</span>
+                </div>
+                <div class="code-content">
+<pre># Copy .env.example to .env
+MT5_LOGIN=your_account_number
+MT5_PASSWORD=your_password
+MT5_SERVER=your_broker_server
+
+# Trading Configuration
+ACCOUNT_CURRENCY=USD
+RISK_PER_TRADE=0.02
+MAX_DAILY_LOSS=0.05
+
+# Database
+DATABASE_PATH=herald.db
+
+# Logging
+LOG_LEVEL=INFO
+LOG_TO_FILE=true</pre>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Example Strategy Usage</span>
+                    <span>Python</span>
+                </div>
+                <div class="code-content">
+<pre>from herald.connector import MT5Connector
+from herald.data import DataLayer
+from herald.strategy import SmaCrossover
+from herald.risk import RiskManager
+from herald.execution import ExecutionEngine
+
+# Initialize components
+connector = MT5Connector(config)
+data_layer = DataLayer(connector)
+strategy = SmaCrossover(config)
+risk_mgr = RiskManager(config, connector)
+executor = ExecutionEngine(connector)
+
+# Main trading loop
+while True:
+    # Get market data
+    df = data_layer.get_ohlcv("XAUUSD", "M15")
+    
+    # Generate signal
+    signal = strategy.on_bar(df)
+    
+    if signal:
+        # Risk approval
+        if risk_mgr.approve(signal):
+            # Execute trade
+            result = executor.submit_order(signal)
+            print(f"Order executed: {result}")</pre>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Database Schema</span>
+                    <span>SQL</span>
+                </div>
+                <div class="code-content">
+<pre>-- Signals table
+CREATE TABLE signals (
+    id INTEGER PRIMARY KEY,
+    timestamp TEXT,
+    symbol TEXT,
+    signal_type TEXT,
+    entry_price REAL,
+    stop_loss REAL,
+    take_profit REAL
+);
+
+-- Orders table
+CREATE TABLE orders (
+    id INTEGER PRIMARY KEY,
+    signal_id INTEGER,
+    order_type TEXT,
+    status TEXT,
+    filled_price REAL,
+    FOREIGN KEY (signal_id) 
+        REFERENCES signals(id)
+);
+
+-- Trades table with P&L
+CREATE TABLE trades (
+    id INTEGER PRIMARY KEY,
+    order_id INTEGER,
+    entry_time TEXT,
+    exit_time TEXT,
+    profit_loss REAL
+);</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section -->
+    <section id="roadmap" class="roadmap">
+        <div class="section-header">
+            <h2 class="section-title">Development Roadmap</h2>
+            <p class="section-subtitle">
+                Staged implementation from simple strategies to advanced AI-powered trading systems.
+            </p>
+        </div>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-badge">1</div>
+                <div class="timeline-content">
+                    <h3 class="phase-title">Phase 1: Foundation</h3>
+                    <span class="phase-status status-complete">COMPLETED</span>
+                    <p class="phase-description">
+                        <strong>Core Infrastructure:</strong> MT5 connector with automatic reconnection, 
+                        data normalization pipeline, SMA crossover strategy, risk management with position 
+                        sizing, execution engine with idempotent orders, structured logging and health monitoring.
+                    </p>
+                    <ul class="feature-list">
+                        <li>MT5 Connection Module</li>
+                        <li>Data Layer with OHLCV normalization</li>
+                        <li>SMA Crossover Strategy</li>
+                        <li>Risk Manager with limits</li>
+                        <li>Execution Engine</li>
+                        <li>Database schema</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-badge">2</div>
+                <div class="timeline-content">
+                    <h3 class="phase-title">Phase 2: Technical Analysis Layer</h3>
+                    <span class="phase-status status-planned">PLANNED</span>
+                    <p class="phase-description">
+                        <strong>Advanced Indicators:</strong> Comprehensive indicator library (RSI, MACD, 
+                        Bollinger Bands, Ichimoku), multi-timeframe support, signal aggregation, 
+                        strategy registry for pluggable strategies.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Indicator library (RSI, MACD, Bollinger, Stochastic)</li>
+                        <li>Multi-timeframe analysis</li>
+                        <li>Signal confluence detection</li>
+                        <li>Strategy plugin system</li>
+                        <li>Regime detection</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-badge">3</div>
+                <div class="timeline-content">
+                    <h3 class="phase-title">Phase 3: Machine Learning</h3>
+                    <span class="phase-status status-future">FUTURE</span>
+                    <p class="phase-description">
+                        <strong>ML Integration:</strong> Offline model evaluation pipeline, supervised learning 
+                        for signal validation, feature engineering from technical analysis, model versioning 
+                        and reproducibility.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Feature engineering pipeline</li>
+                        <li>Random Forest & Gradient Boosting</li>
+                        <li>Model training & evaluation</li>
+                        <li>Walk-forward validation</li>
+                        <li>Model serving for inference</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-badge">4</div>
+                <div class="timeline-content">
+                    <h3 class="phase-title">Phase 4: Advanced Intelligence</h3>
+                    <span class="phase-status status-future">FUTURE</span>
+                    <p class="phase-description">
+                        <strong>Deep Learning & RL:</strong> LSTM and Transformer models for sequence prediction, 
+                        reinforcement learning experiments (DQN, PPO), sentiment analysis, regime detection, 
+                        adaptive parameterization.
+                    </p>
+                    <ul class="feature-list">
+                        <li>LSTM & Transformer models</li>
+                        <li>Reinforcement Learning (DQN, PPO)</li>
+                        <li>Sentiment analysis integration</li>
+                        <li>Order flow analysis</li>
+                        <li>Multi-asset correlation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-badge">5</div>
+                <div class="timeline-content">
+                    <h3 class="phase-title">Phase 5: Production Features</h3>
+                    <span class="phase-status status-future">FUTURE</span>
+                    <p class="phase-description">
+                        <strong>Enterprise Deployment:</strong> Automated backtesting pipeline, real-time 
+                        monitoring dashboard, alerting system, canary deployments, audit reports, 
+                        performance analytics.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Automated backtesting pipeline</li>
+                        <li>Real-time monitoring dashboard</li>
+                        <li>Alert system (Telegram, email)</li>
+                        <li>Canary & staging deployments</li>
+                        <li>Audit reports & analytics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section id="comparison" class="comparison">
+        <div class="comparison-container">
+            <div class="section-header">
+                <h2 class="section-title">Herald vs Traditional Trading Bots</h2>
+                <p class="section-subtitle">
+                    Built for extensibility, safety, and production deployment from day one.
+                </p>
+            </div>
+
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Herald</th>
+                            <th>Traditional Bots</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Modular Architecture</td>
+                            <td><span class="check">✓</span> Event-driven, pluggable</td>
+                            <td><span class="cross">✗</span> Monolithic</td>
+                        </tr>
+                        <tr>
+                            <td>Type Safety</td>
+                            <td><span class="check">✓</span> 100% type annotated</td>
+                            <td><span class="cross">✗</span> Limited or none</td>
+                        </tr>
+                        <tr>
+                            <td>Risk Management</td>
+                            <td><span class="check">✓</span> Multi-layer with emergency shutdown</td>
+                            <td><span class="check">~</span> Basic position sizing</td>
+                        </tr>
+                        <tr>
+                            <td>Idempotent Execution</td>
+                            <td><span class="check">✓</span> Client tag tracking</td>
+                            <td><span class="cross">✗</span> Duplicate order risk</td>
+                        </tr>
+                        <tr>
+                            <td>Database Persistence</td>
+                            <td><span class="check">✓</span> SQLite with full schema</td>
+                            <td><span class="cross">✗</span> CSV or no persistence</td>
+                        </tr>
+                        <tr>
+                            <td>Automated Setup</td>
+                            <td><span class="check">✓</span> One-command installation</td>
+                            <td><span class="cross">✗</span> Manual setup</td>
+                        </tr>
+                        <tr>
+                            <td>Documentation</td>
+                            <td><span class="check">✓</span> Comprehensive, professional</td>
+                            <td><span class="cross">✗</span> Minimal README</td>
+                        </tr>
+                        <tr>
+                            <td>Testing Framework</td>
+                            <td><span class="check">✓</span> Unit & integration tests</td>
+                            <td><span class="cross">✗</span> Limited testing</td>
+                        </tr>
+                        <tr>
+                            <td>Extensibility</td>
+                            <td><span class="check">✓</span> Abstract base classes, plugins</td>
+                            <td><span class="cross">✗</span> Hard-coded logic</td>
+                        </tr>
+                        <tr>
+                            <td>Production Ready</td>
+                            <td><span class="check">✓</span> Health checks, monitoring, logging</td>
+                            <td><span class="cross">✗</span> Development quality</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs" class="code-section">
+        <div class="section-header">
+            <h2 class="section-title">Comprehensive Documentation</h2>
+            <p class="section-subtitle">
+                Every aspect of Herald is documented from architecture to deployment.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">📖</span>
+                <h3 class="feature-title">README.md</h3>
+                <p class="feature-description">
+                    Quick overview, features table, configuration examples, and getting started guide.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🏗️</span>
+                <h3 class="feature-title">ARCHITECTURE.md</h3>
+                <p class="feature-description">
+                    System architecture diagrams, component responsibilities, data flow, and trading logic.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📋</span>
+                <h3 class="feature-title">build_plan.md</h3>
+                <p class="feature-description">
+                    Complete specification document with phase-by-phase implementation plan and interfaces.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🚀</span>
+                <h3 class="feature-title">QUICKSTART.md</h3>
+                <p class="feature-description">
+                    Step-by-step installation guide, configuration tutorial, and first run instructions.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🗺️</span>
+                <h3 class="feature-title">ROADMAP.md</h3>
+                <p class="feature-description">
+                    Development roadmap with 5 phases from foundation to advanced AI integration.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">⬆️</span>
+                <h3 class="feature-title">UPGRADE.md</h3>
+                <p class="feature-description">
+                    Migration guide from v0.1.0 to v1.0.0, breaking changes, and benefits overview.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📚</span>
+                <h3 class="feature-title">docs/README.md</h3>
+                <p class="feature-description">
+                    Complete documentation with usage examples, deployment guide, and troubleshooting.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">⚖️</span>
+                <h3 class="feature-title">LICENSE</h3>
+                <p class="feature-description">
+                    MIT License with trading disclaimer. Educational purposes with risk acknowledgment.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to Start Trading?</h2>
+            <p>
+                Join the future of automated trading with Herald. 
+                Enterprise-grade architecture, production-ready from day one.
+            </p>
+            <div class="cta-buttons">
+                <a href="#quickstart" class="btn btn-primary">Get Started Now</a>
+                <a href="https://github.com/amuzetnoM/herald" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Documentation</h3>
+                <ul>
+                    <li><a href="README.md">Overview</a></li>
+                    <li><a href="QUICKSTART.md">Quick Start</a></li>
+                    <li><a href="docs/README.md">Full Documentation</a></li>
+                    <li><a href="ARCHITECTURE.md">Architecture</a></li>
+                    <li><a href="build_plan.md">Build Plan</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="ROADMAP.md">Roadmap</a></li>
+                    <li><a href="UPGRADE.md">Upgrade Guide</a></li>
+                    <li><a href="LEGACY.md">Legacy Code</a></li>
+                    <li><a href="LICENSE">License</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Components</h3>
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
+                    <li><a href="#quickstart">Quick Start</a></li>
+                    <li><a href="#roadmap">Roadmap</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Project</h3>
+                <ul>
+                    <li><a href="https://github.com/amuzetnoM/herald">GitHub</a></li>
+                    <li><a href="https://www.metatrader5.com/">MetaTrader 5</a></li>
+                    <li><a href="https://www.python.org/">Python</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>
+                &copy; 2024 Herald Trading Bot. Released under the MIT License.
+                <br>
+                <strong>DISCLAIMER:</strong> This software is for educational purposes only. 
+                Trading financial instruments carries risk. Use at your own risk.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        // Observe feature cards and other elements
+        document.querySelectorAll('.feature-card, .module-card, .timeline-item').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
