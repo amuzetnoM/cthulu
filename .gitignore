@@ -28,6 +28,10 @@ config/*.yaml
 .env
 .env.local
 
+# Build Plan (private development roadmap)
+build_plan.md
+**/build_plan.md
+
 # Logs
 logs/
 *.log
