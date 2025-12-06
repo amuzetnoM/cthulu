@@ -23,8 +23,10 @@ build/
 
 # Configuration (contains sensitive data)
 config.yaml
+config.json
 config/*.yaml
 !config/*.example.yaml
+!config.example.json
 .env
 .env.local
 
