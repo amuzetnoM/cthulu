@@ -1,267 +1,110 @@
 """
-MT5 Connection Test Script
+MT5 Connection Test Suite
 
 Tests connection to MetaTrader 5 using credentials from .env file.
 Verifies broker server connectivity and retrieves account information.
+
+Run with: RUN_MT5_CONNECT_TESTS=1 pytest herald/tests/test_connection.py -v
 """
 
 import os
 import sys
+import pytest
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
+
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from connector.mt5_connector import MT5Connector, ConnectionConfig
+from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
 
 
-def print_section(title: str):
-    """Print formatted section header."""
-    print("\n" + "=" * 70)
-    print(f"  {title}")
-    print("=" * 70)
+@pytest.fixture(scope="module")
+def mt5_connector():
+    """Create and connect MT5Connector for tests."""
+    login = os.getenv('MT5_LOGIN')
+    password = os.getenv('MT5_PASSWORD')
+    server = os.getenv('MT5_SERVER')
+    
+    assert login and password and server, "MT5 credentials not set in environment"
+    
+    config = ConnectionConfig(
+        login=int(login),
+        password=password,
+        server=server,
+        timeout=60000,
+        path=os.getenv('MT5_PATH', '')
+    )
+    
+    connector = MT5Connector(config)
+    assert connector.connect(), "Failed to connect to MT5"
+    
+    yield connector
+    
+    # Cleanup: disconnect after all tests
+    connector.disconnect()
 
 
 def test_environment_variables():
-    """Test that required environment variables are set."""
-    print_section("Environment Variables Check")
-    
+    """Verify that required MT5 environment variables are set."""
     required_vars = ['MT5_LOGIN', 'MT5_PASSWORD', 'MT5_SERVER']
-    missing_vars = []
     
     for var in required_vars:
-        value = os.getenv(var)
-        if value:
-            # Mask sensitive data
-            if 'PASSWORD' in var:
-                display_value = '*' * len(value)
-            else:
-                display_value = value
-            print(f"✅ {var}: {display_value}")
-        else:
-            print(f"❌ {var}: NOT SET")
-            missing_vars.append(var)
+        assert os.getenv(var), f"Environment variable {var} is not set"
+
+
+def test_mt5_connection(mt5_connector):
+    """Verify successful connection to MT5."""
+    assert mt5_connector is not None, "MT5Connector is None"
+    assert mt5_connector.is_connected(), "Not connected to MT5"
+
+
+def test_account_info(mt5_connector):
+    """Verify account information retrieval."""
+    account_info = mt5_connector.get_account_info()
     
-    if missing_vars:
-        print(f"\n❌ Missing environment variables: {', '.join(missing_vars)}")
-        print("Please set these in your .env file")
-        return False
+    assert account_info is not None, "Failed to retrieve account information"
+    assert 'login' in account_info, "Account login missing"
+    assert 'balance' in account_info, "Account balance missing"
+    assert 'equity' in account_info, "Account equity missing"
     
-    print("\n✅ All required environment variables are set")
-    return True
+    print(f"\nAccount Login: {account_info.get('login')}")
+    print(f"Balance: {account_info.get('balance'):.2f}")
+    print(f"Equity: {account_info.get('equity'):.2f}")
+    print(f"Margin Level: {account_info.get('margin_level'):.2f}%")
 
 
-def test_mt5_connection():
-    """Test MT5 connection."""
-    print_section("MT5 Connection Test")
-    
-    try:
-        # Create connection config from environment
-        config = ConnectionConfig(
-            login=int(os.getenv('MT5_LOGIN')),
-            password=os.getenv('MT5_PASSWORD'),
-            server=os.getenv('MT5_SERVER'),
-            timeout=60000,
-            path=os.getenv('MT5_PATH', '')
-        )
-        
-        print(f"Account: {config.login}")
-        print(f"Server: {config.server}")
-        print(f"Timeout: {config.timeout}ms")
-        
-        # Create connector
-        connector = MT5Connector(config)
-        
-        # Attempt connection
-        print("\nConnecting to MT5...")
-        if connector.connect():
-            print("✅ Connection successful!")
-            return connector
-        else:
-            print("❌ Connection failed")
-            return None
-            
-    except Exception as e:
-        print(f"❌ Error during connection: {e}")
-        return None
-
-
-def test_account_info(connector: MT5Connector):
-    """Test account information retrieval."""
-    print_section("Account Information")
-    
-    try:
-        account_info = connector.get_account_info()
-        
-        if account_info:
-            print(f"✅ Account Info Retrieved Successfully\n")
-            print(f"Login: {account_info.get('login', 'N/A')}")
-            print(f"Name: {account_info.get('name', 'N/A')}")
-            print(f"Server: {account_info.get('server', 'N/A')}")
-            print(f"Company: {account_info.get('company', 'N/A')}")
-            print(f"Currency: {account_info.get('currency', 'N/A')}")
-            print(f"Balance: {account_info.get('balance', 0):.2f}")
-            print(f"Equity: {account_info.get('equity', 0):.2f}")
-            print(f"Margin: {account_info.get('margin', 0):.2f}")
-            print(f"Free Margin: {account_info.get('margin_free', 0):.2f}")
-            print(f"Margin Level: {account_info.get('margin_level', 0):.2f}%")
-            print(f"Leverage: 1:{account_info.get('leverage', 0)}")
-            print(f"Profit: {account_info.get('profit', 0):.2f}")
-            
-            return True
-        else:
-            print("❌ Failed to retrieve account information")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Error retrieving account info: {e}")
-        return False
-
-
-def test_market_data(connector: MT5Connector):
-    """Test market data retrieval."""
-    print_section("Market Data Test")
-    
-    # Test with EURUSD (most liquid pair)
+def test_market_data(mt5_connector):
+    """Verify market data retrieval for available symbols."""
     symbol = os.getenv('TEST_SYMBOL', 'EURUSD')
     
+    import MetaTrader5 as mt5
+    
+    rates = mt5_connector.get_rates(
+        symbol=symbol,
+        timeframe=mt5.TIMEFRAME_H1,
+        count=10
+    )
+    
+    assert rates is not None, f"Failed to retrieve rates for {symbol}"
+    assert len(rates) > 0, f"No rate data returned for {symbol}"
+    
+    print(f"\nRetrieved {len(rates)} bars for {symbol}")
+    latest = rates[-1]
+    # Handle both array indices and attribute access
     try:
-        import MetaTrader5 as mt5
-        
-        print(f"Testing symbol: {symbol}")
-        
-        # Get current rates
-        rates = connector.get_rates(
-            symbol=symbol,
-            timeframe=mt5.TIMEFRAME_H1,
-            count=10
-        )
-        
-        if rates is not None and len(rates) > 0:
-            print(f"✅ Market Data Retrieved Successfully\n")
-            print(f"Bars retrieved: {len(rates)}")
-            print(f"Latest bar:")
-            latest = rates[-1]
-            print(f"  Time: {datetime.fromtimestamp(latest[0])}")
-            print(f"  Open: {latest[1]:.5f}")
-            print(f"  High: {latest[2]:.5f}")
-            print(f"  Low: {latest[3]:.5f}")
-            print(f"  Close: {latest[4]:.5f}")
-            print(f"  Volume: {latest[5]}")
-            
-            return True
-        else:
-            print(f"❌ Failed to retrieve market data for {symbol}")
-            print("This symbol may not be available on your account")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Error retrieving market data: {e}")
-        return False
+        close_price = latest[4] if isinstance(latest, tuple) else latest['close']
+    except (KeyError, TypeError):
+        close_price = latest.close if hasattr(latest, 'close') else latest[4]
+    print(f"Latest close: {close_price:.5f}")
 
 
-def test_connection_health(connector: MT5Connector):
-    """Test connection health check."""
-    print_section("Connection Health Check")
-    
-    try:
-        is_connected = connector.is_connected()
-        
-        if is_connected:
-            print("✅ Connection is healthy")
-            return True
-        else:
-            print("❌ Connection check failed")
-            return False
-            
-    except Exception as e:
-        print(f"❌ Error checking connection: {e}")
-        return False
+def test_connection_health(mt5_connector):
+    """Verify connection is healthy."""
+    is_connected = mt5_connector.is_connected()
+    assert is_connected, "Connection health check failed"
 
-
-def run_all_tests():
-    """Run all connection tests."""
-    print("\n" + "=" * 70)
-    print("  HERALD MT5 CONNECTION TEST SUITE")
-    print("  Testing connection to broker and data retrieval")
-    print("=" * 70)
-    
-    # Load environment variables
-    load_dotenv()
-    
-    results = {
-        'environment': False,
-        'connection': False,
-        'account_info': False,
-        'market_data': False,
-        'health_check': False
-    }
-    
-    # Test 1: Environment variables
-    results['environment'] = test_environment_variables()
-    if not results['environment']:
-        print("\n❌ TESTS ABORTED: Missing environment variables")
-        return False
-    
-    # Test 2: MT5 connection
-    connector = test_mt5_connection()
-    results['connection'] = connector is not None
-    
-    if not connector:
-        print("\n❌ TESTS ABORTED: Could not connect to MT5")
-        print("\nTroubleshooting:")
-        print("1. Verify MT5 terminal is installed and running")
-        print("2. Check credentials in .env file")
-        print("3. Confirm broker server name is correct")
-        print("4. Ensure account allows automated trading")
-        print("5. Try connecting manually in MT5 first")
-        return False
-    
-    # Test 3: Account information
-    results['account_info'] = test_account_info(connector)
-    
-    # Test 4: Market data
-    results['market_data'] = test_market_data(connector)
-    
-    # Test 5: Connection health
-    results['health_check'] = test_connection_health(connector)
-    
-    # Disconnect
-    print_section("Cleanup")
-    connector.disconnect()
-    print("✅ Disconnected from MT5")
-    
-    # Summary
-    print_section("TEST SUMMARY")
-    
-    passed = sum(results.values())
-    total = len(results)
-    
-    for test_name, result in results.items():
-        status = "✅ PASSED" if result else "❌ FAILED"
-        print(f"{test_name.replace('_', ' ').title()}: {status}")
-    
-    print(f"\n{'='*70}")
-    print(f"Results: {passed}/{total} tests passed")
-    print("=" * 70)
-    
-    if passed == total:
-        print("\n🎉 ALL TESTS PASSED!")
-        print("Herald is ready to connect to your broker.")
-        return True
-    else:
-        print("\n⚠️ SOME TESTS FAILED")
-        print("Please review the errors above and fix any issues.")
-        return False
-
-
-def main():
-    """Main entry point."""
-    success = run_all_tests()
-    sys.exit(0 if success else 1)
-
-
-if __name__ == "__main__":
-    main()

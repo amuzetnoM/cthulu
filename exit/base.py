@@ -1,7 +1,7 @@
 """
 Base Exit Strategy Module
 
-Abstract base class for all exit strategies per build_plan.md Phase 2 specifications.
+Abstract base class for all exit strategies.
 """
 
 import logging
@@ -10,13 +10,13 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from position.manager import PositionInfo
+from herald.position.manager import PositionInfo
 
 
 @dataclass
 class ExitSignal:
     """
-    Exit signal structure per build_plan.md specifications.
+    Exit signal structure.
     
     Attributes:
         ticket: Position ticket to exit

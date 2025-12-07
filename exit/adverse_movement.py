@@ -1,7 +1,7 @@
 """
 Adverse Movement Exit Strategy
 
-Emergency exit during flash crashes or extreme adverse movements per build_plan.md.
+Emergency exit during flash crashes or extreme adverse movements.
 """
 
 import logging
@@ -9,8 +9,8 @@ from typing import Dict, Any, Optional, Deque
 from datetime import datetime, timedelta
 from collections import deque
 
-from exit.base import ExitStrategy, ExitSignal
-from position.manager import PositionInfo
+from .base import ExitStrategy, ExitSignal
+from herald.position.manager import PositionInfo
 
 
 class AdverseMovementExit(ExitStrategy):

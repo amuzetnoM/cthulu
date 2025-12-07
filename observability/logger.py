@@ -1,7 +1,7 @@
 """
 Logging Module
 
-Structured logging configuration per build_plan.md.
+Structured logging configuration.
 JSON format for production, human-readable for development.
 """
 

@@ -1,7 +1,7 @@
 """
 Herald Autonomous Trading System
 
-Main orchestrator implementing Phase 2 autonomous trading loop per build_plan.md.
+Main orchestrator implementing the Phase 2 autonomous trading loop.
 """
 
 import sys
@@ -12,36 +12,36 @@ import argparse
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-import MetaTrader5 as mt5
+from herald.connector.mt5_connector import mt5
 import pandas as pd
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
 
-from connector.mt5_connector import MT5Connector, ConnectionConfig
-from data.layer import DataLayer
-from strategy.base import Strategy, SignalType
-from execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
-from risk.manager import RiskManager, RiskLimits
-from position.manager import PositionManager
-from persistence.database import Database, TradeRecord, SignalRecord
-from observability.logger import setup_logger
-from observability.metrics import MetricsCollector
+from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
+from herald.data.layer import DataLayer
+from herald.strategy.base import Strategy, SignalType
+from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
+from herald.risk.manager import RiskManager, RiskLimits
+from herald.position.manager import PositionManager
+from herald.persistence.database import Database, TradeRecord, SignalRecord
+from herald.observability.logger import setup_logger
+from herald.observability.metrics import MetricsCollector
 
 # Exit strategies
-from exit.trailing_stop import TrailingStop
-from exit.time_based import TimeBasedExit
-from exit.profit_target import ProfitTargetExit
-from exit.adverse_movement import AdverseMovementExit
+from herald.exit.trailing_stop import TrailingStop
+from herald.exit.time_based import TimeBasedExit
+from herald.exit.profit_target import ProfitTargetExit
+from herald.exit.adverse_movement import AdverseMovementExit
 
 # Indicators
-from indicators.rsi import RSI
-from indicators.macd import MACD
-from indicators.bollinger import BollingerBands
-from indicators.stochastic import Stochastic
-from indicators.adx import ADX
+from herald.indicators.rsi import RSI
+from herald.indicators.macd import MACD
+from herald.indicators.bollinger import BollingerBands
+from herald.indicators.stochastic import Stochastic
+from herald.indicators.adx import ADX
 
 
 # Global shutdown flag
@@ -124,7 +124,7 @@ def load_strategy(strategy_config: Dict[str, Any]) -> Strategy:
     Returns:
         Configured strategy instance
     """
-    from strategy.sma_crossover import SmaCrossover
+    from herald.strategy.sma_crossover import SmaCrossover
     
     strategy_type = strategy_config['type'].lower()
     
@@ -179,7 +179,7 @@ def load_exit_strategies(exit_configs: Dict[str, Any]) -> List:
 
 
 def main():
-    """Main autonomous trading loop per build_plan.md Phase 2."""
+    """Main autonomous trading loop for Phase 2."""
     
     # Load environment variables from .env
     from dotenv import load_dotenv
@@ -187,15 +187,24 @@ def main():
     load_dotenv()
     
     # Parse arguments
+    epilog = (
+        "Examples:\n"
+        "  herald --config config.json --log-level DEBUG\n"
+        "  herald --config ./configs/prod.json --dry-run --log-level INFO"
+    )
+
     parser = argparse.ArgumentParser(
-        description=f"Herald Autonomous Trading System v{__version__}",
+        description=f"Herald — Adaptive Trading Intelligence (v{__version__})",
+        epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument('--config', type=str, required=True, help="Path to config file")
+    parser.add_argument('--config', type=str, required=True, help="Path to JSON config file")
     parser.add_argument('--log-level', type=str, default='INFO', 
+                       choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
                        help="Logging level (DEBUG, INFO, WARNING, ERROR)")
     parser.add_argument('--dry-run', action='store_true', 
-                       help="Dry run mode (no real orders)")
+                       help="Dry run mode (simulate orders without placing them)")
+    parser.add_argument('--version', action='version', version=f"Herald {__version__}")
     args = parser.parse_args()
     
     # Setup logging

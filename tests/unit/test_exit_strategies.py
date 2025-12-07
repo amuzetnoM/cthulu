@@ -14,14 +14,14 @@ class TestExitDecision(unittest.TestCase):
     def test_exit_decision_import(self):
         """Test that ExitDecision can be imported."""
         try:
-            from exit.exit_manager import ExitDecision
+            from herald.exit.exit_manager import ExitDecision
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import ExitDecision from exit.exit_manager")
     
     def test_exit_decision_creation(self):
         """Test creating an ExitDecision instance."""
-        from exit.exit_manager import ExitDecision
+        from herald.exit.exit_manager import ExitDecision
         
         decision = ExitDecision(
             should_exit=True,
@@ -42,14 +42,14 @@ class TestStopLossExit(unittest.TestCase):
     def test_stop_loss_import(self):
         """Test that StopLossExit can be imported."""
         try:
-            from exit.stop_loss import StopLossExit
+            from herald.exit.stop_loss import StopLossExit
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import StopLossExit from exit.stop_loss")
     
     def test_stop_loss_initialization(self):
         """Test StopLossExit initialization."""
-        from exit.stop_loss import StopLossExit
+        from herald.exit.stop_loss import StopLossExit
         
         strategy = StopLossExit(stop_loss_pct=0.02)
         
@@ -58,8 +58,8 @@ class TestStopLossExit(unittest.TestCase):
     
     def test_stop_loss_triggered(self):
         """Test stop loss triggering on losing position."""
-        from exit.stop_loss import StopLossExit
-        from position.position_manager import PositionInfo
+        from herald.exit.stop_loss import StopLossExit
+        from herald.position.manager import PositionInfo
         
         strategy = StopLossExit(stop_loss_pct=0.02)
         
@@ -68,10 +68,10 @@ class TestStopLossExit(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.0750,  # 2.27% loss
             open_time=datetime.now(),
-            position_type="BUY",
+            side="BUY",
             stop_loss=1.0780
         )
         
@@ -83,8 +83,8 @@ class TestStopLossExit(unittest.TestCase):
     
     def test_stop_loss_not_triggered(self):
         """Test stop loss not triggering on profitable position."""
-        from exit.stop_loss import StopLossExit
-        from position.position_manager import PositionInfo
+        from herald.exit.stop_loss import StopLossExit
+        from herald.position.manager import PositionInfo
         
         strategy = StopLossExit(stop_loss_pct=0.02)
         
@@ -93,10 +93,10 @@ class TestStopLossExit(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,  # Profit
             open_time=datetime.now(),
-            position_type="BUY",
+            side="BUY",
             stop_loss=1.0780
         )
         
@@ -111,14 +111,14 @@ class TestTakeProfitExit(unittest.TestCase):
     def test_take_profit_import(self):
         """Test that TakeProfitExit can be imported."""
         try:
-            from exit.take_profit import TakeProfitExit
+            from herald.exit.take_profit import TakeProfitExit
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import TakeProfitExit from exit.take_profit")
     
     def test_take_profit_initialization(self):
         """Test TakeProfitExit initialization."""
-        from exit.take_profit import TakeProfitExit
+        from herald.exit.take_profit import TakeProfitExit
         
         strategy = TakeProfitExit(take_profit_pct=0.03)
         
@@ -127,8 +127,8 @@ class TestTakeProfitExit(unittest.TestCase):
     
     def test_take_profit_triggered(self):
         """Test take profit triggering on winning position."""
-        from exit.take_profit import TakeProfitExit
-        from position.position_manager import PositionInfo
+        from herald.exit.take_profit import TakeProfitExit
+        from herald.position.manager import PositionInfo
         
         strategy = TakeProfitExit(take_profit_pct=0.03)
         
@@ -137,10 +137,10 @@ class TestTakeProfitExit(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1350,  # 3.18% profit
             open_time=datetime.now(),
-            position_type="BUY",
+            side="BUY",
             take_profit=1.1330
         )
         
@@ -152,8 +152,8 @@ class TestTakeProfitExit(unittest.TestCase):
     
     def test_take_profit_not_triggered(self):
         """Test take profit not triggering when target not reached."""
-        from exit.take_profit import TakeProfitExit
-        from position.position_manager import PositionInfo
+        from herald.exit.take_profit import TakeProfitExit
+        from herald.position.manager import PositionInfo
         
         strategy = TakeProfitExit(take_profit_pct=0.03)
         
@@ -162,10 +162,10 @@ class TestTakeProfitExit(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1020,  # Only 0.18% profit
             open_time=datetime.now(),
-            position_type="BUY",
+            side="BUY",
             take_profit=1.1330
         )
         
@@ -180,14 +180,14 @@ class TestTrailingStopExit(unittest.TestCase):
     def test_trailing_stop_import(self):
         """Test that TrailingStopExit can be imported."""
         try:
-            from exit.trailing_stop import TrailingStopExit
+            from herald.exit.trailing_stop import TrailingStopExit
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import TrailingStopExit from exit.trailing_stop")
     
     def test_trailing_stop_initialization(self):
         """Test TrailingStopExit initialization."""
-        from exit.trailing_stop import TrailingStopExit
+        from herald.exit.trailing_stop import TrailingStopExit
         
         strategy = TrailingStopExit(trail_distance=0.015)
         
@@ -196,8 +196,8 @@ class TestTrailingStopExit(unittest.TestCase):
     
     def test_trailing_stop_adjustment(self):
         """Test trailing stop adjusts as price moves favorably."""
-        from exit.trailing_stop import TrailingStopExit
-        from position.position_manager import PositionInfo
+        from herald.exit.trailing_stop import TrailingStopExit
+        from herald.position.manager import PositionInfo
         
         strategy = TrailingStopExit(trail_distance=0.015)
         
@@ -206,10 +206,10 @@ class TestTrailingStopExit(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1200,
             open_time=datetime.now(),
-            position_type="BUY",
+            side="BUY",
             stop_loss=1.0850
         )
         
@@ -226,14 +226,14 @@ class TestTimeBasedExit(unittest.TestCase):
     def test_time_based_import(self):
         """Test that TimeBasedExit can be imported."""
         try:
-            from exit.time_based import TimeBasedExit
+            from herald.exit.time_based import TimeBasedExit
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import TimeBasedExit from exit.time_based")
     
     def test_time_based_initialization(self):
         """Test TimeBasedExit initialization."""
-        from exit.time_based import TimeBasedExit
+        from herald.exit.time_based import TimeBasedExit
         
         strategy = TimeBasedExit(max_hold_hours=24)
         
@@ -242,8 +242,8 @@ class TestTimeBasedExit(unittest.TestCase):
     
     def test_time_based_triggered(self):
         """Test time-based exit triggering after hold period."""
-        from exit.time_based import TimeBasedExit
-        from position.position_manager import PositionInfo
+        from herald.exit.time_based import TimeBasedExit
+        from herald.position.manager import PositionInfo
         
         strategy = TimeBasedExit(max_hold_hours=24)
         
@@ -252,10 +252,10 @@ class TestTimeBasedExit(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now() - timedelta(hours=25),
-            position_type="BUY"
+            side="BUY"
         )
         
         decision = strategy.should_exit(position)
@@ -266,8 +266,8 @@ class TestTimeBasedExit(unittest.TestCase):
     
     def test_time_based_not_triggered(self):
         """Test time-based exit not triggering before hold period."""
-        from exit.time_based import TimeBasedExit
-        from position.position_manager import PositionInfo
+        from herald.exit.time_based import TimeBasedExit
+        from herald.position.manager import PositionInfo
         
         strategy = TimeBasedExit(max_hold_hours=24)
         
@@ -276,10 +276,10 @@ class TestTimeBasedExit(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now() - timedelta(hours=1),
-            position_type="BUY"
+            side="BUY"
         )
         
         decision = strategy.should_exit(position)
@@ -293,14 +293,14 @@ class TestExitStrategyManager(unittest.TestCase):
     def test_exit_manager_import(self):
         """Test that ExitStrategyManager can be imported."""
         try:
-            from exit.exit_manager import ExitStrategyManager
+            from herald.exit.exit_manager import ExitStrategyManager
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import ExitStrategyManager from exit.exit_manager")
     
     def test_exit_manager_initialization(self):
         """Test ExitStrategyManager initialization."""
-        from exit.exit_manager import ExitStrategyManager
+        from herald.exit.exit_manager import ExitStrategyManager
         
         manager = ExitStrategyManager()
         
@@ -308,9 +308,9 @@ class TestExitStrategyManager(unittest.TestCase):
     
     def test_exit_manager_register_strategy(self):
         """Test registering exit strategies."""
-        from exit.exit_manager import ExitStrategyManager
-        from exit.stop_loss import StopLossExit
-        from exit.take_profit import TakeProfitExit
+        from herald.exit.exit_manager import ExitStrategyManager
+        from herald.exit.stop_loss import StopLossExit
+        from herald.exit.take_profit import TakeProfitExit
         
         manager = ExitStrategyManager()
         
@@ -321,10 +321,10 @@ class TestExitStrategyManager(unittest.TestCase):
     
     def test_exit_manager_priority_order(self):
         """Test that exit decisions are evaluated in priority order."""
-        from exit.exit_manager import ExitStrategyManager
-        from exit.stop_loss import StopLossExit
-        from exit.take_profit import TakeProfitExit
-        from position.position_manager import PositionInfo
+        from herald.exit.exit_manager import ExitStrategyManager
+        from herald.exit.stop_loss import StopLossExit
+        from herald.exit.take_profit import TakeProfitExit
+        from herald.position.manager import PositionInfo
         
         manager = ExitStrategyManager()
         manager.register(TakeProfitExit(take_profit_pct=0.03))  # Priority 2
@@ -335,10 +335,10 @@ class TestExitStrategyManager(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.0750,  # Loss
             open_time=datetime.now(),
-            position_type="BUY",
+            side="BUY",
             stop_loss=1.0780
         )
         

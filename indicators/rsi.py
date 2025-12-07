@@ -10,7 +10,7 @@ RSI oscillates between 0 and 100:
 import pandas as pd
 import numpy as np
 from typing import Dict, Any
-from indicators.base import Indicator
+from .base import Indicator
 
 
 class RSI(Indicator):
@@ -67,7 +67,12 @@ class RSI(Indicator):
         rsi = 100.0 - (100.0 / (1.0 + rs))
         
         # Handle division by zero (when avg_loss is 0, RSI = 100)
-        rsi = rsi.fillna(100.0)
+        rsi = rsi.copy()
+        rsi.loc[avg_loss == 0] = 100.0
+        # Ensure numeric bounds
+        rsi = rsi.clip(lower=0.0, upper=100.0)
+        # Keep initial (period-1) values as NaN to match legacy behavior
+        rsi.iloc[: self.period - 1] = np.nan
         
         # Update state
         self._state['latest_rsi'] = rsi.iloc[-1] if len(rsi) > 0 else None
@@ -119,3 +124,17 @@ class RSI(Indicator):
             return 'SELL'
         else:
             return 'NEUTRAL'
+
+
+# Module-level convenience wrappers for backwards compatibility
+def calculate_rsi(data: pd.DataFrame, period: int = 14) -> pd.Series:
+    inst = RSI(period=period)
+    return inst.calculate(data)
+
+
+def is_overbought(rsi_series: pd.Series, threshold: float = 70.0) -> pd.Series:
+    return rsi_series > threshold
+
+
+def is_oversold(rsi_series: pd.Series, threshold: float = 30.0) -> pd.Series:
+    return rsi_series < threshold

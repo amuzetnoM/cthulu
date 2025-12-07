@@ -14,23 +14,23 @@ class TestPositionInfo(unittest.TestCase):
     def test_position_info_import(self):
         """Test that PositionInfo can be imported."""
         try:
-            from position.position_manager import PositionInfo
+            from herald.position.manager import PositionInfo
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import PositionInfo from position.position_manager")
     
     def test_position_info_creation(self):
         """Test creating a PositionInfo instance."""
-        from position.position_manager import PositionInfo
+        from herald.position.manager import PositionInfo
         
         pos = PositionInfo(
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         self.assertEqual(pos.ticket, 12345)
@@ -41,17 +41,17 @@ class TestPositionInfo(unittest.TestCase):
     
     def test_position_info_unrealized_pnl(self):
         """Test unrealized P&L calculation."""
-        from position.position_manager import PositionInfo
+        from herald.position.manager import PositionInfo
         
         # Buy position with profit
         pos_buy = PositionInfo(
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         pnl_buy = pos_buy.calculate_unrealized_pnl()
@@ -62,10 +62,10 @@ class TestPositionInfo(unittest.TestCase):
             ticket=12346,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1050,
+            open_price=1.1050,
             current_price=1.1000,
             open_time=datetime.now(),
-            position_type="SELL"
+            side="SELL"
         )
         
         pnl_sell = pos_sell.calculate_unrealized_pnl()
@@ -78,14 +78,14 @@ class TestPositionManager(unittest.TestCase):
     def test_position_manager_import(self):
         """Test that PositionManager can be imported."""
         try:
-            from position.position_manager import PositionManager
+            from herald.position.manager import PositionManager
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import PositionManager from position.position_manager")
     
     def test_position_manager_initialization(self):
         """Test PositionManager initialization."""
-        from position.position_manager import PositionManager
+        from herald.position.manager import PositionManager
         
         manager = PositionManager()
         
@@ -94,7 +94,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_add_position(self):
         """Test adding a position to the manager."""
-        from position.position_manager import PositionManager, PositionInfo
+        from herald.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -102,10 +102,10 @@ class TestPositionManager(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         manager.add_position(pos)
@@ -115,7 +115,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_remove_position(self):
         """Test removing a position from the manager."""
-        from position.position_manager import PositionManager, PositionInfo
+        from herald.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -123,10 +123,10 @@ class TestPositionManager(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         manager.add_position(pos)
@@ -137,7 +137,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_update_position(self):
         """Test updating position current price."""
-        from position.position_manager import PositionManager, PositionInfo
+        from herald.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -145,10 +145,10 @@ class TestPositionManager(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         manager.add_position(pos)
@@ -161,7 +161,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_get_positions_by_symbol(self):
         """Test filtering positions by symbol."""
-        from position.position_manager import PositionManager, PositionInfo
+        from herald.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -169,20 +169,20 @@ class TestPositionManager(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         pos2 = PositionInfo(
             ticket=12346,
             symbol="GBPUSD",
             volume=1.0,
-            entry_price=1.2500,
+            open_price=1.2500,
             current_price=1.2550,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         manager.add_position(pos1)
@@ -191,10 +191,44 @@ class TestPositionManager(unittest.TestCase):
         eurusd_positions = manager.get_positions_by_symbol("EURUSD")
         self.assertEqual(len(eurusd_positions), 1)
         self.assertEqual(eurusd_positions[0].symbol, "EURUSD")
+
+    def test_legacy_constructor_entry_price_and_position_type(self):
+        """Test that legacy constructor args entry_price and position_type map to open_price and side respectively."""
+        from herald.position.manager import PositionInfo
+
+        pos = PositionInfo(
+            ticket=100,
+            symbol="EURUSD",
+            volume=0.5,
+            _legacy_entry_price=1.2000,
+            current_price=1.2010,
+            open_time=datetime.now(),
+            _legacy_position_type="BUY"
+        )
+
+        self.assertEqual(pos.open_price, 1.2000)
+        self.assertEqual(pos.side, "BUY")
+
+    def test_legacy_prefixed_constructor(self):
+        """Test that `_legacy_entry_price` and `_legacy_position_type` constructor args map correctly."""
+        from herald.position.manager import PositionInfo
+
+        pos = PositionInfo(
+            ticket=101,
+            symbol="EURUSD",
+            volume=0.25,
+            _legacy_entry_price=1.3000,
+            current_price=1.3050,
+            open_time=datetime.now(),
+            _legacy_position_type="SELL"
+        )
+
+        self.assertEqual(pos.open_price, 1.3000)
+        self.assertEqual(pos.side, "SELL")
     
     def test_total_unrealized_pnl(self):
         """Test calculating total unrealized P&L across all positions."""
-        from position.position_manager import PositionManager, PositionInfo
+        from herald.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -202,20 +236,20 @@ class TestPositionManager(unittest.TestCase):
             ticket=12345,
             symbol="EURUSD",
             volume=1.0,
-            entry_price=1.1000,
+            open_price=1.1000,
             current_price=1.1050,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         pos2 = PositionInfo(
             ticket=12346,
             symbol="GBPUSD",
             volume=1.0,
-            entry_price=1.2500,
+            open_price=1.2500,
             current_price=1.2450,
             open_time=datetime.now(),
-            position_type="BUY"
+            side="BUY"
         )
         
         manager.add_position(pos1)

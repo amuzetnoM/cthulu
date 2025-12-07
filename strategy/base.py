@@ -1,7 +1,7 @@
 """
 Strategy Module
 
-Defines base strategy interface and signal structures following build_plan.md.
+Defines base strategy interface and signal structures.
 Provides pluggable strategy architecture with standardized signal generation.
 """
 
@@ -25,7 +25,7 @@ class SignalType(Enum):
 @dataclass
 class Signal:
     """
-    Trading signal structure following build_plan.md contract.
+    Trading signal structure.
     
     Attributes:
         id: Unique signal identifier
@@ -80,7 +80,7 @@ class Strategy(ABC):
     Base strategy interface.
     
     All trading strategies must inherit from this class and implement
-    the required methods per build_plan.md specifications.
+    the required methods.
     """
     
     def __init__(self, name: str, config: Dict[str, Any]):

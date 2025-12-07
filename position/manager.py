@@ -1,24 +1,24 @@
 """
 Position Manager Module
 
-Real-time position tracking, monitoring, and lifecycle management per build_plan.md Phase 2.
+Real-time position tracking, monitoring, and lifecycle management.
 Integrates with ExecutionEngine for position data and RiskManager for exposure limits.
 """
 
-import MetaTrader5 as mt5
+from herald.connector.mt5_connector import mt5
 import logging
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from execution.engine import ExecutionResult, ExecutionEngine, OrderType, OrderStatus, OrderRequest
-from strategy.base import SignalType
+from herald.execution.engine import ExecutionResult, ExecutionEngine, OrderType, OrderStatus, OrderRequest
+from herald.strategy.base import SignalType
 
 
 @dataclass
 class PositionInfo:
     """
-    Position tracking structure per build_plan.md specifications.
+    Position tracking structure.
     
     Attributes:
         ticket: MT5 position ticket
@@ -40,12 +40,12 @@ class PositionInfo:
     """
     ticket: int
     symbol: str
-    side: str
     volume: float
-    open_price: float
     open_time: datetime
-    stop_loss: float
-    take_profit: float
+    open_price: Optional[float] = None
+    stop_loss: float = 0.0
+    take_profit: float = 0.0
+    side: Optional[str] = None
     current_price: float = 0.0
     unrealized_pnl: float = 0.0
     realized_pnl: float = 0.0
@@ -53,6 +53,9 @@ class PositionInfo:
     swap: float = 0.0
     magic_number: int = 0
     comment: str = ""
+    # Backwards compatible fields (constructor friendly) - keep after non-defaults
+    _legacy_entry_price: Optional[float] = None
+    _legacy_position_type: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
     
     def get_age_seconds(self) -> float:
@@ -80,12 +83,57 @@ class PositionInfo:
             
         return price_diff / pip_value if pip_value > 0 else 0.0
 
+    # Do not create constructor fields for legacy aliases to avoid dataclass/property conflicts
+
+    # Backward compatibility: alias entry_price <-> open_price
+    @property
+    def entry_price(self) -> Optional[float]:
+        return self.open_price
+
+    @entry_price.setter
+    def entry_price(self, price: Optional[float]):
+        if price is not None:
+            self.open_price = price
+
+    # Backward compatibility: alias position_type <-> side
+    @property
+    def position_type(self) -> Optional[str]:
+        return self.side
+
+    @position_type.setter
+    def position_type(self, pt: Optional[str]):
+        if pt is not None:
+            self.side = pt
+
+    def calculate_unrealized_pnl(self) -> float:
+        """Backward-compatible helper: compute unrealized profit/loss (basic)."""
+        if self.side == "BUY":
+            return (self.current_price - self.open_price) * self.volume
+        else:
+            return (self.open_price - self.current_price) * self.volume
+
+    def __post_init__(self):
+        # If legacy alias fields were used (entry_price/position_type), map them
+        # Map explicit legacy fields first
+        if getattr(self, 'entry_price', None) is not None and (self.open_price is None or self.open_price == 0.0):
+            self.open_price = getattr(self, 'entry_price')
+        if getattr(self, 'position_type', None) and not self.side:
+            self.side = getattr(self, 'position_type')
+
+        # Back-compat: map constructor-only legacy fields (prefixed with _legacy_)
+        if getattr(self, '_legacy_entry_price', None) is not None and (self.open_price is None or self.open_price == 0.0):
+            self.open_price = getattr(self, '_legacy_entry_price')
+            logging.getLogger("herald.position").warning("_legacy_entry_price used: prefer `open_price` in new code")
+        if getattr(self, '_legacy_position_type', None) and not self.side:
+            self.side = getattr(self, '_legacy_position_type')
+            logging.getLogger("herald.position").warning("_legacy_position_type used: prefer `side` in new code")
+
 
 class PositionManager:
     """
     Real-time position tracking and monitoring engine.
     
-    Responsibilities per build_plan.md:
+    Responsibilities:
     - Maintain real-time position registry synced with MT5
     - Calculate unrealized P&L continuously
     - Detect position modifications (SL/TP changes)
@@ -94,7 +142,7 @@ class PositionManager:
     - Reconcile with MT5 positions on reconnect
     """
     
-    def __init__(self, connector, execution_engine: ExecutionEngine):
+    def __init__(self, connector=None, execution_engine: Optional[ExecutionEngine]=None):
         """
         Initialize position manager.
         
@@ -147,8 +195,10 @@ class PositionManager:
                 ticket=pos.ticket,
                 symbol=pos.symbol,
                 side="BUY" if pos.type == mt5.ORDER_TYPE_BUY else "SELL",
+                _legacy_position_type="BUY" if pos.type == mt5.ORDER_TYPE_BUY else "SELL",
                 volume=pos.volume,
                 open_price=pos.price_open,
+                _legacy_entry_price=pos.price_open,
                 open_time=datetime.fromtimestamp(pos.time),
                 stop_loss=pos.sl if pos.sl > 0 else 0.0,
                 take_profit=pos.tp if pos.tp > 0 else 0.0,
@@ -179,6 +229,7 @@ class PositionManager:
     def monitor_positions(self) -> List[PositionInfo]:
         """
         Update all tracked positions with current prices and P&L.
+                        entry_price=pos.price_open,
         
         Returns:
             List of updated PositionInfo objects
@@ -246,6 +297,36 @@ class PositionManager:
         if symbol:
             return [p for p in self._positions.values() if p.symbol == symbol]
         return list(self._positions.values())
+
+    # Backwards compatible API: keep old method name used by tests
+    def get_positions_by_symbol(self, symbol: Optional[str] = None) -> List[PositionInfo]:
+        return self.get_positions(symbol)
+
+    def calculate_total_pnl(self) -> float:
+        """Return total unrealized P&L across all tracked positions."""
+        return sum(p.calculate_unrealized_pnl() for p in self._positions.values())
+
+    # Backwards-compatible helper methods for legacy tests or external code
+    def add_position(self, position: PositionInfo):
+        """Add a position to the manager (compat shim)."""
+        self._positions[position.ticket] = position
+        self._total_positions_opened += 1
+
+    def remove_position(self, ticket: int):
+        """Remove a position from the manager (compat shim)."""
+        if ticket in self._positions:
+            del self._positions[ticket]
+            self._total_positions_closed += 1
+
+    def get_all_positions(self) -> List[int]:
+        """Return a list of tracked position tickets for compatibility with legacy tests."""
+        return list(self._positions.keys())
+
+    def update_position(self, ticket: int, current_price: float = None):
+        """Update position fields (compat shim)."""
+        pos = self._positions.get(ticket)
+        if pos and current_price is not None:
+            pos.current_price = current_price
         
     def close_position(
         self,

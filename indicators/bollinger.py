@@ -8,7 +8,7 @@ Bands expand during volatile periods and contract during calm periods.
 import pandas as pd
 import numpy as np
 from typing import Dict, Any
-from indicators.base import Indicator
+from .base import Indicator
 
 
 class BollingerBands(Indicator):
@@ -58,11 +58,11 @@ class BollingerBands(Indicator):
         
         close = data['close']
         
-        # Calculate middle band (SMA)
-        middle_band = close.rolling(window=self.period).mean()
+        # Calculate middle band (SMA) with fallback to use min_periods=1 so initial rows are defined
+        middle_band = close.rolling(window=self.period, min_periods=1).mean()
         
-        # Calculate standard deviation
-        std = close.rolling(window=self.period).std()
+        # Calculate standard deviation with min_periods=1
+        std = close.rolling(window=self.period, min_periods=1).std().fillna(0)
         
         # Calculate upper and lower bands
         upper_band = middle_band + (std * self.std_dev)
@@ -180,3 +180,15 @@ class BollingerBands(Indicator):
             return 'SELL'
         else:
             return 'NEUTRAL'
+
+
+# Module-level wrappers for legacy API
+def calculate_bollinger_bands(data: pd.DataFrame, period: int = 20, std_dev: float = 2.0):
+    inst = BollingerBands(period=period, std_dev=std_dev)
+    res = inst.calculate(data)
+    return res['bb_upper'], res['bb_middle'], res['bb_lower']
+
+
+def detect_squeeze(upper_series: pd.Series, lower_series: pd.Series, threshold: float = 0.02):
+    width = (upper_series - lower_series) / upper_series
+    return width < threshold

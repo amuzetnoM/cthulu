@@ -1,5 +1,5 @@
 """Risk management module"""
 
-from risk.manager import RiskManager, RiskLimits
+from .manager import RiskManager, RiskLimits
 
 __all__ = ["RiskManager", "RiskLimits"]

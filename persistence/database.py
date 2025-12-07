@@ -1,7 +1,7 @@
 """
 Database Module
 
-Implements SQLite-based persistence for trades, signals, and metrics per build_plan.md.
+Implements SQLite-based persistence for trades, signals, and metrics.
 Provides historical retention and export capabilities.
 """
 
@@ -57,7 +57,7 @@ class Database:
     """
     SQLite database manager for trade and signal persistence.
     
-    Responsibilities per build_plan.md:
+    Responsibilities:
     - Store all trades, signals, and execution results
     - Provide query interface for analytics
     - Historical data retention

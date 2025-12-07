@@ -1,7 +1,7 @@
 """
 Database Initialization Script
 
-Creates SQLite database schema for Herald trading system per build_plan.md persistence requirements.
+Creates SQLite database schema for Herald trading system.
 Schemas: trades, orders, positions, signals, metrics
 """
 

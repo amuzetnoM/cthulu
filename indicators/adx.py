@@ -11,7 +11,7 @@ Components:
 import pandas as pd
 import numpy as np
 from typing import Dict, Any
-from indicators.base import Indicator
+from .base import Indicator
 
 
 class ADX(Indicator):
@@ -267,3 +267,16 @@ class ADX(Indicator):
             return 'SELL'
         else:
             return 'NEUTRAL'
+
+
+# Backwards-compatible helper functions
+def calculate_adx(data: pd.DataFrame, period: int = 14) -> pd.Series:
+    """Convenience wrapper: return ADX series."""
+    adx_inst = ADX(period=period)
+    result = adx_inst.calculate(data)
+    return result['adx']
+
+
+def is_strong_trend(adx_series: pd.Series, threshold: float = 25.0) -> pd.Series:
+    """Convenience wrapper: identify strong trend points in ADX series."""
+    return adx_series > threshold

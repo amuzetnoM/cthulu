@@ -1,7 +1,7 @@
 """
 Metrics Module
 
-Performance metrics collection and reporting per build_plan.md.
+Performance metrics collection and reporting.
 Tracks PnL, trades, win rate, Sharpe ratio, max drawdown.
 """
 
@@ -35,7 +35,7 @@ class MetricsCollector:
     """
     Metrics collection and calculation engine.
     
-    Tracks trading performance metrics per build_plan.md:
+    Tracks trading performance metrics:
     - PnL tracking (total, daily, per-symbol)
     - Win rate and profit factor
     - Sharpe ratio

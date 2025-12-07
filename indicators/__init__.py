@@ -4,12 +4,12 @@ Indicators Module
 Technical indicator library for trading signal generation.
 """
 
-from indicators.base import Indicator
-from indicators.rsi import RSI
-from indicators.macd import MACD
-from indicators.bollinger import BollingerBands
-from indicators.stochastic import Stochastic
-from indicators.adx import ADX
+from .base import Indicator
+from .rsi import RSI
+from .macd import MACD
+from .bollinger import BollingerBands
+from .stochastic import Stochastic
+from .adx import ADX
 
 __all__ = [
     "Indicator",

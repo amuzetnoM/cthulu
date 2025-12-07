@@ -5,7 +5,28 @@ Handles MetaTrader 5 terminal connection, session management, and health monitor
 Implements retry logic, rate limiting, and reconnection policies.
 """
 
-import MetaTrader5 as mt5
+try:
+    import MetaTrader5 as mt5  # type: ignore
+except Exception:
+    # Minimal stub of MetaTrader5 for testing and import-time resilience
+    class _Mt5Stub:
+        ORDER_TYPE_BUY = 0
+        ORDER_TYPE_SELL = 1
+        TRADE_ACTION_DEAL = 0
+        ORDER_TIME_GTC = 0
+        ORDER_FILLING_FOK = 3
+        TRADE_RETCODE_DONE = 10009
+
+        def initialize(self, *args, **kwargs):
+            return False
+
+        def shutdown(self):
+            return False
+
+        def last_error(self):
+            return {'code': 1, 'message': 'MT5 not available'}
+
+    mt5 = _Mt5Stub()
 import time
 import logging
 from typing import Optional, Dict, Any, List
@@ -31,7 +52,7 @@ class MT5Connector:
     """
     MetaTrader 5 connection manager with health checks and reconnection logic.
     
-    Provides reliable connection management following build_plan.md specifications:
+    Provides reliable connection management.
     - Automatic reconnection on connection loss
     - Health checks and session monitoring
     - Rate limiting and timeout handling

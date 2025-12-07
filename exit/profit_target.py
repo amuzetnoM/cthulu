@@ -1,15 +1,15 @@
 """
 Profit Target Exit Strategy
 
-Exits positions when reaching profit targets per build_plan.md.
+Exits positions when reaching profit targets.
 """
 
 import logging
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
-from exit.base import ExitStrategy, ExitSignal
-from position.manager import PositionInfo
+from .base import ExitStrategy, ExitSignal
+from herald.position.manager import PositionInfo
 
 
 class ProfitTargetExit(ExitStrategy):

@@ -4,11 +4,14 @@ Exit Strategy Module
 Exit strategy implementations for position management.
 """
 
-from exit.base import ExitStrategy, ExitSignal
-from exit.trailing_stop import TrailingStop
-from exit.time_based import TimeBasedExit
-from exit.profit_target import ProfitTargetExit
-from exit.adverse_movement import AdverseMovementExit
+from .base import ExitStrategy, ExitSignal
+from .trailing_stop import TrailingStop, TrailingStopExit
+from .time_based import TimeBasedExit
+from .profit_target import ProfitTargetExit
+from .adverse_movement import AdverseMovementExit
+from .stop_loss import StopLossExit
+from .take_profit import TakeProfitExit
+from .exit_manager import ExitDecision, ExitStrategyManager
 
 __all__ = [
     "ExitStrategy",
@@ -17,4 +20,8 @@ __all__ = [
     "TimeBasedExit",
     "ProfitTargetExit",
     "AdverseMovementExit",
+    "StopLossExit",
+    "TakeProfitExit",
+    "ExitDecision",
+    "ExitStrategyManager",
 ]

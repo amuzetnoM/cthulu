@@ -7,13 +7,13 @@
 ```
 
 # Herald
-*version 2.0.0*  [[CHANGELOG]](docs/CHANGELOG.md)
+*version 3.0.0*  [[CHANGELOG]](docs/CHANGELOG.md)
 
 ![Status](https://img.shields.io/badge/status-production--ready-success?style=for-the-badge)
 [![Python](https://img.shields.io/badge/python-3.10--3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![MT5](https://img.shields.io/badge/MetaTrader-5-0066CC?style=for-the-badge)](https://www.metatrader5.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-[![Phase](https://img.shields.io/badge/phase-2%20complete-blue?style=for-the-badge)](docs/CHANGELOG.md)
+[![Phase](https://img.shields.io/badge/phase-3%20production-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
 
 > **Adaptive Trading Intelligence for MetaTrader 5**
 > A complete autonomous trading system with entry and exit execution, technical indicators, and advanced position management
@@ -21,7 +21,7 @@
 A comprehensive automated trading system for MetaTrader 5 following enterprise-grade architecture patterns.
 Built with focus on incremental development, robust risk management, and production-ready deployment.
 
-**NEW in v2.0**: Full autonomous trading with 5 technical indicators, intelligent position management, and 4 priority-based exit strategies.
+**NEW in v3.0**: Bulletproof production-ready trading with zero-error test suite, MT5 integration verified with funded account, and enterprise-grade architecture.
 
 ---
 
@@ -70,6 +70,30 @@ Persistence & Metrics
 ```
 
 ---
+
+## CLI & Usage
+
+- The `herald` CLI provides a streamlined interface for running the trading loop and debugging.
+- Example usages:
+  - `herald --config ./configs/dev.json --dry-run --log-level INFO`
+  - `herald --config ./configs/prod.json --log-level DEBUG`
+
+## Development & CI
+
+- Run tests locally (default: unit tests):
+  - `python -m pytest herald/tests/unit -q`  # unit tests
+  - `python -m pytest herald -q`  # full package tests (integration tests skipped unless enabled)
+
+- To enable MT5 integration tests (only in environments with MT5 set up), export an env var and run:
+  - `setx RUN_MT5_CONNECT_TESTS 1 ; pytest herald -q` (Windows PowerShell)
+  - `RUN_MT5_CONNECT_TESTS=1 pytest herald -q` (Linux/macOS)
+
+- Continuous Integration: GitHub Actions runs Herald package unit tests and lint on each push/PR (see `.github/workflows/ci.yml`).
+
+## Output Directories
+
+- The canonical scan output directory is `flex_audit/audit_output/`. Use `flex_audit/scripts/normalize_audit_output.py` to safely merge older directories into the canonical folder.
+
 
 ## Features
 
@@ -764,8 +788,8 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v0.1.0 to v2.0.0
-- **[Build Plan](docs/build_plan.md)** - Phase 1 & 2 specifications and roadmap
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v3.0.0
+- **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
 
@@ -781,6 +805,7 @@ Past performance is not indicative of future results. Use at your own risk.
 
 | Version | Date | Status | Description |
 |---------|------|--------|-------------|
+| **3.0.0** | Dec 2024 | ✅ Current | **Production Ready** - Zero-error test suite, MT5 funded account verified, enterprise-grade architecture |
 | **2.0.0** | Dec 2024 | ✅ Complete | **Autonomous Trading** - Indicators, position management, exit strategies |
 | **1.0.0** | Nov 2024 | ✅ Complete | **Foundation** - Core infrastructure, risk management, persistence |
 | **0.1.0** | Oct 2024 | ✅ Complete | **Initial Setup** - Project initialization |

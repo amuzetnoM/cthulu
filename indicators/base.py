@@ -1,7 +1,7 @@
 """
 Base Indicator Module
 
-Abstract base class for all technical indicators per build_plan.md Phase 2 specifications.
+Abstract base class for all technical indicators.
 """
 
 import pandas as pd

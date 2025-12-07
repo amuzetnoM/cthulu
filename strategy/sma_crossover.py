@@ -1,16 +1,16 @@
 """
 Simple Moving Average Crossover Strategy
 
-Implementation of SMA crossover as defined in build_plan.md quick start.
+Implementation of SMA crossover strategy.
 Entry on crossovers, exit on opposite signals or stop loss/take profit.
 """
 
 import pandas as pd
-import MetaTrader5 as mt5
+from herald.connector.mt5_connector import mt5
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from strategy.base import Strategy, Signal, SignalType
+from herald.strategy.base import Strategy, Signal, SignalType
 
 
 class SmaCrossover(Strategy):

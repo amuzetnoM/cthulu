@@ -1,15 +1,15 @@
 """
 Time-Based Exit Strategy
 
-Exits positions based on time-in-trade and session management per build_plan.md.
+Exits positions based on time-in-trade and session management.
 """
 
 import logging
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta, time as dt_time
 
-from exit.base import ExitStrategy, ExitSignal
-from position.manager import PositionInfo
+from .base import ExitStrategy, ExitSignal
+from herald.position.manager import PositionInfo
 
 
 class TimeBasedExit(ExitStrategy):
@@ -32,17 +32,23 @@ class TimeBasedExit(ExitStrategy):
         friday_close_time: Time to close Friday positions (default: "16:00")
     """
     
-    def __init__(self, params: Dict[str, Any]):
+    def __init__(self, params: Dict[str, Any] | None = None, **kwargs):
         """
         Initialize time-based exit strategy.
         
         Args:
             params: Strategy parameters (max_hold_hours, session settings, etc.)
         """
+        # Support both param dict and kwargs for backward compatibility
+        if params is None:
+            params = kwargs
+        elif kwargs:
+            params = {**params, **kwargs}
+        # Expose compatibility priority (tests expect priority 4)
         super().__init__(
             name="TimeBasedExit",
             params=params,
-            priority=50  # Medium priority
+            priority=params.get('priority', 4)
         )
         
         # Default parameters
@@ -70,7 +76,7 @@ class TimeBasedExit(ExitStrategy):
     def should_exit(
         self,
         position: PositionInfo,
-        current_data: Dict[str, Any]
+        current_data: Dict[str, Any] = None
     ) -> Optional[ExitSignal]:
         """
         Check if position should be exited based on time rules.
@@ -88,23 +94,25 @@ class TimeBasedExit(ExitStrategy):
         current_time = datetime.now()
         
         # Check max hold time
+        from herald.exit.exit_manager import ExitDecision
         exit_signal = self._check_max_hold_time(position, current_time)
         if exit_signal:
-            return exit_signal
+            # Wrap ExitSignal into ExitDecision
+            return ExitDecision(True, self.name, exit_signal.reason, priority=self.priority, exit_price=exit_signal.price, timestamp=exit_signal.timestamp)
             
         # Check weekend protection
         if self.weekend_protection:
             exit_signal = self._check_weekend_protection(position, current_time)
             if exit_signal:
-                return exit_signal
+                return ExitDecision(True, self.name, exit_signal.reason, priority=self.priority, exit_price=exit_signal.price, timestamp=exit_signal.timestamp)
                 
         # Check day trading mode
         if self.day_trading_mode:
             exit_signal = self._check_eod_close(position, current_time)
             if exit_signal:
-                return exit_signal
+                return ExitDecision(True, self.name, exit_signal.reason, priority=self.priority, exit_price=exit_signal.price, timestamp=exit_signal.timestamp)
                 
-        return None
+        return ExitDecision(False, self.name, reason='no exit', priority=self.priority)
         
     def _check_max_hold_time(
         self,

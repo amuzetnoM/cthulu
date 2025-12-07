@@ -138,7 +138,7 @@ Press `Ctrl+C` to gracefully shut down. The bot will:
 
 - **ARCHITECTURE.md** - System design and data flow
 - **CHANGELOG.md** - Version history
-- **development_log/build_plan.md** - Complete implementation plan
+- **development_log/build_plan.md** - Complete implementation plan (archival)
 
 ---
 

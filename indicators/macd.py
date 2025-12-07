@@ -11,7 +11,7 @@ Components:
 import pandas as pd
 import numpy as np
 from typing import Dict, Any
-from indicators.base import Indicator
+from .base import Indicator
 
 
 class MACD(Indicator):
@@ -147,10 +147,26 @@ class MACD(Indicator):
         histogram = self._state.get('latest_histogram')
         if histogram is None:
             return 'NEUTRAL'
-            
+
         if histogram > 0:
             return 'INCREASING'
         elif histogram < 0:
             return 'DECREASING'
         else:
             return 'NEUTRAL'
+
+
+# Backwards-compatible helper functions
+def calculate_macd(data: pd.DataFrame, fast: int = 12, slow: int = 26, signal_period: int = 9):
+    inst = MACD(fast_period=fast, slow_period=slow, signal_period=signal_period)
+    result = inst.calculate(data)
+    hist = result['histogram'].copy()
+    # Match test expectations: histogram returned without a name
+    hist.name = None
+    return result['macd'], result['signal'], hist
+
+
+def detect_crossover(macd_series: pd.Series, signal_series: pd.Series):
+    bullish = (macd_series > signal_series) & (macd_series.shift(1) <= signal_series.shift(1))
+    bearish = (macd_series < signal_series) & (macd_series.shift(1) >= signal_series.shift(1))
+    return bullish.fillna(False), bearish.fillna(False)

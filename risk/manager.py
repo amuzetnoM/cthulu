@@ -1,7 +1,7 @@
 """
 Risk Management Engine
 
-Implements position sizing, exposure limits, and trade approval logic per build_plan.md.
+Implements position sizing, exposure limits, and trade approval logic.
 Provides hard guards for maximum drawdown, daily limits, and emergency shutdown.
 """
 
@@ -9,7 +9,7 @@ import logging
 from typing import Optional, Dict, Any, Tuple
 from dataclasses import dataclass
 from datetime import date
-from strategy.base import Signal, SignalType
+from herald.strategy.base import Signal, SignalType
 
 
 @dataclass
@@ -29,7 +29,7 @@ class RiskManager:
     """
     Risk management and trade approval engine.
     
-    Responsibilities per build_plan.md:
+    Responsibilities:
     - Position sizing (fixed, percent, volatility-based)
     - Hard guards (exposure, drawdown, daily limits)
     - Trade approval workflow

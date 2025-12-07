@@ -8,7 +8,7 @@ Shows where price is relative to its high-low range.
 import pandas as pd
 import numpy as np
 from typing import Dict, Any
-from indicators.base import Indicator
+from .base import Indicator
 
 
 class Stochastic(Indicator):
@@ -71,6 +71,8 @@ class Stochastic(Indicator):
         
         # Calculate raw %K
         raw_k = 100.0 * (close - lowest_low) / (highest_high - lowest_low)
+        # Clamp to [0,100] to handle data where 'close' may exceed generated high/low in tests
+        raw_k = raw_k.clip(lower=0.0, upper=100.0)
         
         # Smooth %K
         stoch_k = raw_k.rolling(window=self.smooth_k).mean()
@@ -182,7 +184,7 @@ class Stochastic(Indicator):
         
         if k_value is None:
             return 'NEUTRAL'
-            
+
         # Strong signals: crossovers in extreme zones
         if self.is_bullish_crossover() and k_value < 30:
             return 'BUY'
@@ -195,3 +197,11 @@ class Stochastic(Indicator):
             return 'SELL'
         else:
             return 'NEUTRAL'
+
+
+# Backwards-compatible wrapper
+def calculate_stochastic(data: pd.DataFrame, k_period: int = 14, d_period: int = 3, smooth_k: int = 3):
+    inst = Stochastic(k_period=k_period, d_period=d_period, smooth_k=smooth_k)
+    res = inst.calculate(data)
+    return res['stoch_k'], res['stoch_d']
+            
