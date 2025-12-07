@@ -33,9 +33,10 @@ class SmaCrossover(Strategy):
         super().__init__("sma_crossover", config)
         
         # Strategy parameters
-        self.short_window = config.get('short_window', 20)
-        self.long_window = config.get('long_window', 50)
-        self.atr_period = config.get('atr_period', 14)
+        # Accept legacy aliases: fast_period, slow_period
+        self.short_window = config.get('short_window', config.get('fast_period', 20))
+        self.long_window = config.get('long_window', config.get('slow_period', 50))
+        self.atr_period = config.get('atr_period', config.get('atr', 14))
         self.atr_multiplier = config.get('atr_multiplier', 2.0)
         self.risk_reward_ratio = config.get('risk_reward_ratio', 2.0)
         

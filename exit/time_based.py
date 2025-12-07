@@ -94,25 +94,23 @@ class TimeBasedExit(ExitStrategy):
         current_time = datetime.now()
         
         # Check max hold time
-        from herald.exit.exit_manager import ExitDecision
         exit_signal = self._check_max_hold_time(position, current_time)
         if exit_signal:
-            # Wrap ExitSignal into ExitDecision
-            return ExitDecision(True, self.name, exit_signal.reason, priority=self.priority, exit_price=exit_signal.price, timestamp=exit_signal.timestamp)
+            return exit_signal
             
         # Check weekend protection
         if self.weekend_protection:
             exit_signal = self._check_weekend_protection(position, current_time)
             if exit_signal:
-                return ExitDecision(True, self.name, exit_signal.reason, priority=self.priority, exit_price=exit_signal.price, timestamp=exit_signal.timestamp)
+                return exit_signal
                 
         # Check day trading mode
         if self.day_trading_mode:
             exit_signal = self._check_eod_close(position, current_time)
             if exit_signal:
-                return ExitDecision(True, self.name, exit_signal.reason, priority=self.priority, exit_price=exit_signal.price, timestamp=exit_signal.timestamp)
+                return exit_signal
                 
-        return ExitDecision(False, self.name, reason='no exit', priority=self.priority)
+        return None  # No exit signal
         
     def _check_max_hold_time(
         self,

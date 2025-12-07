@@ -51,6 +51,7 @@ class SignalRecord:
     reason: str = ""
     executed: bool = False
     metadata: str = ""  # JSON string
+    execution_timestamp: Optional[datetime] = None
 
 
 class Database:
@@ -131,6 +132,7 @@ class Database:
                     take_profit REAL,
                     reason TEXT,
                     executed BOOLEAN DEFAULT FALSE,
+                    execution_timestamp TIMESTAMP,
                     metadata TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -176,7 +178,7 @@ class Database:
             cursor.execute("""
                 INSERT INTO signals (
                     signal_id, timestamp, symbol, timeframe, side, action,
-                    confidence, price, stop_loss, take_profit, reason, metadata
+                    confidence, price, stop_loss, take_profit, reason, executed, execution_timestamp, metadata
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 signal_record.signal_id,
@@ -190,6 +192,8 @@ class Database:
                 signal_record.stop_loss,
                 signal_record.take_profit,
                 signal_record.reason,
+                int(signal_record.executed),
+                signal_record.execution_timestamp,
                 signal_record.metadata
             ))
             self.conn.commit()

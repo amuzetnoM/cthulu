@@ -26,6 +26,7 @@ from herald.strategy.base import Strategy, SignalType
 from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
 from herald.risk.manager import RiskManager, RiskLimits
 from herald.position.manager import PositionManager
+from herald.position.trade_manager import TradeManager, TradeAdoptionPolicy
 from herald.persistence.database import Database, TradeRecord, SignalRecord
 from herald.observability.logger import setup_logger
 from herald.observability.metrics import MetricsCollector
@@ -55,22 +56,8 @@ def signal_handler(signum, frame):
     print("\nShutdown signal received, closing positions...")
 
 
-def load_config(config_path: str) -> Dict[str, Any]:
-    """
-    Load configuration from file.
-    
-    Args:
-        config_path: Path to config file (JSON or Python dict)
-        
-    Returns:
-        Configuration dictionary
-    """
-    import json
-    
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-        
-    return config
+from config_schema import Config
+from config.mindsets import apply_mindset, list_mindsets
 
 
 def load_indicators(indicator_configs: Dict[str, Any]) -> List:
@@ -190,7 +177,13 @@ def main():
     epilog = (
         "Examples:\n"
         "  herald --config config.json --log-level DEBUG\n"
-        "  herald --config ./configs/prod.json --dry-run --log-level INFO"
+        "  herald --config ./configs/prod.json --dry-run --log-level INFO\n"
+        "  herald --config config.json --mindset conservative --dry-run\n"
+        "\n"
+        "Mindsets:\n"
+        "  aggressive    - Higher risk, faster entries, tighter stops\n"
+        "  balanced      - Moderate risk, standard settings (default)\n"
+        "  conservative  - Lower risk, wider stops, capital preservation"
     )
 
     parser = argparse.ArgumentParser(
@@ -204,6 +197,9 @@ def main():
                        help="Logging level (DEBUG, INFO, WARNING, ERROR)")
     parser.add_argument('--dry-run', action='store_true', 
                        help="Dry run mode (simulate orders without placing them)")
+    parser.add_argument('--mindset', type=str, default=None,
+                       choices=['aggressive', 'balanced', 'conservative'],
+                       help="Trading mindset/risk profile (aggressive, balanced, conservative)")
     parser.add_argument('--version', action='version', version=f"Herald {__version__}")
     args = parser.parse_args()
     
@@ -223,24 +219,19 @@ def main():
     logger.info(f"Herald Autonomous Trading System v{__version__} - Phase 2")
     logger.info("=" * 70)
     
-    # Load configuration
+    # Load configuration using typed schema and mapping
     try:
-        config = load_config(args.config)
+        cfg = Config.load(args.config)
         logger.info(f"Configuration loaded from {args.config}")
+        # Use model_dump() for Pydantic v2 compatibility
+        config = cfg.model_dump() if hasattr(cfg, 'model_dump') else cfg.dict()
         
-        # Override MT5 credentials from environment variables (security best practice)
-        mt5_login = os.getenv('MT5_LOGIN')
-        mt5_password = os.getenv('MT5_PASSWORD')
-        mt5_server = os.getenv('MT5_SERVER')
-        
-        if mt5_login and mt5_password and mt5_server:
-            config['mt5']['login'] = int(mt5_login)
-            config['mt5']['password'] = mt5_password
-            config['mt5']['server'] = mt5_server
-            logger.info("MT5 credentials loaded from .env file")
-        else:
-            logger.warning("MT5 credentials not found in .env - using config file values")
-            
+        # Apply mindset if specified
+        if args.mindset:
+            config = apply_mindset(config, args.mindset)
+            logger.info(f"Applied '{args.mindset}' trading mindset")
+            logger.info(f"  Risk: position_size_pct={config['risk'].get('position_size_pct', 2.0)}%, "
+                       f"max_daily_loss=${config['risk'].get('max_daily_loss', 50)}")
     except Exception as e:
         logger.error(f"Failed to load configuration: {e}")
         return 1
@@ -258,14 +249,16 @@ def main():
         
         # 3. Risk Manager
         logger.info("Initializing risk manager...")
-        risk_config = config['risk']
-        risk_limits = RiskLimits()
-        risk_limits.max_position_size_pct = risk_config.get('max_position_size_pct', 0.02)
-        risk_limits.max_total_exposure_pct = risk_config.get('max_total_exposure_pct', 0.10)
-        risk_limits.max_daily_loss_pct = risk_config.get('max_daily_loss_pct', 0.05)
-        risk_limits.max_positions_per_symbol = risk_config.get('max_positions_per_symbol', 1)
-        risk_limits.max_total_positions = risk_config.get('max_total_positions', 3)
-        risk_limits.min_risk_reward_ratio = risk_config.get('min_risk_reward_ratio', 1.0)
+        risk_config = config.get('risk', {})
+        # Build RiskLimits with mapping and defaults
+        risk_limits = RiskLimits(
+            max_position_size_pct=risk_config.get('max_position_size_pct', 0.02),
+            max_total_exposure_pct=risk_config.get('max_total_exposure_pct', 0.10),
+            max_daily_loss_pct=risk_config.get('max_daily_loss_pct', 0.05),
+            max_positions_per_symbol=risk_config.get('max_positions_per_symbol', 1),
+            max_total_positions=risk_config.get('max_total_positions', 3),
+            min_risk_reward_ratio=risk_config.get('min_risk_reward_ratio', 1.0),
+        )
         risk_manager = RiskManager(risk_limits)
         
         # 4. Execution Engine
@@ -275,6 +268,22 @@ def main():
         # 5. Position Manager
         logger.info("Initializing position manager...")
         position_manager = PositionManager(connector, execution_engine)
+        
+        # 5b. Trade Manager (for adopting external trades)
+        trade_adoption_config = config.get('orphan_trades', {})
+        trade_adoption_policy = TradeAdoptionPolicy(
+            enabled=trade_adoption_config.get('enabled', False),
+            adopt_symbols=trade_adoption_config.get('adopt_symbols', []),
+            ignore_symbols=trade_adoption_config.get('ignore_symbols', []),
+            apply_exit_strategies=trade_adoption_config.get('apply_exit_strategies', True),
+            max_adoption_age_hours=trade_adoption_config.get('max_adoption_age_hours', 0.0),
+            log_only=trade_adoption_config.get('log_only', False)
+        )
+        trade_manager = TradeManager(position_manager, trade_adoption_policy)
+        if trade_adoption_policy.enabled:
+            logger.info(f"External trade adoption ENABLED (log_only: {trade_adoption_policy.log_only})")
+        else:
+            logger.info("External trade adoption disabled")
         
         # 6. Persistence
         logger.info("Initializing database...")
@@ -317,15 +326,27 @@ def main():
         logger.info(f"Connected to MT5 account {account_info['login']}")
         logger.info(f"Balance: {account_info['balance']:.2f}, Equity: {account_info['equity']:.2f}")
         
+        # Reconcile any existing Herald positions from previous session
+        reconciled = position_manager.reconcile_positions()
+        if reconciled > 0:
+            logger.info(f"Reconciled {reconciled} existing Herald position(s)")
+        
+        # Adopt any external trades if enabled
+        if trade_adoption_policy.enabled:
+            adopted = trade_manager.scan_and_adopt()
+            if adopted > 0:
+                logger.info(f"Adopted {adopted} external trade(s)")
+        
     except Exception as e:
         logger.error(f"Connection error: {e}", exc_info=True)
         return 1
         
     # Trading configuration
-    symbol = config['trading']['symbol']
-    timeframe = getattr(mt5, config['trading']['timeframe'])
-    poll_interval = config['trading'].get('poll_interval', 60)
-    lookback_bars = config['trading'].get('lookback_bars', 500)
+    trading_config = config.get('trading', {})
+    symbol = trading_config.get('symbol')
+    timeframe = getattr(mt5, trading_config.get('timeframe'))
+    poll_interval = trading_config.get('poll_interval', 60)
+    lookback_bars = trading_config.get('lookback_bars', 500)
     
     logger.info(f"Trading configuration: {symbol} on {config['trading']['timeframe']}")
     logger.info(f"Poll interval: {poll_interval}s, Lookback: {lookback_bars} bars")
@@ -479,7 +500,7 @@ def main():
                                     volume=result.filled_volume,
                                     stop_loss=signal.stop_loss,
                                     take_profit=signal.take_profit,
-                                    entry_timestamp=datetime.now(),
+                                    entry_time=datetime.now(),
                                     commission=result.commission
                                 )
                                 database.record_trade(trade_record)
@@ -495,6 +516,15 @@ def main():
                         
                 except Exception as e:
                     logger.error(f"Order execution error: {e}", exc_info=True)
+            
+            # 7b. Scan and adopt external trades
+            try:
+                if trade_adoption_policy.enabled:
+                    adopted = trade_manager.scan_and_adopt()
+                    if adopted > 0:
+                        logger.info(f"Adopted {adopted} external trade(s)")
+            except Exception as e:
+                logger.error(f"Trade adoption scan error: {e}", exc_info=True)
                     
             # 8. Monitor positions and check exits
             try:
@@ -549,6 +579,7 @@ def main():
                                         database.update_trade_exit(
                                             order_id=position.ticket,
                                             exit_price=close_result.fill_price,
+                                            exit_time=datetime.now(),
                                             profit=position.unrealized_pnl,
                                             exit_reason=exit_signal.reason
                                         )

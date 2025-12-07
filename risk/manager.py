@@ -16,6 +16,8 @@ from herald.strategy.base import Signal, SignalType
 class RiskLimits:
     """Risk management configuration"""
     max_position_size_pct: float = 0.02  # 2% of balance per position
+    # legacy alias: if provided, prefer this is a direct value in percent
+    max_position_size: Optional[float] = None
     max_total_exposure_pct: float = 0.10  # 10% total exposure
     max_daily_loss_pct: float = 0.05  # 5% daily loss limit
     max_positions_per_symbol: int = 1
@@ -23,6 +25,15 @@ class RiskLimits:
     min_risk_reward_ratio: float = 1.0
     max_spread_pips: float = 50.0
     volatility_scaling: bool = True
+
+    def __post_init__(self):
+        # Prefer explicit percent value fields
+        if self.max_position_size is not None and self.max_position_size_pct == 0.02:
+            # If legacy 'max_position_size' provided, map to new name
+            try:
+                self.max_position_size_pct = float(self.max_position_size)
+            except Exception:
+                pass
 
 
 class RiskManager:
@@ -121,14 +132,22 @@ class RiskManager:
     def _calculate_position_size(
         self,
         signal: Signal,
-        account_state: Dict[str, Any]
+        account_state: Dict[str, Any],
+        symbol_info: Dict[str, Any] = None
     ) -> Optional[float]:
         """
-        Calculate position size based on risk parameters.
+        Calculate position size based on risk parameters and symbol specifications.
+        
+        Uses proper lot size calculation considering:
+        - Contract size
+        - Tick value
+        - Point value
+        - Account currency conversion
         
         Args:
             signal: Trading signal
             account_state: Account information
+            symbol_info: MT5 symbol specifications (optional, for accurate calculation)
             
         Returns:
             Position size in lots or None
@@ -140,22 +159,28 @@ class RiskManager:
         # Risk amount per trade
         risk_amount = balance * self.limits.max_position_size_pct
         
-        # If using signal size hint
+        # If using signal size hint, validate and return
         if signal.size_hint:
-            return signal.size_hint
+            return self._validate_lot_size(signal.size_hint, symbol_info)
             
         # Calculate based on stop loss
         if signal.stop_loss and signal.price:
-            # This is simplified - real implementation needs symbol specs
             risk_pips = abs(signal.price - signal.stop_loss)
             
             if risk_pips == 0:
                 return None
-                
-            # Simplified calculation - needs proper pip value from symbol info
-            # For demonstration: assume standard lot calculation
-            lot_size = risk_amount / risk_pips / 10  # Simplified
             
+            # Use symbol info if available for accurate calculation
+            if symbol_info:
+                lot_size = self._calculate_lot_size_with_symbol_info(
+                    risk_amount, risk_pips, signal.price, symbol_info
+                )
+            else:
+                # Fallback: simplified calculation
+                # Assume standard forex lot (100,000 units), $10 per pip for 1 lot
+                pip_value_per_lot = 10.0  # Approximate for major pairs
+                lot_size = risk_amount / (risk_pips * pip_value_per_lot * 10000)
+                
             # Apply volatility scaling if enabled
             if self.limits.volatility_scaling and signal.metadata.get('atr'):
                 atr = signal.metadata['atr']
@@ -164,27 +189,115 @@ class RiskManager:
                     volatility_factor = avg_atr / atr
                     lot_size *= volatility_factor
                     
-            # Round to 2 decimals
-            lot_size = round(lot_size, 2)
-            
-            # Apply minimum
-            lot_size = max(0.01, lot_size)
-            
-            # Apply maximum (10% of risk per trade)
-            max_lots = (balance * 0.10) / 1000  # Simplified
-            lot_size = min(lot_size, max_lots)
-            
-            return lot_size
+            return self._validate_lot_size(lot_size, symbol_info)
             
         # Default: minimum lot size
-        return 0.01
+        return self._validate_lot_size(0.01, symbol_info)
+    
+    def _calculate_lot_size_with_symbol_info(
+        self,
+        risk_amount: float,
+        risk_pips: float,
+        price: float,
+        symbol_info: Dict[str, Any]
+    ) -> float:
+        """
+        Calculate lot size using MT5 symbol specifications.
         
-    def record_trade_result(self, profit: float):
+        Formula: lot_size = risk_amount / (risk_pips * pip_value_per_lot)
+        
+        Where pip_value_per_lot = (point * contract_size * tick_value) / tick_size
+        
+        Args:
+            risk_amount: Amount to risk in account currency
+            risk_pips: Distance to stop loss in price units
+            price: Current price
+            symbol_info: MT5 symbol specifications
+            
+        Returns:
+            Calculated lot size
+        """
+        # Extract symbol specifications
+        contract_size = symbol_info.get('trade_contract_size', 100000)
+        tick_size = symbol_info.get('trade_tick_size', 0.00001)
+        tick_value = symbol_info.get('trade_tick_value', 1.0)
+        point = symbol_info.get('point', 0.00001)
+        
+        # Calculate pip value per lot
+        # For forex: typically 1 pip = 10 points for 5-digit brokers
+        pips_in_points = 10 if point < 0.001 else 1
+        
+        # Value of 1 pip move for 1 lot
+        pip_value_per_lot = (tick_value / tick_size) * point * pips_in_points
+        
+        # Handle crypto and indices with larger tick values
+        if contract_size < 100000:  # Likely crypto or CFD
+            pip_value_per_lot = tick_value * (contract_size / 100000)
+        
+        if pip_value_per_lot == 0:
+            pip_value_per_lot = 10.0  # Fallback
+            
+        # Calculate risk in pips (convert from price difference)
+        risk_in_pips = risk_pips / (point * pips_in_points)
+        
+        if risk_in_pips == 0:
+            return 0.01
+            
+        # Calculate lot size
+        lot_size = risk_amount / (risk_in_pips * pip_value_per_lot)
+        
+        self.logger.debug(
+            f"Lot calculation: risk=${risk_amount:.2f}, risk_pips={risk_in_pips:.1f}, "
+            f"pip_value={pip_value_per_lot:.4f}, lots={lot_size:.4f}"
+        )
+        
+        return lot_size
+    
+    def _validate_lot_size(
+        self,
+        lot_size: float,
+        symbol_info: Dict[str, Any] = None
+    ) -> float:
+        """
+        Validate and adjust lot size to symbol constraints.
+        
+        Args:
+            lot_size: Calculated lot size
+            symbol_info: Symbol specifications (optional)
+            
+        Returns:
+            Valid lot size
+        """
+        # Get symbol constraints or use defaults
+        if symbol_info:
+            min_lot = symbol_info.get('volume_min', 0.01)
+            max_lot = symbol_info.get('volume_max', 100.0)
+            lot_step = symbol_info.get('volume_step', 0.01)
+        else:
+            min_lot = 0.01
+            max_lot = 100.0
+            lot_step = 0.01
+        
+        # Apply constraints
+        lot_size = max(min_lot, lot_size)
+        lot_size = min(max_lot, lot_size)
+        
+        # Round to lot step
+        if lot_step > 0:
+            lot_size = round(lot_size / lot_step) * lot_step
+        
+        # Round to 2 decimals
+        lot_size = round(lot_size, 2)
+        
+        return lot_size
+        
+    def record_trade_result(self, profit: float, account_balance: float = None):
         """
         Record trade result for daily tracking.
         
         Args:
             profit: Trade profit/loss
+            account_balance: Current account balance for daily loss calculation
         """
         self.daily_pnl += profit
         self.trade_count += 1
@@ -195,11 +308,13 @@ class RiskManager:
         )
         
         # Check if daily loss limit hit
-        balance = 10000  # Should be passed from account state
-        max_daily_loss = balance * self.limits.max_daily_loss_pct
-        
-        if self.daily_pnl < -max_daily_loss:
-            self.logger.critical("Daily loss limit exceeded - consider shutdown")
+        if account_balance is not None and account_balance > 0:
+            max_daily_loss = account_balance * self.limits.max_daily_loss_pct
+            
+            if self.daily_pnl < -max_daily_loss:
+                self.logger.critical(
+                    f"Daily loss limit exceeded: {self.daily_pnl:.2f} < -{max_daily_loss:.2f} - consider shutdown"
+                )
             
     def emergency_shutdown(self, reason: str = "Manual"):
         """

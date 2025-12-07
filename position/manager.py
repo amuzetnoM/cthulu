@@ -66,16 +66,19 @@ class PositionInfo:
         """Get position age in hours."""
         return self.get_age_seconds() / 3600.0
         
-    def get_pnl_pips(self, pip_value: float) -> float:
+    def get_pnl_pips(self, pip_value: float = 0.0001) -> float:
         """
         Calculate P&L in pips.
         
         Args:
-            pip_value: Value of one pip for the symbol
+            pip_value: Value of one pip for the symbol (default: 0.0001 for forex)
             
         Returns:
             P&L in pips
         """
+        if self.open_price is None or self.open_price == 0:
+            return 0.0
+            
         if self.side == "BUY":
             price_diff = self.current_price - self.open_price
         else:  # SELL
@@ -494,9 +497,12 @@ class PositionManager:
             'swap': position.swap
         }
         
-    def reconcile_positions(self) -> int:
+    def reconcile_positions(self, magic_number: int = 123456) -> int:
         """
-        Reconcile tracked positions with MT5 after reconnection.
+        Reconcile tracked positions with MT5 after reconnection or at startup.
+        
+        Args:
+            magic_number: Herald's magic number to filter positions
         
         Returns:
             Number of positions reconciled
@@ -507,7 +513,7 @@ class PositionManager:
             
         try:
             # Get all MT5 positions
-            mt5_positions = mt5.positions_get(group=f"*{self.execution_engine.magic_number}*")
+            mt5_positions = mt5.positions_get()
             
             if mt5_positions is None:
                 mt5_positions = []
@@ -515,6 +521,10 @@ class PositionManager:
             reconciled = 0
             
             for mt5_pos in mt5_positions:
+                # Only reconcile Herald's own trades (matching magic number)
+                if mt5_pos.magic != magic_number:
+                    continue
+                    
                 if mt5_pos.ticket not in self._positions:
                     # Track missing position
                     position_info = PositionInfo(
