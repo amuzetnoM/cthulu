@@ -169,14 +169,7 @@ This release marks Herald's transition to **production-ready** status with:
 
 ### 🔐 Security & Architecture Improvements
 
-#### Separation of Concerns
-- ✅ **Complete Herald/Gold Standard Separation**
-  - Verified: Zero AI/LLM references in Herald (`ai`, `gemini`, `llm`, `openai`, `claude`, `gpt`)
-  - All analysis/ML functionality contained in gold_standard repository
-  - Herald remains pure trading bot with no external dependencies on AI
-  - Reduces attack surface and dependency complexity
-
-- ✅ **Credential Security**
+#### Credential Security
   - All MT5 credentials externalized to environment variables
   - No hardcoded API keys, passwords, or tokens
   - Credential validation at connection time
@@ -232,7 +225,6 @@ MT5 Verification:
 - [x] Account information retrieval validated
 - [x] Connection health checks passing
 - [x] CI/CD pipeline configured and green
-- [x] No AI/LLM contamination in Herald codebase
 - [x] Comprehensive test coverage (all critical paths)
 - [x] Documentation updated to v3.0.0
 - [x] Version strings unified across all files
