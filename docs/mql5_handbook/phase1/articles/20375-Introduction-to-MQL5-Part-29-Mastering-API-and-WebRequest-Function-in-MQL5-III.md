@@ -14,9 +14,9 @@ date: "27 November 2025, 11:19"
 
 [](/en/articles/20375?print=)
 
-![preview](assets/20375/7f560c47618cf292498764978bf605ab.jpeg)
+![preview](assets/20375/2Q==)
 
-![Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)](https://c.mql5.com/2/183/20375-introduction-to-mql5-part-29-mastering-api-and-webrequest-function_600x314.jpg)
+![Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)](assets/20375/20375-introduction-to-mql5-part-29-mastering-api-and-webrequest-function_600x314.jpg)
 
 # Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)
 
@@ -29,14 +29,14 @@ date: "27 November 2025, 11:19"
         | 
 27 November 2025, 11:19
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/20375/icons.svg#views-white-usage)
 
-          3 975
+          3 979
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)0](/en/forum/500826)
+[![](assets/20375/icons.svg#comments-white-usage)0](/en/forum/500826)
 
-![Israel Pelumi Abioye](https://c.mql5.com/avatar/2023/11/6554a830-8858.png)
+![Israel Pelumi Abioye](assets/20375/6554a830-8858.png)
 
 [Israel Pelumi Abioye](/en/users/13467913)
  
@@ -149,7 +149,7 @@ It's similar to emptying the mailbag onto a table and setting up the letters so 
 Output: 
  
  
-![Figure 1. Result](https://c.mql5.com/2/183/figure_1.png)
+![Figure 1. Result](assets/20375/figure_1.png)
  
 Result: 
  
@@ -350,7 +350,7 @@ Consider a straightforward sample string such as "MQL5, ALGO, TRADING" to unders
 Output: 
  
  
-![Figure 2. Split Count](https://c.mql5.com/2/183/figure_2.png)
+![Figure 2. Split Count](assets/20375/figure_2.png)
  
 In this instance, the StringSplit function returns a count of 7. Examining the number of ']' characters in the server response helps us understand why. Since each of the five candles for which we requested data ends in a  ']', we already have five closing brackets. A '[' character appears at the beginning of the entire answer before the first candle starts, and there is another ']' at the very end of the entire structure. This means that the response has six closing brackets in total. 
  
@@ -622,7 +622,7 @@ ArrayPrint(day1_data_array);
 Output: 
  
  
-![Figure 3. Day 1](https://c.mql5.com/2/183/figure_3.png)
+![Figure 3. Day 1](assets/20375/figure_3.png)
  
 Explanation:
  
@@ -993,31 +993,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/500826)
 
-![Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](https://c.mql5.com/2/183/20390-price-action-analysis-toolkit-logo.png)
+![Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](assets/20375/20390-price-action-analysis-toolkit-logo.png)
 
 [Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](/en/articles/20390)
 
 This article introduces the Pattern Density Heatmap, a price‑action mapping tool that transforms repeated candlestick pattern detections into statistically significant support and resistance zones. Rather than treating each signal in isolation, the EA aggregates detections into fixed price bins, scores their density with optional recency weighting, and confirms levels against higher‑timeframe data. The resulting heatmap reveals where the market has historically reacted—levels that can be used proactively for trade timing, risk management, and strategy confidence across any trading style.
 
-![The MQL5 Standard Library Explorer (Part 4): Custom Signal Library](https://c.mql5.com/2/183/20266-the-mql5-standard-library-explorer-logo.png)
+![The MQL5 Standard Library Explorer (Part 4): Custom Signal Library](assets/20375/20266-the-mql5-standard-library-explorer-logo.png)
 
 [The MQL5 Standard Library Explorer (Part 4): Custom Signal Library](/en/articles/20266)
 
 Today, we use the MQL5 Standard Library to build custom signal classes and let the MQL5 Wizard assemble a professional Expert Advisor for us. This approach simplifies development so that even beginner programmers can create robust EAs without in-depth coding knowledge, focusing instead on tuning inputs and optimizing performance. Join this discussion as we explore the process step by step.
 
-![Automating Trading Strategies in MQL5 (Part 43): Adaptive Linear Regression Channel Strategy](https://c.mql5.com/2/183/20347-automating-trading-strategies-logo__1.png)
+![Automating Trading Strategies in MQL5 (Part 43): Adaptive Linear Regression Channel Strategy](assets/20375/20347-automating-trading-strategies-logo__1.png)
 
 [Automating Trading Strategies in MQL5 (Part 43): Adaptive Linear Regression Channel Strategy](/en/articles/20347)
 
 In this article, we implement an adaptive Linear Regression Channel system in MQL5 that automatically calculates the regression line and standard deviation channel over a user-defined period, only activates when the slope exceeds a minimum threshold to confirm a clear trend, and dynamically recreates or extends the channel when the price breaks out by a configurable percentage of channel width.
 
-![From Basic to Intermediate: Struct (I)](https://c.mql5.com/2/117/Do_b8sico_ao_intermediario_Struct_I___LOGO.png)
+![From Basic to Intermediate: Struct (I)](assets/20375/Do_b8sico_ao_intermediario_Struct_I___LOGO.png)
 
 [From Basic to Intermediate: Struct (I)](/en/articles/15730)
 
 Today we will begin to study structures in a simpler, more practical, and comfortable way. Structures are among the foundations of programming, whether they are structured or not. I know many people think of structures as just collections of data, but I assure you that they are much more than just structures. And here we will begin to explore this new universe in the most didactic way.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/20375/logo-2.png)
 
 You are missing trading opportunities:
 

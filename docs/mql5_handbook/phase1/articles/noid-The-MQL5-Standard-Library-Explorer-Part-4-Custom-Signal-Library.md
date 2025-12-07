@@ -13,9 +13,9 @@ date: "27 November 2025, 10:25"
 
 [](/en/articles/20266?print=)
 
-![preview](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/86b06a99d6f81dff20a761f9174437c0.jpeg)
+![preview](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/2Q==)
 
-![The MQL5 Standard Library Explorer (Part 4): Custom Signal Library](https://c.mql5.com/2/183/20266-the-mql5-standard-library-explorer-part-4-custom-signal-library_600x314__2.jpg)
+![The MQL5 Standard Library Explorer (Part 4): Custom Signal Library](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/20266-the-mql5-standard-library-explorer-part-4-custom-signal-library_600x314__2.jpg)
 
 # The MQL5 Standard Library Explorer (Part 4): Custom Signal Library
 
@@ -28,14 +28,14 @@ date: "27 November 2025, 10:25"
         | 
 27 November 2025, 10:25
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/icons.svg#views-white-usage)
 
-          1 287
+          1 291
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)0](/en/forum/500823)
+[![](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/icons.svg#comments-white-usage)0](/en/forum/500823)
 
-![Clemence Benjamin](https://c.mql5.com/avatar/2025/3/67df27c6-2936.png)
+![Clemence Benjamin](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/67df27c6-2936.png)
 
 [Clemence Benjamin](/en/users/billionaire2024)
  
@@ -112,7 +112,7 @@ Custom Integration Points
 Extend Wizard functionality by hooking into initialization, tick processing, and trade execution events
 Conceptualizing Custom Signals
 The default signal list is mainly built from the terminal’s standard indicators. In today’s project, we want to go the extra mile. Most traders are already familiar with candlestick names and patterns, so it becomes easier to grasp the concepts we are about to use. Our task is to build a signal class based on candlestick patterns, with the goal of detecting specific price action formations and generating trading signals accordingly. After creating this class, we will integrate it into an Expert Advisor using the MQL5 Wizard, then study the generated code and its behavior in the Strategy Tester. Successful trading systems often combine multiple confirmation factors rather than relying on a single indicator, and this approach takes us closer to that ideal.
-![List of available signal](https://c.mql5.com/2/183/MetaEditor64_rD8aZwlaip.png)
+![List of available signal](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/MetaEditor64_rD8aZwlaip.png)
 List of available signal modules
 
 ### Implementation
@@ -459,7 +459,7 @@ Set Expert Advisor properties
 Add and configure the candlestick signal
 Select the trailing stop module
 Configure money management
-![Launch the Wizard.](https://c.mql5.com/2/183/MetaEditor64_olOWFI56RP.gif)
+![Launch the Wizard.](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/MetaEditor64_olOWFI56RP.gif)
 Launching the wizard
 Understanding the Wizard's Blueprint: The Generated EA Structure
 The MQL5 Wizard has just transformed our custom candlestick signal into a complete, functional Expert Advisor. This generated code represents a sophisticated trading framework that handles all the complex aspects of automated trading while leaving the strategic decisions to our signal logic. Let's break down this professional-grade architecture and understand how each component contributes to a robust trading system.
@@ -759,7 +759,7 @@ Signal Accuracy: Verified candlestick patterns trigger appropriate trading decis
 Risk Management: Observed trailing stops dynamically adjusting to protect profits
 System Stability: Ensured the EA operates without errors across different market conditions
 The animated demonstration clearly shows our EA in action—placing trades based on candlestick pattern recognition while the Parabolic SAR trailing stops actively manage risk by progressively locking in profits as trades move in our favor.
-![Strategy Tester](https://c.mql5.com/2/183/metatester64_PBOqzB4S45.gif)
+![Strategy Tester](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/metatester64_PBOqzB4S45.gif)
 Testing the generated EA
 
 ### Conclusion
@@ -816,31 +816,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/500823)
 
-![Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)](https://c.mql5.com/2/183/20375-introduction-to-mql5-part-29-logo__1.png)
+![Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/20375-introduction-to-mql5-part-29-logo__1.png)
 
 [Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)](/en/articles/20375)
 
 In this article, we continue mastering API and WebRequest in MQL5 by retrieving candlestick data from an external source. We focus on splitting the server response, cleaning the data, and extracting essential elements such as opening time and OHLC values for multiple daily candles, preparing the data for further analysis.
 
-![From Basic to Intermediate: Struct (I)](https://c.mql5.com/2/117/Do_b8sico_ao_intermediario_Struct_I___LOGO.png)
+![From Basic to Intermediate: Struct (I)](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/Do_b8sico_ao_intermediario_Struct_I___LOGO.png)
 
 [From Basic to Intermediate: Struct (I)](/en/articles/15730)
 
 Today we will begin to study structures in a simpler, more practical, and comfortable way. Structures are among the foundations of programming, whether they are structured or not. I know many people think of structures as just collections of data, but I assure you that they are much more than just structures. And here we will begin to explore this new universe in the most didactic way.
 
-![Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](https://c.mql5.com/2/183/20390-price-action-analysis-toolkit-logo.png)
+![Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/20390-price-action-analysis-toolkit-logo.png)
 
 [Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](/en/articles/20390)
 
 This article introduces the Pattern Density Heatmap, a price‑action mapping tool that transforms repeated candlestick pattern detections into statistically significant support and resistance zones. Rather than treating each signal in isolation, the EA aggregates detections into fixed price bins, scores their density with optional recency weighting, and confirms levels against higher‑timeframe data. The resulting heatmap reveals where the market has historically reacted—levels that can be used proactively for trade timing, risk management, and strategy confidence across any trading style.
 
-![Automating Trading Strategies in MQL5 (Part 42): Session-Based Opening Range Breakout (ORB) System](https://c.mql5.com/2/183/20339-automating-trading-strategies-logo.png)
+![Automating Trading Strategies in MQL5 (Part 42): Session-Based Opening Range Breakout (ORB) System](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/20339-automating-trading-strategies-logo.png)
 
 [Automating Trading Strategies in MQL5 (Part 42): Session-Based Opening Range Breakout (ORB) System](/en/articles/20339)
 
 In this article, we create a fully customizable session-based Opening Range Breakout (ORB) system in MQL5 that lets us set any desired session start time and range duration, automatically calculates the high and low of that opening period, and trades only confirmed breakouts in the direction of the move.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library/logo-2.png)
 
 You are missing trading opportunities:
 

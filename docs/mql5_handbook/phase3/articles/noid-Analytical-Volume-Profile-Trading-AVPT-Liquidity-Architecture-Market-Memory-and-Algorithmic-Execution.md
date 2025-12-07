@@ -13,9 +13,9 @@ date: "24 November 2025, 08:32"
 
 [](/en/articles/20327?print=)
 
-![preview](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/3a96cd7f8dd75e922d7177f6880652d3.jpeg)
+![preview](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/9k=)
 
-![Analytical Volume Profile Trading (AVPT): Liquidity Architecture, Market Memory, and Algorithmic Execution](https://c.mql5.com/2/182/20327-analytical-volume-profile-trading-avpt-liquidity-architecture_600x314.jpg)
+![Analytical Volume Profile Trading (AVPT): Liquidity Architecture, Market Memory, and Algorithmic Execution](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/20327-analytical-volume-profile-trading-avpt-liquidity-architecture_600x314.jpg)
 
 # Analytical Volume Profile Trading (AVPT): Liquidity Architecture, Market Memory, and Algorithmic Execution
 
@@ -28,14 +28,14 @@ date: "24 November 2025, 08:32"
         | 
 24 November 2025, 08:32
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/icons.svg#views-white-usage)
 
-          5 564
+          5 565
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)9](/en/forum/500657)
+[![](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/icons.svg#comments-white-usage)9](/en/forum/500657)
 
-![Hlomohang John Borotho](https://c.mql5.com/avatar/2023/9/6505ca3e-1abb.jpg)
+![Hlomohang John Borotho](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/6505ca3e-1abb.jpg)
 
 [Hlomohang John Borotho](/en/users/johnhlomohang)
  
@@ -120,7 +120,7 @@ The strategic framework of AVPT revolves around understanding how price interact
 The practical implementation of AVPT involves monitoring how current price action relates to these established volume structures. In ranging markets, traders might employ mean-reversion strategies, buying near the Value Area Low with stops below nearby LVNs and taking profits at the POC. During trending conditions, breakout strategies become viable when price moves through LVN zones with momentum, targeting extensions beyond the Value Area. The visualization makes risk management particularly intuitive—stop losses naturally belong beyond LVNs where breakouts would invalidate the trade premise, while position sizing can adapt based on the width of the Value Area and distance to key volume nodes. This integrated approach to analysis, entry timing, and risk management creates a systematic methodology that aligns with how institutional money flows actually shape market movements.
  
  
-![](https://c.mql5.com/2/182/503992155846000.png)
+![](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/503992155846000.png)
  
  
 
@@ -675,15 +675,15 @@ The position-management engine then supervises all active VolumeProfileEA trades
 The back-testing was evaluated on the H4 timeframe across roughly a 2-month testing window (01 September 2025 to 03 November 2025), with the following settings:
  
  
-![](https://c.mql5.com/2/182/Inp_Sets.png)
+![](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/Inp_Sets.png)
  
 Now here is the equity curve and the backtest results:
  
  
-![](https://c.mql5.com/2/182/AVPT_EC__1.png)
+![](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/AVPT_EC__1.png)
  
  
-![](https://c.mql5.com/2/182/AVPT_BT.png)
+![](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/AVPT_BT.png)
  
  
 
@@ -732,7 +732,7 @@ This article was written by a user of the site and reflects their personal views
         (9)
     
 
-![Hlomohang John Borotho](https://c.mql5.com/avatar/2023/9/6505ca3e-1abb.jpg)
+![Hlomohang John Borotho](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/6505ca3e-1abb.jpg)
 
 [Hlomohang John Borotho](/en/users/johnhlomohang)
 
@@ -898,7 +898,7 @@ Thank you again. Together as a community, we are smarter!
 Thanks for the indicator 
 Cédric Olivier.
 
-![Hlomohang John Borotho](https://c.mql5.com/avatar/2023/9/6505ca3e-1abb.jpg)
+![Hlomohang John Borotho](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/6505ca3e-1abb.jpg)
 
 [Hlomohang John Borotho](/en/users/johnhlomohang)
 
@@ -927,7 +927,7 @@ I wouldn't really worry about the symbol tested. FYI, it likely wasn't a securit
  Thanks Ryan, and you all for the feedback, y'all are welcome.
             
 
-![Hlomohang John Borotho](https://c.mql5.com/avatar/2023/9/6505ca3e-1abb.jpg)
+![Hlomohang John Borotho](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/6505ca3e-1abb.jpg)
 
 [Hlomohang John Borotho](/en/users/johnhlomohang)
 
@@ -947,7 +947,7 @@ Bryan John Aldridge
  
 Hey, the symbol tested is XAUUSD, and please refer to the testing period and settings used to achieve the same results.
 
-![DecentOne](https://c.mql5.com/avatar/2021/9/61386C5C-A569.jpg)
+![DecentOne](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/61386C5C-A569.jpg)
 
 [DecentOne](/en/users/decentone)
 
@@ -961,7 +961,7 @@ Hey, the symbol tested is XAUUSD, and please refer to the testing period and set
               Is there an EA for this I can download and use?I'm not a coder
             
 
-![Silk Road Trading LLC](https://c.mql5.com/avatar/2025/5/68239006-fc9d.png)
+![Silk Road Trading LLC](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/68239006-fc9d.png)
 
 [Ryan L Johnson](/en/users/rjo)
 
@@ -988,33 +988,33 @@ It's at the end of the Article that is linked up top in this Discussion:
 (This is how all Article Discussions automatically posted in the Forum work.)
  
  
-![EA](https://c.mql5.com/3/480/EA.png)
+![EA](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/EA.png)
 
-![Introduction to MQL5 (Part 28): Mastering API and WebRequest Function in MQL5 (II)](https://c.mql5.com/2/182/20280-introduction-to-mql5-part-28-logo__1.png)
+![Introduction to MQL5 (Part 28): Mastering API and WebRequest Function in MQL5 (II)](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/20280-introduction-to-mql5-part-28-logo__1.png)
 
 [Introduction to MQL5 (Part 28): Mastering API and WebRequest Function in MQL5 (II)](/en/articles/20280)
 
 This article teaches you how to retrieve and extract price data from external platforms using APIs and the WebRequest function in MQL5. You’ll learn how URLs are structured, how API responses are formatted, how to convert server data into readable strings, and how to identify and extract specific values from JSON responses.
 
-![Price Action Analysis Toolkit Development (Part 51): Revolutionary Chart Search Technology for Candlestick Pattern Discovery](https://c.mql5.com/2/182/20313-price-action-analysis-toolkit-logo.png)
+![Price Action Analysis Toolkit Development (Part 51): Revolutionary Chart Search Technology for Candlestick Pattern Discovery](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/20313-price-action-analysis-toolkit-logo.png)
 
 [Price Action Analysis Toolkit Development (Part 51): Revolutionary Chart Search Technology for Candlestick Pattern Discovery](/en/articles/20313)
 
 This article is intended for algorithmic traders, quantitative analysts, and MQL5 developers interested in enhancing their understanding of candlestick pattern recognition through practical implementation. It provides an in‑depth exploration of the CandlePatternSearch.mq5 Expert Advisor—a complete framework for detecting, visualizing, and monitoring classical candlestick formations in MetaTrader 5. Beyond a line‑by‑line review of the code, the article discusses architectural design, pattern detection logic, GUI integration, and alert mechanisms, illustrating how traditional price‑action analysis can be automated efficiently.
 
-![Developing a Trading Strategy: The Flower Volatility Index Trend-Following Approach](https://c.mql5.com/2/182/20309-developing-a-trading-strategy-logo__1.png)
+![Developing a Trading Strategy: The Flower Volatility Index Trend-Following Approach](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/20309-developing-a-trading-strategy-logo__1.png)
 
 [Developing a Trading Strategy: The Flower Volatility Index Trend-Following Approach](/en/articles/20309)
 
 The relentless quest to decode market rhythms has led traders and quantitative analysts to develop countless mathematical models. This article has introduced the Flower Volatility Index (FVI), a novel approach that transforms the mathematical elegance of Rose Curves into a functional trading tool. Through this work, we have shown how mathematical models can be adapted into practical trading mechanisms capable of supporting both analysis and decision-making in real market conditions.
 
-![Automating Trading Strategies in MQL5 (Part 41): Candle Range Theory (CRT) – Accumulation, Manipulation, Distribution (AMD)](https://c.mql5.com/2/182/20323-automating-trading-strategies-logo.png)
+![Automating Trading Strategies in MQL5 (Part 41): Candle Range Theory (CRT) – Accumulation, Manipulation, Distribution (AMD)](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/20323-automating-trading-strategies-logo.png)
 
 [Automating Trading Strategies in MQL5 (Part 41): Candle Range Theory (CRT) – Accumulation, Manipulation, Distribution (AMD)](/en/articles/20323)
 
 In this article, we develop a Candle Range Theory (CRT) trading system in MQL5 that identifies accumulation ranges on a specified timeframe, detects breaches with manipulation depth filtering, and confirms reversals for entry trades in the distribution phase. The system supports dynamic or static stop-loss and take-profit calculations based on risk-reward ratios, optional trailing stops, and limits on positions per direction for controlled risk management.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution/logo-2.png)
 
 You are missing trading opportunities:
 

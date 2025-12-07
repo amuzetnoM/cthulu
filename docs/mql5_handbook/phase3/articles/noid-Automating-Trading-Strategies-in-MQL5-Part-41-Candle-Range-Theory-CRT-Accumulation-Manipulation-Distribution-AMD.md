@@ -13,9 +13,9 @@ date: "21 November 2025, 09:49"
 
 [](/en/articles/20323?print=)
 
-![preview](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/83ca42f2eaf1109c6d539c55c86b63d9.jpeg)
+![preview](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/9k=)
 
-![Automating Trading Strategies in MQL5 (Part 41): Candle Range Theory (CRT) – Accumulation, Manipulation, Distribution (AMD)](https://c.mql5.com/2/182/20323-automating-trading-strategies-in-mql5-part-41-candle-range_600x314.jpg)
+![Automating Trading Strategies in MQL5 (Part 41): Candle Range Theory (CRT) – Accumulation, Manipulation, Distribution (AMD)](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/20323-automating-trading-strategies-in-mql5-part-41-candle-range_600x314.jpg)
 
 # Automating Trading Strategies in MQL5 (Part 41): Candle Range Theory (CRT) – Accumulation, Manipulation, Distribution (AMD)
 
@@ -28,14 +28,14 @@ date: "21 November 2025, 09:49"
         | 
 21 November 2025, 09:49
 
-![](https://c.mql5.com/i/icons.svg#views-usage)
+![](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/icons.svg#views-usage)
 
-          21 275
+          21 282
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-usage)6](/en/forum/500539)
+[![](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/icons.svg#comments-usage)6](/en/forum/500539)
 
-![Allan Munene Mutiiria](https://c.mql5.com/avatar/2022/11/637df59b-9551.jpg)
+![Allan Munene Mutiiria](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/637df59b-9551.jpg)
 
 [Allan Munene Mutiiria](/en/users/29210372)
  
@@ -86,12 +86,12 @@ The
 In a positive (bullish) range setup, we look for an upward-closing candle range, anticipate a downward breach as manipulation to raid stops below the low, and enter a buy trade upon reversal back above the low with confirmation, expecting an upward distribution. Conversely, in a negative (bearish) range setup, we identify a downward-closing candle range, watch for an upward breach as manipulation above the high, and initiate a sell trade on reversal back below the high, aiming for downward distribution. By incorporating filters like minimum manipulation depth and bar-based reversal confirmation, we can avoid low-quality setups and focus on those with stronger conviction. Have a look below at a CRT setup sample.
  
  
-![CANDLE RANGE THEORY (CRT) SETUP](https://c.mql5.com/2/181/Screenshot_2025-11-17_140256.png)
+![CANDLE RANGE THEORY (CRT) SETUP](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_140256.png)
  
 Our plan is to define accumulation ranges on a user-specified timeframe. We will detect breaches and validate manipulation depth against a percentage threshold if this option is enabled. We also confirm reversals through a set number of closing bars on a confirmation timeframe. Trades are executed with limits on positions per direction. We apply dynamic or static stop-loss and take-profit levels based on risk-reward ratios. After a profit threshold is reached, we can incorporate optional trailing stops. All phases are visualized with on-chart rectangles, levels, and labels for intuitive monitoring. In brief, here is a visual representation of our objectives. 
  
  
-![CRT FRAMEWORK SAMPLE](https://c.mql5.com/2/181/Screenshot_2025-11-17_141002.png)
+![CRT FRAMEWORK SAMPLE](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_141002.png)
  
  
 
@@ -165,7 +165,7 @@ We then declare a series of
  that users can adjust via the Expert Advisor properties dialog. These include "RangeTF" to specify the timeframe for defining the accumulation range, "TradeVolume" for setting the lot size of each trade, "RR_Ratio" to determine the risk-to-reward ratio, "SLTP_Approach" to select the stop-loss and take-profit method using the previously defined enum, and the rest, which are self-explanatory. These inputs will make the system adaptable to different market conditions and user preferences. On compilation, we should get the following input sets.
  
  
-![INPUT SETS](https://c.mql5.com/2/181/Screenshot_2025-11-17_141749.png)
+![INPUT SETS](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_141749.png)
  
 With that done, we can define some 
 [global variables](/en/docs/basis/variables/global)
@@ -345,7 +345,7 @@ For visualization, we invoke "RenderLevel" to draw the maximum level with orange
  spanning the time and price range. We choose light green for positive or light pink for negative directions, apply the color, enable filling, set it as background, use a solid style, and redraw the chart to reflect the updates. It is always a good programming practice to compile your program on every milestone to see the objectives' achievement. In our case, we get the following outcome.
  
  
-![CRT RANGE SETTING](https://c.mql5.com/2/181/Screenshot_2025-11-17_142307.png)
+![CRT RANGE SETTING](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_142307.png)
  
 We can see we have set the ranges successfully. We can proceed to determine breaches and trade the setups.
  
@@ -506,12 +506,12 @@ The function is straightforward. We've added comments for clarity. Back to the l
  font that you can choose your desired as below.
  
  
-![MQL5 WINGDINGS](https://c.mql5.com/2/181/C_MQL5_WINGDINGS.png)
+![MQL5 WINGDINGS](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/C_MQL5_WINGDINGS.png)
  
 For negative directions, we mirror the logic: check if bid is below maximum and sell positions below limit, compute stop-loss dynamically as normalized breach point with risk from breach to bid, and take-profit subtracting risk times ratio, or statically adding "SL_Points" times point to bid for stop-loss and subtracting for take-profit. Open a sell with "obj_Trade.Sell" using bid, and on success, log similarly, draw a marker with code 234, red color, and top anchor, updating flags and entry details accordingly. Upon compilation, we get the following outcome.
  
  
-![ENTRY CONFIRMATIONS](https://c.mql5.com/2/181/Screenshot_2025-11-17_145133.png)
+![ENTRY CONFIRMATIONS](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_145133.png)
  
 From the image, we can see that we can confirm trades when there are confirmations. What we need to do is visualize the levels for clarity when trading, so we can visually track what is really happening.
  
@@ -601,7 +601,7 @@ We then draw the manipulation rectangle by creating a unique name with the suffi
  spanning from the previous range time at the top to the entry time at the bottom. We set its color to blue, disable filling, place it in the background, apply a dotted style with a width of 2, and redraw the chart. Next, we add a manipulation label with a unique name suffixed to "ManipText_", choosing an upper-right anchor for positive or lower-right for negative, and render "Manipulation" in blue at breach time and extreme price. For distribution, we create a label name with a suffix on "DistribText_", select green for positive or red for negative color, set the lower-left anchor for positive or the upper-left for negative, and render "Distribution" at entry time and price. Finally, we draw the distribution rectangle using a similar logic, and redraw the chart. Here is the outcome.
  
  
-![ACCUMULATION, MANIPULATION & DISTRIBUTION PHASES](https://c.mql5.com/2/181/Screenshot_2025-11-17_150347.png)
+![ACCUMULATION, MANIPULATION & DISTRIBUTION PHASES](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_150347.png)
  
 From the image, we can see that we have added the manipulation and distribution phases for clarity. What now remains is managing the positions that move in our favour by adding a trailing stop logic. We will house that in a function as well.
  
@@ -703,7 +703,7 @@ To handle dynamically created objects, we employ
  for accumulation labels, "ManipText_" for manipulation annotations, and "DistribText_" for distribution markers. This ensures a complete cleanup without leaving residual visuals. Upon compilation, we get the following outcome when the trailing stop is enabled.
  
  
-![FINAL OUTCOME WITH TRAILING STOP ENABLED](https://c.mql5.com/2/181/Screenshot_2025-11-17_151727.png)
+![FINAL OUTCOME WITH TRAILING STOP ENABLED](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_151727.png)
  
 From the image, we can see that we manage the positions by applying trailing stops when needed, hence achieving our objectives. The thing that remains is backtesting the program, and that is handled in the next section.
  
@@ -716,12 +716,12 @@ After thorough backtesting, we have the following results.
 Backtest graph:
  
  
-![GRAPH](https://c.mql5.com/2/181/Screenshot_2025-11-17_154934.png)
+![GRAPH](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_154934.png)
  
 Backtest report:
  
  
-![REPORT](https://c.mql5.com/2/181/Screenshot_2025-11-17_154945.png)
+![REPORT](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/Screenshot_2025-11-17_154945.png)
  
  
 
@@ -780,7 +780,7 @@ This article was written by a user of the site and reflects their personal views
         (6)
     
 
-![Stanislav Korotky](https://c.mql5.com/avatar/2010/10/4CA7CFA0-1F0C.jpg)
+![Stanislav Korotky](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/4CA7CFA0-1F0C.jpg)
 
 [Stanislav Korotky](/en/users/marketeer)
 
@@ -794,7 +794,7 @@ This article was written by a user of the site and reflects their personal views
               You did not explain how the beginning of each new accumulation phase is detected.
             
 
-![Allan Munene Mutiiria](https://c.mql5.com/avatar/2022/11/637df59b-9551.jpg)
+![Allan Munene Mutiiria](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/637df59b-9551.jpg)
 
 [Allan Munene Mutiiria](/en/users/29210372)
 
@@ -812,7 +812,7 @@ Christian Gomez
  Thanks
             
 
-![Allan Munene Mutiiria](https://c.mql5.com/avatar/2022/11/637df59b-9551.jpg)
+![Allan Munene Mutiiria](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/637df59b-9551.jpg)
 
 [Allan Munene Mutiiria](/en/users/29210372)
 
@@ -839,7 +839,7 @@ That's the candle ranges as visualized.
       rangeMax = prevMax;                                         //--- Set range max
 ```
 
-![Stanislav Korotky](https://c.mql5.com/avatar/2010/10/4CA7CFA0-1F0C.jpg)
+![Stanislav Korotky](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/4CA7CFA0-1F0C.jpg)
 
 [Stanislav Korotky](/en/users/marketeer)
 
@@ -859,7 +859,7 @@ That's the candle ranges as visualized.
  
 This does not answer the question - how do you find the beginning of the accumulation phase (each and every, because the phase occurs again and again on different sections of the chart). It is about time, not a range of prices. It is not about visualization as well.
 
-![Juvenille Emperor Limited](https://c.mql5.com/avatar/2019/4/5CB0FE21-E283.jpg)
+![Juvenille Emperor Limited](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/5CB0FE21-E283.jpg)
 
 [Eleni Anna Branou](/en/users/eleanna74)
 
@@ -873,31 +873,31 @@ Comments that do not relate to this topic, have been moved to "
 [Off-topic posts](/en/forum/339471)
 ".
 
-![Price Action Analysis Toolkit Development (Part 51): Revolutionary Chart Search Technology for Candlestick Pattern Discovery](https://c.mql5.com/2/182/20313-price-action-analysis-toolkit-logo.png)
+![Price Action Analysis Toolkit Development (Part 51): Revolutionary Chart Search Technology for Candlestick Pattern Discovery](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/20313-price-action-analysis-toolkit-logo.png)
 
 [Price Action Analysis Toolkit Development (Part 51): Revolutionary Chart Search Technology for Candlestick Pattern Discovery](/en/articles/20313)
 
 This article is intended for algorithmic traders, quantitative analysts, and MQL5 developers interested in enhancing their understanding of candlestick pattern recognition through practical implementation. It provides an in‑depth exploration of the CandlePatternSearch.mq5 Expert Advisor—a complete framework for detecting, visualizing, and monitoring classical candlestick formations in MetaTrader 5. Beyond a line‑by‑line review of the code, the article discusses architectural design, pattern detection logic, GUI integration, and alert mechanisms, illustrating how traditional price‑action analysis can be automated efficiently.
 
-![Automating Black-Scholes Greeks: Advanced Scalping and Microstructure Trading](https://c.mql5.com/2/182/20287-automating-black-scholes-greeks-logo.png)
+![Automating Black-Scholes Greeks: Advanced Scalping and Microstructure Trading](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/20287-automating-black-scholes-greeks-logo.png)
 
 [Automating Black-Scholes Greeks: Advanced Scalping and Microstructure Trading](/en/articles/20287)
 
 Gamma and Delta were originally developed as risk-management tools for hedging options exposure, but over time they evolved into powerful instruments for advanced scalping, order-flow modeling, and microstructure trading. Today, they serve as real-time indicators of price sensitivity and liquidity behavior, enabling traders to anticipate short-term volatility with remarkable precision.
 
-![Analytical Volume Profile Trading (AVPT): Liquidity Architecture, Market Memory, and Algorithmic Execution](https://c.mql5.com/2/182/20327-analytical-volume-profile-trading-logo.png)
+![Analytical Volume Profile Trading (AVPT): Liquidity Architecture, Market Memory, and Algorithmic Execution](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/20327-analytical-volume-profile-trading-logo.png)
 
 [Analytical Volume Profile Trading (AVPT): Liquidity Architecture, Market Memory, and Algorithmic Execution](/en/articles/20327)
 
 Analytical Volume Profile Trading (AVPT) explores how liquidity architecture and market memory shape price behavior, enabling more profound insight into institutional positioning and volume-driven structure. By mapping POC, HVNs, LVNs, and Value Areas, traders can identify acceptance, rejection, and imbalance zones with precision.
 
-![Overcoming The Limitation of Machine Learning (Part 7): Automatic Strategy Selection](https://c.mql5.com/2/181/20256-overcoming-the-limitation-of-logo.png)
+![Overcoming The Limitation of Machine Learning (Part 7): Automatic Strategy Selection](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/20256-overcoming-the-limitation-of-logo.png)
 
 [Overcoming The Limitation of Machine Learning (Part 7): Automatic Strategy Selection](/en/articles/20256)
 
 This article demonstrates how to automatically identify potentially profitable trading strategies using MetaTrader 5. White-box solutions, powered by unsupervised matrix factorization, are faster to configure, more interpretable, and provide clear guidance on which strategies to retain. Black-box solutions, while more time-consuming, are better suited for complex market conditions that white-box approaches may not capture. Join us as we discuss how our trading strategies can help us carefully identify profitable strategies under any circumstance.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD/logo-2.png)
 
 You are missing trading opportunities:
 

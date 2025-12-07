@@ -14,9 +14,9 @@ date: "3 December 2025, 12:16"
 
 [](/en/articles/20425?print=)
 
-![preview](assets/20425/5660f357bbf6c98a4b1b74cee5699329.jpeg)
+![preview](assets/20425/9k=)
 
-![Introduction to MQL5 (Part 30): Mastering API and WebRequest Function in MQL5 (IV)](https://c.mql5.com/2/184/20425-introduction-to-mql5-part-30-mastering-api-and-webrequest-function_600x314.jpg)
+![Introduction to MQL5 (Part 30): Mastering API and WebRequest Function in MQL5 (IV)](assets/20425/20425-introduction-to-mql5-part-30-mastering-api-and-webrequest-function_600x314.jpg)
 
 # Introduction to MQL5 (Part 30): Mastering API and WebRequest Function in MQL5 (IV)
 
@@ -29,14 +29,14 @@ date: "3 December 2025, 12:16"
         | 
 3 December 2025, 12:16
 
-![](https://c.mql5.com/i/icons.svg#views-usage)
+![](assets/20425/icons.svg#views-usage)
 
-          915
+          919
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-usage)2](/en/forum/501092)
+[![](assets/20425/icons.svg#comments-usage)2](/en/forum/501092)
 
-![Israel Pelumi Abioye](https://c.mql5.com/avatar/2023/11/6554a830-8858.png)
+![Israel Pelumi Abioye](assets/20425/6554a830-8858.png)
 
 [Israel Pelumi Abioye](/en/users/13467913)
  
@@ -94,7 +94,7 @@ Example:
 Print(day1_data_array[0]);
 ```
 
-![Figure 1. Time in Milliseconds](https://c.mql5.com/2/184/figure_1__1.png)
+![Figure 1. Time in Milliseconds](assets/20425/figure_1__1.png)
 This value is located at index 0 of the array, as can be seen from the first element of the day one candle data. The output, which shows the precise instant the candle opened, is displayed in milliseconds. To put it another way, the number you see is the exact opening time of the candle and is a timestamp stated in milliseconds.  
 It is presently not possible to use the opening time as an actual date and time in MQL5 since it is in string format. The string must first be converted into a suitable datetime type to operate with it correctly or store it alongside other candle opening timings. 
 We first divide the time value given by the server by 1000 to convert it to seconds because it is measured in milliseconds. This change is crucial since MQL5 datetime's base format is seconds rather than milliseconds. Once it has been converted, we may save the outcome inside a datetime array, which enables us to do computations, compare opening times, or use the values for additional analysis.
@@ -170,7 +170,7 @@ int OnInit()
 ```
 
 Output: 
-![Figure 2. Date](https://c.mql5.com/2/184/figure_2__1.png)
+![Figure 2. Date](assets/20425/figure_2__1.png)
 Explanation: 
 Since the opening time that was taken from the first element was initially in string format, it cannot be used directly in MQL5 operations. We turn it into a format that MQL5 accepts as a legitimate time after first converting it to a whole number. This conversion guarantees that the value may be processed, saved, and compared with other candle times without any problems. We store this number in a long integer variable after converting the milliseconds to seconds. We can securely handle huge numbers, which are typical when counting milliseconds over many years, thanks to the long integer.
 This long integer is then converted to a datetime type. In this stage, the raw numerical value is converted into an appropriate date and time representation that MQL5 can understand. The value can be stored in an array of opening times or used for computations and comparisons once it is in datetime format. The second day will then follow the same process. We take the opening time from the second day's data, transform it from text into a useful time format, and save or show it, just like we did with the first candle. This guarantees that the opening time on the second day can be grouped with the other candles and adheres to the same structure.
@@ -249,7 +249,7 @@ int OnInit()
 ```
 
 Output: 
-![Figure 3. Day 1 and 2 Time](https://c.mql5.com/2/184/figure_3__1.png)
+![Figure 3. Day 1 and 2 Time](assets/20425/figure_3__1.png)
 Explanation: 
 Consider the string array's opening time as an extremely accurate clock that shows the time in milliseconds. It is difficult to read or understand as a standard time even though it measures time precisely, since the value is still merely a string of numbers. 
 This string must first be transformed into a number. This is similar to realizing that the written stopwatch reading is a real number that you may use for calculations. Since most systems that handle dates and times operate in seconds rather than milliseconds since the Unix epoch, we divide the resultant value by 1000 to convert it from milliseconds to seconds. To fit within the clock system, it is comparable to turning minuscule fractions of a second into complete seconds. We convert the value to datetime after converting it to seconds. This phase marks the exact opening of the second daily candle and enables the system to understand the value as a definite moment.
@@ -340,7 +340,7 @@ int OnInit()
 ```
 
 Output: 
-![Figure 4. Day 1 to 5 Time](https://c.mql5.com/2/184/figure_4.png)
+![Figure 4. Day 1 to 5 Time](assets/20425/figure_4.png)
 By using the same process for the remaining three candles as we did for the first two, we were able to obtain all five opening times. The first array element of each day was cast into datetime after being transformed from a string to a long integer in seconds. As a result, a full set of opening times is produced, which may be verified by printing all five and then merging or examining them.
 Each of the five daily candles' opening times has been successfully extracted. The next step is to create a datetime array so that our program can work with all of these opening times as a single collection.
 Example:
@@ -428,7 +428,7 @@ int OnInit()
 ```
 
 Output:
-![Figure 5. ArrayPrint](https://c.mql5.com/2/184/Figure_5.png)
+![Figure 5. ArrayPrint](assets/20425/Figure_5.png)
 Explanation: 
 A single array was created by combining the five daily candle opening periods. Instead of juggling several variables every day, this design gives us a single, well-organized container to deal with, enabling us to handle the data effectively. We used ArrayPrint (OpenTime) after defining the array. The complete array was printed by this function in the log window of MetaTrader. We were able to verify that the conversion procedure was effective and that each day's opening time had been correctly positioned inside the array by seeing all the saved datetime values.
 An array can be displayed without depending on a single function. We may print each item independently by iterating through the array, and we can even alter the output for clarification. For a more straightforward summary, it is also possible to put all the values on one line. This flexibility gives us complete control over the array's presentation.
@@ -573,7 +573,7 @@ Example:
 ```
 
 Output: 
-![Figure 6. Open Prices](https://c.mql5.com/2/183/figure_6.png)
+![Figure 6. Open Prices](assets/20425/figure_6.png)
 Explanation: 
 The open-price string from a particular day's data array is taken by each of the first four lines, which then transforms it into a decimal-precision numeric value and puts it in a double variable for that day. Prices must be converted from string to double because they contain decimal places and need to be handled as floating-point values to do calculations for arithmetic, comparisons, and indicators. Since the second element of each day's split data (index 1) was previously determined to represent the location of the open price in the candle structure, the conversion step reads it. 
 The fifth conversion differs significantly from the other four in that it reads from day4_data_array once more, whereas the first four use each day's own data array to obtain the open price. In the absence of a correction, the fifth day's open price would be the same as the fourth day's. To ensure that each day's pricing originates from the appropriate element, you should check the source array for the fifth conversion and modify it to use the data array for the fifth day. 
@@ -644,7 +644,7 @@ Example:
 ```
 
 Output:
-![Figure 7. Close Prices](https://c.mql5.com/2/183/Figure_7.png)
+![Figure 7. Close Prices](assets/20425/Figure_7.png)
 Explanation: 
 Finding which index represents the closing price was the first step. It is evident by looking at the values' arrangement that the closing price is always in the same spot for each candle, enabling us to confidently extract it for every day. After confirming the closing price's position, each number had to be changed from a string to a numerical type that could be used in computations. Since activities like comparisons and computations require numeric values and the data received from the server is originally in string format, this translation is crucial. The same process was used for each of the five daily candles, converting each closing price into a numerical format.
 A single array called ClosePrice was made to combine all the daily closing prices after each individual closing price was doubled. With the first element denoting the most current candle and the last element denoting the fifth candle in our series, this array keeps each day's closure in sequential order. This method of data organization makes it simple to get the closing price of any particular candle or conduct analysis over several candles. After each daily candle's closing price was found, it had to be converted from a string to a number that could be utilized in computations. To prevent problems brought on by string data, this phase ensures that all five closing prices are in a format that can be utilized for analysis, comparison, and additional processing.
@@ -749,7 +749,7 @@ This article was written by a user of the site and reflects their personal views
         (2)
     
 
-![Jiang Huang](https://c.mql5.com/avatar/avatar_na2.png)
+![Jiang Huang](assets/20425/avatar_na2.png)
 
 [Jiang Huang](/en/users/wild-child)
 
@@ -763,7 +763,7 @@ I like your WebRequest series. May I ask how to use it for backtesting and live 
 [custom symbols](https://www.mql5.com/en/articles/3540)
 ?
 
-![Israel Pelumi Abioye](https://c.mql5.com/avatar/2023/11/6554a830-8858.png)
+![Israel Pelumi Abioye](assets/20425/6554a830-8858.png)
 
 [Israel Pelumi Abioye](/en/users/13467913)
 
@@ -784,31 +784,31 @@ I like your WebRequest series. May I ask how to use it for backtesting and live 
 Thank you. Watch out for the next article 
             
 
-![Developing a Trading Strategy: Using a Volume-Bound Approach](https://c.mql5.com/2/184/20469-developing-a-trading-strategy-logo__1.png)
+![Developing a Trading Strategy: Using a Volume-Bound Approach](assets/20425/20469-developing-a-trading-strategy-logo__1.png)
 
 [Developing a Trading Strategy: Using a Volume-Bound Approach](/en/articles/20469)
 
 In the world of technical analysis, price often takes center stage. Traders meticulously map out support, resistance, and patterns, yet frequently ignore the critical force that drives these movements: volume. This article delves into a novel approach to volume analysis: the Volume Boundary indicator. This transformation, utilizing sophisticated smoothing functions like the butterfly and triple sine curves, allows for clearer interpretation and the development of systematic trading strategies.
 
-![Automating Trading Strategies in MQL5 (Part 44): Change of Character (CHoCH) Detection with Swing High/Low Breaks](https://c.mql5.com/2/184/20355-automating-trading-strategies-logo.png)
+![Automating Trading Strategies in MQL5 (Part 44): Change of Character (CHoCH) Detection with Swing High/Low Breaks](assets/20425/20355-automating-trading-strategies-logo.png)
 
 [Automating Trading Strategies in MQL5 (Part 44): Change of Character (CHoCH) Detection with Swing High/Low Breaks](/en/articles/20355)
 
 In this article, we develop a Change of Character (CHoCH) detection system in MQL5 that identifies swing highs and lows over a user-defined bar length, labels them as HH/LH for highs or LL/HL for lows to determine trend direction, and triggers trades on breaks of these swing points, indicating a potential reversal, and trades the breaks when the structure changes.
 
-![Capital management in trading and the trader's home accounting program with a database](https://c.mql5.com/2/123/Capital_Management_in_Trading_and_Home_Accounting_Program_for_Traders_with_Database_LOGO-3.png)
+![Capital management in trading and the trader's home accounting program with a database](assets/20425/Capital_Management_in_Trading_and_Home_Accounting_Program_for_Traders_with_Database_LOGO-3.png)
 
 [Capital management in trading and the trader's home accounting program with a database](/en/articles/17282)
 
 How can a trader manage capital? How can a trader and investor keep track of expenses, income, assets, and liabilities? I am not just going to introduce you to accounting software; I am going to show you a tool that might become your reliable financial navigator in the stormy sea of trading.
 
-![Neural Networks in Trading: Multi-Task Learning Based on the ResNeXt Model](https://c.mql5.com/2/117/Neural_Networks_in_Trading_Multi-Task_Learning_Based_on_the_ResNeXt_Model__LOGO.png)
+![Neural Networks in Trading: Multi-Task Learning Based on the ResNeXt Model](assets/20425/Neural_Networks_in_Trading_Multi-Task_Learning_Based_on_the_ResNeXt_Model__LOGO.png)
 
 [Neural Networks in Trading: Multi-Task Learning Based on the ResNeXt Model](/en/articles/17142)
 
 A multi-task learning framework based on ResNeXt optimizes the analysis of financial data, taking into account its high dimensionality, nonlinearity, and time dependencies. The use of group convolution and specialized heads allows the model to effectively extract key features from the input data.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/20425/logo-2.png)
 
 You are missing trading opportunities:
 

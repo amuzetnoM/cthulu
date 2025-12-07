@@ -13,9 +13,9 @@ date: "26 November 2025, 12:20"
 
 [](/en/articles/20339?print=)
 
-![preview](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/a8b78083dfa7a239ed834c63c975b23b.jpeg)
+![preview](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/2Q==)
 
-![Automating Trading Strategies in MQL5 (Part 42): Session-Based Opening Range Breakout (ORB) System](https://c.mql5.com/2/183/20339-automating-trading-strategies-in-mql5-part-42-session-based_600x314.jpg)
+![Automating Trading Strategies in MQL5 (Part 42): Session-Based Opening Range Breakout (ORB) System](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/20339-automating-trading-strategies-in-mql5-part-42-session-based_600x314.jpg)
 
 # Automating Trading Strategies in MQL5 (Part 42): Session-Based Opening Range Breakout (ORB) System
 
@@ -28,14 +28,14 @@ date: "26 November 2025, 12:20"
         | 
 26 November 2025, 12:20
 
-![](https://c.mql5.com/i/icons.svg#views-usage)
+![](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/icons.svg#views-usage)
 
-          22 035
+          22 038
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-usage)3](/en/forum/500775)
+[![](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/icons.svg#comments-usage)3](/en/forum/500775)
 
-![Allan Munene Mutiiria](https://c.mql5.com/avatar/2022/11/637df59b-9551.jpg)
+![Allan Munene Mutiiria](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/637df59b-9551.jpg)
 
 [Allan Munene Mutiiria](/en/users/29210372)
  
@@ -80,7 +80,7 @@ By the end, you’ll have an MQL5 program capable of trading clean opening range
  is a classic intraday momentum strategy that capitalizes on the initial directional bias established at the start of a trading session. We define an "opening range" as the high and low formed during the first few minutes (typically 5–60 minutes) after the market opens, then wait for the price to break decisively above the range high (bullish breakout) or below the range low (bearish breakout) and enter in the direction of the break. The premise is simple but powerful: the opening range often represents the battle between buyers and sellers as the market digests overnight news and order flow, and a clean breakout signals that one side has won control, frequently leading to a sustained directional move. The system is generally easy. Have a look below at the different setups we could have.
  
  
-![ORB STRATEGY SETUPS](https://c.mql5.com/2/181/Screenshot_2025-11-18_110512.png)
+![ORB STRATEGY SETUPS](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/Screenshot_2025-11-18_110512.png)
  
 Our plan is to create a fully session-flexible ORB system that works on any instrument and any trading session (New York, London, Asian, or even custom openings).  We will allow users to set the exact start time. For example, 09:30 for the NYSE or 08:00 for London. Users will also be able to define the range duration in minutes. The system will automatically calculate the true high and low on the selected timeframe within that window. If needed, users can enable multiple bar-close confirmations to validate a breakout. 
  
@@ -89,7 +89,7 @@ The algorithm will execute only one trade per direction per session. We will off
 Visualization is equally important in our case, as you might have noticed by now, for clarity. In brief, here is a visual representation of our objectives.
  
  
-![OBJECTIVES FRAMEWORK](https://c.mql5.com/2/181/Screenshot_2025-11-18_102142.png)
+![OBJECTIVES FRAMEWORK](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/Screenshot_2025-11-18_102142.png)
  
  
 
@@ -305,7 +305,7 @@ For trade entries, we implement "DrawEntryArrow," which places a visual marker d
  symbol 233 (up arrow) for buys or 234 (down arrow) for sells, applies blue for long or red for short, anchors it correctly at the bottom or top, and redraws the chart. For the arrow codes, MQL5 has dedicated fonts as below, and you can switch to whichever you like.
  
  
-![MQL5 WINGDINGS FONT CODES](https://c.mql5.com/2/181/C_MQL5_WINGDINGS__1.png)
+![MQL5 WINGDINGS FONT CODES](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/C_MQL5_WINGDINGS__1.png)
  
 Finally, we define the "ActivePositions" function to safely count how many open positions exist for a specific type (buy or sell) that belong to this program. It loops backward through all positions, checks for a matching symbol, magic number via "UniqueID", and position type using 
 [POSITION_TYPE_BUY](/en/docs/constants/tradingconstants/positionproperties#enum_position_type)
@@ -416,7 +416,7 @@ During the opening range formation period (while "currentTime" < "rangeEndTime")
 We draw a filled light-blue rectangle spanning from "sessionStart" at "rangeHigh" to "rangeEndTime" at "rangeLow" using a unique name based on the session timestamp, with solid style and background placement. Vertical blue dotted lines are added at both start and end times via "RenderVLine" with descriptive tooltips. Time labels are placed just below the range using "RenderText" with a small offset calculated as 5% of the range size, anchored upward in blue. Finally, we render the persistent horizontal levels with "RenderLevel" (green for high, red for low) and their corresponding text labels anchored at the right side of the range end time, ensuring we always see the exact breakout levels even hours or days later. Upon compilation, we get the following outcome.
  
  
-![ORB RANGES ESTABLISHMENT](https://c.mql5.com/2/181/Screenshot_2025-11-18_110930.png)
+![ORB RANGES ESTABLISHMENT](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/Screenshot_2025-11-18_110930.png)
  
 With the ranges established, we just need to track them and their breakouts, and once we break from either range, we determine the direction and thus the type of breakout setup and open trades. Easy peasy. Here is the logic we use to achieve that.
  
@@ -504,7 +504,7 @@ We respect the "UseBreakoutFilter" input (though currently it simply passes the 
 ), log the entry details to the Experts tab, draw a blue upward arrow at the entry using "DrawEntryArrow", and set "tradedLong" to true to lock out further longs this session. The bearish side mirrors this exactly. Upon compilation, we get the following outcome.
  
  
-![CONFIRMED SELL ORB SIGNAL](https://c.mql5.com/2/181/Screenshot_2025-11-18_113102.png)
+![CONFIRMED SELL ORB SIGNAL](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/Screenshot_2025-11-18_113102.png)
  
 From the image, we can see that we open trades once we have a breakout. We now just need to manage the open positions by applying a trailing stop once the market moves in our favour, if we want to.
  
@@ -582,7 +582,7 @@ In the
  to remove every dynamically created object from the current session and all previous ones. This complete cleanup prevents object accumulation across multiple sessions or chart reloads. Upon compilation, we get the following outcome when the trailing stop is enabled.
  
  
-![COMPLETE ORB GIF](https://c.mql5.com/2/181/ORB_GIF.gif)
+![COMPLETE ORB GIF](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/ORB_GIF.gif)
  
 From the visualization, we can see that we define the ranges, open positions, and manage them by applying trailing stops when needed, hence achieving our objectives. The thing that remains is backtesting the program, and that is handled in the next section.
  
@@ -596,12 +596,12 @@ After thorough backtesting, we have the following results.
 Backtest graph:
  
  
-![GRAPH](https://c.mql5.com/2/181/Screenshot_2025-11-18_123022.png)
+![GRAPH](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/Screenshot_2025-11-18_123022.png)
  
 Backtest report:
  
  
-![REPORT](https://c.mql5.com/2/181/Screenshot_2025-11-18_123035.png)
+![REPORT](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/Screenshot_2025-11-18_123035.png)
  
  
 
@@ -658,7 +658,7 @@ This article was written by a user of the site and reflects their personal views
         (3)
     
 
-![linfo2](https://c.mql5.com/avatar/2023/4/6438c14d-e2f0.png)
+![linfo2](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/6438c14d-e2f0.png)
 
 [linfo2](/en/users/neilhazelwood)
 
@@ -674,7 +674,7 @@ This article was written by a user of the site and reflects their personal views
  ? generally I use  broker time change but it is not always accurate for me as I am in NZ my broker is in AU there are factors like austalias offset and times when there is a tokyo offset and a new york offset . I have had trouble getting this to work , any suggestions appreciated  . chat gpt gives me  me a scipt that checks each coutnries daylight saving dates, was wondering if there was a more eloquent solution
             
 
-![Allan Munene Mutiiria](https://c.mql5.com/avatar/2022/11/637df59b-9551.jpg)
+![Allan Munene Mutiiria](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/637df59b-9551.jpg)
 
 [Allan Munene Mutiiria](/en/users/29210372)
 
@@ -730,7 +730,7 @@ MqlDateTime my_struct_time;
  
 It is all upon you to choose the best approach. Thanks.
 
-![Stanislav Korotky](https://c.mql5.com/avatar/2010/10/4CA7CFA0-1F0C.jpg)
+![Stanislav Korotky](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/4CA7CFA0-1F0C.jpg)
 
 [Stanislav Korotky](/en/users/marketeer)
 
@@ -759,31 +759,31 @@ Or probably you want 
  
 Unfortunately, built-in MQL5 API does not provide a ready-made and more eloquent solution.
 
-![From Basic to Intermediate: Struct (I)](https://c.mql5.com/2/117/Do_b8sico_ao_intermediario_Struct_I___LOGO.png)
+![From Basic to Intermediate: Struct (I)](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/Do_b8sico_ao_intermediario_Struct_I___LOGO.png)
 
 [From Basic to Intermediate: Struct (I)](/en/articles/15730)
 
 Today we will begin to study structures in a simpler, more practical, and comfortable way. Structures are among the foundations of programming, whether they are structured or not. I know many people think of structures as just collections of data, but I assure you that they are much more than just structures. And here we will begin to explore this new universe in the most didactic way.
 
-![MetaTrader 5 Machine Learning Blueprint (Part 6): Engineering a Production-Grade Caching System](https://c.mql5.com/2/182/20302-metatrader-5-machine-learning-logo.png)
+![MetaTrader 5 Machine Learning Blueprint (Part 6): Engineering a Production-Grade Caching System](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/20302-metatrader-5-machine-learning-logo.png)
 
 [MetaTrader 5 Machine Learning Blueprint (Part 6): Engineering a Production-Grade Caching System](/en/articles/20302)
 
 Tired of watching progress bars instead of testing trading strategies? Traditional caching fails financial ML, leaving you with lost computations and frustrating restarts. We've engineered a sophisticated caching architecture that understands the unique challenges of financial data—temporal dependencies, complex data structures, and the constant threat of look-ahead bias. Our three-layer system delivers dramatic speed improvements while automatically invalidating stale results and preventing costly data leaks. Stop waiting for computations and start iterating at the pace the markets demand.
 
-![The MQL5 Standard Library Explorer (Part 4): Custom Signal Library](https://c.mql5.com/2/183/20266-the-mql5-standard-library-explorer-logo.png)
+![The MQL5 Standard Library Explorer (Part 4): Custom Signal Library](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/20266-the-mql5-standard-library-explorer-logo.png)
 
 [The MQL5 Standard Library Explorer (Part 4): Custom Signal Library](/en/articles/20266)
 
 Today, we use the MQL5 Standard Library to build custom signal classes and let the MQL5 Wizard assemble a professional Expert Advisor for us. This approach simplifies development so that even beginner programmers can create robust EAs without in-depth coding knowledge, focusing instead on tuning inputs and optimizing performance. Join this discussion as we explore the process step by step.
 
-![Market Positioning Codex for VGT with Kendall's Tau and Distance Correlation](https://c.mql5.com/2/182/20271-market-positioning-codex-for-logo.png)
+![Market Positioning Codex for VGT with Kendall's Tau and Distance Correlation](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/20271-market-positioning-codex-for-logo.png)
 
 [Market Positioning Codex for VGT with Kendall's Tau and Distance Correlation](/en/articles/20271)
 
 In this article, we look to explore how a complimentary indicator pairing can be used to analyze the recent 5-year history of Vanguard Information Technology Index Fund ETF. By considering two options of algorithms, Kendall’s Tau and Distance-Correlation, we look to select not just an ideal indicator pair for trading the VGT, but also suitable signal-pattern pairings of these two indicators.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System/logo-2.png)
 
 You are missing trading opportunities:
 

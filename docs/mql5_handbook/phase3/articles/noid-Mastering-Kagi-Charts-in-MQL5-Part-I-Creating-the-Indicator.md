@@ -13,9 +13,9 @@ date: "25 November 2025, 11:53"
 
 [](/en/articles/20239?print=)
 
-![preview](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/ff55b5e6a5d8fc888117d151050f988a.jpeg)
+![preview](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/9k=)
 
-![Mastering Kagi Charts in MQL5 (Part I): Creating the Indicator](https://c.mql5.com/2/182/20239-mastering-kagi-charts-in-mql5-part-one-creating-the-indicator_600x314.jpg)
+![Mastering Kagi Charts in MQL5 (Part I): Creating the Indicator](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/20239-mastering-kagi-charts-in-mql5-part-one-creating-the-indicator_600x314.jpg)
 
 # Mastering Kagi Charts in MQL5 (Part I): Creating the Indicator
 
@@ -28,14 +28,14 @@ date: "25 November 2025, 11:53"
         | 
 25 November 2025, 11:53
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/icons.svg#views-white-usage)
 
-          2 287
+          2 289
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)0](/en/forum/500725)
+[![](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/icons.svg#comments-white-usage)0](/en/forum/500725)
 
-![Chacha Ian Maroa](https://c.mql5.com/avatar/2025/5/68331b36-7e52.png)
+![Chacha Ian Maroa](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/68331b36-7e52.png)
 
 [Chacha Ian Maroa](/en/users/chachaian)
  
@@ -55,12 +55,12 @@ Before we begin building our own Kagi system, it helps to visualize how a Kagi c
 Traditional Candlestick Chart
  
  
-![candle stick chart](https://c.mql5.com/2/182/CandlestickChart.png)
+![candle stick chart](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/CandlestickChart.png)
  
 Kagi Chart
  
  
-![kagi chart](https://c.mql5.com/2/182/KagiChart.png)
+![kagi chart](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/KagiChart.png)
  
 In this two-part series, we will build a complete Kagi-based trading system in MQL5. In Part One, we will create a live, fully functional, non-repainting Kagi Chart that draws directly on the main chart window using MQL5 graphical objects such as OBJ_TREND. This will give us a clean and accurate Kagi visualization that reacts instantly to market movements. 
  
@@ -1653,7 +1653,7 @@ The full source code for this EA is attached at the end of the article. If you m
 With our Kagi Chart EA now fully assembled, the next step is to put it on a live chart and confirm that everything behaves as expected. For this demonstration, we attached the EA to the Nikkei Index (JPN225) and loaded the configuration file named kagitrader.set, which is provided alongside the project. Once the settings were applied, we launched the EA on the chart — and the results were immediately visible. The Kagi structure began forming exactly as designed, updating smoothly as new bars came in. Below is a screenshot of the EA running in real time, showing the Kagi lines drawn correctly on top of price action.
  
  
-![Live Kagi Chart](https://c.mql5.com/2/182/KagiChart__1.png)
+![Live Kagi Chart](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/KagiChart__1.png)
  
  
 
@@ -1703,31 +1703,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/500725)
 
-![Implementing Practical Modules from Other Languages in MQL5 (Part 04): time, date, and datetime modules from Python](https://c.mql5.com/2/183/19035-implementing-practical-modules-logo.png)
+![Implementing Practical Modules from Other Languages in MQL5 (Part 04): time, date, and datetime modules from Python](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/19035-implementing-practical-modules-logo.png)
 
 [Implementing Practical Modules from Other Languages in MQL5 (Part 04): time, date, and datetime modules from Python](/en/articles/19035)
 
 Unlike MQL5, Python programming language offers control and flexibility when it comes to dealing with and manipulating time. In this article, we will implement similar modules for better handling of dates and time in MQL5 as in Python.
 
-![Overcoming The Limitation of Machine Learning (Part 8): Nonparametric Strategy Selection](https://c.mql5.com/2/182/20317-overcoming-the-limitation-of-logo.png)
+![Overcoming The Limitation of Machine Learning (Part 8): Nonparametric Strategy Selection](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/20317-overcoming-the-limitation-of-logo.png)
 
 [Overcoming The Limitation of Machine Learning (Part 8): Nonparametric Strategy Selection](/en/articles/20317)
 
 This article shows how to configure a black-box model to automatically uncover strong trading strategies using a data-driven approach. By using Mutual Information to prioritize the most learnable signals, we can build smarter and more adaptive models that outperform conventional methods. Readers will also learn to avoid common pitfalls like overreliance on surface-level metrics, and instead develop strategies rooted in meaningful statistical insight.
 
-![Price Action Analysis Toolkit Development (Part 52): Master Market Structure with Multi-Timeframe Visual Analysis](https://c.mql5.com/2/183/20387-price-action-analysis-toolkit-logo__1.png)
+![Price Action Analysis Toolkit Development (Part 52): Master Market Structure with Multi-Timeframe Visual Analysis](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/20387-price-action-analysis-toolkit-logo__1.png)
 
 [Price Action Analysis Toolkit Development (Part 52): Master Market Structure with Multi-Timeframe Visual Analysis](/en/articles/20387)
 
 This article presents the Multi‑Timeframe Visual Analyzer, an MQL5 Expert Advisor that reconstructs and overlays higher‑timeframe candles directly onto your active chart. It explains the implementation, key inputs, and practical outcomes, supported by an animated demo and chart examples showing instant toggling, multi‑timeframe confirmation, and configurable alerts. Read on to see how this tool can make chart analysis faster, clearer, and more efficient.
 
-![Table and Header Classes based on a table model in MQL5: Applying the MVC concept](https://c.mql5.com/2/137/MQL5_table_model_implementation___LOGO__V2.png)
+![Table and Header Classes based on a table model in MQL5: Applying the MVC concept](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/MQL5_table_model_implementation___LOGO__V2.png)
 
 [Table and Header Classes based on a table model in MQL5: Applying the MVC concept](/en/articles/17803)
 
 This is the second part of the article devoted to the implementation of the table model in MQL5 using the MVC (Model-View-Controller) architectural paradigm. The article discusses the development of table classes and the table header based on a previously created table model. The developed classes will form the basis for further implementation of View and Controller components, which will be discussed in the following articles.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator/logo-2.png)
 
 You are missing trading opportunities:
 

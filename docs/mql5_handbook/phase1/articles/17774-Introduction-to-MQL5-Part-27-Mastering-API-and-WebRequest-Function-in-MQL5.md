@@ -14,9 +14,9 @@ date: "31 October 2025, 08:51"
 
 [](/en/articles/17774?print=)
 
-![preview](assets/17774/35f132e30d6755f63dc5f694267376df.jpeg)
+![preview](assets/17774/9k=)
 
-![Introduction to MQL5 (Part 27): Mastering API and WebRequest Function in MQL5](https://c.mql5.com/2/178/17774-introduction-to-mql5-part-27-mastering-api-and-webrequest-function_600x314.jpg)
+![Introduction to MQL5 (Part 27): Mastering API and WebRequest Function in MQL5](assets/17774/17774-introduction-to-mql5-part-27-mastering-api-and-webrequest-function_600x314.jpg)
 
 # Introduction to MQL5 (Part 27): Mastering API and WebRequest Function in MQL5
 
@@ -29,14 +29,14 @@ date: "31 October 2025, 08:51"
         | 
 31 October 2025, 08:51
 
-![](https://c.mql5.com/i/icons.svg#views-usage)
+![](assets/17774/icons.svg#views-usage)
 
-          1 438
+          1 442
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-usage)0](/en/forum/499106)
+[![](assets/17774/icons.svg#comments-usage)0](/en/forum/499106)
 
-![Israel Pelumi Abioye](https://c.mql5.com/avatar/2023/11/6554a830-8858.png)
+![Israel Pelumi Abioye](assets/17774/6554a830-8858.png)
 
 [Israel Pelumi Abioye](/en/users/13467913)
  
@@ -54,7 +54,7 @@ The purpose of this article is to introduce you to the basic ideas underlying MQ
  
  
  
-![Figure 1. Telegram API](https://c.mql5.com/2/177/figure_1__2.png)
+![Figure 1. Telegram API](assets/17774/figure_1__2.png)
  
  
 
@@ -343,7 +343,7 @@ Print(resHeaders);
 Output: 
  
  
-![Figure 2. Result Headers](https://c.mql5.com/2/178/figure_2__1.png)
+![Figure 2. Result Headers](assets/17774/figure_2__1.png)
  
 The headers and the body (or content) are the two primary components that the web server typically provides in response to a request sent by your MQL5 software. This header data from the server's response is captured by the result_headers parameter.
  
@@ -383,28 +383,28 @@ https://api.telegram.org
  
  
  
-![Figure 3. Options Window](https://c.mql5.com/2/177/figure_Z.png)
+![Figure 3. Options Window](assets/17774/figure_Z.png)
  
 Search for BotFather.
  
  
  
-![Figure 4. Search BotFather](https://c.mql5.com/2/177/Figure_Hello.png)
+![Figure 4. Search BotFather](assets/17774/Figure_Hello.png)
  
 Select /newbot to create a new bot.
  
  
-![Figure 5. New Bot](https://c.mql5.com/2/177/figure_4__1.png)
+![Figure 5. New Bot](assets/17774/figure_4__1.png)
  
 Choose a display name for your bot.
  
  
-![Figure 6. Display Name](https://c.mql5.com/2/177/Figure_5__1.png)
+![Figure 6. Display Name](assets/17774/Figure_5__1.png)
  
 Choose a username, and it must finish in "bot" or "_bot."
  
  
-![Figure 7. Username](https://c.mql5.com/2/177/figure_6__1.png)
+![Figure 7. Username](assets/17774/figure_6__1.png)
  
 A message will immediately be sent to you, and this message will include two important details:
  
@@ -416,7 +416,7 @@ Your Bot Link—This is the link to your bot; click on it to open your bot direc
  
  
  
-![Figure 8. Bot Created](https://c.mql5.com/2/177/Figure_7__1.png)
+![Figure 8. Bot Created](assets/17774/Figure_7__1.png)
  
  
 Enter this URL in the address bar of your browser.
@@ -438,20 +438,20 @@ https://api.telegram.org/bot123456789:ABCdefGhIJklMNopQRstuVWxyz/getUpdates
 
  
  
-![Figure 9. Pretty Print](https://c.mql5.com/2/178/figure_8__1.png)
+![Figure 9. Pretty Print](assets/17774/figure_8__1.png)
  
 A page displaying some text will open. A box will appear in front of "Pretty-print" on that page. Click on the link. 
  
 Go back to your Telegram bot and click on the Start button.
  
  
-![Figure 10. Start](https://c.mql5.com/2/177/Figure_9__1.png)
+![Figure 10. Start](assets/17774/Figure_9__1.png)
  
  
 Go back to your browser and refresh the page. 
  
  
-![Figure 11. Refresh Page](https://c.mql5.com/2/177/figure_10__1.png)
+![Figure 11. Refresh Page](assets/17774/figure_10__1.png)
  
 The page will display a fresh update. Your bot has been successfully activated, according to this update. Additionally, it will offer helpful data like your chat ID, which you will need to send messages to your Telegram bot from MetaTrader 5. The next step is to create a new EA file in MetaEditor 5 after completing all the previously mentioned stages.
  
@@ -495,7 +495,7 @@ int OnInit()
 Output: 
  
  
-![Figure 12. Message Sent](https://c.mql5.com/2/177/figure_11__1.png)
+![Figure 12. Message Sent](assets/17774/figure_11__1.png)
  
 Explanation: 
  
@@ -541,29 +541,29 @@ The next step is to learn how to send messages to a Telegram group instead of a 
 Click on the group's profile icon after creating a Telegram group. 
  
  
-![Figure 13. Manage Group](https://c.mql5.com/2/177/Figure_12__1.png)
+![Figure 13. Manage Group](assets/17774/Figure_12__1.png)
  
  
 Navigate to “Manage Group” from the options that appear, then click on “Administrators.”
  
  
-![Figure 14. Administrator](https://c.mql5.com/2/177/Figure_13__1.png)
+![Figure 14. Administrator](assets/17774/Figure_13__1.png)
  
 Click on “Add Administrator” and use the search bar to look for the Telegram bot you created earlier using its username (for example, @MQL5APTtest_bot).
  
  
-![Figure 15. Add Administrator](https://c.mql5.com/2/177/Figure_14__1.png)
+![Figure 15. Add Administrator](assets/17774/Figure_14__1.png)
  
  
 After selecting your bot, give it the necessary permissions to operate in the group.
  
  
-![Figure 16. Permissions](https://c.mql5.com/2/177/Figure_15__1.png)
+![Figure 16. Permissions](assets/17774/Figure_15__1.png)
  
 Go back to your Telegram group and send a message. 
  
  
-![Figure 16. Send Message](https://c.mql5.com/2/177/Figure_16__1.png)
+![Figure 16. Send Message](assets/17774/Figure_16__1.png)
  
 Go back to your browser and open the Telegram API link again: 
  
@@ -576,7 +576,7 @@ https://api.telegram.org/bot<YourBotToken>/getUpdates
 A JSON response with information about the message you just sent to the group will appear after you reload the website. The chat_id of your Telegram group can be found in the chat area of this response. To send messages directly to that group, you will use this chat_id in your MetaTrader 5 code.
  
  
-![Figure 18. Group ID](https://c.mql5.com/2/177/figure_17__1.png)
+![Figure 18. Group ID](assets/17774/figure_17__1.png)
  
 You can now utilize your Telegram group's chat ID in your MQL5 code since you were able to retrieve it. Any message or notification you send from MetaTrader 5 will now travel straight to that particular Telegram group as your program can pinpoint the exact location of messages thanks to this conversation ID.
 Example: 
@@ -619,7 +619,7 @@ int OnInit()
 Output:
  
  
-![Figure 19. MT5 to Telegram](https://c.mql5.com/2/177/figure_18__1.png)
+![Figure 19. MT5 to Telegram](assets/17774/figure_18__1.png)
  
 Explanation:
  
@@ -823,31 +823,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/499106)
 
-![From Novice to Expert: Revealing the Candlestick Shadows (Wicks)](https://c.mql5.com/2/178/19919-from-novice-to-expert-revealing-logo.png)
+![From Novice to Expert: Revealing the Candlestick Shadows (Wicks)](assets/17774/19919-from-novice-to-expert-revealing-logo.png)
 
 [From Novice to Expert: Revealing the Candlestick Shadows (Wicks)](/en/articles/19919)
 
 In this discussion, we take a step forward to uncover the underlying price action hidden within candlestick wicks. By integrating a wick visualization feature into the Market Periods Synchronizer, we enhance the tool with greater analytical depth and interactivity. This upgraded system allows traders to visualize higher-timeframe price rejections directly on lower-timeframe charts, revealing detailed structures that were once concealed within the shadows.
 
-![Black-Scholes Greeks: Gamma and Delta](https://c.mql5.com/2/178/20054-black-scholes-greeks-gamma-logo.png)
+![Black-Scholes Greeks: Gamma and Delta](assets/17774/20054-black-scholes-greeks-gamma-logo.png)
 
 [Black-Scholes Greeks: Gamma and Delta](/en/articles/20054)
 
 Gamma and Delta measure how an option’s value reacts to changes in the underlying asset’s price. Delta represents the rate of change of the option’s price relative to the underlying, while Gamma measures how Delta itself changes as price moves. Together, they describe an option’s directional sensitivity and convexity—critical for dynamic hedging and volatility-based trading strategies.
 
-![Neural Networks in Trading: A Multi-Agent System with Conceptual Reinforcement (FinCon)](https://c.mql5.com/2/110/Neural_Networks_in_Trading____FinCon____LOGO2.png)
+![Neural Networks in Trading: A Multi-Agent System with Conceptual Reinforcement (FinCon)](assets/17774/Neural_Networks_in_Trading____FinCon____LOGO2.png)
 
 [Neural Networks in Trading: A Multi-Agent System with Conceptual Reinforcement (FinCon)](/en/articles/16916)
 
 We invite you to explore the FinCon framework, which is a a Large Language Model (LLM)-based multi-agent system. The framework uses conceptual verbal reinforcement to improve decision making and risk management, enabling effective performance on a variety of financial tasks.
 
-![Machine Learning Blueprint (Part 4): The Hidden Flaw in Your Financial ML Pipeline — Label Concurrency](https://c.mql5.com/2/175/19850-machine-learning-blueprint-logo.png)
+![Machine Learning Blueprint (Part 4): The Hidden Flaw in Your Financial ML Pipeline — Label Concurrency](assets/17774/19850-machine-learning-blueprint-logo.png)
 
 [Machine Learning Blueprint (Part 4): The Hidden Flaw in Your Financial ML Pipeline — Label Concurrency](/en/articles/19850)
 
 Discover how to fix a critical flaw in financial machine learning that causes overfit models and poor live performance—label concurrency. When using the triple-barrier method, your training labels overlap in time, violating the core IID assumption of most ML algorithms. This article provides a hands-on solution through sample weighting. You will learn how to quantify temporal overlap between trading signals, calculate sample weights that reflect each observation's unique information, and implement these weights in scikit-learn to build more robust classifiers. Learning these essential techniques will make your trading models more robust, reliable and profitable.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/17774/logo-2.png)
 
 You are missing trading opportunities:
 

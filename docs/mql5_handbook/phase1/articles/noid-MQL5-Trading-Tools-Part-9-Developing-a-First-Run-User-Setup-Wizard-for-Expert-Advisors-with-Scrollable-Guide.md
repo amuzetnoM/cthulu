@@ -13,9 +13,9 @@ date: "30 September 2025, 09:16"
 
 [](/en/articles/19714?print=)
 
-![preview](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/80722037d4ceb32de331b890ef518893.jpeg)
+![preview](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Z)
 
-![MQL5 Trading Tools (Part 9): Developing a First Run User Setup Wizard for Expert Advisors with Scrollable Guide](https://c.mql5.com/2/172/19714-mql5-trading-tools-part-9-developing-a-first-run-user-setup_600x314.jpg)
+![MQL5 Trading Tools (Part 9): Developing a First Run User Setup Wizard for Expert Advisors with Scrollable Guide](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/19714-mql5-trading-tools-part-9-developing-a-first-run-user-setup_600x314.jpg)
 
 # MQL5 Trading Tools (Part 9): Developing a First Run User Setup Wizard for Expert Advisors with Scrollable Guide
 
@@ -28,14 +28,14 @@ date: "30 September 2025, 09:16"
         | 
 30 September 2025, 09:16
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/icons.svg#views-white-usage)
 
-          1 832
+          1 835
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)0](/en/forum/496479)
+[![](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/icons.svg#comments-white-usage)0](/en/forum/496479)
 
-![Allan Munene Mutiiria](https://c.mql5.com/avatar/2022/11/637df59b-9551.jpg)
+![Allan Munene Mutiiria](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/637df59b-9551.jpg)
 
 [Allan Munene Mutiiria](/en/users/29210372)
  
@@ -65,9 +65,9 @@ Our approach is to design an intuitive, scrollable dashboard that displays a cle
  (OS) where the program is first run. We will create a centered interface with a header, body, and footer, incorporating dynamic text formatting for readability, scrollable content for comprehensive instructions, and adaptive sizing to fit different screen resolutions. This ensures traders can easily follow steps such as setting risk parameters or enabling AutoTrading, making the setup process seamless and efficient. We will follow the in-built structure for the '
 [One Click Trading](https://www.metatrader5.com/en/terminal/help/trading/one_click_trading)
 ' setup guide as follows.
-![APPROACH FRAMEWORK COMPARISON](https://c.mql5.com/2/172/Screenshot_2025-09-25_155135.png)
+![APPROACH FRAMEWORK COMPARISON](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_155135.png)
 From the image, you can see the approach we will be taking. We will be adding an optional scaled program image to distinguish it from other programs. In a nutshell, here is a visualization of what we aim to achieve.
-![INITIAL RUN WIZARD FRAMEWORK GIF](https://c.mql5.com/2/172/Init_setup_guide_GIF.gif)
+![INITIAL RUN WIZARD FRAMEWORK GIF](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Init_setup_guide_GIF.gif)
 
 ### Implementation in MQL5
 
@@ -219,7 +219,7 @@ The "ENUM_SCROLLBAR_MODE"
  constants for object names like "SETUP_MAIN", "SETUP_HEADER_BG", "SCROLL_LEADER", and others for consistent naming of dashboard and scrollbar elements. Finally, we create the "setup_text" string, a comprehensive guide with sections on features, setup instructions, notes, and contact methods formatted with headings and numbered steps, creating a system for organizing the wizard’s interface and content for user interaction. You can modify the positioning or content; we just used arbitrary values. The next thing we will need to configure is the image to be used as the header icon. You can skip this step if you don't want to have it. We will need to convert our image file to a 
 [bitmap](https://en.wikipedia.org/wiki/Bitmap)
  (BMP) file. Upon conversion, the image should have properties that depict the following.
-![BITMAP FILE IMAGE](https://c.mql5.com/2/172/Screenshot_2025-09-25_164029.png)
+![BITMAP FILE IMAGE](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_164029.png)
 From the image, you can see that our image is a 
 [Bitmap](https://en.wikipedia.org/wiki/Bitmap)
  file. You don't have to worry about the size or dimensions since we can scale in any direction we want later when needed. Remember to place the file in the same folder as the program file. What we now need to do is add the file as a resource to the program.
@@ -507,7 +507,7 @@ Then, we check if the global variable exists with
  event handler, and return 
 [INIT_SUCCEEDED](/en/docs/basis/function/events#enum_init_retcode)
  for successful initialization. Upon compilation, we get the following outcome.
-![BASE DASHBOARD WITH HEADER](https://c.mql5.com/2/172/Screenshot_2025-09-25_174130.png)
+![BASE DASHBOARD WITH HEADER](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_174130.png)
 Since we now have a header section, let us add the image file to it. We will need to scale the image, so let's define the functions to do the heavy lifting, then we can call them to scale our image file.
 
 ```
@@ -636,7 +636,7 @@ if (image_loaded && orig_width > 0 && orig_height > 0) { //--- Check image load 
 To implement the image loading and scaling logic, we declare a pixel array "img_pixels" and initialize dimensions "orig_width" and "orig_height" to zero, then load the resource image with "ResourceReadImage" using "resourceImg", checking if successful ("image_loaded" and dimensions > 0); if true, we call "ScaleImage" to resize to 40x40 pixels - which you can modify, set "g_scaled_image_resource" to "::SetupHeaderImageScaled", and create a new resource with 
 [ResourceCreate](/en/docs/common/resourcecreate)
  in ARGB format, followed by "createBitmapLabel" to display the scaled image at the header’s position with white color. If resource creation fails, we log the instance and fall back to the original image; if the load fails, we log and use the original "resourceImg" directly with the "createBitmapLabel" function. Upon compilation, we get the following outcome.
-![HEADER WITH SCALED IMAGE FILE](https://c.mql5.com/2/172/Screenshot_2025-09-25_175529.png)
+![HEADER WITH SCALED IMAGE FILE](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_175529.png)
 Now that we have the image file ready, we move on to implementing the other core elements as follows.
 
 ```
@@ -672,11 +672,11 @@ for (int i = 0; i < MAX_LINES; i++) {               //--- Create tex
 Here, we implement the remaining dashboard components for the Wizard to complete its user interface. We truncate the program's name to 20 characters with "truncateString" for readability and create a title label ("SETUP_HEADER_TITLE") with "createLabel" at calculated coordinates, using a DPI-adjusted font size from "getFontSizeByDPI" (base 14) and "Arial Bold". Next, we add a subtitle label ("SETUP_HEADER_SUBTITLE") with fixed text and a smaller DPI-adjusted font size (base 10), followed by a header cancel button ("SETUP_HEADER_CANCEL") using a 
 [Unicode](https://en.wikipedia.org/wiki/Unicode)
  cross (0x274C) in "Arial Rounded MT Bold". Here is its description.
-![CROSS MARK DETAILS](https://c.mql5.com/2/172/Screenshot_2025-09-25_180228.png)
+![CROSS MARK DETAILS](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_180228.png)
 We calculate the body’s y-position ("bodyY") and create its background ("SETUP_BODY_BG") with "createRecLabel" using a dark gray background (C'25,25,25') and border, spanning "g_mainWidth" and "g_displayHeight". Then, we compute the footer’s y-position ("footerY") and create its background ("SETUP_FOOTER_BG") with a lighter gray, followed by a checkbox background ("SETUP_CHECKBOX_BG") as a 20x20 square, a checkbox label ("SETUP_CHECKBOX_LABEL") with an empty 
 [Wingdings](https://en.wikipedia.org/wiki/Wingdings)
  character, and its text ("SETUP_CHECKBOX_TEXT") stating "Do not show this guide again" in "Calibri Bold". We add OK and Cancel buttons ("SETUP_OK_BUTTON", "SETUP_CANCEL_BUTTON") with "createButton" at DPI-adjusted font size (base 12), using consistent gray colors. Finally, we loop to create up to "MAX_LINES" text labels ("Setup_ResponseLine_") with "createLabel", initially hidden off-screen, for dynamic text display. This creates a system for rendering the wizard’s interactive and visually cohesive dashboard. We get the following outcome upon running the program.
-![WIZARD ENHANCED ELEMENTS](https://c.mql5.com/2/172/Screenshot_2025-09-25_180512.png)
+![WIZARD ENHANCED ELEMENTS](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_180512.png)
 Since we now have the dashboard with the basic elements, we need to update the display to show the wizard's designated labels. Since having rich multi-line text labels in MQL5 is not as easy as there is no direct way of achieving that, we will need to use a text wrapping approach.
 
 ```
@@ -899,7 +899,7 @@ We wrap the guide text with "WrapText" if not already done, calculate total text
  and 
 [ObjectSetInteger](/en/docs/objects/ObjectSetInteger)
  for position, color (blue for headings via "IsHeading"), and font, hide unused labels, and redraw the chart. When we call this function in the function to show the dashboard, we get the following outcome.
-![INITIALIZED DISPLAY](https://c.mql5.com/2/172/Screenshot_2025-09-25_201506.png)
+![INITIALIZED DISPLAY](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_201506.png)
 We can see we have the display ready with the text fitting perfectly in the display area. What we need to do is fetch the logic for displaying the scrollbar when needed.
 
 ```
@@ -1044,7 +1044,7 @@ Inside the "UpdateBodyDisplay" function, we calculate the number of visible line
  to prevent overflow. If the scrollbar is visible, we update "slider_height" with "CalculateSliderHeight", set the slider’s height with 
 [ObjectSetInteger](/en/docs/objects/objectsetinteger)
  for "SCROLL_SLIDER", and call "UpdateSliderPosition" and "UpdateButtonColors" to refresh the scrollbar’s appearance and position. When we compile, we get the following outcome.
-![SCROLLBAR ENABLED](https://c.mql5.com/2/172/Screenshot_2025-09-25_203431.png)
+![SCROLLBAR ENABLED](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_203431.png)
 From the image, we can see that the dashboard elements are fully created. We now need to make sure that we discard the dashboard when we log out or deinitialize the program.
 
 ```
@@ -1341,7 +1341,7 @@ Finally, in the
 , and adjust the checkbox background to green (C'0,128,0') or gray (C'60,60,60'). MQL5 provides a detailed list of the Wingdings font characters, and that is what we used. You can use any of your choice or a different approach. Here is a visualization of the possible 
 [MQL5 Wingdings](/en/docs/constants/objectconstants/wingdings)
  characters you can use.
-![MQL5 WINGDINGS](https://c.mql5.com/2/172/C_MQL5_WINGDINGS.png)
+![MQL5 WINGDINGS](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/C_MQL5_WINGDINGS.png)
 For scroll up ("SCROLL_UP_REC", "SCROLL_UP_LABEL") or down ("SCROLL_DOWN_REC", "SCROLL_DOWN_LABEL") clicks, we call "ScrollUp" or "ScrollDown". For mouse move events (
 [CHARTEVENT_MOUSE_MOVE](/en/docs/constants/chartconstants/enum_chartevents)
 ), we calculate the body area, update "mouse_in_body", and call "UpdateHoverEffects" with "mouseX" and "mouseY"; we detect slider drag start ("MouseState" 1) by checking if the mouse is over "SCROLL_SLIDER", setting "movingStateSlider" and storing mouse positions, and during drag, adjust the slider’s y-position with 
@@ -1351,9 +1351,9 @@ For scroll up ("SCROLL_UP_REC", "SCROLL_UP_LABEL") or down ("SCROLL_DOWN_REC", "
  function. For mouse wheel events (
 [CHARTEVENT_MOUSE_WHEEL](/en/docs/constants/chartconstants/enum_chartevents)
 ), we adjust "scroll_pos" based on wheel direction and notches, clamp it within "g_max_scroll", and update the display and scrollbar. When we compile, we get the following outcome.
-![FINAL WIZARD WITH FULL FUNCTIONALITY](https://c.mql5.com/2/172/Screenshot_2025-09-25_205754.png)
+![FINAL WIZARD WITH FULL FUNCTIONALITY](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_205754.png)
 From the image, we can see that the dashboard is now fully functional and interactive. When we click on the okay button, we should get a global variable set. To access the global variable, you need to click on "Tools" then "Global Variables" or simply press F3 on your keyboard. Here is a complete visualization.
-![GLOBAL VARIABLE SETUP](https://c.mql5.com/2/172/Screenshot_2025-09-25_210430.png)
+![GLOBAL VARIABLE SETUP](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Screenshot_2025-09-25_210430.png)
 From the images, we can see that we have correctly set up the wizard with all the objectives achieved. What now remains is testing the workability of the project, and that is handled in the preceding section.
 
 ### Testing the Setup Wizard
@@ -1361,7 +1361,7 @@ From the images, we can see that we have correctly set up the wizard with all th
 We did the testing, and below is the compiled visualization in a single 
 [Graphics Interchange Format](https://en.wikipedia.org/wiki/GIF)
  (GIF) bitmap image format.
-![WIZARD BACKTEST GIF](https://c.mql5.com/2/172/FIRST_RUN_WIZARD_GIF.gif)
+![WIZARD BACKTEST GIF](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/FIRST_RUN_WIZARD_GIF.gif)
 
 ### Conclusion
 
@@ -1402,31 +1402,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/496479)
 
-![From Novice to Expert: Backend Operations Monitor using MQL5](https://c.mql5.com/2/172/19649-from-novice-to-expert-backend-logo.png)
+![From Novice to Expert: Backend Operations Monitor using MQL5](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/19649-from-novice-to-expert-backend-logo.png)
 
 [From Novice to Expert: Backend Operations Monitor using MQL5](/en/articles/19649)
 
 Using a ready-made solution in trading without concerning yourself with the internal workings of the system may sound comforting, but this is not always the case for developers. Eventually, an upgrade, misperformance, or unexpected error will arise, and it becomes essential to trace exactly where the issue originates to diagnose and resolve it quickly. Today’s discussion focuses on uncovering what normally happens behind the scenes of a trading Expert Advisor, and on developing a custom dedicated class for displaying and logging backend processes using MQL5. This gives both developers and traders the ability to quickly locate errors, monitor behavior, and access diagnostic information specific to each EA.
 
-![Price Action Analysis Toolkit Development (Part 42): Interactive Chart Testing with Button Logic and Statistical Levels](https://c.mql5.com/2/172/19697-price-action-analysis-toolkit-logo.png)
+![Price Action Analysis Toolkit Development (Part 42): Interactive Chart Testing with Button Logic and Statistical Levels](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/19697-price-action-analysis-toolkit-logo.png)
 
 [Price Action Analysis Toolkit Development (Part 42): Interactive Chart Testing with Button Logic and Statistical Levels](/en/articles/19697)
 
 In a world where speed and precision matter, analysis tools need to be as smart as the markets we trade. This article presents an EA built on button logic—an interactive system that instantly transforms raw price data into meaningful statistical levels. With a single click, it calculates and displays mean, deviation, percentiles, and more, turning advanced analytics into clear on-chart signals. It highlights the zones where price is most likely to bounce, retrace, or break, making analysis both faster and more practical.
 
-![Automating Trading Strategies in MQL5 (Part 35): Creating a Breaker Block Trading System](https://c.mql5.com/2/173/19638-automating-trading-strategies-logo.png)
+![Automating Trading Strategies in MQL5 (Part 35): Creating a Breaker Block Trading System](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/19638-automating-trading-strategies-logo.png)
 
 [Automating Trading Strategies in MQL5 (Part 35): Creating a Breaker Block Trading System](/en/articles/19638)
 
 In this article, we create a Breaker Block Trading System in MQL5 that identifies consolidation ranges, detects breakouts, and validates breaker blocks with swing points to trade retests with defined risk parameters. The system visualizes order and breaker blocks with dynamic labels and arrows, supporting automated trading and trailing stops.
 
-![Cyclic Parthenogenesis Algorithm (CPA)](https://c.mql5.com/2/113/Cyclic_Parthenogenesis_Algorithm____LOGO.png)
+![Cyclic Parthenogenesis Algorithm (CPA)](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/Cyclic_Parthenogenesis_Algorithm____LOGO.png)
 
 [Cyclic Parthenogenesis Algorithm (CPA)](/en/articles/16877)
 
 The article considers a new population optimization algorithm - Cyclic Parthenogenesis Algorithm (CPA), inspired by the unique reproductive strategy of aphids. The algorithm combines two reproduction mechanisms — parthenogenesis and sexual reproduction — and also utilizes the colonial structure of the population with the possibility of migration between colonies. The key features of the algorithm are adaptive switching between different reproductive strategies and a system of information exchange between colonies through the flight mechanism.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide/logo-2.png)
 
 You are missing trading opportunities:
 

@@ -15,7 +15,7 @@ Usage examples:
 Notes:
 -- The importer does not produce tags in frontmatter — tags and tag extraction were intentionally removed.
 - Author frontmatter is intentionally omitted per the user's request; frontmatter will include `title`, `original_url`, `phase`, `date` (where available), `article_id`, and `tags`.
-- The importer downloads images and attachments into `docs/mql5_handbook/phaseN/assets/<article_id>/` and rewrites links in Markdown to the relative asset path.
+-- The importer downloads images and attachments into `docs/mql5_handbook/phaseN/assets/<article_id>/` and rewrites links in Markdown to the relative asset path. By default asset download is disabled to keep imports fast: use `--assets` to enable asset downloads (the importer defaults to not downloading assets). Use `--assets` only in a network-friendly environment if you want local copies of all images and attachments.
 - Optional dependencies: `html2text` to produce nicer Markdown output. The script falls back to a simplified conversion if `html2text` is not present.
 
 Requirements:

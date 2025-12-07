@@ -17,9 +17,9 @@ date: "8 September 2025, 08:19"
 
 [](/en/articles/19260?print=)
 
-![preview](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/e6de49aa2eba41b3a2d76e5a6c72d658.jpeg)
+![preview](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/Z)
 
-![Building a Professional Trading System with Heikin Ashi (Part 1): Developing a custom indicator](https://c.mql5.com/2/167/19260-building-a-professional-trading-system-with-heikin-ashi-part-I_600x314.jpg)
+![Building a Professional Trading System with Heikin Ashi (Part 1): Developing a custom indicator](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/19260-building-a-professional-trading-system-with-heikin-ashi-part-I_600x314.jpg)
 
 # Building a Professional Trading System with Heikin Ashi (Part 1): Developing a custom indicator
 
@@ -32,14 +32,14 @@ date: "8 September 2025, 08:19"
         | 
 8 September 2025, 08:19
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/icons.svg#views-white-usage)
 
-          9 962
+          9 965
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)0](/en/forum/494952)
+[![](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/icons.svg#comments-white-usage)0](/en/forum/494952)
 
-![Chacha Ian Maroa](https://c.mql5.com/avatar/2025/5/68331b36-7e52.png)
+![Chacha Ian Maroa](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/68331b36-7e52.png)
 
 [Chacha Ian Maroa](/en/users/chachaian)
  
@@ -73,12 +73,12 @@ To begin, let us look at two charts side by side.
 A traditional candlestick chart:
  
  
-![Traditional Candlestick chart](https://c.mql5.com/2/165/CandleStickChart.png)
+![Traditional Candlestick chart](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/CandleStickChart.png)
  
 A Heikin Ashi chart generated from the same price data:
  
  
-![Heikin Ashi Chart](https://c.mql5.com/2/165/HeikinAShiChart.png)
+![Heikin Ashi Chart](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/HeikinAShiChart.png)
  
 Both charts are based on recent gold price action. As you compare them, pay attention to how the candles behave during trending periods. While traditional candlestick charts update with each new price bar, they can often appear choppy, frequently changing color even when the overall trend remains intact. This can create visual noise and make it harder to gauge momentum at a glance. In contrast, Heikin Ashi candles are calculated using smoothed values, which results in a much cleaner appearance. During trending periods, Heikin Ashi typically prints long sequences of same-colored candles, making it easier to visually identify uptrends and downtrends.
  
@@ -97,7 +97,7 @@ In the next section, we'll break down exactly how these candles are calculated.
 Before we look at how Heikin Ashi candles are calculated, let us first understand what makes them different from regular candlesticks. In a traditional candlestick chart, each candle is formed using four key values from the market.
  
  
-![Candle Stick Anatomy](https://c.mql5.com/2/167/CSA.png)
+![Candle Stick Anatomy](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/CSA.png)
  
  
 Open is the price at the start of candlestick formation.
@@ -1230,7 +1230,7 @@ int OnInit()
 We have successfully completed building our custom Heikin Ashi Indicator. Everything is in place, from calculating the Heikin Ashi candles to drawing them cleanly on the chart with a well-configured appearance. Now it is time to attach the indicator to a chart and see it in action.
  
  
-![gold 1hr chart](https://c.mql5.com/2/165/XAUUSDH1.png)
+![gold 1hr chart](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/XAUUSDH1.png)
  
 We have now attached our custom Heikin Ashi indicator to the gold H1 timeframe, and it works perfectly. Everything is displayed as expected, which means that our code is functioning correctly and the chart is ready for visual tuning and further testing.
  
@@ -1275,31 +1275,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/494952)
 
-![Overcoming The Limitation of Machine Learning (Part 3): A Fresh Perspective on Irreducible Error](https://c.mql5.com/2/167/19371-overcoming-the-limitation-of-logo.png)
+![Overcoming The Limitation of Machine Learning (Part 3): A Fresh Perspective on Irreducible Error](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/19371-overcoming-the-limitation-of-logo.png)
 
 [Overcoming The Limitation of Machine Learning (Part 3): A Fresh Perspective on Irreducible Error](/en/articles/19371)
 
 This article takes a fresh perspective on a hidden, geometric source of error that quietly shapes every prediction your models make. By rethinking how we measure and apply machine learning forecasts in trading, we reveal how this overlooked perspective can unlock sharper decisions, stronger returns, and a more intelligent way to work with models we thought we already understood.
 
-![Trend strength and direction indicator on 3D bars](https://c.mql5.com/2/108/16719_logo.png)
+![Trend strength and direction indicator on 3D bars](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/16719_logo.png)
 
 [Trend strength and direction indicator on 3D bars](/en/articles/16719)
 
 We will consider a new approach to market trend analysis based on three-dimensional visualization and tensor analysis of the market microstructure.
 
-![Neural Networks in Trading: An Ensemble of Agents with Attention Mechanisms (MASAAT)](https://c.mql5.com/2/105/logo-neural-networks-made-easy-masaat.png)
+![Neural Networks in Trading: An Ensemble of Agents with Attention Mechanisms (MASAAT)](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/logo-neural-networks-made-easy-masaat.png)
 
 [Neural Networks in Trading: An Ensemble of Agents with Attention Mechanisms (MASAAT)](/en/articles/16599)
 
 We introduce the Multi-Agent Self-Adaptive Portfolio Optimization Framework (MASAAT), which combines attention mechanisms and time series analysis. MASAAT generates a set of agents that analyze price series and directional changes, enabling the identification of significant fluctuations in asset prices at different levels of detail.
 
-![Price Action Analysis Toolkit Development (Part 38): Tick Buffer VWAP and Short-Window Imbalance Engine](https://c.mql5.com/2/166/19290-price-action-analysis-toolkit-logo.png)
+![Price Action Analysis Toolkit Development (Part 38): Tick Buffer VWAP and Short-Window Imbalance Engine](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/19290-price-action-analysis-toolkit-logo.png)
 
 [Price Action Analysis Toolkit Development (Part 38): Tick Buffer VWAP and Short-Window Imbalance Engine](/en/articles/19290)
 
 In Part 38, we build a production-grade MT5 monitoring panel that converts raw ticks into actionable signals. The EA buffers tick data to compute tick-level VWAP, a short-window imbalance (flow) metric, and ATR-based position sizing. It then visualizes spread, ATR, and flow with low-flicker bars. The system calculates a suggested lot size and a 1R stop, and issues configurable alerts for tight spreads, strong flow, and edge conditions. Auto-trading is intentionally disabled; the focus remains on robust signal generation and a clean user experience.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator/logo-2.png)
 
 You are missing trading opportunities:
 
