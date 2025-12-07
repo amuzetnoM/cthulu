@@ -1,4 +1,559 @@
 ---
+title: Changelog
+description: Herald project release notes and version history (canonical)
+tags: [changelog, releases]
+sidebar_position: 3
+---
+
+# Changelog (canonical)
+
+[← Back to Docs](../index.html) • [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
+
+![version-badge](https://img.shields.io/badge/version-3.1.0-blue)
+
+This is the canonical changelog for the Herald repository. Please update any references that point to `docs/CHANGELOG.md` to use this location: `docs/changelog/CHANGELOG.md`.
+
+All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
+
+---
+
+## Table of contents
+- [Unreleased](#unreleased)
+- [3.1.0 — 2025-12-07](#310---2025-12-07)
+- [3.0.0 — 2024-12-07](#300---2024-12-07)
+- [2.0.0 — 2024-12-06](#200---2024-12-06)
+- [1.0.0 — 2024-11-15](#100---2024-11-15)
+- [Release Template](#release-template-use-for-future-releases)
+
+---
+
+## Unreleased
+
+### Added
+- Placeholder for unreleased features and integration notes.
+
+### Changed
+- Notes for breaking changes, behavior updates, and refactors.
+
+### Fixed
+- Bug fixes and test improvements.
+
+### Security
+- Security-related changes and advisories.
+
+---
+
+## 3.1.0 — 2025-12-07
+
+### Summary
+Enhances trade management capabilities, adds CLI tooling, improves configuration validation, and introduces observability endpoints.
+
+### Added
+- External trade adoption (`position/trade_manager.py`) — Detect and manage externally created trades with configurable adoption policies.
+- Command-line trade management (`scripts/trade_cli.py`) — Place, list and close positions from the CLI with optional dry-run.
+- Predefined risk profiles (`config/mindsets.py`) — Quick presets for aggressive, balanced, and conservative trading.
+- Pydantic-based configuration validation (`config_schema.py`) — Strongly-typed configuration models and environment variable overrides.
+- Observability endpoints: `observability/health.py` and `observability/prometheus.py`.
+
+### Changed
+- Position reconciliation at startup now detects and tracks pre-existing positions across sessions.
+- Exit strategies: return types and priority semantics standardized across implementations.
+
+### Fixed
+- Normalized return types and priority semantics for exit strategies.
+- Reconciled `get_pnl_pips()` defaults and updated callers.
+
+### Security
+- Pre-commit hooks configured with `detect-secrets` and a `.secrets.baseline` file for secret scanning.
+
+---
+
+## 3.0.0 — 2024-12-07
+
+### Summary
+Production-ready system release with full MT5 integration, comprehensive testing, and CI automation.
+
+### Added
+- ATR indicator and enhancements to indicators (RSI, MACD, Bollinger, Stochastic, ADX).
+- Exit Manager and exit strategies for stop loss, take profit, trailing and time-based exit.
+- GitHub Actions-based CI with tests, linting, and coverage reporting.
+
+### Changed
+- Integration tests refactored to use pytest fixtures; improved lifecycle handling.
+
+### Fixed
+- MT5 connection handling, market data compatibility, and test edge cases.
+
+---
+
+## 2.0.0 — 2024-12-06
+
+### Summary
+First public release marking baseline Phase 2 completion with autonomous trading and expanded indicators and execution machinery.
+
+### Added
+- Indicator set (RSI, MACD, Bollinger, Stochastic, ADX) and a base indicator library.
+- Position Manager and Execution Engine for consistent order placement and reconciliation.
+- Exit strategies, configuration and initial documentation.
+
+### Fixed
+- Initial bug fixes and MT5 integration improvements.
+
+---
+
+## 1.0.0 — 2024-11-15
+
+### Summary
+Foundation release with core architecture, connector scaffolding, and initial modules.
+
+### Added
+- Project structure, connector, data layer, persistence, and initial strategy/indicator scaffolding.
+
+---
+
+## Release Template (Use for future releases)
+
+### Added
+- Brief feature description, file/list of changed files, and how to test.
+
+### Changed
+- Behavior changes with migration guidance.
+
+### Deprecated
+- Deprecated features with suggested alternatives.
+
+### Removed
+- Features removed and migration steps.
+
+### Fixed
+- Bug fixes and test updates.
+
+### Security
+- Security advisories and fixes.
+
+---
+
+## How we structure entries
+- Use Keep a Changelog conventions (https://keepachangelog.com) and Semantic Versioning (https://semver.org).
+- Prefer concise, one-sentence bullets grouped by Added / Changed / Fixed / Security / Deprecated / Removed.
+- Reference files and PRs where relevant.
+
+---
+
+## Contributing
+See `CONTRIBUTING.md` for guidance. When preparing a release, use the release template above and reference the PR(s) that implement the changes.
+---
+title: Changelog
+description: Herald project release notes and version history (canonical)
+tags: [changelog, releases]
+sidebar_position: 3
+---
+
+# Changelog (canonical)
+
+[← Back to Docs](../index.html) • [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
+
+![version-badge](https://img.shields.io/badge/version-3.1.0-blue)
+
+This is the canonical changelog for the Herald repository. Please update any references that point to `docs/CHANGELOG.md` to use this location: `docs/changelog/CHANGELOG.md`.
+
+All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
+
+---
+
+## Table of contents
+- [Unreleased](#unreleased)
+- [3.1.0 — 2025-12-07](#310---2025-12-07)
+- [3.0.0 — 2024-12-07](#300---2024-12-07)
+- [2.0.0 — 2024-12-06](#200---2024-12-06)
+- [1.0.0 — 2024-11-15](#100---2024-11-15)
+- [Release Template](#release-template-use-for-future-releases)
+
+---
+
+## Unreleased
+
+### Added
+- Placeholder for unreleased features and integration notes.
+
+### Changed
+- Notes for breaking changes, behavior updates, and refactors.
+
+### Fixed
+- Bug fixes and test improvements.
+
+### Security
+- Security-related changes and advisories.
+
+---
+
+## 3.1.0 — 2025-12-07
+
+### Summary
+Enhances trade management capabilities, adds CLI tooling, improves configuration validation, and introduces observability endpoints.
+
+### Added
+- External trade adoption (`position/trade_manager.py`) — Detect and manage externally created trades with configurable adoption policies.
+- Command-line trade management (`scripts/trade_cli.py`) — Place, list and close positions from the CLI with optional dry-run.
+- Predefined risk profiles (`config/mindsets.py`) — Quick presets for aggressive, balanced, and conservative trading.
+- Pydantic-based configuration validation (`config_schema.py`) — Strongly-typed configuration models and environment variable overrides.
+- Observability endpoints: `observability/health.py` and `observability/prometheus.py`.
+
+### Changed
+- Position reconciliation at startup now detects and tracks pre-existing positions across sessions.
+- Exit strategies: return types and priority semantics standardized across implementations.
+
+### Fixed
+- Normalized return types and priority semantics for exit strategies.
+- Reconciled `get_pnl_pips()` defaults and updated callers.
+
+### Security
+- Pre-commit hooks configured with `detect-secrets` and a `.secrets.baseline` file for secret scanning.
+
+---
+
+## 3.0.0 — 2024-12-07
+
+### Summary
+Production-ready system release with full MT5 integration, comprehensive testing, and CI automation.
+
+### Added
+- ATR indicator and enhancements to indicators (RSI, MACD, Bollinger, Stochastic, ADX).
+- Exit Manager and exit strategies for stop loss, take profit, trailing and time-based exit.
+- GitHub Actions-based CI with tests, linting, and coverage reporting.
+
+### Changed
+- Integration tests refactored to use pytest fixtures; improved lifecycle handling.
+
+### Fixed
+- MT5 connection handling, market data compatibility, and test edge cases.
+
+---
+
+## 2.0.0 — 2024-12-06
+
+### Summary
+First public release marking baseline Phase 2 completion with autonomous trading and expanded indicators and execution machinery.
+
+### Added
+- Indicator set (RSI, MACD, Bollinger, Stochastic, ADX) and a base indicator library.
+- Position Manager and Execution Engine for consistent order placement and reconciliation.
+- Exit strategies, configuration and initial documentation.
+
+### Fixed
+- Initial bug fixes and MT5 integration improvements.
+
+---
+
+## 1.0.0 — 2024-11-15
+
+### Summary
+Foundation release with core architecture, connector scaffolding, and initial modules.
+
+### Added
+- Project structure, connector, data layer, persistence, and initial strategy/indicator scaffolding.
+
+---
+
+## Release Template (Use for future releases)
+
+### Added
+- Brief feature description, file/list of changed files, and how to test.
+
+### Changed
+- Behavior changes with migration guidance.
+
+### Deprecated
+- Deprecated features with suggested alternatives.
+
+### Removed
+- Features removed and migration steps.
+
+### Fixed
+- Bug fixes and test updates.
+
+### Security
+- Security advisories and fixes.
+
+---
+
+## How we structure entries
+- Use Keep a Changelog conventions (https://keepachangelog.com) and Semantic Versioning (https://semver.org).
+- Prefer concise, one-sentence bullets grouped by Added / Changed / Fixed / Security / Deprecated / Removed.
+- Reference files and PRs where relevant.
+
+---
+
+## Contributing
+See `CONTRIBUTING.md` for guidance. When preparing a release, use the release template above and reference the PR(s) that implement the changes.
+---
+title: Changelog
+description: Herald project release notes and version history (canonical)
+tags: [changelog, releases]
+sidebar_position: 3
+---
+
+# Changelog (canonical)
+
+[← Back to Docs](../index.html) • [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
+
+![version-badge](https://img.shields.io/badge/version-3.1.0-blue)
+
+All notable changes to the Herald Adaptive Trading Intelligence project are documented here.
+This file follows Keep a Changelog conventions and uses Semantic Versioning (https://semver.org/).
+
+## Table of contents
+- [Unreleased](#unreleased)
+- [3.1.0 — 2025-12-07](#310---2025-12-07)
+- [3.0.0 — 2024-12-07](#300---2024-12-07)
+- [2.0.0 — 2024-12-06](#200---2024-12-06)
+- [1.0.0 — 2024-11-15](#100---2024-11-15)
+- [Release Template](#release-template-use-for-future-releases)
+
+---
+
+## Unreleased
+
+### Added
+- Placeholder for unreleased features and integration notes.
+
+### Changed
+- Notes for breaking changes, behavior updates, and refactors.
+
+### Fixed
+- Bug fixes and test improvements.
+
+### Security
+- Security-related changes and advisories.
+
+---
+
+## 3.1.0 — 2025-12-07
+
+### Summary
+Enhances trade management capabilities, adds CLI tooling, improves configuration validation, and introduces observability endpoints.
+
+### Added
+- External trade adoption (`position/trade_manager.py`) — Detect and manage externally created trades with configurable adoption policies.
+- Command-line trade management (`scripts/trade_cli.py`) — Place, list and close positions from the CLI with optional dry-run.
+- Predefined risk profiles (`config/mindsets.py`) — Quick presets for aggressive, balanced, and conservative trading.
+- Pydantic-based configuration validation (`config_schema.py`) — Strongly-typed configuration models and environment variable overrides.
+- Observability endpoints: `observability/health.py` and `observability/prometheus.py`.
+
+### Changed
+- Position reconciliation at startup now detects and tracks pre-existing positions across sessions.
+- Exit strategies: return types and priority semantics standardized across implementations.
+
+### Fixed
+- Normalized return types and priority semantics for exit strategies.
+- Reconciled `get_pnl_pips()` defaults and updated callers.
+
+### Security
+- Pre-commit hooks configured with `detect-secrets` and a `.secrets.baseline` file for secret scanning.
+
+---
+
+## 3.0.0 — 2024-12-07
+
+### Summary
+Production-ready system release with full MT5 integration, comprehensive testing, and CI automation.
+
+### Added
+- ATR indicator and enhancements to indicators (RSI, MACD, Bollinger, Stochastic, ADX).
+- Exit Manager and exit strategies for stop loss, take profit, trailing and time-based exit.
+- GitHub Actions-based CI with tests, linting, and coverage reporting.
+
+### Changed
+- Integration tests refactored to use pytest fixtures; improved lifecycle handling.
+
+### Fixed
+- MT5 connection handling, market data compatibility, and test edge cases.
+
+---
+
+## 2.0.0 — 2024-12-06
+
+### Summary
+First public release marking baseline Phase 2 completion with autonomous trading and indicator set.
+
+### Added
+- Indicator library (RSI, MACD, Bollinger, Stochastic, ADX) and base indicator infrastructure.
+- Position Manager, Execution Engine, and the initial Exit Strategy engine.
+- Core strategy scaffolding and configuration management for MT5 integration.
+
+### Changed
+- Project structure refined for maintainability and modularity.
+
+### Fixed
+- Initial bug fixes and MT5 integration improvements.
+
+---
+
+## 1.0.0 — 2024-11-15
+
+### Summary
+Foundation release with core architecture and MT5 connector scaffolding; this release establishes project conventions and initial modules.
+
+### Added
+- Project infrastructure, data layer, connector, strategy engine scaffolding, and initial tests.
+
+---
+
+## Release Template (Use for future releases)
+
+### Added
+- Brief feature description, file/list of changed files, and how to test.
+
+### Changed
+- Behavior changes with migration guidance.
+
+### Deprecated
+- Deprecated features with suggested alternatives.
+
+### Removed
+- Features removed and migration steps.
+
+### Fixed
+- Bug fixes and test updates.
+
+### Security
+- Security advisories and fixes.
+
+---
+
+## How we structure entries
+- Use Keep a Changelog conventions (https://keepachangelog.com) and Semantic Versioning (https://semver.org).
+- Prefer concise, one-sentence bullets grouped by Added / Changed / Fixed / Security / Deprecated / Removed.
+- Reference files and PRs where relevant.
+
+---
+
+## Contributing
+See `CONTRIBUTING.md` for guidance. When preparing a release, use the release template above and reference the PR(s) that implement the changes.
+
+---
+
+This file is the canonical changelog location for Herald. If you have a local copy or link to other CHANGELOG files, please update them to point to `docs/changelog/CHANGELOG.md`.
+---
+title: Changelog
+description: Herald project release notes and version history (canonical)
+tags: [changelog, releases]
+sidebar_position: 3
+---
+
+# Changelog (canonical)
+
+[← Back to Docs](../index.html) • [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
+
+![version-badge](https://img.shields.io/badge/version-3.1.0-blue)
+
+All notable changes to the Herald Adaptive Trading Intelligence project are documented here.
+This file follows Keep a Changelog conventions and uses Semantic Versioning (https://semver.org/).
+
+## Table of contents
+- [Unreleased](#unreleased)
+- [3.1.0 — 2025-12-07](#310---2025-12-07)
+- [3.0.0 — 2024-12-07](#300---2024-12-07)
+- [Release Template](#release-template-use-for-future-releases)
+- [How we structure entries](#how-we-structure-entries)
+
+---
+
+## Unreleased
+
+### Added
+- Placeholder for unreleased features and integration notes.
+
+### Changed
+- Notes for breaking changes, behavior updates, and refactors.
+
+### Fixed
+- Bug fixes and test improvements.
+
+### Security
+- Security-related changes and advisories.
+
+---
+
+## 3.1.0 — 2025-12-07
+
+### Summary
+Enhances trade management capabilities, adds CLI tooling, improves configuration validation, and introduces observability endpoints.
+
+### Added
+- External trade adoption (`position/trade_manager.py`) — Detect and manage externally created trades with configurable adoption policies.
+- Command-line trade management (`scripts/trade_cli.py`) — Place, list and close positions from the CLI with optional dry-run.
+- Predefined risk profiles (`config/mindsets.py`) — Quick presets for aggressive, balanced, and conservative trading.
+- Pydantic-based configuration validation (`config_schema.py`) — Strongly-typed configuration models and environment variable overrides.
+- Observability endpoints: `observability/health.py` and `observability/prometheus.py`.
+
+### Changed
+- Position reconciliation at startup now detects and tracks pre-existing positions across sessions.
+- Exit strategies: return types and priority semantics standardized across implementations.
+
+### Fixed
+- Normalized return types and priority semantics for exit strategies.
+- Reconciled `get_pnl_pips()` defaults and updated callers.
+
+### Security
+- Pre-commit hooks configured with `detect-secrets` and a `.secrets.baseline` file for secret scanning.
+
+---
+
+## 3.0.0 — 2024-12-07
+
+### Summary
+Production-ready system release with complete MT5 integration, comprehensive testing, and CI automation.
+
+### Added
+- ATR indicator and enhancements to indicators (RSI, MACD, Bollinger, Stochastic, ADX).
+- Exit Manager and exit strategies for stop loss, take profit, trailing and time-based exit.
+- GitHub Actions-based CI with tests, linting, and coverage reporting.
+
+### Changed
+- Integration tests refactored to use pytest fixtures; improved lifecycle handling.
+
+### Fixed
+- MT5 connection handling, market data compatibility, and test edge cases.
+
+---
+
+## Release Template (Use for future releases)
+
+### Added
+- Brief feature description, file/list of changed files, and how to test.
+
+### Changed
+- Behavior changes with migration guidance.
+
+### Deprecated
+- Deprecated features with suggested alternatives.
+
+### Removed
+- Features removed and migration steps.
+
+### Fixed
+- Bug fixes and test updates.
+
+### Security
+- Security advisories and fixes.
+
+---
+
+## How we structure entries
+- Use Keep a Changelog conventions (https://keepachangelog.com) and Semantic Versioning (https://semver.org).
+- Prefer concise, one-sentence bullets grouped by Added / Changed / Fixed / Security / Deprecated / Removed.
+- Reference files and PRs where relevant.
+
+---
+
+## Contributing
+See `CONTRIBUTING.md` for guidance. When preparing a release, use the release template above and reference the PR(s) that implement the changes.
+
+---
+
+This file is the canonical changelog location for Herald. If you have a local copy or link to other CHANGELOG files, please update them to point to `docs/changelog/CHANGELOG.md`.
+---
 title: Changelog (moved)
 description: This file was moved to the canonical `docs/CHANGELOG.md`.
 sidebar_position: 3
@@ -6,9 +561,11 @@ sidebar_position: 3
 
 # Changelog (moved)
 
-The canonical changelog for Herald now lives at: [docs/CHANGELOG.md](../CHANGELOG.md).
+The canonical changelog for Herald now lives at: [../CHANGELOG.md](../CHANGELOG.md).
 
-Please update any references to `docs/changelog/CHANGELOG.md` to `docs/CHANGELOG.md`.
+If you maintain links to `docs/changelog/CHANGELOG.md`, please update them to `docs/CHANGELOG.md`.
+
+For a full release history, visit: https://github.com/amuzetnoM/herald/releases
 
 ---
 title: Changelog (moved)
