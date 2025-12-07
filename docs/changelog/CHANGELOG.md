@@ -9,9 +9,7 @@ sidebar_position: 3
 
 ![version-badge](https://img.shields.io/badge/version-3.1.0-blue)
 
-This is the canonical changelog for the Herald repository. Please update any references that point to `docs/CHANGELOG.md` to use this location: `docs/changelog/CHANGELOG.md`.
-
-All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
+This is the canonical changelog for the Herald Project. All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
 
 ---
 
