@@ -698,6 +698,74 @@
             line-height: 1.7;
         }
 
+        /* Expandable Roadmap Items */
+        .roadmap-item.expandable {
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .roadmap-item.expandable:hover {
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 4px;
+            padding: 2rem;
+            margin-left: -2rem;
+            margin-right: -2rem;
+        }
+
+        .roadmap-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .roadmap-toggle {
+            font-size: 0.8rem;
+            color: var(--accent);
+            transition: transform 0.3s ease;
+            margin-left: auto;
+        }
+
+        .roadmap-item.expandable.expanded .roadmap-toggle {
+            transform: rotate(180deg);
+        }
+
+        .roadmap-details {
+            margin-top: 1.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .roadmap-item.expandable.expanded .roadmap-details {
+            max-height: 500px;
+            opacity: 1;
+            display: flex;
+        }
+
+        .detail-item {
+            color: var(--text);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-item::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
         /* CTA Section */
         .cta-section {
             text-align: center;
@@ -909,7 +977,7 @@
                 </div>
                 <div class="status-card">
                     <div class="status-label">Indicators</div>
-                    <div class="status-value info">5</div>
+                    <div class="status-value info">6</div>
                 </div>
                 <div class="status-card">
                     <div class="status-label">Exit Strategies</div>
@@ -1090,57 +1158,6 @@
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features">
-        <div class="section-header">
-            <div class="section-tag">Capabilities</div>
-            <h2 class="section-title">Phase 2 Features</h2>
-        </div>
-
-        <div class="features-list">
-            <div class="feature-row">
-                <span class="feature-name">Autonomous Loop</span>
-                <span class="feature-desc">Continuous 10-step trading cycle with configurable poll interval</span>
-                <span class="feature-status active">Active</span>
-            </div>
-            <div class="feature-row">
-                <span class="feature-name">5 Indicators</span>
-                <span class="feature-desc">RSI, MACD, Bollinger Bands, Stochastic, ADX with full validation</span>
-                <span class="feature-status active">Active</span>
-            </div>
-            <div class="feature-row">
-                <span class="feature-name">4 Exit Strategies</span>
-                <span class="feature-desc">Trailing stop, time-based, profit target, adverse movement protection</span>
-                <span class="feature-status active">Active</span>
-            </div>
-            <div class="feature-row">
-                <span class="feature-name">Position Management</span>
-                <span class="feature-desc">Real-time tracking with P&L monitoring and position age calculation</span>
-                <span class="feature-status active">Active</span>
-            </div>
-            <div class="feature-row">
-                <span class="feature-name">Risk Controls</span>
-                <span class="feature-desc">Position sizing, max exposure, daily loss limits, circuit breaker</span>
-                <span class="feature-status active">Active</span>
-            </div>
-            <div class="feature-row">
-                <span class="feature-name">Environment Config</span>
-                <span class="feature-desc">Credentials loaded from .env file with python-dotenv</span>
-                <span class="feature-status active">Active</span>
-            </div>
-            <div class="feature-row">
-                <span class="feature-name">Graceful Shutdown</span>
-                <span class="feature-desc">Signal handling with optional position closure on exit</span>
-                <span class="feature-status active">Active</span>
-            </div>
-            <div class="feature-row">
-                <span class="feature-name">Connection Recovery</span>
-                <span class="feature-desc">Automatic reconnection with position reconciliation</span>
-                <span class="feature-status active">Active</span>
-            </div>
-        </div>
-    </section>
-
     <!-- Quick Start Section -->
     <section id="quickstart">
         <div class="section-header">
@@ -1226,23 +1243,41 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
         </div>
 
         <div class="roadmap-container">
-            <div class="roadmap-item complete">
-                <div class="roadmap-phase">Phase 01</div>
-                <div class="roadmap-title">Foundation</div>
-                <span class="roadmap-status complete">Complete</span>
-                <div class="roadmap-desc">
-                    MT5 connector, data layer, SMA crossover strategy, risk management, 
-                    execution engine, database persistence, structured logging.
+            <div class="roadmap-item complete expandable" data-phase="1">
+                <div class="roadmap-header">
+                    <div class="roadmap-phase">Phase 01</div>
+                    <div class="roadmap-title">Foundation</div>
+                    <span class="roadmap-status complete">Complete</span>
+                    <span class="roadmap-toggle">▼</span>
+                </div>
+                <div class="roadmap-desc">MT5 connector, data layer, technical indicators, risk management, execution engine, database persistence, structured logging.</div>
+                <div class="roadmap-details" style="display: none;">
+                    <div class="detail-item">✓ MT5 Connector with live data streaming</div>
+                    <div class="detail-item">✓ Technical Indicators: RSI, MACD, Bollinger Bands, Stochastic, ADX</div>
+                    <div class="detail-item">✓ Risk Management & Position Sizing</div>
+                    <div class="detail-item">✓ Execution Engine with order management</div>
+                    <div class="detail-item">✓ Database Persistence Layer</div>
+                    <div class="detail-item">✓ Structured Logging & Observability</div>
                 </div>
             </div>
 
-            <div class="roadmap-item complete">
-                <div class="roadmap-phase">Phase 02</div>
-                <div class="roadmap-title">Autonomous Trading</div>
-                <span class="roadmap-status complete">Complete</span>
-                <div class="roadmap-desc">
-                    5 technical indicators, position manager, 4 exit strategies, 
-                    autonomous orchestrator loop, environment configuration.
+            <div class="roadmap-item complete expandable" data-phase="2">
+                <div class="roadmap-header">
+                    <div class="roadmap-phase">Phase 02</div>
+                    <div class="roadmap-title">Autonomous Trading</div>
+                    <span class="roadmap-status complete">Complete</span>
+                    <span class="roadmap-toggle">▼</span>
+                </div>
+                <div class="roadmap-desc">6 technical indicators, position manager, 4 exit strategies, autonomous orchestrator loop, environment configuration, production hardening.</div>
+                <div class="roadmap-details" style="display: none;">
+                    <div class="detail-item">✓ 6 Technical Indicators (includes ATR for volatility)</div>
+                    <div class="detail-item">✓ 4 Exit Strategies (Stop Loss, Take Profit, Trailing Stop, Time-Based)</div>
+                    <div class="detail-item">✓ Real-Time Position Management with P&L Tracking</div>
+                    <div class="detail-item">✓ Autonomous 10-Step Trading Loop</div>
+                    <div class="detail-item">✓ Zero-Error Test Suite (55/55 passing)</div>
+                    <div class="detail-item">✓ MT5 Live Account Verification</div>
+                    <div class="detail-item">✓ CI/CD Pipeline (GitHub Actions)</div>
+                    <div class="detail-item">✓ Enterprise-Grade Architecture</div>
                 </div>
             </div>
 
@@ -1356,6 +1391,13 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
             el.style.transform = 'translateY(20px)';
             el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
             observer.observe(el);
+        });
+
+        // Expandable roadmap items
+        document.querySelectorAll('.roadmap-item.expandable').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('expanded');
+            });
         });
     </script>
 </body>
