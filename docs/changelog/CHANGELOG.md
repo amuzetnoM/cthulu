@@ -5,11 +5,9 @@ tags: [changelog, releases]
 sidebar_position: 3
 ---
 
-# Changelog (canonical)
+• [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
 
-[← Back to Docs](../index.html) • [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
-
-![version-badge](https://img.shields.io/badge/version-3.1.0-blue)
+(https://img.shields.io/badge/version-3.1.0-blue)
 
 This is the canonical changelog for the Herald repository. Please update any references that point to `docs/CHANGELOG.md` to use this location: `docs/changelog/CHANGELOG.md`.
 
