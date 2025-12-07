@@ -706,10 +706,6 @@
 
         .roadmap-item.expandable:hover {
             background: rgba(0, 255, 136, 0.05);
-            border-radius: 4px;
-            padding: 2rem;
-            margin-left: -2rem;
-            margin-right: -2rem;
         }
 
         .roadmap-header {
@@ -734,19 +730,28 @@
             margin-top: 1.5rem;
             padding-left: 1rem;
             border-left: 2px solid var(--accent);
-            display: flex;
+            display: none;
             flex-direction: column;
             gap: 0.7rem;
-            max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease, opacity 0.3s ease;
             opacity: 0;
         }
 
         .roadmap-item.expandable.expanded .roadmap-details {
-            max-height: 500px;
-            opacity: 1;
             display: flex;
+            opacity: 1;
+            animation: slideDown 0.3s ease forwards;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                margin-top: 0;
+            }
+            to {
+                opacity: 1;
+                margin-top: 1.5rem;
+            }
         }
 
         .detail-item {
