@@ -14,9 +14,9 @@ date: "5 December 2025, 14:03"
 
 [](/en/articles/20488?print=)
 
-![preview](assets/20488/cf9b70642919b552ac97a9e4bdaa8cce.jpeg)
+![preview](assets/20488/Z)
 
-![Reimagining Classic Strategies (Part 19): Deep Dive Into Moving Average Crossovers](https://c.mql5.com/2/184/20488-reimagining-classic-strategies-part-19-deep-dive-into-moving_600x314.jpg)
+![Reimagining Classic Strategies (Part 19): Deep Dive Into Moving Average Crossovers](assets/20488/20488-reimagining-classic-strategies-part-19-deep-dive-into-moving_600x314.jpg)
 
 # Reimagining Classic Strategies (Part 19): Deep Dive Into Moving Average Crossovers
 
@@ -29,14 +29,14 @@ date: "5 December 2025, 14:03"
         | 
 5 December 2025, 14:03
 
-![](https://c.mql5.com/i/icons.svg#views-usage)
+![](assets/20488/icons.svg#views-usage)
 
-          1 901
+          1 916
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-usage)0](/en/forum/501267)
+[![](assets/20488/icons.svg#comments-usage)0](/en/forum/501267)
 
-![Gamuchirai Zororo Ndawana](https://c.mql5.com/avatar/2024/3/6607f08d-4cae.jpg)
+![Gamuchirai Zororo Ndawana](assets/20488/6607f08d-4cae.jpg)
 
 [Gamuchirai Zororo Ndawana](/en/users/gamuchiraindawa)
  
@@ -57,7 +57,7 @@ For this particular discussion, since we are going to consider multiple versions
  
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_41_26.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_41_26.png)
  
 Figure 1: Visualizing all the versions of the moving average crossover strategy we will assess
  
@@ -65,12 +65,12 @@ The test dates that we will use across all tests will be fixed from January 2022
  
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_35_06.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_35_06.png)
  
 Figure 2: The test dates we have selected for all versions of our trading strategy
 Finally, in all tests, we will use random delay settings to emulate the uncertainty of real market conditions and to ensure that all ticks are based on real ticks for reliable results that emulate what might happen on real data. 
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_40_27.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_40_27.png)
  
 Figure 3: The back test settings we have selected for
  
@@ -184,7 +184,7 @@ As explained in the introduction of the article, the original version of the str
  
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_46_24.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_46_24.png)
  
 Figure 4: Visualizing the equity curve produced by the classical version of the trading strategy
  
@@ -194,7 +194,7 @@ As stated earlier in our article, we want to minimize repetition of the same inf
  
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_47_13.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_47_13.png)
  
 Figure 5: The backtest results produced by the original version of our trading strategy
  
@@ -232,7 +232,7 @@ The equity curve obtained by the new set of rules is still unstable for the most
  
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_50_16.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_50_16.png)
  
 Figure 6: The changes we made to our application brought desirable changes to the equity curve we obtained from the trading logic
  
@@ -240,7 +240,7 @@ When we consider the detailed statistics of our trading strategy, we see conside
  
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_50_59.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_50_59.png)
  
  
 Figure 7: Our manual improvements to the strategy rectified its negative account balance problem from the initial test we performed
@@ -627,7 +627,7 @@ When you consider the equity curve produced by our updated version of the strate
  
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_55_15.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_55_15.png)
  
 Figure 8: Our trading strategy is now exhibiting a strong and healthy balance over time
  
@@ -636,7 +636,7 @@ When we take a look at the detailed results, we can see that the total net profi
 However, it is quite alarming to observe that the distribution of trades being placed by the application does not reflect a firm grasp of how financial markets should be traded. Our application placed 14 short trades and 45 long trades over the three-year backtest, which is substantially biased and a possible sign that something is fundamentally wrong with the statistical model that we’re using to guide our strategy.
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_20_55_56.png)
+![](assets/20488/Screenshot_2025-12-01_at_20_55_56.png)
  
 Figure 9: The statistical model we implemented into our strategy introduced its own set of problems
  
@@ -688,14 +688,14 @@ When we observe the new equity curve produced by the more powerful nonlinear mod
  
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_21_02_25.png)
+![](assets/20488/Screenshot_2025-12-01_at_21_02_25.png)
  
 Figure 10: Using a non-linear statistical model, helped us attain new levels of performance from the same strategy
  
 When we consider the detailed results, we can see the effects of the changes we have made. The total net profit is more or less the same as what we had initially. However, the gross loss has now shot back up and increased by more than twofold, and the number of total trades placed has also increased. Although the total profit is marginally improving, this new version of our application is doing substantially more work to obtain more or less the same results we had before. However, the key improvement is that when we now look at the distribution of trades, it now reflects the nature of the market, because in the previous version it did not.
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_21_02_53.png)
+![](assets/20488/Screenshot_2025-12-01_at_21_02_53.png)
  
 Figure 11: The new non-linear supervised model, corrected the bias that was learned by the classical linear model
  
@@ -910,7 +910,7 @@ target_1.append(np.mean(np.abs(cross_val_score(get_model(),X,y.iloc[:,0],cv=tscv
 
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_21_07_01.png)
+![](assets/20488/Screenshot_2025-12-01_at_21_07_01.png)
  
 Figure 12: Our detailed market data helped us better forecast future EURUSD returns out of sample
  
@@ -924,7 +924,7 @@ target_2.append(np.mean(np.abs(cross_val_score(get_model(),X,y.iloc[:,1],cv=tscv
 
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_21_07_31.png)
+![](assets/20488/Screenshot_2025-12-01_at_21_07_31.png)
  
 Figure 13: We also observed reduced error rates when we employed more detailed market data to forecast the future value of the 30-Period moving average
  
@@ -938,7 +938,7 @@ target_3.append(np.mean(np.abs(cross_val_score(get_model(),X,y.iloc[:,2],cv=tscv
 
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_21_12_29.png)
+![](assets/20488/Screenshot_2025-12-01_at_21_12_29.png)
  
 Figure 14: The 60 period moving average remained difficult to forecast and benefited only marginally from the detailed market data we created
  
@@ -1067,14 +1067,14 @@ Additionally, when updated price levels are received, we now have a lot more fea
 Finally, when we consider the equity curve brought about by our new “big-data” approach to analyzing the market, we can unfortunately see that a lot of noise has been introduced into our system, and the system is no longer profitable. It is volatile, and it has lost its positive uptrend.
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_21_13_10.png)
+![](assets/20488/Screenshot_2025-12-01_at_21_13_10.png)
  
 Figure 15: The new equity curve we have produced is far too volatile
  
 Additionally, when we consider the detailed statistical analysis of our performance, we see that our performance has deteriorated. We are now suffering from the same problem of biased trade entries that are biased towards long entries, and additionally the expected payoff is now back to being negative, and our total net profit is also negative. Therefore, we can clearly see that the previous version — version four of our application — was the best version that we made so far in this discussion.
  
  
-![](https://c.mql5.com/2/184/Screenshot_2025-12-01_at_21_13_37.png)
+![](assets/20488/Screenshot_2025-12-01_at_21_13_37.png)
  
 Figure 16: A detailed analysis of the results brought about by the final version of our application
  
@@ -1205,31 +1205,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/501267)
 
-![From Novice to Expert: Developing a Geographic Market Awareness with MQL5 Visualization](https://c.mql5.com/2/184/20417-from-novice-to-expert-developing-logo.png)
+![From Novice to Expert: Developing a Geographic Market Awareness with MQL5 Visualization](assets/20488/20417-from-novice-to-expert-developing-logo.png)
 
 [From Novice to Expert: Developing a Geographic Market Awareness with MQL5 Visualization](/en/articles/20417)
 
 Trading without session awareness is like navigating without a compass—you're moving, but not with purpose. Today, we're revolutionizing how traders perceive market timing by transforming ordinary charts into dynamic geographical displays. Using MQL5's powerful visualization capabilities, we'll build a live world map that illuminates active trading sessions in real-time, turning abstract market hours into intuitive visual intelligence. This journey sharpens your trading psychology and reveals professional-grade programming techniques that bridge the gap between complex market structure and practical, actionable insight.
 
-![Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing](https://c.mql5.com/2/184/20485-statistical-arbitrage-through-logo.png)
+![Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing](assets/20488/20485-statistical-arbitrage-through-logo.png)
 
 [Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing](/en/articles/20485)
 
 This article proposes using Rolling Windows Eigenvector Comparison for early imbalance diagnostics and portfolio rebalancing in a mean-reversion statistical arbitrage strategy based on cointegrated stocks. It contrasts this technique with traditional In-Sample/Out-of-Sample ADF validation, showing that eigenvector shifts can signal the need for rebalancing even when IS/OOS ADF still indicates a stationary spread. While the method is intended mainly for live trading monitoring, the article concludes that eigenvector comparison could also be integrated into the scoring system—though its actual contribution to performance remains to be tested.
 
-![Features of Experts Advisors](https://c.mql5.com/2/16/76_2.gif)
+![Features of Experts Advisors](assets/20488/76_2.gif)
 
 [Features of Experts Advisors](/en/articles/1494)
 
 Creation of expert advisors in the MetaTrader trading system has a number of features.
 
-![Currency pair strength indicator in pure MQL5](https://c.mql5.com/2/123/Indicator_for_assessing_the_strength_and_weakness_of_currency_pairs_in_pure_MQL5__LOGO.png)
+![Currency pair strength indicator in pure MQL5](assets/20488/Indicator_for_assessing_the_strength_and_weakness_of_currency_pairs_in_pure_MQL5__LOGO.png)
 
 [Currency pair strength indicator in pure MQL5](/en/articles/17303)
 
 We are going to develop a professional indicator for currency strength analysis in MQL5. This step-by-step guide will show you how to develop a powerful trading tool with a visual dashboard for MetaTrader 5. You will learn how to calculate the strength of currency pairs across multiple timeframes (H1, H4, D1), implement dynamic data updates, and create a user-friendly interface.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/20488/logo-2.png)
 
 You are missing trading opportunities:
 

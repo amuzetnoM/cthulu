@@ -13,9 +13,9 @@ date: "5 December 2025, 13:49"
 
 [](/en/articles/20485?print=)
 
-![preview](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/cca5c16592c190543d6e0ca0e6eb8ef5.jpeg)
+![preview](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/2Q==)
 
-![Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing](https://c.mql5.com/2/184/20485-statistical-arbitrage-through-cointegrated-stocks-part-8-rolling_600x314__1.jpg)
+![Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/20485-statistical-arbitrage-through-cointegrated-stocks-part-8-rolling_600x314__1.jpg)
 
 # Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing
 
@@ -28,14 +28,14 @@ date: "5 December 2025, 13:49"
         | 
 5 December 2025, 13:49
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/icons.svg#views-white-usage)
 
-          516
+          518
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)0](/en/forum/501266)
+[![](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/icons.svg#comments-white-usage)0](/en/forum/501266)
 
-![Jocimar Lopes](https://c.mql5.com/avatar/2023/2/63de1090-f297.jpg)
+![Jocimar Lopes](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/63de1090-f297.jpg)
 
 [Jocimar Lopes](/en/users/jslopes)
  
@@ -74,9 +74,9 @@ By measuring the stability of the portfolio weights and including it as a criter
 , where we selected the top-ranked basket without the portfolio weights stability test, and compare it with 
 [Part 7](/en/articles/20173)
  after its inclusion in the scoring system. For a quick comparison, these are the evolution of the capital curve (Balance/Equity graph) before and after using it as a criterion.
-![Fig. 1 - Backtest equity graph without eigenvector stability test in basket selection ](https://c.mql5.com/2/184/Capture_backtest_equity_graph.png)
+![Fig. 1 - Backtest equity graph without eigenvector stability test in basket selection ](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/Capture_backtest_equity_graph.png)
 Fig. 1. Backtest equity graph without eigenvector stability test in basket selection
-![Fig. 2 - Backtest equity graph with eigenvector stability test included in basket selection (previous article)](https://c.mql5.com/2/184/Capture_backtest_graph.png)
+![Fig. 2 - Backtest equity graph with eigenvector stability test included in basket selection (previous article)](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/Capture_backtest_graph.png)
 Fig. 2. Backtest equity graph with eigenvector stability test included in basket selection (previous article)
 The IS/OOS ADF validation is a four-step method. It starts by splitting out our price data into two parts for in-sample (IS) and out-of-sample (OOS) tests, and computes the cointegration vector on the IS data. Then, by using this resulting cointegration vector, it calculates the spread on the OOS data and evaluates the ADF statistic on it. To consider the candidate basket’s portfolio weights as stable, both IS and OOS ADF statistics must indicate stationarity.
 Split -> Estimate on IS -> Form spread on OOS -> ADF on OOS spread
@@ -115,7 +115,7 @@ By doing an out-of-sample validation, the IS/OOS ADF test avoids overfitting and
  in Metatrader 5 Tester.
 “Forward
 This option allows you to check the results of testing in order to avoid fitting to certain time intervals. During forward testing, the period set in the Date field is divided into two parts in accordance with the selected forward period (a half, one third, one fourth or a custom period when you specify the forward testing start date).The first part is the period of back testing. It is the period of Expert Advisor operation adaptation. The second part is forward testing, during which the selected parameters are checked.”
-![Fig. 3 - Metatrader 5 Tester settings with the forward option highlithed](https://c.mql5.com/2/184/Capture_tester_settings.png)
+![Fig. 3 - Metatrader 5 Tester settings with the forward option highlithed](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/Capture_tester_settings.png)
 Fig. 3. Metatrader 5 Tester settings with the forward option highlithed
 This OOS validation gives us a good predictive power of cointegration because it is testing the stationarity of the trading signal (the spread) “in the future”, in “unknown” data. This predictive power was reflected in the good backtest results we saw. It is saying that we can trade the calculated spread in live trading because the OOS validation has already tested it in “unknown” data. However, as all of us who run backtests know, the real question here lies in the quotes around the unknown word. How much our portfolio weights stability is guaranteed to remain stable after we leave the comfort zone of backtesting “unknown” data and go for the wild jungle of the live trading really unknown data? That is when IS/OOS ADF presents some of its weaknesses.
 In live trading, we cannot wait for relatively long periods with the portfolio weights losing their stable relationship; we cannot endure long periods with a lost cointegration. We need to be informed as early as possible to make a decision and act upon it. But the IS/OOS ADF requires long out-of-sample periods for accuracy. This is not a real problem in backtesting, but it can really hurt in live trading. It happens that now these “out-of-sample periods” with potentially broken cointegration are the time our money is out there, exposed in the market, eventually causing unsustainable drawdowns.
@@ -130,18 +130,18 @@ The Rolling Window Eigenvector Comparison (RWEC) calculates the portfolio weight
 .)”
 As traders who need to analyse this kind of data and respective plots, the relevant information is highlighted above: after the matrix linear transformation, the eigenvectors do not rotate or shear. That is, the relative angle between eigenvectors remains the same, no matter the linear transformation applied. This is the basis upon which the RWEC method is built.
 The same Wikipedia page has this animation. It is the most intuitive I could find to illustrate this eigenvector’s property.
-![Fig. 4 - Animated illustration showing that eigenvectors do not shear or rotate after a linear transformation](https://c.mql5.com/2/184/Eigenvectors.gif)
+![Fig. 4 - Animated illustration showing that eigenvectors do not shear or rotate after a linear transformation](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/Eigenvectors.gif)
 Fig. 4. Animated illustration showing that eigenvectors do not shear or rotate after a linear transformation
 The magenta arrows are a representation of eigenvectors. While the other vectors, represented in blue and red, have their directions or magnitude changed by the matrix linear transformation, the magenta arrows, the eigenvectors, preserve their direction and shape. The relative angle between them, their relative inclination to each other, remains the same. 
 There are other RWEC metrics that can be used to assess the stability of the cointegration vectors besides the successive eigenvectors cosine angle comparison, like the correlation of hedge ratios, but they are based on the same fundamental property of eigenvectors not changing their relative inclination after a linear transformation. (By the way, this is a fascinating field of study for those interested in deepening their understanding of this subject.)
 Figures 5 and 6 show two sample plots from the RWEC method applied to two different ETF pairs over the same period. In the examples that follow, for both methods, we are using ETF pairs instead of the stock baskets we’ve been using in our experiments. The reason is that we are finishing this introduction to statistical arbitrage. We started the series with Pearson correlation for FX pairs trading and moved to stocks because they fit better to understand the process of narrowing down the market to build a sample scoring system. Now that we are going from the backtests to the live trading, we have an opportunity to return to pairs trading and leverage what we learned with the stock market: the testing methods, the building of the scoring system, and the evolution of the database. It is also the right moment to start exploring other markets and their peculiarities. To make your replication of these experiments easier, we are using only the symbols included in the Meta Quotes demo account for Metatrader 5.
 The purpose of these plots is to show how clearly this method tells us the exact point in time when the stability of the portfolio weights (or the cointegration at all) was broken. This property, called high temporal resolution, is one of the main reasons that make it so useful for live trading monitoring.
-![Fig. 5 - Rolling Windows Eigenvector Comparison sample plot](https://c.mql5.com/2/184/RWEC__GLD_GDX.png)
+![Fig. 5 - Rolling Windows Eigenvector Comparison sample plot](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/RWEC__GLD_GDX.png)
 Fig. 5. Rolling Windows Eigenvector Comparison sample plot
 In the first plot, the blue line represents the weight of the first asset on the pair, in this case GLD. The orange line represents the weight of its counterpart, GDX, over time. GLD is the asset we are going long; its value on the portfolio vector is positive, above the zero line. GDX is the asset to be shorted. The y-axis values are not the “real” values of the asset. They were normalized to 1 to give us the relative weight between the two assets. You can see clearly that in the beginning of 2021, 2022, and 2023, the asset to be shorted goes beyond zero, reverting its initial relationship on the pair. More than that, by the end of 2023 to the first months of 2024, they changed sides, and what should be bought now has to be sold, and vice versa. These structural market changes were reflected in their cointegration vector angles displayed in the second plot.
 The red dots represent the similarity between successive cointegration vectors as a measure of the cosine distance between their respective angles, the difference between the vectors’ inclination. If this difference is zero, it means that there is no difference, that the cointegration vectors have the same inclination. When successive vectors have the same inclination, their similarity equals identity, and we have perfect stability. In this example, we only have perfect stability for brief periods. On the other hand, we have extreme peaks of imbalance, usually in the first half of the year, exactly those periods in the beginning of 2021, 202, and 2023, with an extreme peak at the beginning of 2024 when the relationship between the assets reverted.
 The whole point about the RWEC method is that it measures the structural stability of the linear relationship. While the IS/OOS ADF gives us no clue about the point in time when the cointegration was lost, the RWEC shows it precisely. This feature can be used to speculate about the causes of the cointegration break: was it the result of a company merger? Perhaps one of the companies included in the pair has published a balance with exceptionally low or exceptionally high results? Maybe we had a systemic earthquake in the markets in that period? This RWEC feature may help us in finding the causes of the break in the structural stability. By knowing the causes, we can anticipate future changes of a similar nature.
-![Fig. 6 - Plots of a Rolling Windows Eigenvector Comparison for the EEM/VWO ETF pair](https://c.mql5.com/2/184/RWEC__EEM_VWO.png)
+![Fig. 6 - Plots of a Rolling Windows Eigenvector Comparison for the EEM/VWO ETF pair](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/RWEC__EEM_VWO.png)
 Fig. 6. Plots of a Rolling Windows Eigenvector Comparison for the EEM/VWO ETF pair
 The yellow dotted line represents the chosen stability threshold. In both tests above, it was set to 30 degrees. In Figure 5, the cointegration break peak was far away from this threshold, but in Figure 6, we can see that we have a peak of nearly 80 degrees by the start of 2020. We also have two precedent deviations that were next to the 30-degree threshold. 
 The RWEC stability threshold can, and should, be used as a risk management tool. Note that if we have chosen 50 degrees, the two precedent measurements would be labeled as inside the stable limit by our automated system, and the ETF pair would continue being part of our hypothetical operation. On the other hand, if we had chosen 15 degrees, the system would have recommended stopping on the second point. Since we will be using this method for monitoring live trading, this parameter choice will make our strategy more conservative if lowered, or more aggressive if the stability threshold parameter is raised.
@@ -194,7 +194,7 @@ adf_pvalue  stationary
 7  4.409114e-07        True
 8  3.135563e-05        True
 The results for the last five windows indicate that the stationarity was lost around or right before the fourth OOS window.
-![Fig. 7 -  Plots of a In-Sample/Out-of-Sample ADF validation for the XLK/AAA ETF pair](https://c.mql5.com/2/184/ISOOS_ADF__XLK_AAA.png)
+![Fig. 7 -  Plots of a In-Sample/Out-of-Sample ADF validation for the XLK/AAA ETF pair](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/ISOOS_ADF__XLK_AAA.png)
 Fig. 7. Plots of a In-Sample/Out-of-Sample ADF validation for the XLK/AAA ETF pair
 The four plots above show the result of the OOS Walk-Forward result in such an arrangement that one can catch the more relevant information at a glance. It is important to understand how to properly read these plots because we’ll be using them on live trading monitoring, and the overlapping windows may be a bit cumbersome if you are not familiar with their typical visualization. Let’s detail it step-by-step.
 On the top-right, we have 9 data points in the x-axis with the OOS p-values. These are the same data points in the x-axis of the OOS Coint Vector Evolution plot on the bottom-right.
@@ -277,7 +277,7 @@ Name: count, dtype: int64
 Mean angle: 22.3°
 Median angle: 0.1°
 The same observations about the difference between the mean and the median angle we made above on the IS/OOS ADF results also apply here. While the mean angle is relatively near our chosen threshold, the median angle is near zero, which would be perfect stability. The cause of this difference can be easily understood in the plots below, with extreme outliers in the portfolio short side (the orange line - AAA).
-![Fig. 8 - Plots of a Rolling Windows Eigenvector Comparison for the XLK/AAA ETF pair](https://c.mql5.com/2/184/RWEC__XLK_AAA__1.png)
+![Fig. 8 - Plots of a Rolling Windows Eigenvector Comparison for the XLK/AAA ETF pair](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/RWEC__XLK_AAA__1.png)
 Fig. 8. Plots of a Rolling Windows Eigenvector Comparison for the XLK/AAA ETF pair
 What the plots are screaming is: be cautious! This pair is stable most of the time, but it is subject to full imbalance sometimes. Note that each plot has 33 data points, 29 true/stable and 4 false/unstable (the four peaks we see in the second plot). Each instability peak took more than two months from going above our threshold to returning below it. It seems time enough to drain previous profits or even to trigger a margin call, depending on our account size. In a word, RWEC is exposing structural instability that IS/OOS ADF ignored in its last OOS window (although the 55,6% OOS success rate can be taken as an alert).
 As said, I cherry-pick this ETF pair to better illustrate the point in question. From what I’ve seen, it is not so common to find such isolated high peaks of imbalance in the high-liquidity Nasdaq stocks we’ve been using as an example in this series. But it may happen, and besides that, we want our stat arb framework to be able to, at least, help us in building a stable pair or basket from any market or asset class. We do not want it to be limited to high-liquidity Nasdaq stocks.
@@ -345,31 +345,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/501266)
 
-![Reimagining Classic Strategies (Part 19): Deep Dive Into Moving Average Crossovers](https://c.mql5.com/2/184/20488-reimagining-classic-strategies-logo.png)
+![Reimagining Classic Strategies (Part 19): Deep Dive Into Moving Average Crossovers](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/20488-reimagining-classic-strategies-logo.png)
 
 [Reimagining Classic Strategies (Part 19): Deep Dive Into Moving Average Crossovers](/en/articles/20488)
 
 This article revisits the classic moving average crossover strategy and examines why it often fails in noisy, fast-moving markets. It presents five alternative filtering methods designed to strengthen signal quality and remove weak or unprofitable trades. The discussion highlights how statistical models can learn and correct the errors that human intuition and traditional rules miss. Readers leave with a clearer understanding of how to modernize an outdated strategy and of the pitfalls of relying solely on metrics like RMSE in financial modeling.
 
-![Currency pair strength indicator in pure MQL5](https://c.mql5.com/2/123/Indicator_for_assessing_the_strength_and_weakness_of_currency_pairs_in_pure_MQL5__LOGO.png)
+![Currency pair strength indicator in pure MQL5](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/Indicator_for_assessing_the_strength_and_weakness_of_currency_pairs_in_pure_MQL5__LOGO.png)
 
 [Currency pair strength indicator in pure MQL5](/en/articles/17303)
 
 We are going to develop a professional indicator for currency strength analysis in MQL5. This step-by-step guide will show you how to develop a powerful trading tool with a visual dashboard for MetaTrader 5. You will learn how to calculate the strength of currency pairs across multiple timeframes (H1, H4, D1), implement dynamic data updates, and create a user-friendly interface.
 
-![From Novice to Expert: Developing a Geographic Market Awareness with MQL5 Visualization](https://c.mql5.com/2/184/20417-from-novice-to-expert-developing-logo.png)
+![From Novice to Expert: Developing a Geographic Market Awareness with MQL5 Visualization](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/20417-from-novice-to-expert-developing-logo.png)
 
 [From Novice to Expert: Developing a Geographic Market Awareness with MQL5 Visualization](/en/articles/20417)
 
 Trading without session awareness is like navigating without a compass—you're moving, but not with purpose. Today, we're revolutionizing how traders perceive market timing by transforming ordinary charts into dynamic geographical displays. Using MQL5's powerful visualization capabilities, we'll build a live world map that illuminates active trading sessions in real-time, turning abstract market hours into intuitive visual intelligence. This journey sharpens your trading psychology and reveals professional-grade programming techniques that bridge the gap between complex market structure and practical, actionable insight.
 
-![Implementing Practical Modules from Other Languages in MQL5 (Part 05): The Logging module from Python, Log Like a Pro](https://c.mql5.com/2/184/20458-implementing-practical-modules-logo.png)
+![Implementing Practical Modules from Other Languages in MQL5 (Part 05): The Logging module from Python, Log Like a Pro](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/20458-implementing-practical-modules-logo.png)
 
 [Implementing Practical Modules from Other Languages in MQL5 (Part 05): The Logging module from Python, Log Like a Pro](/en/articles/20458)
 
 Integrating Python's logging module with MQL5 empowers traders with a systematic logging approach, simplifying the process of monitoring, debugging, and documenting trading activities. This article explains the adaptation process, offering traders a powerful tool for maintaining clarity and organization in trading software development.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing/logo-2.png)
 
 You are missing trading opportunities:
 

@@ -13,9 +13,9 @@ date: "1 December 2025, 10:03"
 
 [](/en/articles/20347?print=)
 
-![preview](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/c44b2cd8c3b677c8ebc2baf90d3b386b.jpeg)
+![preview](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/2Q==)
 
-![Automating Trading Strategies in MQL5 (Part 43): Adaptive Linear Regression Channel Strategy](https://c.mql5.com/2/183/20347-automating-trading-strategies-in-mql5-part-43-adaptive-linear_600x314.jpg)
+![Automating Trading Strategies in MQL5 (Part 43): Adaptive Linear Regression Channel Strategy](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/20347-automating-trading-strategies-in-mql5-part-43-adaptive-linear_600x314.jpg)
 
 # Automating Trading Strategies in MQL5 (Part 43): Adaptive Linear Regression Channel Strategy
 
@@ -28,14 +28,14 @@ date: "1 December 2025, 10:03"
         | 
 1 December 2025, 10:03
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/icons.svg#views-white-usage)
 
-          8 393
+          8 402
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)0](/en/forum/500975)
+[![](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/icons.svg#comments-white-usage)0](/en/forum/500975)
 
-![Allan Munene Mutiiria](https://c.mql5.com/avatar/2022/11/637df59b-9551.jpg)
+![Allan Munene Mutiiria](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/637df59b-9551.jpg)
 
 [Allan Munene Mutiiria](/en/users/29210372)
  
@@ -71,7 +71,7 @@ In our implementation, we will calculate the regression slope, intercept, and
 [standard deviation](https://en.wikipedia.org/wiki/Standard_deviation)
  over a configurable period, only creating the channel when the absolute slope exceeds the minimum threshold to confirm directional movement. The channel will be anchored from the oldest bar in the period to a future point extended by a percentage of its duration, filled in two colored zones (pink upper half, light green lower half) with solid trendlines for upper, middle, and lower boundaries. On each new bar, we will either extend the channel one bar to the right if the price remains contained, or fully recreate it if the price deviates beyond a defined percentage of channel width. 
 Trades will open on clean breakouts from inside the channel with fixed pip stop-loss/take-profit, maximum concurrent positions per direction, and an inverse mode option; all positions in one direction close immediately upon crossing the middle line. Labels for upper, middle, and lower channels move with the right edge, and arrows mark every entry. Inverse mode simply swaps buy and sell logic, allowing the same program to trade mean-reversion breakouts instead of continuation pullbacks. It is something we figured would be helpful in case we want to do the opposite. In a nutshell, here is a visual representation of our objectives.
-![LINEAR REGRESSION CHANNEL FRAMEWORK](https://c.mql5.com/2/182/Screenshot_2025-11-18_203426.png)
+![LINEAR REGRESSION CHANNEL FRAMEWORK](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/Screenshot_2025-11-18_203426.png)
 
 ### Implementation in MQL5
 
@@ -137,7 +137,7 @@ We define the "TradeMode"
  with two options: "Normal" for standard pullback-to-channel trading (buy on dips below the lower band in uptrends, sell on rallies above the upper band in downtrends) and "Inverse" to reverse the logic for mean-reversion breakout trading. We then set up the 
 [input parameters](/en/docs/basis/variables/inputvariables)
  that we can adjust directly in the program properties. These include "RegressionPeriod" to specify how many bars are used for the linear regression calculation, "Deviations" as the standard deviation multiplier for the channel width (commonly 2.0 for approximately 95% containment), "MinSlopeThreshold" as the minimum absolute slope value required to consider the market trending and create a channel, and the rest which we added comments to make them easy to understand. These inputs give us full control over channel behavior, risk management, and trading style without modifying the program. The values we used are default and can be changed at any time for adaptation. When you compile, you should get the following window.
-![INPUT PARAMETERS WINDOW](https://c.mql5.com/2/182/Screenshot_2025-11-18_175921.png)
+![INPUT PARAMETERS WINDOW](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/Screenshot_2025-11-18_175921.png)
 With the inputs in place, we can proceed to define some 
 [global variables](/en/docs/basis/variables/global)
  for use throughout the program.
@@ -369,7 +369,7 @@ We proceed to implement the "DrawArrow" function to place a clear visual marker 
  at the specified time and price. We choose 
 [wingdings symbol 233](/en/docs/constants/objectconstants/wingdings)
  for buy signals (upward arrow) or 234 for sell signals (downward arrow), apply green color for buys and red for sells, set width to 2 for visibility, anchor the arrow at the top for buys or bottom for sells so it points correctly from the candle, make it non-selectable to avoid accidental moves, and redraw the chart immediately. MQL5 provides code. You can see below to switch to your desired ones.
-![MQL5 WINGDINGS](https://c.mql5.com/2/182/C_MQL5_WINGDINGS.png)
+![MQL5 WINGDINGS](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/C_MQL5_WINGDINGS.png)
 Moving on with the implementation, we create the "UpdateLabels" function to keep descriptive text labels positioned exactly at the current right edge of the channel, moving them smoothly as the channel extends or recreates. We first calculate the x-coordinate equivalent of the provided "labelTime" by subtracting "fixedTimeOld" and dividing by "period_sec", then use this x-value with the global regression parameters to compute precise middle, upper, and lower prices at that exact point.
 For each of the three labels (upper, middle, lower), we first check with 
 [ObjectFind](/en/docs/objects/ObjectFind)
@@ -492,7 +492,7 @@ Also, in the
  function, we perform a complete cleanup: we call "ChannelDelete" to remove all five components of the regression channel (the two filled zones and three trendlines), then individually delete the three moving text labels with 
 [ObjectDelete](/en/docs/objects/objectdelete)
  using "upperLabelName", "middleLabelName", and "lowerLabelName". This ensures no orphaned objects remain on the chart after the program stops running. Upon compilation, we get the following outcome.
-![INITIAL LINEAR REGRESSION CHANNEL](https://c.mql5.com/2/182/Screenshot_2025-11-18_184440.png)
+![INITIAL LINEAR REGRESSION CHANNEL](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/Screenshot_2025-11-18_184440.png)
 From the image, we can see that we initialize the channel if we have a trend and enough bars to calculate it. We can now move on to managing it and updating it as we have more bars in the tick function. We'll need to do that on new bars only to avoid overloading the program unnecessarily. We defined the following function to handle that.
 
 ```
@@ -567,7 +567,7 @@ Finally, we perform a safety check: we read the current right endpoint time of t
  function with 
 [OBJPROP_TIME](/en/docs/constants/objectconstants/enum_object_property#enum_object_property_integer)
  index 1 into "current_time2". If the previous bar's time already exceeds this endpoint — meaning price has moved beyond where our channel currently reaches — we log the situation and force an immediate recreation with "CreateChannelIfTrend", ensuring the channel never lags behind developing price action. Upon compilation, we get the following.
-![LINEAR REGRESSION CHANNEL TICK UPDATES](https://c.mql5.com/2/182/Screenshot_2025-11-18_185521.png)
+![LINEAR REGRESSION CHANNEL TICK UPDATES](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/Screenshot_2025-11-18_185521.png)
 So far, so good. We can see that we update the channel on new bars when the trend is confirmed. We can now proceed to detect the breakouts, so we either extend the channel or redraw it. Here is the code snippet we use to achieve that.
 
 ```
@@ -604,7 +604,7 @@ We now handle the adaptive behavior of the channel: deciding whether to extend i
 [MathMax](/en/docs/math/mathmax)
 , and express this deviation as a percentage of the total channel width. If this deviation exceeds the threshold (for example, 30% of width by default), we consider it a meaningful breakout or exhaustion of the current regression, log the details including deviation in price and percentage along with the threshold, and immediately call "CreateChannelIfTrend" to recalculate the regression on the newest data and build a fresh channel that better fits the updated trend — then return early since the channel has been rebuilt. The logic for recreation can be altered as per your choice; this is just an arbitrary logic we figured when building the system.
 Then, when the price remains reasonably contained (deviation <= threshold), we instead extend the existing channel one bar to the right for continuity. We advance the right endpoint time by one full bar period with "current_time2 + period_sec" into "new_time2", increment "current_right_x" by 1.0, and project the new middle, upper, and lower prices using the stored globals. We then update every component by moving its right anchor point (index 1) to the new time and corresponding price: the upper-middle fill with "_um", middle-lower with "_ml", and the three trendlines "_upper", "_middle", and "_lower". Finally, we call "UpdateLabels" with the new right time to reposition the text labels and redraw the chart. This extension keeps the channel smoothly following the price in trending conditions without unnecessary recalculation, while ensuring it snaps to a new regression when the price moves too far outside the expected range. When we have a breakout, now we will know via the print-out as below.
-![BREAKOUT DETECTION LOGGING](https://c.mql5.com/2/182/Screenshot_2025-11-18_191646.png)
+![BREAKOUT DETECTION LOGGING](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/Screenshot_2025-11-18_191646.png)
 Since we can manage the channel fully now, we can proceed to generate signals when the price breaks from the channel itself, though we also want to close existing positions when we have middle line crosses. Another arbitrary management logic that you can skip if you want positions to fully close only on stop-loss or take-profit hits.
 
 ```
@@ -681,16 +681,16 @@ We now turn to position management and trade execution on each new bar. We first
  or "sellCount" for "POSITION_TYPE_SELL", giving us accurate limits before opening new trades. We then implement the middle-line cross exit logic: if the previous bar's close ("closePrevious") is above "channelMiddle", we immediately close every open buy position by iterating again, checking type, and calling "obj_Trade.PositionClose" with the ticket and allowed "Slippage", while logging the reason. Similarly, if the previous close is below "channelMiddle" triggers the closure of all sell positions with the same process and logging. This aggressively protects profits or cuts losses the moment the price crosses the regression line itself, regardless of how many deviations away it is.
 Then, we define entry signals based on clean breakouts from inside the channel: a buy signal occurs when the bar-2's close ("close2") was at or above the lower band at that time ("lower2") but the previous bar's close is below the current lower band ("channelLower"), meaning price has decisively broken downward out of the channel. A sell signal triggers with inverted conditions. If "TradeDirection" is "Inverse", we simply swap the two signals, instantly converting the program from trend-continuation pullbacks to mean-reversion fade trading. 
 We retrieve current ask and bid prices, then check for a buy signal and room under "MaxBuys": if both conditions are met, we calculate stop-loss, take-profit, and send a market buy order via "obj_Trade.Buy" with fixed "Lots", no predefined price (market execution), the calculated SL/TP, and comment "LRC Buy". On success, we log the signal details and call "DrawArrow" with true for a green upward arrow at the previous bar's time and close; on failure, we log the retcode description. We mirror the process for sell signals. Upon compilation, we get the following outcome.
-![LINEAR REGRESSION CHANNEL TEST GIF](https://c.mql5.com/2/182/Channel_GIF.gif)
+![LINEAR REGRESSION CHANNEL TEST GIF](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/Channel_GIF.gif)
 From the visualization, we can see that we define the linear regression channel, update it when needed, and open positions on breakouts, hence achieving our objectives. The thing that remains is backtesting the program, and that is handled in the next section.
 
 ### Backtesting
 
 After thorough backtesting, we have the following results.
 Backtest graph:
-![GRAPH](https://c.mql5.com/2/182/Screenshot_2025-11-18_205823.png)
+![GRAPH](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/Screenshot_2025-11-18_205823.png)
 Backtest report:
-![REPORT](https://c.mql5.com/2/182/Screenshot_2025-11-18_205836.png)
+![REPORT](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/Screenshot_2025-11-18_205836.png)
 
 ### Conclusion
 
@@ -735,31 +735,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/500975)
 
-![The View component for tables in the MQL5 MVC paradigm: Base graphical element](https://c.mql5.com/2/140/View_Component_for_Tables_in_MVC_Paradigm_in_MQL5_Basic_Graphic_Element___LOGO.png)
+![The View component for tables in the MQL5 MVC paradigm: Base graphical element](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/View_Component_for_Tables_in_MVC_Paradigm_in_MQL5_Basic_Graphic_Element___LOGO.png)
 
 [The View component for tables in the MQL5 MVC paradigm: Base graphical element](/en/articles/17960)
 
 The article covers the process of developing a base graphical element for the View component as part of the implementation of tables in the MVC (Model-View-Controller) paradigm in MQL5. This is the first article on the View component and the third one in a series of articles on creating tables for the MetaTrader 5 client terminal.
 
-![Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](https://c.mql5.com/2/183/20390-price-action-analysis-toolkit-logo.png)
+![Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/20390-price-action-analysis-toolkit-logo.png)
 
 [Price Action Analysis Toolkit Development (Part 53): Pattern Density Heatmap for Support and Resistance Zone Discovery](/en/articles/20390)
 
 This article introduces the Pattern Density Heatmap, a price‑action mapping tool that transforms repeated candlestick pattern detections into statistically significant support and resistance zones. Rather than treating each signal in isolation, the EA aggregates detections into fixed price bins, scores their density with optional recency weighting, and confirms levels against higher‑timeframe data. The resulting heatmap reveals where the market has historically reacted—levels that can be used proactively for trade timing, risk management, and strategy confidence across any trading style.
 
-![The MQL5 Standard Library Explorer (Part 5): Multiple Signal Expert](https://c.mql5.com/2/183/20289-the-mql5-standard-library-explorer-logo.png)
+![The MQL5 Standard Library Explorer (Part 5): Multiple Signal Expert](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/20289-the-mql5-standard-library-explorer-logo.png)
 
 [The MQL5 Standard Library Explorer (Part 5): Multiple Signal Expert](/en/articles/20289)
 
 In this session, we will build a sophisticated, multi-signal Expert Advisor using the MQL5 Standard Library. This approach allows us to seamlessly blend built-in signals with our own custom logic, demonstrating how to construct a powerful and flexible trading algorithm. For more, click to read further.
 
-![Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)](https://c.mql5.com/2/183/20375-introduction-to-mql5-part-29-logo__1.png)
+![Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/20375-introduction-to-mql5-part-29-logo__1.png)
 
 [Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)](/en/articles/20375)
 
 In this article, we continue mastering API and WebRequest in MQL5 by retrieving candlestick data from an external source. We focus on splitting the server response, cleaning the data, and extracting essential elements such as opening time and OHLC values for multiple daily candles, preparing the data for further analysis.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy/logo-2.png)
 
 You are missing trading opportunities:
 

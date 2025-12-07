@@ -14,9 +14,9 @@ date: "16 October 2025, 09:22"
 
 [](/en/articles/19693?print=)
 
-![preview](assets/19693/23bba7e3859f1d95d62fba8b39ae3e9b.jpeg)
+![preview](assets/19693/Z)
 
-![Building a Trading System (Part 5): Managing Gains Through Structured Trade Exits](https://c.mql5.com/2/175/19693-building-a-trading-system-final-part-5-managing-gains-through_600x314.jpg)
+![Building a Trading System (Part 5): Managing Gains Through Structured Trade Exits](assets/19693/19693-building-a-trading-system-final-part-5-managing-gains-through_600x314.jpg)
 
 # Building a Trading System (Part 5): Managing Gains Through Structured Trade Exits
 
@@ -29,14 +29,14 @@ date: "16 October 2025, 09:22"
         | 
 16 October 2025, 09:22
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/19693/icons.svg#views-white-usage)
 
-          1 838
+          1 841
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)5](/en/forum/497723)
+[![](assets/19693/icons.svg#comments-white-usage)5](/en/forum/497723)
 
-![Daniel Opoku](https://c.mql5.com/avatar/avatar_na2.png)
+![Daniel Opoku](assets/19693/avatar_na2.png)
 
 [Daniel Opoku](/en/users/wamek)
  
@@ -297,7 +297,7 @@ Scenario 1: Single Trade Execution
  
  
  
-![sys43_1trd_00](https://c.mql5.com/2/172/sys43_1trd_00.png)
+![sys43_1trd_00](assets/19693/sys43_1trd_00.png)
  
 Figure 1: 43% Win-rate for single trade per execution
  
@@ -356,7 +356,7 @@ Scenario 2: Two Trade Execution
  
  
  
-![sys43_2trd_0.2](https://c.mql5.com/2/172/sys43_2trd_0.2.png)
+![sys43_2trd_0.2](assets/19693/sys43_2trd_0.2.png)
  
 Figure 2: 43% Win-rate for two trades per execution
  
@@ -415,7 +415,7 @@ Scenario 3: Three Trade Execution
  
  
  
-![sys43_3trds_02](https://c.mql5.com/2/172/sys43_3trd_0.2.png)
+![sys43_3trds_02](assets/19693/sys43_3trd_0.2.png)
  
 Figure 3: 43% Win-rate for three trades per execution
 Table 3: 43% Win-rate Triple Entry
@@ -557,7 +557,7 @@ Scenario 4: Single Trade Execution
  
  
  
-![sys65_1trd_00](https://c.mql5.com/2/172/sys65_1trd_00.png)
+![sys65_1trd_00](assets/19693/sys65_1trd_00.png)
  
 Figure 4: 65% Win-rate for single trade per execution
  
@@ -615,7 +615,7 @@ Scenario 5: Two Trade Execution
  
  
  
-![sys65_2trd_02](https://c.mql5.com/2/172/sys65_2trd_0.2.png)
+![sys65_2trd_02](assets/19693/sys65_2trd_0.2.png)
  
 Figure 5: 65% Win-rate for two trades per execution
  
@@ -675,7 +675,7 @@ Scenario 6: Three Trade Execution
  
  
  
-![sys65_3trd_02](https://c.mql5.com/2/172/sys65_3trd_0.2.png)
+![sys65_3trd_02](assets/19693/sys65_3trd_0.2.png)
  
 Figure 6: 65% Win-rate for three trades per execution
  
@@ -943,7 +943,7 @@ Input Settings Explained
 The script comes with configurable input settings, allowing traders to customize their execution style as shown in Figure 7.
  
  
-![InputSettings](https://c.mql5.com/2/172/frontsetting.png)
+![InputSettings](assets/19693/frontsetting.png)
  
 Figure 7: Input settings
  
@@ -971,12 +971,12 @@ How It Works
 The script opens several trades at once, each sharing the same stop-loss but targeting progressively higher profit levels. By splitting the trade into multiple segments, traders can secure profits at earlier levels while still keeping part of the position active for larger gains. This approach provides both risk management (locking in gains early) and growth potential (capturing extended moves).
  
  
-![selldem](https://c.mql5.com/2/172/Q2_a.gif)
+![selldem](assets/19693/Q2_a.gif)
  
 Figure 8: Multi_Sell Demonstration
  
  
-![buydem](https://c.mql5.com/2/172/Q1_a.gif)
+![buydem](assets/19693/Q1_a.gif)
  
 Figure 9: Multi_Buy Demonstration
  
@@ -1105,7 +1105,7 @@ This article was written by a user of the site and reflects their personal views
         (5)
     
 
-![peteboehle](https://c.mql5.com/avatar/avatar_na2.png)
+![peteboehle](assets/19693/avatar_na2.png)
 
 [peteboehle](/en/users/peteboehle)
 
@@ -1128,7 +1128,7 @@ Mr. Daniel Opoku, I’ve read your new article: Building a Trading System (Part 
  
 Your article is silent on if your method re-assigned Stop Losses to entry, say when the trade reached its first target as a reasonable risk management step or not.  Does this step further improve the results you shared, or are they already ‘baked’ in?
 
-![Tadeas Rusnak](https://c.mql5.com/avatar/2025/11/692bdb2a-e3a6.jpg)
+![Tadeas Rusnak](assets/19693/692bdb2a-e3a6.jpg)
 
 [Tadeas Rusnak](/en/users/tadeas.rusnak)
 
@@ -1147,7 +1147,7 @@ What else I found that split positions and
 applying the method to the stoploss was much more effective
  for me in terms of reducing the strategy's drawdown.
 
-![Daniel Opoku](https://c.mql5.com/avatar/avatar_na2.png)
+![Daniel Opoku](assets/19693/avatar_na2.png)
 
 [Daniel Opoku](/en/users/wamek)
 
@@ -1187,7 +1187,7 @@ strategy with breakeven
 strategy without breakeven
  before we can conclude on it. 
 
-![Daniel Opoku](https://c.mql5.com/avatar/avatar_na2.png)
+![Daniel Opoku](assets/19693/avatar_na2.png)
 
 [Daniel Opoku](/en/users/wamek)
 
@@ -1216,7 +1216,7 @@ applying the method to the stoploss was much more effective
  
 Thanks for the feedback. 
 
-![Ndumiso Maphosa](https://c.mql5.com/avatar/2025/7/68719a59-4dbb.png)
+![Ndumiso Maphosa](assets/19693/68719a59-4dbb.png)
 
 [Ndumiso Maphosa](/en/users/currencymafiagroup)
 
@@ -1230,31 +1230,31 @@ Thanks for the feedback. 
               Thanks Daniel, I really enjoyed this article series and look forward to more of the topics you dive into. I appreciate how this compliments my systematic approach to the markets and it has also added onto the research I am also building on. Very insightful work!
             
 
-![Dialectic Search (DA)](https://c.mql5.com/2/115/Dialectic_Search____LOGO.png)
+![Dialectic Search (DA)](assets/19693/Dialectic_Search____LOGO.png)
 
 [Dialectic Search (DA)](/en/articles/16999)
 
 The article introduces the dialectical algorithm (DA), a new global optimization method inspired by the philosophical concept of dialectics. The algorithm exploits a unique division of the population into speculative and practical thinkers. Testing shows impressive performance of up to 98% on low-dimensional problems and overall efficiency of 57.95%. The article explains these metrics and presents a detailed description of the algorithm and the results of experiments on different types of functions.
 
-![MQL5 Wizard Techniques you should know (Part 84): Using Patterns of Stochastic Oscillator and the FrAMA - Conclusion](https://c.mql5.com/2/175/19890-mql5-wizard-techniques-you-logo.png)
+![MQL5 Wizard Techniques you should know (Part 84): Using Patterns of Stochastic Oscillator and the FrAMA - Conclusion](assets/19693/19890-mql5-wizard-techniques-you-logo.png)
 
 [MQL5 Wizard Techniques you should know (Part 84): Using Patterns of Stochastic Oscillator and the FrAMA - Conclusion](/en/articles/19890)
 
 The Stochastic Oscillator and the Fractal Adaptive Moving Average are an indicator pairing that could be used for their ability to compliment each other within an MQL5 Expert Advisor. We introduced this pairing in the last article, and now look to wrap up by considering its 5 last signal patterns. In exploring this, as always, we use the MQL5 wizard to build and test out their potential.
 
-![Neural Networks in Trading: An Agent with Layered Memory (Final Part)](https://c.mql5.com/2/108/Neural_Networks_in_Trading__Agent_with_Multi-Level_Memory__LOGO__1.png)
+![Neural Networks in Trading: An Agent with Layered Memory (Final Part)](assets/19693/Neural_Networks_in_Trading__Agent_with_Multi-Level_Memory__LOGO__1.png)
 
 [Neural Networks in Trading: An Agent with Layered Memory (Final Part)](/en/articles/16816)
 
 We continue our work on creating the FinMem framework, which uses layered memory approaches that mimic human cognitive processes. This allows the model not only to effectively process complex financial data but also to adapt to new signals, significantly improving the accuracy and effectiveness of investment decisions in dynamically changing markets.
 
-![Biological neuron for forecasting financial time series](https://c.mql5.com/2/117/Biological_neuron_for_forecasting_financial_time_series___LOGO.png)
+![Biological neuron for forecasting financial time series](assets/19693/Biological_neuron_for_forecasting_financial_time_series___LOGO.png)
 
 [Biological neuron for forecasting financial time series](/en/articles/16979)
 
 We will build a biologically correct system of neurons for time series forecasting. The introduction of a plasma-like environment into the neural network architecture creates a kind of "collective intelligence," where each neuron influences the system's operation not only through direct connections, but also through long-range electromagnetic interactions. Let's see how the neural brain modeling system will perform in the market.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/19693/logo-2.png)
 
 You are missing trading opportunities:
 

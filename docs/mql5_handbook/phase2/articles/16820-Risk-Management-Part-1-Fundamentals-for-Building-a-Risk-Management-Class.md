@@ -24,9 +24,9 @@ date: "14 October 2025, 15:07"
 
 [](/en/articles/16820?print=)
 
-![preview](assets/16820/b7519941b1c30b5f59d0efbdbefaf76e.jpeg)
+![preview](assets/16820/2Q==)
 
-![Risk Management (Part 1): Fundamentals for Building a Risk Management Class](https://c.mql5.com/2/108/Proyecto_nuevo_f1p_600x314.jpg)
+![Risk Management (Part 1): Fundamentals for Building a Risk Management Class](assets/16820/Proyecto_nuevo_f1p_600x314.jpg)
 
 # Risk Management (Part 1): Fundamentals for Building a Risk Management Class
 
@@ -39,14 +39,14 @@ date: "14 October 2025, 15:07"
         | 
 14 October 2025, 15:07
 
-![](https://c.mql5.com/i/icons.svg#views-usage)
+![](assets/16820/icons.svg#views-usage)
 
-          4 702
+          4 705
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-usage)0](/en/forum/497572)
+[![](assets/16820/icons.svg#comments-usage)0](/en/forum/497572)
 
-![Niquel Mendoza](https://c.mql5.com/avatar/2024/8/66bbab57-2d8c.png)
+![Niquel Mendoza](assets/16820/66bbab57-2d8c.png)
 
 [Niquel Mendoza](/en/users/nique_372)
  
@@ -152,33 +152,33 @@ In this section, we will begin coding our include file.
  At the top of your MetaTrader platform, click on the "IDE" button:
  
  
-![ IDE-1](https://c.mql5.com/2/110/IDE-1.png)
+![ IDE-1](assets/16820/IDE-1.png)
  
 2.
  In the upper-left corner of the MetaEditor, click on the File tab, then select New. The following window will appear:
  
  
-![IDE-2](https://c.mql5.com/2/110/IDE-2.png)
+![IDE-2](assets/16820/IDE-2.png)
  
  
 3.
  Select Include and click Next:
  
  
-![ IDE-3](https://c.mql5.com/2/110/IDE-3.png)
+![ IDE-3](assets/16820/IDE-3.png)
  
 4.
  Set up the include by assigning a name and author:
  
  
-![IDE-4](https://c.mql5.com/2/110/IDE-4.png)
+![IDE-4](assets/16820/IDE-4.png)
  
 We've finished creating the file. This is just the beginning. Now, let's go over the plan for how our risk management system will work.
  
 Below is a diagram showing how risk management will work:
  
  
-![Map-1](https://c.mql5.com/2/110/Map-1.png)
+![Map-1](assets/16820/Map-1.png)
  
  
  
@@ -278,14 +278,14 @@ Before performing the calculation, we need to determine the margin required per 
 The main goal is to establish a solid foundation for calculating lots efficiently — adapting dynamically to the account balance and available margin.
  
  
-![ MARGIN-1](https://c.mql5.com/2/110/MARGIN-1.PNG)
+![ MARGIN-1](assets/16820/MARGIN-1.PNG)
  
 As shown, the approximate initial margin required to buy one lot of gold is 1,326 USD. Therefore, to calculate the 
 maximum allowed lot
 , we simply divide the account's available free margin by the required margin per lot. This relationship can be expressed as follows:
  
  
-![MARGIN-2](https://c.mql5.com/2/111/margin-2.png)
+![MARGIN-2](assets/16820/margin-2.png)
  
 Free margin:
  
@@ -294,7 +294,7 @@ Free Margin represents the available capital in your account that can be used to
  
  
  
-![MARGIN-3](https://c.mql5.com/2/111/margin-3.png)
+![MARGIN-3](assets/16820/margin-3.png)
  
 Calculating the Price for Any Order Type
  Now that we know how to calculate the 
@@ -843,7 +843,7 @@ Mathematical Formula
  The formula to calculate the distance in points is straightforward:
  
  
-![EXTRA-1](https://c.mql5.com/2/111/extra-1.png)
+![EXTRA-1](assets/16820/extra-1.png)
  
 where:
  
@@ -971,7 +971,7 @@ double step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
 Current risk per operation (rpo) is calculated using the following formula:
  
  
-![RISK-1](https://c.mql5.com/2/111/risk-1.png)
+![RISK-1](assets/16820/risk-1.png)
  
 In the code:
  
@@ -1060,7 +1060,7 @@ Step-by-Step Logic
 The basic formula for calculating the risk per operation (rpo) is as follows:
  
  
-![RISK-1](https://c.mql5.com/2/111/risk-1__2.png)
+![RISK-1](assets/16820/risk-1__2.png)
  
 In this function, we will isolate the stop loss to calculate its value based on rpo, lot size, and other relevant factors. 
  
@@ -1071,21 +1071,21 @@ Divide both sides of the equation by the lot size:
  
  
  
-![RISK-2](https://c.mql5.com/2/111/risk-2.png)
+![RISK-2](assets/16820/risk-2.png)
  
  
 Subtract spread and 1 from both sides: 
  
  
  
-![RISK-3](https://c.mql5.com/2/111/risk-3.png)
+![RISK-3](assets/16820/risk-3.png)
  
  
 Divide by tick_value to isolate StopLoss: 
  
  
  
-![RISK-4](https://c.mql5.com/2/111/risk-4.png)
+![RISK-4](assets/16820/risk-4.png)
  
 Implementation in Code
  The formula above is directly translated into the calculation in the function body:
@@ -1302,12 +1302,12 @@ void OnStart()
 Now, to put the script into practice, we use it to obtain the ideal lot size based on the given risk per trade. We'll test it on the XAUUSD symbol, which corresponds to gold. 
  
  
-![ SCRIPT-RISK-1](https://c.mql5.com/2/110/SCRIPT-RISK-1.PNG)
+![ SCRIPT-RISK-1](assets/16820/SCRIPT-RISK-1.PNG)
  
 With parameters such as a stop loss of 200 pips and a risk per trade of 1.0% of the account balance, and specifying the order type as ORDER_TYPE_BUY, the result will be as follows:
  
  
-![ SCRIPT-RISK-2](https://c.mql5.com/2/110/SCRIPT-RISK-2__1.PNG)
+![ SCRIPT-RISK-2](assets/16820/SCRIPT-RISK-2__1.PNG)
  
 The result shown in the Experts tab corresponds to a lot size of 0.01 with a stop loss of 200 pips and a risk per trade of 3.81, which is 1% of the account balance.
  
@@ -1356,31 +1356,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/497572)
 
-![Self Optimizing Expert Advisors in MQL5 (Part 15): Linear System Identification](https://c.mql5.com/2/175/19891-self-optimizing-expert-advisors-logo__1.png)
+![Self Optimizing Expert Advisors in MQL5 (Part 15): Linear System Identification](assets/16820/19891-self-optimizing-expert-advisors-logo__1.png)
 
 [Self Optimizing Expert Advisors in MQL5 (Part 15): Linear System Identification](/en/articles/19891)
 
 Trading strategies may be challenging to improve because we often don’t fully understand what the strategy is doing wrong. In this discussion, we introduce linear system identification, a branch of control theory. Linear feedback systems can learn from data to identify a system’s errors and guide its behavior toward intended outcomes. While these methods may not provide fully interpretable explanations, they are far more valuable than having no control system at all. Let’s explore linear system identification and observe how it may help us as algorithmic traders to maintain control over our trading applications.
 
-![Introduction to MQL5 (Part 23): Automating Opening Range Breakout Strategy](https://c.mql5.com/2/175/19886-introduction-to-mql5-part-23-logo.png)
+![Introduction to MQL5 (Part 23): Automating Opening Range Breakout Strategy](assets/16820/19886-introduction-to-mql5-part-23-logo.png)
 
 [Introduction to MQL5 (Part 23): Automating Opening Range Breakout Strategy](/en/articles/19886)
 
 This article explores how to build an Opening Range Breakout (ORB) Expert Advisor in MQL5. It explains how the EA identifies breakouts from the market’s initial range and opens trades accordingly. You’ll also learn how to control the number of positions opened and set a specific cutoff time to stop trading automatically.
 
-![Biological neuron for forecasting financial time series](https://c.mql5.com/2/117/Biological_neuron_for_forecasting_financial_time_series___LOGO.png)
+![Biological neuron for forecasting financial time series](assets/16820/Biological_neuron_for_forecasting_financial_time_series___LOGO.png)
 
 [Biological neuron for forecasting financial time series](/en/articles/16979)
 
 We will build a biologically correct system of neurons for time series forecasting. The introduction of a plasma-like environment into the neural network architecture creates a kind of "collective intelligence," where each neuron influences the system's operation not only through direct connections, but also through long-range electromagnetic interactions. Let's see how the neural brain modeling system will perform in the market.
 
-![MQL5 Wizard Techniques you should know (Part 83):  Using Patterns of Stochastic Oscillator and the FrAMA — Behavioral Archetypes](https://c.mql5.com/2/175/19857-mql5-wizard-techniques-you-logo.png)
+![MQL5 Wizard Techniques you should know (Part 83):  Using Patterns of Stochastic Oscillator and the FrAMA — Behavioral Archetypes](assets/16820/19857-mql5-wizard-techniques-you-logo.png)
 
 [MQL5 Wizard Techniques you should know (Part 83):  Using Patterns of Stochastic Oscillator and the FrAMA — Behavioral Archetypes](/en/articles/19857)
 
 The Stochastic Oscillator and the Fractal Adaptive Moving Average are another indicator pairing that could be used for their ability to compliment each other within an MQL5 Expert Advisor. We look at the Stochastic for its ability to pinpoint momentum shifts, while the FrAMA is used to provide confirmation of the prevailing trends. In exploring this indicator pairing, as always, we use the MQL5 wizard to build and test out their potential.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/16820/logo-2.png)
 
 You are missing trading opportunities:
 

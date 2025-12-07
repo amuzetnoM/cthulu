@@ -14,9 +14,9 @@ date: "4 December 2025, 10:29"
 
 [](/en/articles/20458?print=)
 
-![preview](assets/20458/76b9aa82dd6ca3ddcd3d77e53e1a934e.jpeg)
+![preview](assets/20458/9k=)
 
-![Implementing Practical Modules from Other Languages in MQL5 (Part 05): The Logging module from Python, Log Like a Pro](https://c.mql5.com/2/184/20458-implementing-practical-modules-from-other-languages-in-mql5_600x314.jpg)
+![Implementing Practical Modules from Other Languages in MQL5 (Part 05): The Logging module from Python, Log Like a Pro](assets/20458/20458-implementing-practical-modules-from-other-languages-in-mql5_600x314.jpg)
 
 # Implementing Practical Modules from Other Languages in MQL5 (Part 05): The Logging module from Python, Log Like a Pro
 
@@ -29,14 +29,14 @@ date: "4 December 2025, 10:29"
         | 
 4 December 2025, 10:29
 
-![](https://c.mql5.com/i/icons.svg#views-usage)
+![](assets/20458/icons.svg#views-usage)
 
-          469
+          474
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-usage)0](/en/forum/501166)
+[![](assets/20458/icons.svg#comments-usage)0](/en/forum/501166)
 
-![Omega J Msigwa](https://c.mql5.com/avatar/2022/6/62B4B2F2-C377.png)
+![Omega J Msigwa](assets/20458/62B4B2F2-C377.png)
 
 [Omega J Msigwa](/en/users/omegajoctan)
  
@@ -81,7 +81,7 @@ Our browsers keep the history of the sites we visit and how we interact with the
 Keeping these records is essential for many important reasons, including troubleshooting, debugging, auditing, monitoring performance, and understanding the behavior of our systems over time.
  
  
-![image source: pexels.com](https://c.mql5.com/2/183/article_image.png)
+![image source: pexels.com](assets/20458/article_image.png)
  
 In the algorithmic trading space, logging is very important as well as it helps us:
  
@@ -458,7 +458,7 @@ Exa
 mple outputs.
  
  
-![](https://c.mql5.com/2/183/log_files_rotation__1.gif)
+![](assets/20458/log_files_rotation__1.gif)
  
 File size estimation might not be the most accurate, but it is very close. When a file is close to the 10 MegaBytes mark, a new one is created, and new logs are written inside it.
  
@@ -1455,7 +1455,7 @@ Output.
 Several files were created under the common directory as expected, each file with a size close to 10 MB.
  
  
-![](https://c.mql5.com/2/184/tester_logs.gif)
+![](assets/20458/tester_logs.gif)
  
  
 
@@ -1637,31 +1637,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/501166)
 
-![Currency pair strength indicator in pure MQL5](https://c.mql5.com/2/123/Indicator_for_assessing_the_strength_and_weakness_of_currency_pairs_in_pure_MQL5__LOGO.png)
+![Currency pair strength indicator in pure MQL5](assets/20458/Indicator_for_assessing_the_strength_and_weakness_of_currency_pairs_in_pure_MQL5__LOGO.png)
 
 [Currency pair strength indicator in pure MQL5](/en/articles/17303)
 
 We are going to develop a professional indicator for currency strength analysis in MQL5. This step-by-step guide will show you how to develop a powerful trading tool with a visual dashboard for MetaTrader 5. You will learn how to calculate the strength of currency pairs across multiple timeframes (H1, H4, D1), implement dynamic data updates, and create a user-friendly interface.
 
-![The View and Controller components for tables in the MQL5 MVC paradigm: Simple controls](https://c.mql5.com/2/146/18221-komponenti-view-i-controller-logo.png)
+![The View and Controller components for tables in the MQL5 MVC paradigm: Simple controls](assets/20458/18221-komponenti-view-i-controller-logo.png)
 
 [The View and Controller components for tables in the MQL5 MVC paradigm: Simple controls](/en/articles/18221)
 
 The article covers simple controls as components of more complex graphical elements of the View component within the framework of table implementation in the MVC (Model-View-Controller) paradigm. The basic functionality of the Controller is implemented for interaction of elements with the user and with each other. This is the second article on the View component and the fourth one in a series of articles on creating tables for the MetaTrader 5 client terminal.
 
-![Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing](https://c.mql5.com/2/184/20485-statistical-arbitrage-through-logo.png)
+![Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing](assets/20458/20485-statistical-arbitrage-through-logo.png)
 
 [Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing](/en/articles/20485)
 
 This article proposes using Rolling Windows Eigenvector Comparison for early imbalance diagnostics and portfolio rebalancing in a mean-reversion statistical arbitrage strategy based on cointegrated stocks. It contrasts this technique with traditional In-Sample/Out-of-Sample ADF validation, showing that eigenvector shifts can signal the need for rebalancing even when IS/OOS ADF still indicates a stationary spread. While the method is intended mainly for live trading monitoring, the article concludes that eigenvector comparison could also be integrated into the scoring system—though its actual contribution to performance remains to be tested.
 
-![From Basic to Intermediate: Structs (II)](https://c.mql5.com/2/120/Do_bzsico_ao_intermedi1rio_Struct_I___LOGO.png)
+![From Basic to Intermediate: Structs (II)](assets/20458/Do_bzsico_ao_intermedi1rio_Struct_I___LOGO.png)
 
 [From Basic to Intermediate: Structs (II)](/en/articles/15731)
 
 In this article, we will try to understand why programming languages like MQL5 have structures, and why in some cases structures are the ideal way to pass values between functions and procedures, while in other cases they may not be the best way to do it.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/20458/logo-2.png)
 
 You are missing trading opportunities:
 

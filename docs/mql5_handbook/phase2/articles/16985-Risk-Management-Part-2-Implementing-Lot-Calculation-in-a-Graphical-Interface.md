@@ -22,9 +22,9 @@ date: "20 November 2025, 15:28"
 
 [](/en/articles/16985?print=)
 
-![preview](assets/16985/847ce29de69799f2b6b46e2bc2d3f988.jpeg)
+![preview](assets/16985/Z)
 
-![Risk Management (Part 2): Implementing Lot Calculation in a Graphical Interface](https://c.mql5.com/2/116/Gestian-de-Riesgo_Part2_600x314.jpg)
+![Risk Management (Part 2): Implementing Lot Calculation in a Graphical Interface](assets/16985/Gestian-de-Riesgo_Part2_600x314.jpg)
 
 # Risk Management (Part 2): Implementing Lot Calculation in a Graphical Interface
 
@@ -37,14 +37,14 @@ date: "20 November 2025, 15:28"
         | 
 20 November 2025, 15:28
 
-![](https://c.mql5.com/i/icons.svg#views-usage)
+![](assets/16985/icons.svg#views-usage)
 
-          2 175
+          2 178
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-usage)0](/en/forum/500476)
+[![](assets/16985/icons.svg#comments-usage)0](/en/forum/500476)
 
-![Niquel Mendoza](https://c.mql5.com/avatar/2024/8/66bbab57-2d8c.png)
+![Niquel Mendoza](assets/16985/66bbab57-2d8c.png)
 
 [Niquel Mendoza](/en/users/nique_372)
  
@@ -264,7 +264,7 @@ Coordinate center is located at the bottom-right corner of the chart
 CORNER_RIGHT_UPPER
 Coordinate center is located at the top-right corner of the chart
 These 4 anchor types can be represented in the image as follows:
-![BASE-CORNER](https://c.mql5.com/2/113/BASE-CORNER.png)
+![BASE-CORNER](assets/16985/BASE-CORNER.png)
 Note: Generally, and by default, the most commonly used anchor type is CORNER_LEFT_UPPER. This can vary depending on the use case or whichever is simpler for you. In this article, we will work only with the anchor mentioned above.
 MQL5 Controls Library
 The MQL5 controls library is a class library for creating controls, panels, and more. For the descriptions of the controls, please refer to the documentation.
@@ -272,13 +272,13 @@ To do this, open the documentation by pressing F1 in your MetaEditor. Once there
 MQL5 Reference Manual
 . Scroll to the bottom of the page, where you will find a section called Standard Library. Clicking on it opens a list of various libraries for different applications. The one we're interested in is the Controls Library.
 By selecting this library, you gain access to several tables describing the uses and functionalities of each control along with their groupings. To help you better understand the structure and relationships between the control classes, I have prepared a diagram showing how inheritances and classes associated with these controls work.
-![CONTROLS-1](https://c.mql5.com/2/112/Texto_del_p6rrafo.png)
+![CONTROLS-1](assets/16985/Texto_del_p6rrafo.png)
 As we can see, the main class is CObject, from which the class CWnd is inherited. From CWnd, two additional classes are derived: CWndContainer, intended for complex controls, and CWndObj, used for simpler controls. In our panels, we will use both types of controls depending on each specific case. For now, however, we will focus on the CAppDialog control, the class that creates the main panel, like the one we are developing.
-![ CONTROLS-2](https://c.mql5.com/2/112/CONTROLS-2.PNG)
+![ CONTROLS-2](assets/16985/CONTROLS-2.PNG)
 Inside this panel, we will begin adding basic controls such as labels to display text, combo boxes to select order types, buttons to save variables and obtain results, and edit fields where the user can manually enter values, such as the desired risk per trade.
 Designing a Panel in MQL5: Planning and Graphical Elements
 Before starting to code a panel in MQL5, let's plan its design. The best way to do this is to create a visual sketch, like the one shown in the attached image, using simple tools like Paint, Canva, etc. This step ensures that every necessary element is included and properly positioned, preventing omissions and making implementation easier. I have made this the following way:
-![](https://c.mql5.com/2/113/4580963017109.png)
+![](assets/16985/4580963017109.png)
 Analyzing the panel image, we can see several controls fulfilling different functions. These controls allow the user to interact with the interface in a clear and functional way. Below is a detailed description of the main elements and how they will be used in our class:
 Control  
 Function 
@@ -638,7 +638,7 @@ Add: Adds the ComboBox to the panel.
 
 In this section, we begin designing and creating the elements of the client area in our user interface. The goal is to provide a functional space where the user can manage and adjust configurations related to risk and trading orders. Below, I describe how the area is divided and how each component is created.
 The client panel is divided into three main sections:
-![CONTROLS-3-S](https://c.mql5.com/2/113/CONTROLS-3-S.png)
+![CONTROLS-3-S](assets/16985/CONTROLS-3-S.png)
 General Section
 : In this section, the user can edit general aspects such as risk per operation, deviation, and stop limit.
 Lot Calculation
@@ -1169,26 +1169,26 @@ void OnChartEvent(const int id,         // Event ID
 ### Panel Testing and Validation
 
 Now, we run the Expert Advisor on a symbol; in my case, I will use XAUUSD (gold). The chart appears as follows:
-![ CONTROLS-4](https://c.mql5.com/2/112/CONTROLS-4.PNG)
+![ CONTROLS-4](assets/16985/CONTROLS-4.PNG)
 For transparency and debugging purposes, my account balance is as follows:
-![CONTROLS-4](https://c.mql5.com/2/112/CONTROLS-4__1.PNG)
+![CONTROLS-4](assets/16985/CONTROLS-4__1.PNG)
 At this moment, as can be verified, I have no open positions.
 Here's how to use the panel:
 1. Fill in the "Risk Per Operation" field with a percentage (applied to the current account balance). In this example, I choose 3% of my account.
-![ TEST-1](https://c.mql5.com/2/112/TEST-1.PNG)
+![ TEST-1](assets/16985/TEST-1.PNG)
 Note
 : You can also modify the edits for deviation and stop limit.
 2. Select what you want to calculate. We will start with the function to obtain the ideal lot for my trade based on stop loss in points, risk per operation, and order type. I choose a stop loss of 500 points for a buy order (ORDER_TYPE_BUY).
-![TEST-2.](https://c.mql5.com/2/112/TEST-2.PNG)
+![TEST-2.](assets/16985/TEST-2.PNG)
 Click the "Save" button in the "SL Point" line. The result is:
-![TEST-4](https://c.mql5.com/2/112/TEST-4.PNG)
+![TEST-4](assets/16985/TEST-4.PNG)
 The result shows a lot of 0.03 on the panel. Additionally, in the Experts tab, the following appears:
-![TEST-3.](https://c.mql5.com/2/112/TEST-3.PNG)
+![TEST-3.](assets/16985/TEST-3.PNG)
 This message provides information such as the maximum lot size (0.45), risk per operation, and the potential loss if the trade fails using the calculated lot and stop loss ($15.45 USD).
 3. Next, we test the method for calculating lot size based on risk per operation. Click the "get" button on the same line as the "Get ideal SL" label:
-![TEST-5](https://c.mql5.com/2/112/TEST-5.PNG)
+![TEST-5](assets/16985/TEST-5.PNG)
 The result is a stop loss of 1856 points, as well as:
-![ TEST-6](https://c.mql5.com/2/112/TEST-6.PNG)
+![ TEST-6](assets/16985/TEST-6.PNG)
 An ideal lot of 0.01 for a 3.0% risk.
 
 ### Conclusion
@@ -1237,31 +1237,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/500476)
 
-![Overcoming The Limitation of Machine Learning (Part 7): Automatic Strategy Selection](https://c.mql5.com/2/181/20256-overcoming-the-limitation-of-logo.png)
+![Overcoming The Limitation of Machine Learning (Part 7): Automatic Strategy Selection](assets/16985/20256-overcoming-the-limitation-of-logo.png)
 
 [Overcoming The Limitation of Machine Learning (Part 7): Automatic Strategy Selection](/en/articles/20256)
 
 This article demonstrates how to automatically identify potentially profitable trading strategies using MetaTrader 5. White-box solutions, powered by unsupervised matrix factorization, are faster to configure, more interpretable, and provide clear guidance on which strategies to retain. Black-box solutions, while more time-consuming, are better suited for complex market conditions that white-box approaches may not capture. Join us as we discuss how our trading strategies can help us carefully identify profitable strategies under any circumstance.
 
-![Building AI-Powered Trading Systems in MQL5 (Part 6): Introducing Chat Deletion and Search Functionality](https://c.mql5.com/2/181/20254-building-ai-powered-trading-logo.png)
+![Building AI-Powered Trading Systems in MQL5 (Part 6): Introducing Chat Deletion and Search Functionality](assets/16985/20254-building-ai-powered-trading-logo.png)
 
 [Building AI-Powered Trading Systems in MQL5 (Part 6): Introducing Chat Deletion and Search Functionality](/en/articles/20254)
 
 In Part 6 of our MQL5 AI trading system series, we advance the ChatGPT-integrated Expert Advisor by introducing chat deletion functionality through interactive delete buttons in the sidebar, small/large history popups, and a new search popup, allowing traders to manage and organize persistent conversations efficiently while maintaining encrypted storage and AI-driven signals from chart data.
 
-![Automating Black-Scholes Greeks: Advanced Scalping and Microstructure Trading](https://c.mql5.com/2/182/20287-automating-black-scholes-greeks-logo.png)
+![Automating Black-Scholes Greeks: Advanced Scalping and Microstructure Trading](assets/16985/20287-automating-black-scholes-greeks-logo.png)
 
 [Automating Black-Scholes Greeks: Advanced Scalping and Microstructure Trading](/en/articles/20287)
 
 Gamma and Delta were originally developed as risk-management tools for hedging options exposure, but over time they evolved into powerful instruments for advanced scalping, order-flow modeling, and microstructure trading. Today, they serve as real-time indicators of price sensitivity and liquidity behavior, enabling traders to anticipate short-term volatility with remarkable precision.
 
-![Markets Positioning Codex in MQL5 (Part 2):  Bitwise Learning, with Multi-Patterns for Nvidia](https://c.mql5.com/2/182/20045-markets-positioning-codex-in-logo.png)
+![Markets Positioning Codex in MQL5 (Part 2):  Bitwise Learning, with Multi-Patterns for Nvidia](assets/16985/20045-markets-positioning-codex-in-logo.png)
 
 [Markets Positioning Codex in MQL5 (Part 2):  Bitwise Learning, with Multi-Patterns for Nvidia](/en/articles/20045)
 
 We continue our new series on Market-Positioning, where we study particular assets, with specific trade directions over manageable test windows. We started this by considering Nvidia Corp stock in the last article, where we covered 5 signal patterns from the complimentary pairing of the RSI and DeMarker oscillators. For this article, we cover the remaining 5 patterns and also delve into multi-pattern options that not only feature untethered combinations of all ten, but also specialized combinations of just a pair.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/16985/logo-2.png)
 
 You are missing trading opportunities:
 

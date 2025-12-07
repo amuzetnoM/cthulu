@@ -27,6 +27,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from time import sleep
+MAX_ASSET_SIZE = 5 * 1024 * 1024  # 5MB default per asset limit to avoid huge downloads
 
 try:
     import requests
@@ -59,6 +60,9 @@ def download_asset(url: str, dest_folder: Path) -> Path:
     # Use streaming to not consume memory on large files
     # Handle data URI (base64 embedded) like: data:image/jpeg;base64,...
     try:
+        # Remove URL fragment if present (e.g. svg#views-usage)
+        from urllib.parse import urldefrag
+        url, _ = urldefrag(url)
         if url.startswith("data:"):
             import base64
             import hashlib
@@ -87,6 +91,9 @@ def download_asset(url: str, dest_folder: Path) -> Path:
         except Exception as e:
             raise RuntimeError(f"requests.get failed for {url}: {e}")
         if resp.status_code == 200:
+            content_len = resp.headers.get('Content-Length')
+            if content_len and int(content_len) > MAX_ASSET_SIZE:
+                raise RuntimeError(f"Asset too large ({content_len} bytes) - skipping")
             with open(local_path, "wb") as f:
                 shutil.copyfileobj(resp.raw, f)
             return local_path
@@ -165,13 +172,19 @@ def parse_phase_manifest(manifest_path: Path) -> list[dict]:
     return entries
 
 
-def fetch_article_and_save(phase: str, manifest_entry: dict, dry_run=False, verbose=True):
+def fetch_article_and_save(phase: str, manifest_entry: dict, dry_run=False, verbose=True, assets_enabled: bool = False):
     url = manifest_entry["url"]
     article_id = manifest_entry.get("article_id")
     provided_title = manifest_entry.get("title")
 
     if verbose:
         print(f"→ Fetching: {url}")
+
+    # Safety check: ensure we don't produce nested docs path. root should be docs/mql5_handbook
+    root = Path(__file__).resolve().parent.parent
+    root_str = str(root).replace('\\', '/')
+    if root_str.count('docs/mql5_handbook') > 1:
+        raise RuntimeError(f"Unsafe root path in fetch_article_and_save: {root_str}")
 
         # Try with retries to handle transient failures
         session = requests.Session()
@@ -220,12 +233,16 @@ def fetch_article_and_save(phase: str, manifest_entry: dict, dry_run=False, verb
             body = soup
 
     # Convert HTML to markdown-ish
-    md_body = html_to_markdown(str(body))
+    try:
+        md_body = html_to_markdown(str(body))
+    except Exception as e:
+        print(f"  ⚠ HTML -> MD conversion failed for {url}: {e}. Falling back to text extraction.")
+        md_body = BeautifulSoup(str(body), "html.parser").get_text("\n")
 
     # Tagging removed — per user request do not produce tags
     tags = []
 
-    # Replace images and download them
+    # Replace images and download them (skip downloading when dry_run)
     article_assets_dir = Path(__file__).resolve().parent.parent / phase / "assets"
     if article_id:
         article_assets_dir = article_assets_dir / str(article_id)
@@ -246,7 +263,10 @@ def fetch_article_and_save(phase: str, manifest_entry: dict, dry_run=False, verb
 
         # Download image to assets
         try:
-            local_path = download_asset(src, article_assets_dir)
+            if not dry_run and assets_enabled:
+                local_path = download_asset(src, article_assets_dir)
+            else:
+                local_path = article_assets_dir / Path(src.split('/')[-1])
             # Make a relative path for the markdown file
             rel_path = os.path.relpath(local_path, (Path(__file__).resolve().parent.parent / phase))
             # Replace in markdown text (we have previous md_body generated before) - safe approach: add new markdown for images
@@ -261,7 +281,10 @@ def fetch_article_and_save(phase: str, manifest_entry: dict, dry_run=False, verb
             if href.startswith("/"):
                 href = "https://www.mql5.com" + href
             try:
-                local_path = download_asset(href, article_assets_dir)
+                if not dry_run and assets_enabled:
+                    local_path = download_asset(href, article_assets_dir)
+                else:
+                    local_path = article_assets_dir / Path(href.split('/')[-1])
                 rel_path = os.path.relpath(local_path, (Path(__file__).resolve().parent.parent / phase))
                 md_body = md_body.replace(href, rel_path.replace("\\", "/"))
             except Exception as e:
@@ -310,9 +333,13 @@ def fetch_article_and_save(phase: str, manifest_entry: dict, dry_run=False, verb
     }
 
 
-def run_import(phases: list[str], dry_run: bool = True, verbose: bool = True):
+def run_import(phases: list[str], dry_run: bool = True, verbose: bool = True, assets_enabled: bool = False):
     # The parent.parent directory is already the `docs/mql5_handbook` directory
     root = Path(__file__).resolve().parent.parent
+    # Safety assertion: ensure we don't generate path with duplicate `docs/mql5_handbook` components
+    root_str = str(root).replace('\\', '/')
+    if root_str.count('docs/mql5_handbook') > 1:
+        raise RuntimeError(f"Unsafe root path detected (duplicate docs): {root_str}")
 
     manifest_files = []
     for phase in phases:
@@ -330,7 +357,7 @@ def run_import(phases: list[str], dry_run: bool = True, verbose: bool = True):
 
         for entry in entries:
             try:
-                result = fetch_article_and_save(mf.parent.name, entry, dry_run=dry_run, verbose=verbose)
+                result = fetch_article_and_save(mf.parent.name, entry, dry_run=dry_run, verbose=verbose, assets_enabled=assets_enabled)
                 if verbose and not dry_run:
                     print(f"  Saved file: {result['file']}")
             except Exception as e:
@@ -343,6 +370,7 @@ if __name__ == "__main__":
     parser.add_argument("--all", action="store_true", help="Import all phases")
     parser.add_argument("--dry-run", action="store_true", help="Don't write files, show actions")
     parser.add_argument("--verbose", action="store_true", help="Verbose output")
+    parser.add_argument("--assets", action="store_true", help="Download assets (images and attachments). Default: False")
 
     args = parser.parse_args()
 
@@ -358,4 +386,4 @@ if __name__ == "__main__":
     if not args.dry_run:
         print("⚠️  Running importer in WRITE mode - files will be modified. Use --dry-run to preview first.")
 
-    run_import(phases=phases, dry_run=args.dry_run, verbose=args.verbose)
+    run_import(phases=phases, dry_run=args.dry_run, verbose=args.verbose, assets_enabled=args.assets)

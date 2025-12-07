@@ -19,9 +19,9 @@ date: "28 August 2025, 08:32"
 
 [](/en/articles/18937?print=)
 
-![preview](assets/Chart-Synchronization-for-Easier-Technical-Analysis/fabf51a0c3121fb57beb6e5319958bdb.jpeg)
+![preview](assets/Chart-Synchronization-for-Easier-Technical-Analysis/Z)
 
-![Chart Synchronization for Easier Technical Analysis](https://c.mql5.com/2/165/18937-chart-synchronization-for-easier-technical-analysis_600x314.jpg)
+![Chart Synchronization for Easier Technical Analysis](assets/Chart-Synchronization-for-Easier-Technical-Analysis/18937-chart-synchronization-for-easier-technical-analysis_600x314.jpg)
 
 # Chart Synchronization for Easier Technical Analysis
 
@@ -34,14 +34,14 @@ date: "28 August 2025, 08:32"
         | 
 28 August 2025, 08:32
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/Chart-Synchronization-for-Easier-Technical-Analysis/icons.svg#views-white-usage)
 
-          3 628
+          3 631
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)0](/en/forum/494143)
+[![](assets/Chart-Synchronization-for-Easier-Technical-Analysis/icons.svg#comments-white-usage)0](/en/forum/494143)
 
-![Hlomohang John Borotho](https://c.mql5.com/avatar/2023/9/6505ca3e-1abb.jpg)
+![Hlomohang John Borotho](assets/Chart-Synchronization-for-Easier-Technical-Analysis/6505ca3e-1abb.jpg)
 
 [Hlomohang John Borotho](/en/users/johnhlomohang)
  
@@ -87,17 +87,17 @@ Reset Functionality: Clears all synchronized charts (preserves price chart).
 2. System Architecture:
  
  
-![Sys Arch](https://c.mql5.com/2/160/sys_Arch.png)
+![Sys Arch](assets/Chart-Synchronization-for-Easier-Technical-Analysis/sys_Arch.png)
  
 3. Workflow logic:
  
  
-![Workflow Logic](https://c.mql5.com/2/160/Work_Flow.png)
+![Workflow Logic](assets/Chart-Synchronization-for-Easier-Technical-Analysis/Work_Flow.png)
  
 4. Propagation logic:
  
  
-![Prop logic](https://c.mql5.com/2/160/Prop_logic.png)
+![Prop logic](assets/Chart-Synchronization-for-Easier-Technical-Analysis/Prop_logic.png)
  
 5. Development process:
  
@@ -462,7 +462,7 @@ Finally, the OnDeinit() function is called when the indicator is removed or the 
 
  
  
-![](https://c.mql5.com/2/165/Final.gif)
+![](assets/Chart-Synchronization-for-Easier-Technical-Analysis/Final.gif)
  
  
 
@@ -510,31 +510,31 @@ This article was written by a user of the site and reflects their personal views
 
 [Go to discussion](/en/forum/494143)
 
-![From Novice to Expert: Mastering Detailed Trading Reports with Reporting EA](https://c.mql5.com/2/165/19006-from-novice-to-expert-mastering-logo.png)
+![From Novice to Expert: Mastering Detailed Trading Reports with Reporting EA](assets/Chart-Synchronization-for-Easier-Technical-Analysis/19006-from-novice-to-expert-mastering-logo.png)
 
 [From Novice to Expert: Mastering Detailed Trading Reports with Reporting EA](/en/articles/19006)
 
 In this article, we delve into enhancing the details of trading reports and delivering the final document via email in PDF format. This marks a progression from our previous work, as we continue exploring how to harness the power of MQL5 and Python to generate and schedule trading reports in the most convenient and professional formats. Join us in this discussion to learn more about optimizing trading report generation within the MQL5 ecosystem.
 
-![Developing a Replay System (Part 77): New Chart Trade (IV)](https://c.mql5.com/2/104/Desenvolvendo_um_sistema_de_Replay_Parte_77___LOGO.png)
+![Developing a Replay System (Part 77): New Chart Trade (IV)](assets/Chart-Synchronization-for-Easier-Technical-Analysis/Desenvolvendo_um_sistema_de_Replay_Parte_77___LOGO.png)
 
 [Developing a Replay System (Part 77): New Chart Trade (IV)](/en/articles/12476)
 
 In this article, we will cover some of the measures and precautions to consider when creating a communication protocol. These are pretty simple and straightforward things, so we won't go into too much detail in this article. But to understand what will happen, you need to understand the content of the article.
 
-![MetaTrader Meets Google Sheets with Pythonanywhere: A Guide to Secure Data Flow](https://c.mql5.com/2/165/19175-metatrader-meets-google-sheets-logo.png)
+![MetaTrader Meets Google Sheets with Pythonanywhere: A Guide to Secure Data Flow](assets/Chart-Synchronization-for-Easier-Technical-Analysis/19175-metatrader-meets-google-sheets-logo.png)
 
 [MetaTrader Meets Google Sheets with Pythonanywhere: A Guide to Secure Data Flow](/en/articles/19175)
 
 This article demonstrates a secure way to export MetaTrader data to Google Sheets. Google Sheet is the most valuable solution as it is cloud based and the data saved in there can be accessed anytime and from anywhere. So traders can access trading and related data exported to google sheet and do further analysis for future trading anytime and wherever they are at the moment.
 
-![Simplifying Databases in MQL5 (Part 1): Introduction to Databases and SQL](https://c.mql5.com/2/165/19285-simplifying-databases-in-mql5-logo__2.png)
+![Simplifying Databases in MQL5 (Part 1): Introduction to Databases and SQL](assets/Chart-Synchronization-for-Easier-Technical-Analysis/19285-simplifying-databases-in-mql5-logo__2.png)
 
 [Simplifying Databases in MQL5 (Part 1): Introduction to Databases and SQL](/en/articles/19285)
 
 We explore how to manipulate databases in MQL5 using the language's native functions. We cover everything from table creation, insertion, updating, and deletion to data import and export, all with sample code. The content serves as a solid foundation for understanding the internal mechanics of data access, paving the way for the discussion of ORM, where we'll build one in MQL5.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Chart-Synchronization-for-Easier-Technical-Analysis/logo-2.png)
 
 You are missing trading opportunities:
 

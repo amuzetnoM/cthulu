@@ -17,9 +17,9 @@ date: "9 September 2025, 09:03"
 
 [](/en/articles/19365?print=)
 
-![preview](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/7585f72637408398295b3dda2198c329.jpeg)
+![preview](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/2Q==)
 
-![Price Action Analysis Toolkit Development (Part 39): Automating BOS and ChoCH Detection in MQL5](https://c.mql5.com/2/168/19365-price-action-analysis-toolkit-development-part-39-automating_600x314.jpg)
+![Price Action Analysis Toolkit Development (Part 39): Automating BOS and ChoCH Detection in MQL5](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/19365-price-action-analysis-toolkit-development-part-39-automating_600x314.jpg)
 
 # Price Action Analysis Toolkit Development (Part 39): Automating BOS and ChoCH Detection in MQL5
 
@@ -32,14 +32,14 @@ date: "9 September 2025, 09:03"
         | 
 9 September 2025, 09:03
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/icons.svg#views-white-usage)
 
-          4 374
+          4 380
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)2](/en/forum/495044)
+[![](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/icons.svg#comments-white-usage)2](/en/forum/495044)
 
-![Christian Benjamin](https://c.mql5.com/avatar/2025/10/68fd3661-daee.png)
+![Christian Benjamin](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/68fd3661-daee.png)
 
 [Christian Benjamin](/en/users/lynnchris)
  
@@ -62,7 +62,7 @@ BOS
  as the confirmation.
  
  
-![CHoCH and BOS](https://c.mql5.com/2/167/image_2025-09-03_052903416.png)
+![CHoCH and BOS](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/image_2025-09-03_052903416.png)
  
 Combining fractals with 
 ChoCH/BOS
@@ -122,7 +122,7 @@ The algorithm is intentionally simple and deterministic: detect reliable fractal
  
  
  
-![logic](https://c.mql5.com/2/167/image_2025-09-03_060830400.png)
+![logic](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/image_2025-09-03_060830400.png)
  
  
  
@@ -908,7 +908,7 @@ MetaQuotes ID
  in the terminal options and ensure notifications are activated on your mobile device.
  
  
-![](https://c.mql5.com/2/167/metaquotes_id.gif)
+![](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/metaquotes_id.gif)
  
 For sound alerts, copy your WAV or MP3 files into the terminal's Sounds folder and verify that the 
 PlaySound 
@@ -930,7 +930,7 @@ Step Index H1
  
  
  
-![Step Index Backtest](https://c.mql5.com/2/167/backtest_step_index.gif)
+![Step Index Backtest](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/backtest_step_index.gif)
  
  
  
@@ -940,7 +940,7 @@ EURUSD H1
  
  
  
-![EURUSD Backtest](https://c.mql5.com/2/167/backtest_eurusd.gif)
+![EURUSD Backtest](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/backtest_eurusd.gif)
  
 I also ran live testing to confirm real-time performance, and the tool behaved exactly as expected. The screenshots below show the EA detecting, labeling and logging 
 ChoCH 
@@ -950,14 +950,14 @@ Live demo—Volatility 75 (1s) Index M1: real-time ChoCH warnings and Bull BOS c
  
  
  
-![Live Volatility 75  (1s) Index](https://c.mql5.com/2/167/v75_1s2.PNG)
+![Live Volatility 75  (1s) Index](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/v75_1s2.PNG)
  
 This live screenshot demonstrates how the system uses fractal pivots to flag early ChoCH warnings and then confirm structure shifts with non-repainting BOS markers—visually validating the detector’s real-time behavior.
  
 Live demo—Step Index M1: real-time ChoCH warnings and Bull BOS confirmations
  
  
-![](https://c.mql5.com/2/167/step_index.PNG)
+![](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/step_index.PNG)
  
 The EA first marks a bearish phase with a Bear ChoCH and successive Bear BOS levels, then flags a Bull ChoCH as the downmove fails and confirms a bullish reversal with multiple Bull BOS signals—demonstrating the system’s early-warning (ChoCH) and non-repainting confirmation (BOS) behavior in real time.
  
@@ -1044,7 +1044,7 @@ This article was written by a user of the site and reflects their personal views
         (2)
     
 
-![linfo2](https://c.mql5.com/avatar/2023/4/6438c14d-e2f0.png)
+![linfo2](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/6438c14d-e2f0.png)
 
 [linfo2](/en/users/neilhazelwood)
 
@@ -1058,7 +1058,7 @@ This article was written by a user of the site and reflects their personal views
               Once again thanks for your well explained and innovative ideas, what do you have in stdlib_mq5?  , the bot works fine if that is commented out just interested in your tweaks. thanks for the upload
             
 
-![Chris](https://c.mql5.com/avatar/avatar_na2.png)
+![Chris](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/avatar_na2.png)
 
 [Chris](/en/users/fernbahner)
 
@@ -1084,31 +1084,31 @@ Chris
  
  
 
-![From Novice to Expert: Animated News Headline Using MQL5 (X)—Multiple Symbol Chart View for News Trading](https://c.mql5.com/2/168/19299-from-novice-to-expert-animated-logo.png)
+![From Novice to Expert: Animated News Headline Using MQL5 (X)—Multiple Symbol Chart View for News Trading](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/19299-from-novice-to-expert-animated-logo.png)
 
 [From Novice to Expert: Animated News Headline Using MQL5 (X)—Multiple Symbol Chart View for News Trading](/en/articles/19299)
 
 Today we will develop a multi-chart view system using chart objects. The goal is to enhance news trading by applying MQL5 algorithms that help reduce trader reaction time during periods of high volatility, such as major news releases. In this case, we provide traders with an integrated way to monitor multiple major symbols within a single all-in-one news trading tool. Our work is continuously advancing with the News Headline EA, which now features a growing set of functions that add real value both for traders using fully automated systems and for those who prefer manual trading assisted by algorithms. Explore more knowledge, insights, and practical ideas by clicking through and joining this discussion.
 
-![Polynomial models in trading](https://c.mql5.com/2/109/Polynomial_models_in_trading___LOGO.png)
+![Polynomial models in trading](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/Polynomial_models_in_trading___LOGO.png)
 
 [Polynomial models in trading](/en/articles/16779)
 
 This article is about orthogonal polynomials. Their use can become the basis for a more accurate and effective analysis of market information allowing traders to make more informed decisions.
 
-![Automating Trading Strategies in MQL5 (Part 30): Creating a Price Action AB-CD Harmonic Pattern with Visual Feedback](https://c.mql5.com/2/168/19442-automating-trading-strategies-logo__2.png)
+![Automating Trading Strategies in MQL5 (Part 30): Creating a Price Action AB-CD Harmonic Pattern with Visual Feedback](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/19442-automating-trading-strategies-logo__2.png)
 
 [Automating Trading Strategies in MQL5 (Part 30): Creating a Price Action AB-CD Harmonic Pattern with Visual Feedback](/en/articles/19442)
 
 In this article, we develop an AB=CD Pattern EA in MQL5 that identifies bullish and bearish AB=CD harmonic patterns using pivot points and Fibonacci ratios, executing trades with precise entry, stop loss, and take-profit levels. We enhance trader insight with visual feedback through chart objects.
 
-![Market Simulation (Part 01): Cross Orders (I)](https://c.mql5.com/2/107/Simulat6o_de_mercado_Parte_01_Cross_Order_I_LOGO.png)
+![Market Simulation (Part 01): Cross Orders (I)](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/Simulat6o_de_mercado_Parte_01_Cross_Order_I_LOGO.png)
 
 [Market Simulation (Part 01): Cross Orders (I)](/en/articles/12536)
 
 Today we will begin the second stage, where we will look at the market replay/simulation system. First, we will show a possible solution for cross orders. I will show you the solution, but it is not final yet. It will be a possible solution to a problem that we will need to solve in the near future.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5/logo-2.png)
 
 You are missing trading opportunities:
 

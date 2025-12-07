@@ -13,9 +13,9 @@ date: "19 November 2025, 09:33"
 
 [](/en/articles/20065?print=)
 
-![preview](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/fa27b2c14ab608e7249ad07dd85cdd2e.jpeg)
+![preview](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/2Q==)
 
-![Developing Trading Strategy: Pseudo Pearson Correlation Approach](https://c.mql5.com/2/181/20065-developing-trading-strategy-pseudo-pearson-correlation-approach_600x314.jpg)
+![Developing Trading Strategy: Pseudo Pearson Correlation Approach](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/20065-developing-trading-strategy-pseudo-pearson-correlation-approach_600x314.jpg)
 
 # Developing Trading Strategy: Pseudo Pearson Correlation Approach
 
@@ -28,14 +28,14 @@ date: "19 November 2025, 09:33"
         | 
 19 November 2025, 09:33
 
-![](https://c.mql5.com/i/icons.svg#views-white-usage)
+![](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/icons.svg#views-white-usage)
 
-          2 523
+          2 525
         
 
-[![](https://c.mql5.com/i/icons.svg#comments-white-usage)1](/en/forum/500360)
+[![](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/icons.svg#comments-white-usage)1](/en/forum/500360)
 
-![Daniel Opoku](https://c.mql5.com/avatar/avatar_na2.png)
+![Daniel Opoku](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/avatar_na2.png)
 
 [Daniel Opoku](/en/users/wamek)
  
@@ -64,7 +64,7 @@ strength and direction of a linear relationship
  between two variables, X and Y. It is defined as:
  
  
-![Pearson eqn](https://c.mql5.com/2/177/PearsonForm.png)
+![Pearson eqn](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/PearsonForm.png)
  
  
 x_
@@ -114,7 +114,7 @@ Pseudo Pearson Correlation (r′)
  is therefore expressed as:
  
  
-![PpcEqn](https://c.mql5.com/2/177/ppcFormula.png)
+![PpcEqn](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/ppcFormula.png)
  
 Here, 
 z
@@ -234,7 +234,7 @@ x,y,z
  with DEM,MFI and RSI respectively, the formula becomes:
  
  
-![drmf](https://c.mql5.com/2/177/dem_rsi_mfi_formula.png)
+![drmf](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/dem_rsi_mfi_formula.png)
  
 This equation defines the Pseudo Pearson Correlation Oscillator, which captures the dynamic relationship between DEM and MFI in reference to the RSI baseline.
  
@@ -369,12 +369,12 @@ Demonstrating PPC Oscillator:
 After placing the MetaTrader 5 version of the PPC Oscillator in your Indicators folder and successfully compiling it, you can simply select it from the list of custom indicators and attach it to your chart. The following GIF illustrates its functionality and behavior in real time.
  
  
-![dem1](https://c.mql5.com/2/177/ppcdemo1.gif)
+![dem1](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/ppcdemo1.gif)
  
 Figure 1: Pseudo Pearson Correlation Demo 1
  
  
-![ppcdm2](https://c.mql5.com/2/177/ppcdemo2.gif)
+![ppcdm2](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/ppcdemo2.gif)
  
 Figure 2: Pseudo Pearson Correlation Demo 2
  
@@ -418,7 +418,7 @@ Sell Signal: Triggered when the PPC value crosses downward through the -0.5 t
  Figure 3 presents the simple trading strategy framework for both Strategy 1 and Strategy 2. The diagram provides a clear visual representation of how the trading logic is structured within the code, illustrating the decision-making flow between thePPC Oscillator and the Moving Averageindicators. This framework helps in understanding how entry signals are generated based on correlation conditions (positive or negative) and how they are filtered through trend direction to produce buy or sell decisions. 
  
  
-![pseudoCode](https://c.mql5.com/2/177/codeform.png)
+![pseudoCode](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/codeform.png)
  
 Figure 3: Trading strategy framework
  
@@ -571,7 +571,7 @@ In this section, we demonstrate how the EA operates based on the trading logic 
 Figure 4 illustrates the various parameters that users can adjust and optimize to improve the EA’s overall performance. These include trading inputs such as lot size, stop loss, take profit, and slippage, as well as indicator parameters like CorrPeriod, RSIPeriod, MFIPeriod, DEMPeriod, PPr and Moving Average periods. By fine-tuning these settings, traders can adapt the EA to different market conditions, enhance accuracy, and achieve better risk–reward outcomes.
  
  
-![rInputs](https://c.mql5.com/2/177/rEA_inputs.png)
+![rInputs](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/rEA_inputs.png)
  
 Figure 4: PPC EA Inputs
  
@@ -582,7 +582,7 @@ Once the PPC correlation and Moving Average trend align to generate a valid entr
 This illustration helps visualize the EA’s automated decision-making process—how it detects opportunities, executes trades, and manages risk without manual intervention.
  
  
-![PPCorr_EA](https://c.mql5.com/2/181/PPCor_demo.gif)
+![PPCorr_EA](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/PPCor_demo.gif)
  
 Figure 5: PPC EA Trade Execution
  
@@ -668,7 +668,7 @@ This article was written by a user of the site and reflects their personal views
         (1)
     
 
-![Stanislav Korotky](https://c.mql5.com/avatar/2010/10/4CA7CFA0-1F0C.jpg)
+![Stanislav Korotky](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/4CA7CFA0-1F0C.jpg)
 
 [Stanislav Korotky](/en/users/marketeer)
 
@@ -702,33 +702,33 @@ correlation
  is of little interest. Analysis of multiple different periods makes sense, but probably every trader would do it with his/her preferred oscillator, that is with the same kind of oscillator, which setup is not covered in the article (that is you can't choose 3 RSIs or 3 MFis, for example).
  
  
-![Oscillators: RSI, MFI, DeMarker](https://c.mql5.com/3/479/EURUSD-osc.png)
+![Oscillators: RSI, MFI, DeMarker](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/EURUSD-osc.png)
 
-![Markets Positioning Codex in MQL5 (Part 2):  Bitwise Learning, with Multi-Patterns for Nvidia](https://c.mql5.com/2/182/20045-markets-positioning-codex-in-logo.png)
+![Markets Positioning Codex in MQL5 (Part 2):  Bitwise Learning, with Multi-Patterns for Nvidia](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/20045-markets-positioning-codex-in-logo.png)
 
 [Markets Positioning Codex in MQL5 (Part 2):  Bitwise Learning, with Multi-Patterns for Nvidia](/en/articles/20045)
 
 We continue our new series on Market-Positioning, where we study particular assets, with specific trade directions over manageable test windows. We started this by considering Nvidia Corp stock in the last article, where we covered 5 signal patterns from the complimentary pairing of the RSI and DeMarker oscillators. For this article, we cover the remaining 5 patterns and also delve into multi-pattern options that not only feature untethered combinations of all ten, but also specialized combinations of just a pair.
 
-![From Novice to Expert: Predictive Price Pathways](https://c.mql5.com/2/182/20160-from-novice-to-expert-predictive-logo.png)
+![From Novice to Expert: Predictive Price Pathways](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/20160-from-novice-to-expert-predictive-logo.png)
 
 [From Novice to Expert: Predictive Price Pathways](/en/articles/20160)
 
 Fibonacci levels provide a practical framework that markets often respect, highlighting price zones where reactions are more likely. In this article, we build an expert advisor that applies Fibonacci retracement logic to anticipate likely future moves and trade retracements with pending orders. Explore the full workflow—from swing detection to level plotting, risk controls, and execution.
 
-![Building AI-Powered Trading Systems in MQL5 (Part 6): Introducing Chat Deletion and Search Functionality](https://c.mql5.com/2/181/20254-building-ai-powered-trading-logo.png)
+![Building AI-Powered Trading Systems in MQL5 (Part 6): Introducing Chat Deletion and Search Functionality](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/20254-building-ai-powered-trading-logo.png)
 
 [Building AI-Powered Trading Systems in MQL5 (Part 6): Introducing Chat Deletion and Search Functionality](/en/articles/20254)
 
 In Part 6 of our MQL5 AI trading system series, we advance the ChatGPT-integrated Expert Advisor by introducing chat deletion functionality through interactive delete buttons in the sidebar, small/large history popups, and a new search popup, allowing traders to manage and organize persistent conversations efficiently while maintaining encrypted storage and AI-driven signals from chart data.
 
-![Implementation of a table model in MQL5: Applying the MVC concept](https://c.mql5.com/2/130/MQL5_table_model_implementation___LOGO__V2.png)
+![Implementation of a table model in MQL5: Applying the MVC concept](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/MQL5_table_model_implementation___LOGO__V2.png)
 
 [Implementation of a table model in MQL5: Applying the MVC concept](/en/articles/17653)
 
 In this article, we look at the process of developing a table model in MQL5 using the MVC (Model-View-Controller) architectural pattern to separate data logic, presentation, and control, enabling structured, flexible, and scalable code. We consider implementation of classes for building a table model, including the use of linked lists for storing data.
 
-![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](https://c.mql5.com/i/registerlandings/logo-2.png)
+![MQL5 - Language of trade strategies built-in the MetaTrader 5 client terminal](assets/Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach/logo-2.png)
 
 You are missing trading opportunities:
 
