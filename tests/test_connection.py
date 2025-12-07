@@ -21,6 +21,7 @@ load_dotenv()
 sys.path.insert(0, str(Path(__file__).parent))
 
 from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
+import pytest
 
 
 @pytest.fixture(scope="module")
@@ -30,6 +31,10 @@ def mt5_connector():
     password = os.getenv('MT5_PASSWORD')
     server = os.getenv('MT5_SERVER')
     
+    # Skip the test unless explicitly enabled (avoid running MT5 tests in CI)
+    if os.getenv('RUN_MT5_CONNECT_TESTS') != '1':
+        pytest.skip("MT5 integration tests disabled - set RUN_MT5_CONNECT_TESTS=1 to enable")
+
     assert login and password and server, "MT5 credentials not set in environment"
     
     config = ConnectionConfig(

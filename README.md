@@ -7,13 +7,13 @@
 ```
 
 # Herald
-*version 3.0.0*  [[CHANGELOG]](docs/CHANGELOG.md)
+*version 3.1.0*  [[CHANGELOG]](docs/CHANGELOG.md)
 
 ![Status](https://img.shields.io/badge/status-production--ready-success?style=for-the-badge)
-[![Python](https://img.shields.io/badge/python-3.10--3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.10--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![MT5](https://img.shields.io/badge/MetaTrader-5-0066CC?style=for-the-badge)](https://www.metatrader5.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-[![Phase](https://img.shields.io/badge/phase-2%20complete-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
+[![Phase](https://img.shields.io/badge/phase-3%20trade%20management-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
 
 > **Adaptive Trading Intelligence for MetaTrader 5**
 > A complete autonomous trading system with entry and exit execution, technical indicators, and advanced position management
@@ -21,7 +21,7 @@
 A comprehensive automated trading system for MetaTrader 5 following enterprise-grade architecture patterns.
 Built with focus on incremental development, robust risk management, and production-ready deployment.
 
-**NEW in v3.0.0**: Complete autonomous trading system ready for production with zero-error test suite, MT5 integration verified with funded account, and enterprise-grade architecture.
+**NEW in v3.1.0**: External trade adoption, Trade CLI for manual orders, trading mindsets (aggressive/balanced/conservative), and Pydantic config validation.
 
 ---
 
@@ -73,10 +73,35 @@ Persistence & Metrics
 
 ## CLI & Usage
 
-- The `herald` CLI provides a streamlined interface for running the trading loop and debugging.
-- Example usages:
-  - `herald --config ./configs/dev.json --dry-run --log-level INFO`
-  - `herald --config ./configs/prod.json --log-level DEBUG`
+### Main Trading Loop
+
+The `herald` CLI provides a streamlined interface for running the trading loop:
+
+```bash
+herald --config ./configs/dev.json --dry-run --log-level INFO
+herald --config ./configs/prod.json --log-level DEBUG
+herald --mindset aggressive --dry-run  # Use pre-configured risk profile
+```
+
+### Manual Trade CLI 🆕
+
+The `herald-trade` CLI allows manual trade placement that Herald will then manage:
+
+```bash
+# Place a trade
+herald-trade --symbol BTCUSD# --side BUY --volume 0.01
+
+# List open positions
+herald-trade --list
+
+# Close a specific position
+herald-trade --close 485496556
+
+# Close all positions
+herald-trade --close-all
+```
+
+Trades placed via `herald-trade` use Herald's magic number, so they are automatically tracked and managed by the trading loop's exit strategies.
 
 ## Development & CI
 
@@ -109,7 +134,7 @@ Persistence & Metrics
 | **Persistence** | SQLite database for trades, signals, and performance metrics |
 | **Observability** | Structured logging with health checks and status monitoring |
 
-### Autonomous Trading (Phase 2) 🆕
+### Autonomous Trading (Phase 2)
 
 | Component | Description |
 |-----------|-------------|
@@ -120,6 +145,17 @@ Persistence & Metrics
 | **Priority System** | Emergency → Time → Profit → Trailing stop execution order |
 | **Reconciliation** | Automatic position sync after connection loss |
 | **Dry-Run Mode** | Test strategies without real orders |
+
+### Trade Management (Phase 3) 🆕
+
+| Component | Description |
+|-----------|-------------|
+| **Trade Manager** | Adopt and manage external/manual trades placed outside Herald |
+| **Trade CLI** | Command-line interface: `herald-trade --symbol BTCUSD# --side BUY` |
+| **Trading Mindsets** | Pre-configured risk profiles: aggressive, balanced, conservative |
+| **Config Validation** | Pydantic-based typed configuration with environment variable overrides |
+| **Startup Reconciliation** | Automatically track trades from previous sessions |
+| **Security Hardening** | Pre-commit hooks with detect-secrets, masked account logging |
 
 ---
 
@@ -138,27 +174,39 @@ herald/
 │   └── engine.py
 ├── risk/             # Risk management
 │   └── manager.py
-├── indicators/       # 🆕 Technical indicators
+├── indicators/       # Technical indicators
 │   ├── base.py
 │   ├── rsi.py
 │   ├── macd.py
 │   ├── bollinger.py
 │   ├── stochastic.py
 │   └── adx.py
-├── position/         # 🆕 Position management
-│   └── manager.py
-├── exit/             # 🆕 Exit strategies
+├── position/         # Position management
+│   ├── manager.py
+│   └── trade_manager.py   # 🆕 External trade adoption
+├── exit/             # Exit strategies
 │   ├── base.py
+│   ├── exit_manager.py
+│   ├── stop_loss.py
+│   ├── take_profit.py
 │   ├── trailing_stop.py
 │   ├── time_based.py
 │   ├── profit_target.py
 │   └── adverse_movement.py
+├── config/           # 🆕 Configuration
+│   └── mindsets.py        # Trading risk profiles
 ├── persistence/      # Database layer
 │   └── database.py
 ├── observability/    # Logging and monitoring
 │   ├── logger.py
-│   └── metrics.py
-└── __main__.py       # 🆕 Autonomous orchestrator
+│   ├── metrics.py
+│   ├── health.py          # 🆕 Health checks
+│   └── prometheus.py      # 🆕 Prometheus metrics
+├── scripts/          # 🆕 CLI tools
+│   ├── trade_cli.py       # Manual trade CLI
+│   └── force_trade.py     # Test trades
+├── config_schema.py  # 🆕 Pydantic config validation
+└── __main__.py       # Autonomous orchestrator
 ```
 
 ### Component Responsibilities
@@ -290,11 +338,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Copy config template
-cp config/config.example.yaml config/config.yaml
+cp config.example.json config.json
 
 # Edit configuration
-notepad config/config.yaml  # Windows
-nano config/config.yaml     # Linux/macOS
+notepad config.json  # Windows
+nano config.json     # Linux/macOS
 ```
 
 ### Configure Credentials
@@ -311,6 +359,11 @@ nano .env  # or use your preferred editor
 ```
 
 ```bash
+# Important security note: Do not commit your `.env` file with real credentials into the repository.
+# Add `.env` and `config.json` to your `.gitignore` so credentials are never tracked.
+# If credentials have been committed, rotate them immediately and remove them from git history using
+# `git filter-repo` or similar tools.
+
 # .env file
 MT5_LOGIN=12345678
 MT5_PASSWORD=your_password
@@ -424,52 +477,68 @@ python -c "from persistence.database import Database; \
 
 ## Configuration
 
-Configuration is managed through YAML files in the `config/` directory.
+Configuration is managed through JSON files. Copy `config.example.json` to `config.json` and customize.
 
 ### Core Settings
 
 **MT5 Connection**
-```yaml
-mt5:
-  login: int              # Account number
-  password: str           # Account password
-  server: str             # Broker server
-  timeout: int            # Connection timeout (ms)
-  portable: bool          # Portable MT5 installation
-  path: str               # Custom MT5 path (optional)
+```json
+"mt5": {
+  "login": 12345678,           // Account number
+  "password": "YOUR_PASSWORD", // Account password (use .env for real credentials)
+  "server": "YourBroker-Demo", // Broker server
+  "timeout": 60000,            // Connection timeout (ms)
+  "path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
+}
 ```
 
 **Trading Parameters**
-```yaml
-trading:
-  symbol: str             # Primary trading symbol
-  timeframe: str          # Analysis timeframe (M1, M5, H1, H4, D1)
-  magic_number: int       # Unique bot identifier
-  slippage: int           # Maximum slippage (points)
+```json
+"trading": {
+  "symbol": "BTCUSD#",      // Primary trading symbol
+  "timeframe": "TIMEFRAME_H1", // Analysis timeframe
+  "poll_interval": 60,       // Seconds between checks
+  "lookback_bars": 500       // Historical bars to load
+}
 ```
 
 **Risk Management**
-```yaml
-risk:
-  max_position_size_pct: float    # Max position size (% of balance)
-  max_total_exposure_pct: float   # Max total exposure
-  max_daily_loss_pct: float       # Daily loss limit
-  max_positions_per_symbol: int   # Max positions per symbol
-  max_total_positions: int        # Max concurrent positions
-  min_risk_reward_ratio: float    # Minimum R:R for trades
-  volatility_scaling: bool        # Enable ATR-based scaling
+```json
+"risk": {
+  "max_position_size": 0.5,      // Max position size in lots
+  "position_size_pct": 2.0,       // % of balance per trade
+  "max_daily_loss": 50.0,         // Daily loss limit ($)
+  "max_positions_per_symbol": 1,  // Max positions per symbol
+  "max_total_positions": 3        // Max concurrent positions
+}
 ```
 
 **Strategy Configuration**
-```yaml
-strategy:
-  name: str                       # Strategy to use
-  short_window: int               # Fast SMA period
-  long_window: int                # Slow SMA period
-  atr_period: int                 # ATR period
-  atr_multiplier: float           # ATR multiplier for SL
-  risk_reward_ratio: float        # R:R ratio for TP
+```json
+"strategy": {
+  "type": "sma_crossover",
+  "params": {
+    "fast_period": 10,            // Fast SMA period (or short_window)
+    "slow_period": 30,            // Slow SMA period (or long_window)
+    "atr_period": 14,             // ATR period for volatility
+    "atr_multiplier": 2.0,        // ATR multiplier for stop loss
+    "risk_reward_ratio": 2.0      // Risk/reward ratio for take profit
+  }
+}
 ```
+
+**External Trade Adoption** 🆕
+```json
+"orphan_trades": {
+  "enabled": true,                // Enable external trade adoption
+  "adopt_symbols": [],            // Symbols to adopt (empty = all symbols)
+  "ignore_symbols": ["EURUSD"],   // Symbols to never adopt
+  "max_age_hours": 72,            // Max age for trade adoption
+  "log_only": false               // Log detections without adopting
+}
+```
+
+When enabled, Herald will detect and adopt trades placed outside Herald (e.g., manual trades, trades from other EAs) and apply exit strategies to manage them.
 
 ---
 
@@ -542,7 +611,7 @@ if signal:
 python -m herald
 
 # Use custom config
-python -m herald --config config/prod.yaml
+python -m herald --config config.json --mindset balanced
 
 # Dry run (no actual trading)
 python -m herald --dry-run
@@ -735,7 +804,7 @@ ERROR: MT5 initialize failed: (code, message)
 
 **Solution**:
 1. Verify MT5 terminal is installed
-2. Check account credentials in config.yaml
+2. Check account credentials in config.json or .env file
 3. Confirm broker server name is correct
 4. Try portable mode if using portable MT5
 5. Check MT5 terminal logs

@@ -6,6 +6,119 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [3.1.0] - 2025-12-07 🎯 Trade Adoption & Management
+
+### 🆕 New Features
+
+#### External Trade Adoption (`position/trade_manager.py`)
+Herald can now detect and manage trades not placed by itself:
+- **TradeManager** class scans MT5 for external/manual trades
+- Automatically adopts trades into Herald's position management
+- Applies exit strategies (trailing stop, profit target, time-based) to adopted trades
+- Configurable adoption policy:
+  - `enabled`: Enable/disable adoption
+  - `adopt_symbols`: Filter to specific symbols (empty = all)
+  - `ignore_symbols`: Exclude certain symbols
+  - `max_adoption_age_hours`: Only adopt recent trades
+  - `log_only`: Monitor without adopting
+
+#### Trade CLI (`scripts/trade_cli.py`)
+New command-line interface for manual trade management:
+```bash
+# Place a trade
+herald-trade --symbol BTCUSD# --side BUY --volume 0.01
+
+# Place trade with SL/TP
+herald-trade --symbol EURUSD --side SELL --volume 0.1 --sl 1.0850 --tp 1.0750
+
+# List all open positions
+herald-trade --list
+
+# Close a specific position
+herald-trade --close 485496556
+
+# Close all positions
+herald-trade --close-all
+
+# Dry run (simulate)
+herald-trade --symbol BTCUSD# --side BUY --volume 0.01 --dry-run
+```
+
+#### Trading Mindsets (`config/mindsets.py`)
+Pre-configured risk profiles for different trading styles:
+- **Aggressive**: Higher risk, faster entries, tighter stops
+  - `position_size_pct`: 3.0%, `max_daily_loss`: $100
+- **Balanced**: Moderate risk, standard settings (default)
+  - `position_size_pct`: 2.0%, `max_daily_loss`: $50
+- **Conservative**: Lower risk, wider stops, capital preservation
+  - `position_size_pct`: 1.0%, `max_daily_loss`: $25
+
+Usage: `herald --config config.json --mindset conservative`
+
+#### Configuration Validation (`config_schema.py`)
+- **Pydantic-based validation** for all configuration
+- Typed config models: `MT5Config`, `RiskConfig`, `TradingConfig`, `StrategyConfig`
+- Environment variable overrides for sensitive fields (`MT5_LOGIN`, `MT5_PASSWORD`, `MT5_SERVER`)
+- Legacy key mapping for backward compatibility
+
+#### Position Reconciliation at Startup
+- Herald now reconciles existing positions when starting
+- Trades from previous sessions are automatically tracked
+- Applies exit strategies to all reconciled positions
+
+#### Exit Strategy Consistency Fix
+- All exit strategies now return `ExitSignal` consistently
+- `ExitManager` wraps signals to `ExitDecision`
+- Priority semantics standardized: higher numeric = more urgent (100 = emergency, 1 = low)
+- Fixed: `StopLossExit`, `TakeProfitExit`, `TimeBasedExit` return types
+
+### 🔧 Improvements
+
+#### Security Enhancements
+- **Pre-commit hooks** with `detect-secrets` for credential scanning
+- Account login masked in logs (shows `****0069` instead of full number)
+- `.secrets.baseline` for secret detection baseline
+
+#### Risk Manager Updates
+- `record_trade_result()` now accepts `balance` parameter (no more hardcoded $10,000)
+- Lot sizing uses MT5 symbol info for accurate calculations
+
+#### Position Manager Updates
+- `get_pnl_pips()` has default `pip_value=0.0001`
+- `reconcile_positions()` accepts `magic_number` parameter
+
+#### Observability Additions
+- `observability/health.py`: Health check endpoint support
+- `observability/prometheus.py`: Prometheus metrics export (trades, positions, P&L)
+
+### 📁 New Files
+- `position/trade_manager.py` - External trade adoption
+- `scripts/trade_cli.py` - Manual trade CLI
+- `scripts/force_trade.py` - Test trade placement
+- `config/mindsets.py` - Trading risk profiles
+- `config_schema.py` - Pydantic config validation
+- `observability/health.py` - Health checks
+- `observability/prometheus.py` - Metrics export
+- `.pre-commit-config.yaml` - Pre-commit hooks
+- `.secrets.baseline` - Secret detection baseline
+- `tests/unit/test_trade_manager.py` - Trade manager tests
+
+### 🐛 Fixed
+- Exit strategies mixed return types (ExitDecision vs ExitSignal)
+- Priority sorting in ExitManager (was ascending, now descending)
+- `get_pnl_pips()` required pip_value but callers didn't pass it
+- README showed YAML config examples but Herald uses JSON
+
+### 📊 Test Results
+```
+Total Tests:        60+
+Trade Manager:      10 tests (policy, scanning, adoption)
+Exit Strategies:    21 tests (updated for new return types)
+All Previous:       Passing
+```
+
+---
+
 ## [3.0.0] - 2024-12-07 🦾 COMPLETE & PRODUCTION READY
 
 ### 🎯 Phase 2 Complete: Autonomous Trading Execution

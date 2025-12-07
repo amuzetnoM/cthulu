@@ -48,12 +48,11 @@ if missing_packages:
 # Test 3: Project structure
 print("\n✓ Testing project structure...")
 required_dirs = [
-    "core",
-    "strategies",
+    "connector",
+    "strategy",
     "indicators",
-    "utils",
-    "ml",
-    "backtesting",
+    "execution",
+    "position",
     "logs"
 ]
 

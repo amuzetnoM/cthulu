@@ -108,7 +108,10 @@ class MT5Connector:
                         raise ConnectionError(f"Connected to wrong account: {account_info.login}")
                     
                     self.connected = True
-                    self.logger.info(f"Connected to {self.config.server} (account: {self.config.login})")
+                    # Mask account login in logs to avoid leaking full account numbers
+                    acct_display = str(self.config.login)
+                    acct_masked = acct_display if len(acct_display) <= 4 else f"****{acct_display[-4:]}"
+                    self.logger.info(f"Connected to {self.config.server} (account: {acct_masked})")
                     self.logger.info(f"Balance: ${account_info.balance:.2f}, Trade allowed: {account_info.trade_allowed}")
                     return True
                     

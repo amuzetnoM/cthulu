@@ -1,3 +1,4 @@
+venv/
 # Python
 __pycache__/
 *.py[cod]
@@ -38,6 +39,7 @@ build_plan.md
 logs/
 *.log
 *.log.*
+herald.log
 
 # IDE
 .vscode/

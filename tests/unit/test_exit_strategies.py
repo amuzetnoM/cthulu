@@ -1,6 +1,13 @@
 """
 Unit tests for Phase 2 exit strategy system.
 Tests all 4 exit strategies: StopLoss, TakeProfit, TrailingStop, TimeBased.
+
+Exit strategies now return:
+- ExitSignal when exit is triggered
+- None when no exit should occur
+
+ExitStrategyManager wraps ExitSignal into ExitDecision for coordination.
+Priority semantics: Higher numeric value = higher urgency (0-100 scale)
 """
 
 import unittest
@@ -27,13 +34,13 @@ class TestExitDecision(unittest.TestCase):
             should_exit=True,
             strategy_name="StopLossExit",
             reason="Stop loss triggered at 1.0950",
-            priority=1,
+            priority=100,
             exit_price=1.0950
         )
         
         self.assertTrue(decision.should_exit)
         self.assertEqual(decision.strategy_name, "StopLossExit")
-        self.assertEqual(decision.priority, 1)
+        self.assertEqual(decision.priority, 100)
 
 
 class TestStopLossExit(unittest.TestCase):
@@ -53,7 +60,7 @@ class TestStopLossExit(unittest.TestCase):
         
         strategy = StopLossExit(stop_loss_pct=0.02)
         
-        self.assertEqual(strategy.priority, 1)
+        self.assertEqual(strategy.priority, 100)  # High priority - emergency
         self.assertEqual(strategy.stop_loss_pct, 0.02)
     
     def test_stop_loss_triggered(self):
@@ -75,11 +82,12 @@ class TestStopLossExit(unittest.TestCase):
             stop_loss=1.0780
         )
         
-        decision = strategy.should_exit(position)
+        signal = strategy.should_exit(position)
         
-        self.assertTrue(decision.should_exit)
-        self.assertEqual(decision.priority, 1)
-        self.assertIn("stop loss", decision.reason.lower())
+        # ExitSignal returned when triggered
+        self.assertIsNotNone(signal)
+        self.assertEqual(signal.ticket, 12345)
+        self.assertIn("stop loss", signal.reason.lower())
     
     def test_stop_loss_not_triggered(self):
         """Test stop loss not triggering on profitable position."""
@@ -100,9 +108,10 @@ class TestStopLossExit(unittest.TestCase):
             stop_loss=1.0780
         )
         
-        decision = strategy.should_exit(position)
+        signal = strategy.should_exit(position)
         
-        self.assertFalse(decision.should_exit)
+        # None returned when not triggered
+        self.assertIsNone(signal)
 
 
 class TestTakeProfitExit(unittest.TestCase):
@@ -122,7 +131,7 @@ class TestTakeProfitExit(unittest.TestCase):
         
         strategy = TakeProfitExit(take_profit_pct=0.03)
         
-        self.assertEqual(strategy.priority, 2)
+        self.assertEqual(strategy.priority, 50)  # Medium priority
         self.assertEqual(strategy.take_profit_pct, 0.03)
     
     def test_take_profit_triggered(self):
@@ -144,11 +153,12 @@ class TestTakeProfitExit(unittest.TestCase):
             take_profit=1.1330
         )
         
-        decision = strategy.should_exit(position)
+        signal = strategy.should_exit(position)
         
-        self.assertTrue(decision.should_exit)
-        self.assertEqual(decision.priority, 2)
-        self.assertIn("take profit", decision.reason.lower())
+        # ExitSignal returned when triggered
+        self.assertIsNotNone(signal)
+        self.assertEqual(signal.ticket, 12345)
+        self.assertIn("take profit", signal.reason.lower())
     
     def test_take_profit_not_triggered(self):
         """Test take profit not triggering when target not reached."""
@@ -169,9 +179,10 @@ class TestTakeProfitExit(unittest.TestCase):
             take_profit=1.1330
         )
         
-        decision = strategy.should_exit(position)
+        signal = strategy.should_exit(position)
         
-        self.assertFalse(decision.should_exit)
+        # None returned when not triggered
+        self.assertIsNone(signal)
 
 
 class TestTrailingStopExit(unittest.TestCase):
@@ -191,7 +202,7 @@ class TestTrailingStopExit(unittest.TestCase):
         
         strategy = TrailingStopExit(trail_distance=0.015)
         
-        self.assertEqual(strategy.priority, 3)
+        self.assertEqual(strategy.priority, 3)  # Legacy compatibility wrapper
         self.assertEqual(strategy.trail_distance, 0.015)
     
     def test_trailing_stop_adjustment(self):
@@ -237,7 +248,7 @@ class TestTimeBasedExit(unittest.TestCase):
         
         strategy = TimeBasedExit(max_hold_hours=24)
         
-        self.assertEqual(strategy.priority, 4)
+        self.assertEqual(strategy.priority, 4)  # Default low priority
         self.assertEqual(strategy.max_hold_hours, 24)
     
     def test_time_based_triggered(self):
@@ -258,11 +269,12 @@ class TestTimeBasedExit(unittest.TestCase):
             side="BUY"
         )
         
-        decision = strategy.should_exit(position)
+        signal = strategy.should_exit(position)
         
-        self.assertTrue(decision.should_exit)
-        self.assertEqual(decision.priority, 4)
-        self.assertIn("time", decision.reason.lower())
+        # ExitSignal returned when triggered
+        self.assertIsNotNone(signal)
+        self.assertEqual(signal.ticket, 12345)
+        self.assertIn("hold time", signal.reason.lower())
     
     def test_time_based_not_triggered(self):
         """Test time-based exit not triggering before hold period."""
@@ -282,9 +294,10 @@ class TestTimeBasedExit(unittest.TestCase):
             side="BUY"
         )
         
-        decision = strategy.should_exit(position)
+        signal = strategy.should_exit(position)
         
-        self.assertFalse(decision.should_exit)
+        # None returned when not triggered
+        self.assertIsNone(signal)
 
 
 class TestExitStrategyManager(unittest.TestCase):
@@ -320,15 +333,22 @@ class TestExitStrategyManager(unittest.TestCase):
         self.assertEqual(len(manager.strategies), 2)
     
     def test_exit_manager_priority_order(self):
-        """Test that exit decisions are evaluated in priority order."""
+        """Test that exit decisions are evaluated in priority order.
+        
+        Priority semantics: Higher numeric value = higher urgency
+        - StopLossExit: priority 100 (emergency)
+        - TakeProfitExit: priority 50 (medium)
+        
+        Manager should return the highest priority (100) when multiple triggered.
+        """
         from herald.exit.exit_manager import ExitStrategyManager
         from herald.exit.stop_loss import StopLossExit
         from herald.exit.take_profit import TakeProfitExit
         from herald.position.manager import PositionInfo
         
         manager = ExitStrategyManager()
-        manager.register(TakeProfitExit(take_profit_pct=0.03))  # Priority 2
-        manager.register(StopLossExit(stop_loss_pct=0.02))      # Priority 1
+        manager.register(TakeProfitExit(take_profit_pct=0.03))  # Priority 50
+        manager.register(StopLossExit(stop_loss_pct=0.02))      # Priority 100
         
         # Position that triggers stop loss
         position = PositionInfo(
@@ -344,9 +364,10 @@ class TestExitStrategyManager(unittest.TestCase):
         
         decision = manager.evaluate_exit(position)
         
-        # Should return stop loss decision (priority 1)
+        # Should return stop loss decision (priority 100 - highest)
         self.assertTrue(decision.should_exit)
-        self.assertEqual(decision.priority, 1)
+        self.assertEqual(decision.priority, 100)
+        self.assertIn("stop loss", decision.reason.lower())
 
 
 if __name__ == '__main__':
