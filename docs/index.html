@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Herald v3.0.0 - Autonomous Trading Intelligence for MetaTrader 5">
-    <title>HERALD v3.0.0 | Autonomous Trading System</title>
+    <meta name="description" content="Herald v3.1.0 - Autonomous Trading Intelligence for MetaTrader 5">
+    <title>HERALD v3.1.0 | Autonomous Trading System</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
         
@@ -919,7 +919,7 @@
     <nav>
         <div class="nav-left">
             <span class="logo">HERALD</span>
-            <span class="version-tag">v3.0.0</span>
+            <span class="version-tag">v3.1.0</span>
             <div class="live-indicator">
                 <span class="live-dot"></span>
                 <span>LIVE</span>
@@ -949,7 +949,7 @@
                         <span class="prompt">$</span> <span class="command">python -m herald --status</span>
                     </div>
                     <div class="terminal-line" style="animation-delay: 0.3s">
-                        <span class="output info">[INFO] Herald Autonomous Trading System v3.0.0</span>
+                        <span class="output info">[INFO] Herald Autonomous Trading System v3.1.0</span>
                     </div>
                     <div class="terminal-line" style="animation-delay: 0.5s">
                         <span class="output success">[OK] MT5 Connection: Connected</span>
@@ -978,7 +978,7 @@
             <div class="status-grid">
                 <div class="status-card">
                     <div class="status-label">Phase</div>
-                    <div class="status-value">02</div>
+                    <div class="status-value">03</div>
                 </div>
                 <div class="status-card">
                     <div class="status-label">Indicators</div>
@@ -1286,33 +1286,44 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                 </div>
             </div>
 
-            <div class="roadmap-item">
-                <div class="roadmap-phase">Phase 03</div>
-                <div class="roadmap-title">Machine Learning</div>
-                <span class="roadmap-status planned">Planned</span>
+            <div class="roadmap-item complete expandable" data-phase="3">
+                <div class="roadmap-header">
+                    <div class="roadmap-phase">Phase 03</div>
+                    <div class="roadmap-title">Trade Management</div>
+                    <span class="roadmap-status complete">Complete</span>
+                </div>
                 <div class="roadmap-desc">
-                    Feature engineering pipeline, supervised learning models, 
-                    model training and evaluation, walk-forward validation.
+                    External trade adoption, manual trade CLI, trading mindsets,
+                    Pydantic config validation, startup reconciliation.
+                </div>
+                <div class="roadmap-details">
+                    <div class="detail-item">✓ TradeManager for External Trade Adoption</div>
+                    <div class="detail-item">✓ herald-trade CLI for Manual Trading</div>
+                    <div class="detail-item">✓ Trading Mindsets (aggressive/balanced/conservative)</div>
+                    <div class="detail-item">✓ Pydantic-based Config Validation</div>
+                    <div class="detail-item">✓ Position Reconciliation at Startup</div>
+                    <div class="detail-item">✓ Exit Strategy Consistency Fixes</div>
+                    <div class="detail-item">✓ Security Hardening (detect-secrets)</div>
                 </div>
             </div>
 
             <div class="roadmap-item">
                 <div class="roadmap-phase">Phase 04</div>
-                <div class="roadmap-title">Advanced Intelligence</div>
+                <div class="roadmap-title">Machine Learning</div>
                 <span class="roadmap-status planned">Planned</span>
                 <div class="roadmap-desc">
-                    LSTM and Transformer models, reinforcement learning experiments, 
-                    sentiment analysis, regime detection.
+                    Feature engineering pipeline, supervised learning models,
+                    model training and evaluation, walk-forward validation.
                 </div>
             </div>
 
             <div class="roadmap-item">
                 <div class="roadmap-phase">Phase 05</div>
-                <div class="roadmap-title">Production Features</div>
+                <div class="roadmap-title">Advanced Intelligence</div>
                 <span class="roadmap-status planned">Planned</span>
                 <div class="roadmap-desc">
-                    Automated backtesting pipeline, real-time monitoring dashboard, 
-                    alerting system, canary deployments, audit reports.
+                    LSTM and Transformer models, reinforcement learning,
+                    sentiment analysis, regime detection, production dashboard.
                 </div>
             </div>
         </div>
@@ -1335,7 +1346,7 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
     <footer>
         <div class="footer-content">
             <div class="footer-left">
-                <strong>HERALD</strong> v3.0.0 | Autonomous Trading Intelligence<br>
+                <strong>HERALD</strong> v3.1.0 | Autonomous Trading Intelligence<br>
                 MIT License | Educational purposes only | Trade at your own risk
             </div>
             <div class="footer-links">
