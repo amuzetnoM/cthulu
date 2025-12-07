@@ -19,8 +19,3 @@ Directory structure:
 3. Each Markdown file should include front-matter with: title, original_url, article_id, published_date, phase. **Note: tags have been intentionally removed and are not generated; `author` is intentionally omitted**.
 4. Use `docs/mql5_handbook/manifest.md` as the global index for the Handbook.
 
-## Next steps
-- Review and approve the split manifests.
-- If approved, I can start fetching and saving each article (Phase 1−3 order).
-- The importer script is available at `docs/mql5_handbook/scripts/import_mql5.py` (supports `--dry-run`).
-- Let me know if you want a separate PR per phase import or a single PR for all phases.
