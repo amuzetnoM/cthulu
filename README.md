@@ -13,7 +13,7 @@
 [![Python](https://img.shields.io/badge/python-3.10--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![MT5](https://img.shields.io/badge/MetaTrader-5-0066CC?style=for-the-badge)](https://www.metatrader5.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-[![Phase](https://img.shields.io/badge/phase-3%20trade%20management-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
+[![Phase 3](https://img.shields.io/badge/phase%203-%20trade%20management-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
 
 > **Adaptive Trading Intelligence for MetaTrader 5**
 > A complete autonomous trading system with entry and exit execution, technical indicators, and advanced position management
