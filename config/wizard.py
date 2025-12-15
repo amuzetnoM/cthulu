@@ -27,12 +27,15 @@ MINDSETS = {
 }
 
 TIMEFRAMES = {
-    "1": ("TIMEFRAME_M5", "5 Minutes"),
-    "2": ("TIMEFRAME_M15", "15 Minutes"),
-    "3": ("TIMEFRAME_M30", "30 Minutes"),
-    "4": ("TIMEFRAME_H1", "1 Hour (recommended)"),
-    "5": ("TIMEFRAME_H4", "4 Hours"),
-    "6": ("TIMEFRAME_D1", "Daily"),
+    "1": ("TIMEFRAME_M1", "1 Minute"),
+    "2": ("TIMEFRAME_M5", "5 Minutes"),
+    "3": ("TIMEFRAME_M15", "15 Minutes"),
+    "4": ("TIMEFRAME_M30", "30 Minutes"),
+    "5": ("TIMEFRAME_H1", "1 Hour (recommended)"),
+    "6": ("TIMEFRAME_H4", "4 Hours"),
+    "7": ("TIMEFRAME_D1", "Daily"),
+    "8": ("TIMEFRAME_W1", "Weekly"),
+    "9": ("TIMEFRAME_MN1", "Monthly"),
 }
 
 COMMON_SYMBOLS = [
@@ -160,13 +163,22 @@ def choose_timeframe(current: str = "TIMEFRAME_H1") -> str:
         print_option(key, desc, "", selected)
     
     print()
+    print_info("You may choose multiple timeframes by comma-separating numbers (e.g., 2,5 for M15 and H1).")
     while True:
-        choice = get_input("Select timeframe (1-6)", "4")
-        if choice in TIMEFRAMES:
-            selected_tf = TIMEFRAMES[choice][0]
-            print_success(f"Timeframe: {TIMEFRAMES[choice][1]}")
-            return selected_tf
-        print("\033[91m  Invalid choice. Enter 1-6.\033[0m")
+        choice = get_input("Select timeframe(s) (1-9)", "5")
+        parts = [p.strip() for p in choice.split(',') if p.strip()]
+        if all(p in TIMEFRAMES for p in parts):
+            # Return single timeframe if one chosen, else return comma-separated list
+            if len(parts) == 1:
+                selected_tf = TIMEFRAMES[parts[0]][0]
+                print_success(f"Timeframe: {TIMEFRAMES[parts[0]][1]}")
+                return selected_tf
+            else:
+                selected = [TIMEFRAMES[p][0] for p in parts]
+                labels = [TIMEFRAMES[p][1] for p in parts]
+                print_success(f"Timeframes: {', '.join(labels)}")
+                return ",".join(selected)
+        print("\033[91m  Invalid choice. Enter 1-9 or comma-separated list.\033[0m")
 
 
 def configure_risk(current_risk: Dict[str, Any]) -> Dict[str, Any]:
@@ -282,6 +294,37 @@ def confirm_and_save(config: Dict[str, Any], config_path: str) -> bool:
         return False
 
 
+def save_profile_as_mindset(config: Dict[str, Any], mindset: str, timeframe: str) -> str:
+    """Save the current configuration as a per-mindset profile in configs/mindsets/<mindset>/"""
+    base_dir = Path(__file__).parent.parent / "configs" / "mindsets" / mindset
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    # timeframe may be 'TIMEFRAME_H1' or comma-separated; if multiple, return list later
+    profiles = []
+    for tf in (timeframe.split(',') if isinstance(timeframe, str) and ',' in timeframe else [timeframe]):
+        suffix = tf.replace('TIMEFRAME_', '').lower()
+        file_name = f"config_{mindset}_{suffix}.json"
+        path = base_dir / file_name
+
+        # Ensure orphan_trades exists and is enabled by default for live adoption
+        if 'orphan_trades' not in config:
+            config['orphan_trades'] = {
+                'enabled': True,
+                'adopt_symbols': [],
+                'ignore_symbols': [],
+                'apply_exit_strategies': True,
+                'max_adoption_age_hours': 0,
+                'log_only': False
+            }
+
+        with open(path, 'w') as f:
+            json.dump(config, f, indent=2)
+
+        profiles.append(str(path))
+
+    return profiles[0] if len(profiles) == 1 else profiles
+
+
 def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]:
     """
     Run the interactive setup wizard.
@@ -350,13 +393,40 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
     # Step 5: Strategy Settings
     config['strategy'] = configure_strategy(config.get('strategy', {}))
     
-    # Apply mindset overlay (from mindsets.py logic)
-    # Note: We apply mindset values that weren't explicitly set by user
-    # The wizard values take precedence
-    
     # Step 6: Confirm and save
     print()
     if confirm_and_save(config, config_path):
+        # Offer to save per-mindset profile(s) and optionally start them
+        print()
+        choice = get_input("Save this as a per-mindset profile and optionally start now? (y/N)", "N").lower()
+        if choice == 'y':
+            # Determine mindset and timeframe(s)
+            # Mindset variable was chosen earlier in wizard
+            try:
+                timeframe = config['trading']['timeframe']
+            except Exception:
+                timeframe = 'TIMEFRAME_H1'
+
+            profiles = save_profile_as_mindset(config, mindset, timeframe)
+            if isinstance(profiles, list):
+                for p in profiles:
+                    print_success(f"Saved profile: {p}")
+            else:
+                print_success(f"Saved profile: {profiles}")
+
+            start_now = get_input("Start these profiles now? (y/N)", "N").lower()
+            if start_now == 'y':
+                dry = get_input("Dry run first? (y/N)", "y").lower()
+                from subprocess import Popen
+                procs = []
+                cfgs = profiles if isinstance(profiles, list) else [profiles]
+                for cfg in cfgs:
+                    args = ["python", "-m", "herald", "--config", cfg, "--mindset", mindset, "--skip-setup"]
+                    if dry == 'y':
+                        args.append("--dry-run")
+                    Popen(args)
+                    print_info(f"Started Herald for {cfg} (dry-run={dry=='y'})")
+        
         print()
         print(f"  \033[92m{'═' * 48}\033[0m")
         print(f"  \033[92m  Herald is ready! Run with:\033[0m")
