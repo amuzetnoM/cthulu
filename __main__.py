@@ -208,10 +208,22 @@ def main():
                        help="Trading mindset/risk profile (aggressive, balanced, conservative)")
     parser.add_argument('--skip-setup', action='store_true',
                        help="Skip interactive setup wizard (for automation/headless runs)")
+    parser.add_argument('--wizard', action='store_true',
+                       help="Open the interactive setup wizard and optionally start profiles")
     parser.add_argument('--version', action='version', version=f"Herald {__version__}")
     args = parser.parse_args()
     
     # Run interactive setup wizard (default behavior, skip with --skip-setup)
+    if args.wizard:
+        from config.wizard import run_setup_wizard
+        result = run_setup_wizard(args.config)
+        if result is None:
+            print("Setup cancelled. Exiting.")
+            return 0
+        # If wizard started profiles, user likely wants to exit the one-off wizard
+        print("\nWizard completed. Exiting.")
+        return 0
+
     if not args.skip_setup:
         from config.wizard import run_setup_wizard
         result = run_setup_wizard(args.config)

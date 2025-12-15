@@ -8,23 +8,40 @@ param(
 # Helper to start Herald for multiple timeframes using configs stored under configs/mindsets/<mindset>/
 $python = "python"
 
-foreach ($tf in $Timeframes) {
-    # Normalize suffix: accept either TIMEFRAME_H1 or h1/m15 etc.
-    $suffix = $tf
-    if ($suffix -like 'TIMEFRAME_*') { $suffix = $suffix -replace '^TIMEFRAME_','' }
-    $suffix = $suffix.ToLower()
+# Normalize timeframes input (allow comma-separated string)
+if ($Timeframes -is [string]) { $Timeframes = $Timeframes -split ',' }
+# Handle single-element arrays with comma-separated string
+if (($Timeframes -is [object[]]) -and $Timeframes.Count -eq 1 -and ($Timeframes[0] -like '*,*')) { $Timeframes = $Timeframes[0] -split ',' }
+$Timeframes = $Timeframes | ForEach-Object { $_.Trim() }
 
-    $cfgPath = Join-Path -Path (Resolve-Path -Path "$(Split-Path -Parent $MyInvocation.MyCommand.Definition)\..\configs\mindsets\$Mindset") -ChildPath "config_$Mindset_$suffix.json" -ErrorAction SilentlyContinue
-    if (-not $cfgPath -or -not (Test-Path $cfgPath)) {
-        Write-Warn "Config not found for timeframe '$tf' (expected $cfgPath). Skipping."
-        continue
+$startedCount = 0
+foreach ($raw in $Timeframes) {
+    $parts = @()
+    if ($raw -like '*,*') { $parts = $raw -split ',' } else { $parts = @($raw) }
+    foreach ($tf in $parts) {
+        # Normalize suffix: accept either TIMEFRAME_H1 or h1/m15 etc.
+        $suffix = $tf.Trim()
+        if ($suffix -like 'TIMEFRAME_*') { $suffix = $suffix -replace '^TIMEFRAME_','' }
+        $suffix = $suffix.ToLower()
+
+        # Build config path relative to repo root
+        $cfgDir = Join-Path -Path (Split-Path -Parent $MyInvocation.MyCommand.Definition) -ChildPath "..\configs\mindsets\$Mindset"
+        $fileName = "config_{0}_{1}.json" -f $Mindset, $suffix
+        $cfgPath = Join-Path -Path $cfgDir -ChildPath $fileName
+
+        if (-not (Test-Path $cfgPath)) {
+            Write-Host "  [WARN] Config not found for timeframe '$tf' (expected: $cfgPath). Skipping." -ForegroundColor Yellow
+            continue
+        }
+
+        $argList = @('-m', 'herald', '--config', "$cfgPath", '--mindset', $Mindset, '--skip-setup')
+        if ($DryRun) { $argList += '--dry-run' }
+
+        Write-Host "Starting Herald for $Symbol on $tf using $cfgPath"
+        $proc = Start-Process -FilePath $python -ArgumentList $argList -NoNewWindow -PassThru
+        Write-Host "  -> Started PID: $($proc.Id)" -ForegroundColor Cyan
+        $startedCount++
     }
-
-    $argList = @('-m', 'herald', '--config', "$cfgPath", '--mindset', $Mindset, '--skip-setup')
-    if ($DryRun) { $argList += '--dry-run' }
-
-    Write-Host "Starting Herald for $Symbol on $tf using $cfgPath"
-    Start-Process -FilePath $python -ArgumentList $argList -NoNewWindow -PassThru | Out-Null
 }
 
-Write-Host "Started $(($Timeframes).Count) Herald process(es)."
+Write-Host "Started $startedCount Herald process(es)."
