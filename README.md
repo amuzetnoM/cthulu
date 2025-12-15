@@ -7,7 +7,7 @@
 ```
 
 # Herald
-*version 3.1.0*  [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
+*version 3.2.0*  [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
 
 ![Status](https://img.shields.io/badge/status-production--ready-success?style=for-the-badge)
 [![Python](https://img.shields.io/badge/python-3.10--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
@@ -73,14 +73,39 @@ Persistence & Metrics
 
 ## CLI & Usage
 
-### Main Trading Loop
+### Getting Started
 
-The `herald` CLI provides a streamlined interface for running the trading loop:
+Herald uses an **interactive setup wizard** as the primary entry point. When you run Herald, it guides you through configuring your trading parameters before starting:
 
 ```bash
-herald --config ./configs/dev.json --dry-run --log-level INFO
-herald --config ./configs/prod.json --log-level DEBUG
-herald --mindset aggressive --dry-run  # Use pre-configured risk profile
+# Start Herald (opens interactive setup wizard)
+herald --config config.json
+```
+
+The wizard walks you through:
+1. **Trading Mindset** — Conservative, Balanced, or Aggressive risk profile
+2. **Symbol** — Which instrument to trade (EURUSD, XAUUSD#, etc.)
+3. **Timeframe** — M5, M15, M30, H1, H4, or D1
+4. **Risk Management** — Daily loss limit, position size %, max positions
+5. **Strategy Settings** — SMA periods and other strategy-specific params
+
+### Command Line Options
+
+```bash
+# Interactive setup (default)
+herald --config config.json
+
+# Skip wizard for automation/CI (uses existing config as-is)
+herald --config config.json --skip-setup
+
+# Dry run mode (simulates orders without placing them)
+herald --config config.json --dry-run
+
+# Apply a mindset overlay
+herald --config config.json --skip-setup --mindset aggressive
+
+# Debug logging
+herald --config config.json --skip-setup --log-level DEBUG
 ```
 
 ### Manual Trade CLI 🆕
@@ -150,6 +175,7 @@ Trades placed via `herald-trade` use Herald's magic number, so they are automati
 
 | Component | Description |
 |-----------|-------------|
+| **Interactive Setup Wizard** | Guided configuration of symbol, timeframe, risk, and strategy 🆕 |
 | **Trade Manager** | Adopt and manage external/manual trades placed outside Herald |
 | **Trade CLI** | Command-line interface: `herald-trade --symbol BTCUSD# --side BUY` |
 | **Trading Mindsets** | Pre-configured risk profiles: aggressive, balanced, conservative |
@@ -194,7 +220,8 @@ herald/
 │   ├── profit_target.py
 │   └── adverse_movement.py
 ├── config/           # 🆕 Configuration
-│   └── mindsets.py        # Trading risk profiles
+│   ├── mindsets.py        # Trading risk profiles
+│   └── wizard.py          # Interactive setup wizard 🆕
 ├── persistence/      # Database layer
 │   └── database.py
 ├── observability/    # Logging and monitoring
@@ -426,14 +453,17 @@ Edit `config.json` (see `config.example.json`):
 ### Run Herald (Autonomous Trading)
 
 ```bash
-# Autonomous trading with config file
+# Start Herald with interactive setup wizard (recommended)
 python -m herald --config config.json
+
+# Skip wizard for automation (uses existing config.json as-is)
+python -m herald --config config.json --skip-setup
 
 # Dry run mode (no real orders) - Test your setup safely
 python -m herald --config config.json --dry-run
 
 # With debug logging
-python -m herald --config config.json --log-level DEBUG
+python -m herald --config config.json --skip-setup --log-level DEBUG
 
 # Quick test connection
 python -c "from connector.mt5_connector import MT5Connector, ConnectionConfig; \
@@ -446,10 +476,11 @@ python -c "from connector.mt5_connector import MT5Connector, ConnectionConfig; \
 ```
 
 **What Happens When You Run:**
-1. Connects to MT5 with your credentials
-2. Initializes all modules (indicators, strategy, risk, execution, position manager)
-3. Loads configured exit strategies (4 strategies by default)
-4. Starts autonomous trading loop:
+1. **Interactive Setup Wizard** guides you through configuration (skip with `--skip-setup`)
+2. Connects to MT5 with your credentials
+3. Initializes all modules (indicators, strategy, risk, execution, position manager)
+4. Loads configured exit strategies (4 strategies by default)
+5. Starts autonomous trading loop:
    - Fetches market data every 60 seconds (configurable)
    - Calculates 5 technical indicators
    - Generates strategy signals
@@ -457,8 +488,8 @@ python -c "from connector.mt5_connector import MT5Connector, ConnectionConfig; \
    - Monitors open positions
    - Checks exit conditions (priority-based)
    - Closes positions when exit triggered
-5. Logs all activity to console and `herald.log`
-6. Stores trades in `herald.db` database
+6. Logs all activity to console and `herald.log`
+7. Stores trades in `herald.db` database
 
 **Monitor Live Trading:**
 ```bash

@@ -64,16 +64,30 @@ python -c "import MetaTrader5 as mt5; print('MT5 version:', mt5.version())"
 ### Start Autonomous Trading
 
 ```powershell
-# Make sure your .env file has credentials configured
+# Start Herald with interactive setup wizard
 python -m herald --config config.example.json
 ```
 
-The bot will:
-1. Load credentials from `.env` file
+The **interactive setup wizard** will guide you through:
+1. **Trading Mindset** — Choose conservative, balanced, or aggressive
+2. **Symbol** — Enter your trading instrument (EURUSD, XAUUSD#, etc.)
+3. **Timeframe** — Select M5, M15, M30, H1, H4, or D1
+4. **Risk Management** — Set daily loss limit, position size, max positions
+5. **Strategy Settings** — Configure SMA periods
+
+After setup, Herald will:
+1. Save your configuration to `config.json`
 2. Connect to MT5 terminal
 3. Load all Phase 2 indicators (RSI, MACD, Bollinger, Stochastic, ADX)
 4. Start the autonomous trading loop
 5. Monitor positions and execute exits automatically
+
+### Skip Setup Wizard (Automation)
+
+```powershell
+# Use existing config without wizard (for CI/automation)
+python -m herald --config config.json --skip-setup
+```
 
 ### Monitor Logs
 

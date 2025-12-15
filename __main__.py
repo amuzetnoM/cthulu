@@ -18,7 +18,7 @@ import pandas as pd
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-__version__ = "3.0.0"
+__version__ = "3.2.0"
 
 from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
 from herald.data.layer import DataLayer
@@ -176,9 +176,15 @@ def main():
     # Parse arguments
     epilog = (
         "Examples:\n"
-        "  herald --config config.json --log-level DEBUG\n"
-        "  herald --config ./configs/prod.json --dry-run --log-level INFO\n"
-        "  herald --config config.json --mindset conservative --dry-run\n"
+        "  herald --config config.json                    # Interactive setup + trading\n"
+        "  herald --config config.json --skip-setup       # Skip wizard, use existing config\n"
+        "  herald --config config.json --dry-run          # Simulate without real orders\n"
+        "  herald --config config.json --mindset aggressive\n"
+        "\n"
+        "Workflow:\n"
+        "  Herald starts with an interactive setup wizard that guides you through\n"
+        "  configuring symbol, timeframe, risk limits, and strategy settings.\n"
+        "  Use --skip-setup to bypass the wizard for automated/headless runs.\n"
         "\n"
         "Mindsets:\n"
         "  aggressive    - Higher risk, faster entries, tighter stops\n"
@@ -200,8 +206,19 @@ def main():
     parser.add_argument('--mindset', type=str, default=None,
                        choices=['aggressive', 'balanced', 'conservative'],
                        help="Trading mindset/risk profile (aggressive, balanced, conservative)")
+    parser.add_argument('--skip-setup', action='store_true',
+                       help="Skip interactive setup wizard (for automation/headless runs)")
     parser.add_argument('--version', action='version', version=f"Herald {__version__}")
     args = parser.parse_args()
+    
+    # Run interactive setup wizard (default behavior, skip with --skip-setup)
+    if not args.skip_setup:
+        from config.wizard import run_setup_wizard
+        result = run_setup_wizard(args.config)
+        if result is None:
+            print("Setup cancelled. Exiting.")
+            return 0
+        print("\nStarting Herald with configured settings...\n")
     
     # Setup logging
     logger = setup_logger(
