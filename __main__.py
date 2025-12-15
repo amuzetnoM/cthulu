@@ -18,7 +18,7 @@ import pandas as pd
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-__version__ = "3.2.0"
+__version__ = "3.3.0"
 
 from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
 from herald.data.layer import DataLayer
@@ -213,6 +213,8 @@ def main():
     parser.add_argument('--wizard', action='store_true',
                        help="Open the interactive setup wizard and optionally start profiles")
     parser.add_argument('--version', action='version', version=f"Herald {__version__}")
+    parser.add_argument('--symbol', type=str, default=None, help="Override trading symbol from config")
+    parser.add_argument('--adopt-only', action='store_true', help="Scan and adopt external trades, then exit")
     args = parser.parse_args()
     
     # Run interactive setup wizard (default behavior, skip with --skip-setup)
@@ -263,6 +265,10 @@ def main():
             logger.info(f"Applied '{args.mindset}' trading mindset")
             logger.info(f"  Risk: position_size_pct={config['risk'].get('position_size_pct', 2.0)}%, "
                        f"max_daily_loss=${config['risk'].get('max_daily_loss', 50)}")
+        # Symbol override from CLI
+        if args.symbol:
+            config['trading']['symbol'] = args.symbol
+            logger.info(f"Overriding trading symbol via CLI: {args.symbol}")
 
         # Apply symbol override if provided
         if args.symbol:
@@ -317,8 +323,8 @@ def main():
         )
         # Provide default stop percentage and RR from risk config
         default_stop_pct = risk_config.get('emergency_stop_loss_pct', 8.0)
-        default_rr = config.get('confidence_threshold', 2.0) if isinstance(config.get('confidence_threshold', 2.0), (int, float)) else 2.0
-        trade_manager = TradeManager(position_manager, trade_adoption_policy, default_stop_pct, default_rr)
+        default_rr = config.get('strategy', {}).get('params', {}).get('risk_reward_ratio', 2.0)
+        trade_manager = TradeManager(position_manager, trade_adoption_policy, default_stop_pct=default_stop_pct, default_rr=default_rr, config=config)
         if trade_adoption_policy.enabled:
             logger.info(f"External trade adoption ENABLED (log_only: {trade_adoption_policy.log_only})")
         else:
@@ -371,10 +377,18 @@ def main():
             logger.info(f"Reconciled {reconciled} existing Herald position(s)")
         
         # Adopt any external trades if enabled
-        if trade_adoption_policy.enabled:
-            adopted = trade_manager.scan_and_adopt()
-            if adopted > 0:
-                logger.info(f"Adopted {adopted} external trade(s)")
+        if args.adopt_only:
+            if trade_adoption_policy.enabled:
+                adopted = trade_manager.scan_and_adopt()
+                logger.info(f"Adopted {adopted} external trade(s) (adopt-only mode). Exiting.")
+            else:
+                logger.warning("Adopt-only requested but external trade adoption is disabled in config.")
+            return 0
+        else:
+            if trade_adoption_policy.enabled:
+                adopted = trade_manager.scan_and_adopt()
+                if adopted > 0:
+                    logger.info(f"Adopted {adopted} external trade(s)")
 
         # If user requested adoption only mode, exit after adoption
         if args.adopt_only:

@@ -63,8 +63,19 @@ class TradeManager:
         policy: Optional[TradeAdoptionPolicy] = None,
         magic_number: int = HERALD_MAGIC,
         default_stop_pct: float = 8.0,
-        default_rr: float = 2.0
+        default_rr: float = 2.0,
+        config: Optional[Dict[str, Any]] = None
     ):
+        """Initialize trade manager.
+
+        Args:
+            position_manager: Herald's position manager
+            policy: Trade adoption policy
+            magic_number: Herald's magic number for identifying its own trades
+            default_stop_pct: Default emergency stop percent to apply when adopting
+            default_rr: Default risk:reward ratio to set TP when adopting
+            config: Optional full configuration dict used to derive exit/risk defaults
+        """
         """Initialize trade manager.
 
         Args:
@@ -92,6 +103,7 @@ class TradeManager:
         # Track adopted trades
         self._adopted_tickets: Set[int] = set()
         self._adoption_log: List[Dict[str, Any]] = []
+        self.config = config or {}
         
     def scan_for_external_trades(self) -> List[PositionInfo]:
         """
@@ -246,15 +258,25 @@ class TradeManager:
                 # Apply protective SL/TP if configured to do so
                 try:
                     if self.policy.apply_exit_strategies:
-                        # Compute SL using default_stop_pct (percent of entry)
-                        pct = getattr(self, 'default_stop_pct', 8.0)
+                        # Prefer config values if available
+                        pct = None
+                        rr = None
+                        try:
+                            pct = float(self.config.get('risk', {}).get('emergency_stop_loss_pct'))
+                        except Exception:
+                            pct = getattr(self, 'default_stop_pct', 8.0)
+                        try:
+                            rr = float(self.config.get('strategy', {}).get('params', {}).get('risk_reward_ratio'))
+                        except Exception:
+                            rr = getattr(self, 'default_rr', 2.0)
+
                         entry = trade.open_price
                         if trade.side == 'BUY':
-                            sl = entry * (1.0 - pct / 100.0)
-                            tp = entry + (entry - sl) * getattr(self, 'default_rr', 2.0)
+                            sl = round(entry * (1.0 - pct / 100.0), 5)
+                            tp = round(entry + (entry - sl) * rr, 5)
                         else:
-                            sl = entry * (1.0 + pct / 100.0)
-                            tp = entry - (sl - entry) * getattr(self, 'default_rr', 2.0)
+                            sl = round(entry * (1.0 + pct / 100.0), 5)
+                            tp = round(entry - (sl - entry) * rr, 5)
 
                         # Only set if not already present
                         _pos = self.position_manager.get_position(trade.ticket)

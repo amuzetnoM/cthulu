@@ -11,6 +11,25 @@ sidebar_position: 3
 
 This is the canonical changelog for the Herald Project. All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
 
+## Unreleased
+
+### Added
+- Per-mindset, per-timeframe configuration profiles (configs/mindsets/*) enabling robust multi-timeframe deployments.
+- Wizard enhancements: multi-timeframe selection, save-as-mindset profiles, and one-click start (dry-run or live) from the wizard.
+- Adopt-only CLI mode (`--adopt-only`) to scan and adopt external trades without entering the main trading loop.
+- Trade adoption enhancements: automatic application of protective SL/TP (configurable via `risk.emergency_stop_loss_pct` and `strategy.params.risk_reward_ratio`) when adopting external trades.
+
+### Changed
+- Default aggressive profiles now restrict orphan adoption to `GOLD#m` and `BTCUSDm#` unless overridden.
+- `run_herald_multi_tf.ps1` updated to support multiple symbols and timeframes and dry-run option.
+- Added `--symbol` CLI flag to override trading symbol at startup.
+
+### Fixed
+- Reliability improvements to trade adoption and SL/TP application on adopted trades.
+
+### Security
+- No security changes in this release.
+
 ---
 
 ## Table of contents
