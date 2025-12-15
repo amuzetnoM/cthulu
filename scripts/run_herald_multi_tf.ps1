@@ -15,6 +15,11 @@ if (($Timeframes -is [object[]]) -and $Timeframes.Count -eq 1 -and ($Timeframes[
 $Timeframes = $Timeframes | ForEach-Object { $_.Trim() }
 
 $startedCount = 0
+# Normalize Symbols input (allow comma-separated string)
+if ($Symbols -is [string]) { $Symbols = $Symbols -split ',' }
+if (($Symbols -is [object[]]) -and $Symbols.Count -eq 1 -and ($Symbols[0] -like '*,*')) { $Symbols = $Symbols[0] -split ',' }
+$Symbols = $Symbols | ForEach-Object { $_.Trim() }
+
 foreach ($raw in $Timeframes) {
     $parts = @()
     if ($raw -like '*,*') { $parts = $raw -split ',' } else { $parts = @($raw) }
