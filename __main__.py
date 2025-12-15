@@ -203,6 +203,8 @@ def main():
                        help="Logging level (DEBUG, INFO, WARNING, ERROR)")
     parser.add_argument('--dry-run', action='store_true', 
                        help="Dry run mode (simulate orders without placing them)")
+    parser.add_argument('--symbol', type=str, default=None, help="Override trading symbol in config (e.g. GOLD#m)")
+    parser.add_argument('--adopt-only', action='store_true', help="Only run external trade adoption and exit")
     parser.add_argument('--mindset', type=str, default=None,
                        choices=['aggressive', 'balanced', 'conservative'],
                        help="Trading mindset/risk profile (aggressive, balanced, conservative)")
@@ -261,6 +263,11 @@ def main():
             logger.info(f"Applied '{args.mindset}' trading mindset")
             logger.info(f"  Risk: position_size_pct={config['risk'].get('position_size_pct', 2.0)}%, "
                        f"max_daily_loss=${config['risk'].get('max_daily_loss', 50)}")
+
+        # Apply symbol override if provided
+        if args.symbol:
+            config['trading']['symbol'] = args.symbol
+            logger.info(f"Overriding trading symbol to: {args.symbol}")
     except Exception as e:
         logger.error(f"Failed to load configuration: {e}")
         return 1
@@ -308,7 +315,10 @@ def main():
             max_adoption_age_hours=trade_adoption_config.get('max_adoption_age_hours', 0.0),
             log_only=trade_adoption_config.get('log_only', False)
         )
-        trade_manager = TradeManager(position_manager, trade_adoption_policy)
+        # Provide default stop percentage and RR from risk config
+        default_stop_pct = risk_config.get('emergency_stop_loss_pct', 8.0)
+        default_rr = config.get('confidence_threshold', 2.0) if isinstance(config.get('confidence_threshold', 2.0), (int, float)) else 2.0
+        trade_manager = TradeManager(position_manager, trade_adoption_policy, default_stop_pct, default_rr)
         if trade_adoption_policy.enabled:
             logger.info(f"External trade adoption ENABLED (log_only: {trade_adoption_policy.log_only})")
         else:
@@ -365,6 +375,11 @@ def main():
             adopted = trade_manager.scan_and_adopt()
             if adopted > 0:
                 logger.info(f"Adopted {adopted} external trade(s)")
+
+        # If user requested adoption only mode, exit after adoption
+        if args.adopt_only:
+            logger.info("Adopt-only mode complete. Exiting.")
+            return 0
         
     except Exception as e:
         logger.error(f"Connection error: {e}", exc_info=True)

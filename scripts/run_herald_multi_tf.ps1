@@ -1,6 +1,6 @@
 param(
     [string]$Mindset = "aggressive",
-    [string]$Symbol = "EURUSD",
+    [string[]]$Symbols = @("GOLD#m","BTCUSDm#"),
     [string[]]$Timeframes = @("TIMEFRAME_H1", "TIMEFRAME_M15"),
     [switch]$DryRun
 )
@@ -34,13 +34,15 @@ foreach ($raw in $Timeframes) {
             continue
         }
 
-        $argList = @('-m', 'herald', '--config', "$cfgPath", '--mindset', $Mindset, '--skip-setup')
-        if ($DryRun) { $argList += '--dry-run' }
+        foreach ($sym in $Symbols) {
+            $argList = @('-m', 'herald', '--config', "$cfgPath", '--mindset', $Mindset, '--skip-setup', '--symbol', $sym)
+            if ($DryRun) { $argList += '--dry-run' }
 
-        Write-Host "Starting Herald for $Symbol on $tf using $cfgPath"
-        $proc = Start-Process -FilePath $python -ArgumentList $argList -NoNewWindow -PassThru
-        Write-Host "  -> Started PID: $($proc.Id)" -ForegroundColor Cyan
-        $startedCount++
+            Write-Host "Starting Herald for $sym on $tf using $cfgPath"
+            $proc = Start-Process -FilePath $python -ArgumentList $argList -NoNewWindow -PassThru
+            Write-Host "  -> Started PID: $($proc.Id)" -ForegroundColor Cyan
+            $startedCount++
+        }
     }
 }
 

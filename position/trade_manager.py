@@ -61,8 +61,19 @@ class TradeManager:
         self,
         position_manager: PositionManager,
         policy: Optional[TradeAdoptionPolicy] = None,
-        magic_number: int = HERALD_MAGIC
+        magic_number: int = HERALD_MAGIC,
+        default_stop_pct: float = 8.0,
+        default_rr: float = 2.0
     ):
+        """Initialize trade manager.
+
+        Args:
+            position_manager: Herald's position manager
+            policy: Trade adoption policy
+            magic_number: Herald's magic number for identifying its own trades
+            default_stop_pct: Default emergency stop percent to apply when adopting
+            default_rr: Default risk:reward ratio to set TP when adopting
+        """
         """
         Initialize trade manager.
         
@@ -74,6 +85,8 @@ class TradeManager:
         self.position_manager = position_manager
         self.policy = policy or TradeAdoptionPolicy()
         self.magic_number = magic_number
+        self.default_stop_pct = default_stop_pct
+        self.default_rr = default_rr
         self.logger = logging.getLogger("herald.trade_manager")
         
         # Track adopted trades
@@ -191,11 +204,8 @@ class TradeManager:
         
     def adopt_trades(self, trades: List[PositionInfo]) -> int:
         """
-        Adopt external trades into Herald's position manager.
-        
-        Args:
-            trades: List of external trade PositionInfo objects
-            
+        Adopt external trades into Herald's position manager and apply protective SL/TP.
+
         Returns:
             Number of trades adopted
         """
@@ -207,15 +217,15 @@ class TradeManager:
                     f"P&L: ${trade.unrealized_pnl:.2f}"
                 )
             return 0
-            
+
         adopted_count = 0
-        
+
         for trade in trades:
             try:
-                # Add to position manager
+                # Add to position manager registry
                 self.position_manager.add_position(trade)
                 self._adopted_tickets.add(trade.ticket)
-                
+
                 # Log adoption
                 self._adoption_log.append({
                     'ticket': trade.ticket,
@@ -226,20 +236,45 @@ class TradeManager:
                     'original_magic': trade.magic_number,
                     'pnl_at_adoption': trade.unrealized_pnl
                 })
-                
+
                 self.logger.info(
                     f"Adopted trade: #{trade.ticket} | "
                     f"{trade.symbol} {trade.side} {trade.volume:.2f} lots @ {trade.open_price:.5f}, "
                     f"Current P&L: ${trade.unrealized_pnl:.2f}"
                 )
-                
+
+                # Apply protective SL/TP if configured to do so
+                try:
+                    if self.policy.apply_exit_strategies:
+                        # Compute SL using default_stop_pct (percent of entry)
+                        pct = getattr(self, 'default_stop_pct', 8.0)
+                        entry = trade.open_price
+                        if trade.side == 'BUY':
+                            sl = entry * (1.0 - pct / 100.0)
+                            tp = entry + (entry - sl) * getattr(self, 'default_rr', 2.0)
+                        else:
+                            sl = entry * (1.0 + pct / 100.0)
+                            tp = entry - (sl - entry) * getattr(self, 'default_rr', 2.0)
+
+                        # Only set if not already present
+                        _pos = self.position_manager.get_position(trade.ticket)
+                        if _pos and ((_pos.stop_loss == 0.0 and sl) or (_pos.take_profit == 0.0 and tp)):
+                            success = self.position_manager.set_sl_tp(trade.ticket, sl=sl, tp=tp)
+                            if success:
+                                self.logger.info(f"Applied protective SL/TP to adopted trade #{trade.ticket}: SL={sl:.5f}, TP={tp:.5f}")
+                            else:
+                                self.logger.warning(f"Failed to apply SL/TP to adopted trade #{trade.ticket}")
+
+                except Exception as e:
+                    self.logger.error(f"Error applying SL/TP to adopted trade #{trade.ticket}: {e}")
+
                 adopted_count += 1
-                
+
             except Exception as e:
                 self.logger.error(
                     f"Failed to adopt trade #{trade.ticket}: {e}"
                 )
-                
+
         return adopted_count
         
     def scan_and_adopt(self) -> int:

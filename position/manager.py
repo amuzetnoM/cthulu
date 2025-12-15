@@ -331,6 +331,43 @@ class PositionManager:
         if pos and current_price is not None:
             pos.current_price = current_price
         
+    def set_sl_tp(self, ticket: int, sl: Optional[float] = None, tp: Optional[float] = None) -> bool:
+        """Set stop loss and/or take profit for an existing position.
+
+        Returns True if modified successfully, False otherwise.
+        """
+        position_info = self._positions.get(ticket)
+        if not position_info:
+            self.logger.error(f"Cannot modify SL/TP for position #{ticket}: not tracked")
+            return False
+        try:
+            request = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "position": ticket,
+                "symbol": position_info.symbol,
+            }
+            if sl is not None:
+                request["sl"] = sl
+            if tp is not None:
+                request["tp"] = tp
+            result = mt5.order_send(request)
+            if result is None or getattr(result, 'retcode', None) != mt5.TRADE_RETCODE_DONE:
+                err = getattr(result, 'comment', None) if result else "Unknown"
+                self.logger.error(f"Failed to set SL/TP for #{ticket}: {err}")
+                return False
+
+            # Update tracked position fields
+            if sl is not None:
+                position_info.stop_loss = sl
+            if tp is not None:
+                position_info.take_profit = tp
+
+            self.logger.info(f"Set SL/TP for #{ticket}: SL={position_info.stop_loss}, TP={position_info.take_profit}")
+            return True
+        except Exception as e:
+            self.logger.error(f"Error setting SL/TP for #{ticket}: {e}", exc_info=True)
+            return False
+
     def close_position(
         self,
         ticket: int,
