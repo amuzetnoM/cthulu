@@ -320,7 +320,7 @@ def main():
         
         # 4. Execution Engine
         logger.info("Initializing execution engine...")
-        execution_engine = ExecutionEngine(connector)
+        execution_engine = ExecutionEngine(connector, risk_config=risk_config)
         
         # 5. Position Manager
         logger.info("Initializing position manager...")

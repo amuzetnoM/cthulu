@@ -6,6 +6,8 @@ Integrates with ExecutionEngine for position data and RiskManager for exposure l
 """
 
 from herald.connector.mt5_connector import mt5
+import time
+from herald.position import risk_manager
 import logging
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
@@ -178,19 +180,38 @@ class PositionManager:
         if execution_result.status != OrderStatus.FILLED:
             self.logger.warning(f"Cannot track unfilled order: {execution_result.status}")
             return None
-            
-        if execution_result.order_id is None:
-            self.logger.error("Cannot track position without order ID")
+
+        # Prefer explicit position_ticket when available (order id != position ticket in MT5)
+        ticket_to_query = getattr(execution_result, 'position_ticket', None) or execution_result.order_id
+
+        if ticket_to_query is None:
+            self.logger.error("Cannot track position without order/position ID")
             return None
-            
+
         try:
-            # Get position details from MT5
-            position = mt5.positions_get(ticket=execution_result.order_id)
-            
+            # Try to get position by ticket first
+            position = mt5.positions_get(ticket=ticket_to_query)
+
+            # If not found and we were given an order_id, try to find a matching position by symbol/volume
+            if (position is None or len(position) == 0) and execution_result.order_id is not None:
+                positions = mt5.positions_get() or []
+                # find candidate by order symbol and volume
+                candidates = [p for p in positions if getattr(p, 'symbol', None) == getattr(execution_result, 'metadata', {}).get('symbol', None) or getattr(p, 'symbol', None)]
+                # prefer same magic as the engine if available
+                candidates = sorted(candidates, key=lambda x: getattr(x, 'time', 0), reverse=True)
+                position = None
+                for p in candidates:
+                    try:
+                        if abs(getattr(p, 'volume', 0) - (execution_result.executed_volume or 0)) < 0.0001:
+                            position = [p]
+                            break
+                    except Exception:
+                        continue
+
             if position is None or len(position) == 0:
-                self.logger.error(f"Position not found in MT5: ticket #{execution_result.order_id}")
+                self.logger.error(f"Position not found in MT5: ticket #{ticket_to_query}")
                 return None
-                
+
             pos = position[0]
             
             # Create PositionInfo
@@ -262,6 +283,23 @@ class PositionManager:
                     position_info.swap = mt5_pos.swap if hasattr(mt5_pos, 'swap') else 0.0
                     position_info.stop_loss = mt5_pos.sl if mt5_pos.sl > 0 else 0.0
                     position_info.take_profit = mt5_pos.tp if mt5_pos.tp > 0 else 0.0
+                    # Fast dynamic management: evaluate and optionally adjust SL/TP
+                    try:
+                        from herald.position.dynamic_manager import evaluate as dynamic_evaluate
+                        suggestion = dynamic_evaluate(position_info, self.connector, getattr(self, 'config', {}))
+                        if suggestion and suggestion.get('adjust_sl') is not None:
+                            new_sl = suggestion['adjust_sl']
+                            # Respect simple rate-limit: only attempt if last change > 30s
+                            last_change = position_info.metadata.get('last_sl_change_ts')
+                            now_ts = datetime.now().timestamp()
+                            if not last_change or (now_ts - float(last_change)) > float(getattr(self, 'sl_change_cooldown', 30)):
+                                ok = self.set_sl_tp(position_info.ticket, sl=new_sl)
+                                if ok:
+                                    position_info.metadata['last_sl_change_ts'] = now_ts
+                                    position_info.metadata.setdefault('dynamic_actions', []).append({'ts': now_ts, 'action': 'tighten_sl', 'reason': suggestion.get('reason')})
+                    except Exception:
+                        # Keep monitoring robust; log at debug level
+                        self.logger.debug('Dynamic manager evaluation failed', exc_info=True)
                     
                 else:
                     # Position closed externally - remove from tracking
@@ -341,6 +379,36 @@ class PositionManager:
             self.logger.error(f"Cannot modify SL/TP for position #{ticket}: not tracked")
             return False
         try:
+            # If an SL is proposed, ask the risk manager for an adjustment
+            if sl is not None:
+                try:
+                    acct = mt5.account_info()
+                    balance = acct.balance if acct is not None else None
+                except Exception:
+                    balance = None
+
+                # Prefer tracked current price, fall back to open price
+                current_price = position_info.current_price or position_info.open_price
+
+                if balance is not None and current_price is not None:
+                    suggestion = risk_manager.suggest_sl_adjustment(
+                        position_info.symbol,
+                        float(balance),
+                        float(current_price),
+                        float(sl),
+                        side=position_info.side or "BUY",
+                        thresholds=(self.execution_engine.risk_config.get('sl_balance_thresholds') if getattr(self, 'execution_engine', None) and isinstance(self.execution_engine.risk_config, dict) else None),
+                        breakpoints=(self.execution_engine.risk_config.get('sl_balance_breakpoints') if getattr(self, 'execution_engine', None) and isinstance(self.execution_engine.risk_config, dict) else None),
+                    )
+                    # If the risk manager recommends a narrower SL, apply it
+                    adj = suggestion.get("adjusted_sl")
+                    if adj is not None and adj != sl:
+                        self.logger.warning(
+                            f"Adjusting proposed SL for #{ticket} from {sl} -> {adj} based on balance={balance}: {suggestion.get('reason')}"
+                        )
+                        position_info.metadata.setdefault("risk_suggestions", []).append(suggestion)
+                        sl = adj
+
             request = {
                 "action": mt5.TRADE_ACTION_SLTP,
                 "position": ticket,
@@ -572,16 +640,23 @@ class PositionManager:
             'swap': position.swap
         }
         
-    def reconcile_positions(self, magic_number: int = 123456) -> int:
+    def reconcile_positions(self, magic_number: int = None) -> int:
         """
         Reconcile tracked positions with MT5 after reconnection or at startup.
         
         Args:
-            magic_number: Herald's magic number to filter positions
+            magic_number: Herald's magic number to filter positions (defaults to central DEFAULT_MAGIC)
         
         Returns:
             Number of positions reconciled
         """
+        if magic_number is None:
+            try:
+                from herald import constants
+                magic_number = constants.DEFAULT_MAGIC
+            except Exception:
+                magic_number = 0
+
         if not self.connector.is_connected():
             self.logger.warning("Cannot reconcile: not connected to MT5")
             return 0

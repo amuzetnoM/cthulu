@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 import MetaTrader5 as mt5
+from herald import constants
 
 
 def main():
@@ -115,7 +116,7 @@ Examples:
                 'position': pos.ticket,
                 'price': price,
                 'deviation': 20,
-                'magic': 123456,
+                'magic': constants.DEFAULT_MAGIC,
                 'comment': 'Herald close',
                 'type_time': mt5.ORDER_TIME_GTC,
                 'type_filling': mt5.ORDER_FILLING_IOC,
@@ -155,7 +156,7 @@ Examples:
                     'position': pos.ticket,
                     'price': price,
                     'deviation': 20,
-                    'magic': 123456,
+                    'magic': constants.DEFAULT_MAGIC,
                     'comment': 'Herald close all',
                     'type_time': mt5.ORDER_TIME_GTC,
                     'type_filling': mt5.ORDER_FILLING_IOC,
@@ -199,7 +200,7 @@ Examples:
                 'sl': args.sl,
                 'tp': args.tp,
                 'deviation': 20,
-                'magic': 123456,
+                'magic': constants.DEFAULT_MAGIC,
                 'comment': args.comment,
                 'type_time': mt5.ORDER_TIME_GTC,
                 'type_filling': mt5.ORDER_FILLING_IOC,

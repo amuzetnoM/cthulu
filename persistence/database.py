@@ -7,6 +7,7 @@ Provides historical retention and export capabilities.
 
 import sqlite3
 import logging
+import json
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, asdict
 from datetime import datetime
@@ -179,10 +180,11 @@ class Database:
                 INSERT INTO signals (
                     signal_id, timestamp, symbol, timeframe, side, action,
                     confidence, price, stop_loss, take_profit, reason, executed, execution_timestamp, metadata
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 signal_record.signal_id,
-                signal_record.timestamp,
+                # Store timestamps as ISO strings for portability
+                signal_record.timestamp.isoformat() if hasattr(signal_record.timestamp, 'isoformat') else signal_record.timestamp,
                 signal_record.symbol,
                 signal_record.timeframe,
                 signal_record.side,
@@ -193,8 +195,8 @@ class Database:
                 signal_record.take_profit,
                 signal_record.reason,
                 int(signal_record.executed),
-                signal_record.execution_timestamp,
-                signal_record.metadata
+                signal_record.execution_timestamp.isoformat() if hasattr(signal_record.execution_timestamp, 'isoformat') and signal_record.execution_timestamp is not None else signal_record.execution_timestamp,
+                json.dumps(signal_record.metadata) if not isinstance(signal_record.metadata, str) else signal_record.metadata
             ))
             self.conn.commit()
             
@@ -232,9 +234,9 @@ class Database:
                 trade_record.entry_price,
                 trade_record.stop_loss,
                 trade_record.take_profit,
-                trade_record.entry_time,
+                trade_record.entry_time.isoformat() if hasattr(trade_record.entry_time, 'isoformat') and trade_record.entry_time is not None else trade_record.entry_time,
                 trade_record.status,
-                trade_record.metadata
+                json.dumps(trade_record.metadata) if not isinstance(trade_record.metadata, str) else trade_record.metadata
             ))
             self.conn.commit()
             

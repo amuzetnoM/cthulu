@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 
 from herald.connector.mt5_connector import mt5
 from herald.position.manager import PositionInfo, PositionManager
+from herald import constants
 
 
 @dataclass
@@ -56,7 +57,7 @@ class TradeManager:
     """
     
     # Herald's magic number (trades placed by Herald have this)
-    HERALD_MAGIC = 123456
+    HERALD_MAGIC = constants.DEFAULT_MAGIC
     
     def __init__(
         self,
@@ -271,6 +272,7 @@ class TradeManager:
                 # Add to position manager registry
                 self.position_manager.add_position(trade)
                 self._adopted_tickets.add(trade.ticket)
+                adopted_count += 1
 
                 # Log adoption
                 self._adoption_log.append({
@@ -356,8 +358,7 @@ class TradeManager:
                 except Exception as e:
                     self.logger.error(f"Error applying SL/TP to adopted trade #{trade.ticket}: {e}")
 
-                # Count this as successfully adopted (even if SL/TP failed to apply)
-                adopted_count += 1
+
             except Exception as e:
                 self.logger.error(
                     f"Failed to adopt trade #{trade.ticket}: {e}"

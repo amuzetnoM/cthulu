@@ -38,6 +38,19 @@ slug: /docs/changelog
 - **Shutdown behavior**: graceful shutdown no longer force-closes positions by default; user must confirm closure interactively (or use `--no-prompt` to skip asking and leave positions intact).
 - Adoption is performed every loop and pending SL/TP operations are retried (more resilient behavior).
 
+### New (Unreleased)
+- Configurable SL thresholds and emergency stop:
+  - `risk.sl_balance_thresholds` — mapping of balance buckets to relative SL thresholds.
+  - `risk.sl_balance_breakpoints` — numeric breakpoints for buckets.
+  - `risk.emergency_stop_loss_pct` — default emergency stop percentage used during adoption.
+- `position.risk_manager` now suggests and (optionally) adjusts SLs for both new orders and adoption scenarios when proposed SLs are unusually wide for account size.
+ - Market data & tick manager enhancements:
+   - `market/tick_manager.py` added: lightweight ring buffers, subscribe API, priority poller.
+   - Connector now exposes `get_recent_ticks`, `subscribe_ticks`, and `unsubscribe_ticks`.
+   - Provider fallbacks: MT5 is primary; planned fallbacks include AlphaVantage and Binance REST (pluggable providers).
+   - Adaptive rate control and token-bucket quota tracking added to `TickManager` (initial implementation).
+   - Prometheus metrics for ticks: `herald_tick_age_seconds`, `herald_tick_poll_errors_total`, and `herald_tick_source_switches_total` (exporter hooks added).
+
 ### Fixed
 - Reliability improvements to trade adoption and SL/TP application on adopted trades.
 - Fixed intermittent market data failures caused by symbol-format mismatches (e.g., `GOLDm#` vs. `GOLD#m`) via normalization and candidate symbol selection.

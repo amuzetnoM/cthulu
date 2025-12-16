@@ -21,7 +21,7 @@ trading:
   
   # Order parameters
   slippage: 10  # Maximum slippage in points
-  magic_number: 20241206  # Unique identifier for this bot's orders
+  magic_number: 123456  # Unique identifier for this bot's orders (default)
   
 strategy:
   # Active strategy configuration

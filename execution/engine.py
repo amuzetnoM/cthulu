@@ -13,6 +13,8 @@ from datetime import datetime
 from enum import Enum
 
 from herald.strategy.base import Signal, SignalType
+from herald.position import risk_manager
+from herald import constants
 
 
 class OrderType(Enum):
@@ -81,6 +83,8 @@ class ExecutionResult:
     timestamp: datetime
     error: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
+    # position_ticket (MT5 position ticket if determinable) — order tickets and position tickets differ
+    position_ticket: Optional[int] = None
 
     # Backwards-compatible aliases expected by other modules
     @property
@@ -112,22 +116,27 @@ class ExecutionEngine:
     - Order modification and cancellation
     """
     
-    def __init__(self, connector, magic_number: int = 20241206, slippage: int = 10):
+    def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None):
         """
         Initialize execution engine.
         
         Args:
             connector: MT5Connector instance
-            magic_number: Unique identifier for bot orders
+            magic_number: Unique identifier for bot orders (if None, use DEFAULT_MAGIC)
             slippage: Maximum allowed slippage in points
         """
         self.connector = connector
-        self.magic_number = magic_number
+        # Use provided magic number or fall back to centralized DEFAULT_MAGIC
+        self.magic_number = magic_number if magic_number is not None else constants.DEFAULT_MAGIC
         self.slippage = slippage
+        # Optional risk configuration overrides (from app config)
+        self.risk_config = risk_config or {}
         self.logger = logging.getLogger("herald.execution")
         
         # Order tracking for idempotency
         self._submitted_orders: Dict[str, int] = {}
+        # Max size to avoid unbounded growth; old entries will be pruned
+        self._idempotency_max = 1000
         
     def place_order(self, order_req: OrderRequest) -> ExecutionResult:
         """
@@ -230,6 +239,13 @@ class ExecutionEngine:
             if result.retcode == mt5.TRADE_RETCODE_DONE:
                 # Track for idempotency
                 if order_req.client_tag:
+                    # Prune oldest entries if necessary
+                    if len(self._submitted_orders) >= self._idempotency_max:
+                        oldest = next(iter(self._submitted_orders))
+                        try:
+                            del self._submitted_orders[oldest]
+                        except Exception:
+                            pass
                     self._submitted_orders[order_req.client_tag] = result.order
                     
                 self.logger.info(
@@ -246,8 +262,31 @@ class ExecutionEngine:
                 if hasattr(result, 'commission'):
                     md['commission'] = getattr(result, 'commission')
 
+                # Try to resolve the resulting position ticket (MT5 differentiates orders and positions)
+                position_ticket = None
+                try:
+                    positions = mt5.positions_get()
+                    if positions:
+                        # Filter by symbol
+                        candidates = [p for p in positions if getattr(p, 'symbol', None) == order_req.symbol]
+                        # Prefer matching magic
+                        magic_matches = [p for p in candidates if getattr(p, 'magic', None) == self.magic_number]
+                        candidates = magic_matches or candidates
+                        # Prefer most recent positions
+                        candidates = sorted(candidates, key=lambda x: getattr(x, 'time', 0), reverse=True)
+                        for p in candidates:
+                            try:
+                                if abs(getattr(p, 'volume', 0) - result.volume) < 0.0001:
+                                    position_ticket = getattr(p, 'ticket', None)
+                                    break
+                            except Exception:
+                                continue
+                except Exception:
+                    position_ticket = None
+
                 return ExecutionResult(
                     order_id=result.order,
+                    position_ticket=position_ticket,
                     status=OrderStatus.FILLED,
                     executed_price=result.price,
                     executed_volume=result.volume,
@@ -395,6 +434,41 @@ class ExecutionEngine:
         }
         
         # Add SL/TP if specified
+        # If no SL provided, ask risk manager for a suggested default based on balance
+        if not order_req.sl:
+            try:
+                acct = self.connector.get_account_info()
+                balance = float(acct.get('balance')) if acct and acct.get('balance') is not None else None
+            except Exception:
+                balance = None
+
+            if balance is not None and price is not None:
+                # Pass risk_config thresholds to the risk manager if provided
+                thresholds = None
+                breakpoints = None
+                try:
+                    thresholds = self.risk_config.get('sl_balance_thresholds')
+                    breakpoints = self.risk_config.get('sl_balance_breakpoints')
+                except Exception:
+                    thresholds = None
+                    breakpoints = None
+
+                suggestion = risk_manager.suggest_sl_adjustment(
+                    order_req.symbol,
+                    balance,
+                    float(price),
+                    float(price),
+                    side=order_req.side.upper(),
+                    thresholds=self.risk_config.get('sl_balance_thresholds') if isinstance(self.risk_config, dict) else None,
+                    breakpoints=self.risk_config.get('sl_balance_breakpoints') if isinstance(self.risk_config, dict) else None,
+                )
+                # If suggestion indicates within threshold, it returns adjusted_sl=None
+                adj = suggestion.get('adjusted_sl')
+                if adj is not None:
+                    order_req.metadata.setdefault('risk_suggestion', suggestion)
+                    order_req.sl = adj
+                    self.logger.info(f"Risk-managed SL for {order_req.symbol}: {order_req.sl} (balance={balance})")
+
         if order_req.sl:
             request["sl"] = order_req.sl
         if order_req.tp:

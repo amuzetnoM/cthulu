@@ -37,6 +37,15 @@ class RiskConfig(BaseModel):
     min_risk_reward_ratio: float = 1.0
     max_spread_pips: float = 50.0
     volatility_scaling: bool = True
+    # SL/TP adaptive knobs
+    emergency_stop_loss_pct: float = 8.0  # default emergency stop when adopting external trades (percent)
+    sl_balance_thresholds: Dict[str, float] = Field(default_factory=lambda: {
+        "tiny": 0.01,   # <= $1k
+        "small": 0.02,  # <= $5k
+        "medium": 0.05, # <= $20k
+        "large": 0.25   # > $20k
+    })
+    sl_balance_breakpoints: list = Field(default_factory=lambda: [1000.0, 5000.0, 20000.0])
 
 
 class TradingConfig(BaseModel):
@@ -66,6 +75,16 @@ class Config(BaseModel):
     risk: RiskConfig
     trading: TradingConfig
     strategy: StrategyConfig
+    providers: Dict[str, Any] = Field(default_factory=lambda: {
+        'alpha_vantage_key': None,
+        'binance_api_key': None,
+        'binance_api_secret': None
+    })
+    runtime: Dict[str, Any] = Field(default_factory=lambda: {
+        'dry_run': True,
+        'live_run': False,
+        'live_run_confirm_env': 'LIVE_RUN_CONFIRM'
+    })
     indicators: Optional[list] = Field(default_factory=list)
     exit_strategies: Optional[list] = Field(default_factory=list)
     orphan_trades: OrphanConfig = Field(default_factory=OrphanConfig)
@@ -137,5 +156,16 @@ class Config(BaseModel):
             cfg.mt5.login = int(mt5_login)
             cfg.mt5.password = mt5_password
             cfg.mt5.server = mt5_server
+
+        # If live_run requested in config, require explicit environment confirmation variable
+        runtime = getattr(cfg, 'runtime', {}) or {}
+        live_run = runtime.get('live_run', False)
+        confirm_env = runtime.get('live_run_confirm_env', 'LIVE_RUN_CONFIRM')
+        if live_run:
+            if os.getenv(confirm_env) != '1':
+                raise PermissionError(
+                    "Live run requested in config but confirmation env var not set. "
+                    f"Set environment variable {confirm_env}=1 to allow live trading."
+                )
 
         return cfg

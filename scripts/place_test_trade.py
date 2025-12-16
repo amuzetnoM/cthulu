@@ -1,5 +1,6 @@
 import MetaTrader5 as mt5
 import time
+from herald import constants
 
 print('Initializing MT5 (no params)...')
 ok = mt5.initialize()
@@ -53,7 +54,7 @@ request = {
     'type': mt5.ORDER_TYPE_BUY,
     'price': price,
     'deviation': 20,
-    'magic': 123456,
+    'magic': constants.DEFAULT_MAGIC,
     'comment': 'herald test trade',
     'type_time': mt5.ORDER_TIME_GTC,
     'type_filling': mt5.ORDER_FILLING_IOC,

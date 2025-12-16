@@ -26,21 +26,23 @@ tick = mt5.symbol_info_tick(symbol)
 print(f"\n{symbol} Ask: {tick.ask}, Bid: {tick.bid}")
 
 # Create execution engine and place a small BUY order
-engine = ExecutionEngine(connector)
+engine = ExecutionEngine(connector, risk_config=config.get('risk', {}))
 order = OrderRequest(
+    signal_id='force-test',
     symbol=symbol,
     order_type=OrderType.MARKET,
     volume=0.01,  # Minimum lot size
     side='BUY',
-    comment='Herald forced test trade'
+    client_tag='force-test',
+    metadata={'note': 'Herald forced test trade'},
 )
 
 print(f"\nPlacing BUY order for 0.01 lot {symbol}...")
-result = engine.execute(order)
+result = engine.place_order(order)
 print(f"Order result: {result}")
 
-if hasattr(result, 'ticket') and result.ticket:
-    print(f"\n✅ Trade placed successfully! Ticket: {result.ticket}")
+if result and result.order_id:
+    print(f"\n✅ Trade placed successfully! Ticket: {result.order_id}")
 else:
     print(f"\n❌ Trade failed: {result}")
 

@@ -33,6 +33,7 @@ from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
+from herald.market.tick_manager import TickManager
 
 
 @dataclass
@@ -72,6 +73,11 @@ class MT5Connector:
         self._lock = Lock()
         self._last_request_time = 0.0
         self._min_request_interval = 0.1  # 100ms between requests
+        # Tick manager for lightweight tick caching and subscriptions
+        try:
+            self._tick_manager = TickManager(self)
+        except Exception:
+            self._tick_manager = None
         
     def connect(self) -> bool:
         """
@@ -177,6 +183,38 @@ class MT5Connector:
         if not s:
             return ""
         return ''.join(ch for ch in s.upper() if ch.isalnum())
+
+    def _mt5_symbol_info_tick(self, symbol: str):
+        """Low-level wrapper around mt5.symbol_info_tick to be used by TickManager.
+
+        Returns the native mt5 tick object or None.
+        """
+        try:
+            # Ensure symbol selected for terminal
+            sel = self.ensure_symbol_selected(symbol)
+            if not sel:
+                return None
+            self._rate_limit()
+            return mt5.symbol_info_tick(sel)
+        except Exception:
+            return None
+
+    def get_recent_ticks(self, symbol: str, seconds: float = 60.0, max_points: int = 200):
+        """Return recent ticks for `symbol` from the in-memory ring buffer."""
+        if self._tick_manager is None:
+            return []
+        return self._tick_manager.get_recent(symbol, seconds=seconds, max_points=max_points)
+
+    def subscribe_ticks(self, symbol: str, callback, priority: str = 'high'):
+        """Subscribe to tick updates for `symbol` with given priority (high/medium/low)."""
+        if self._tick_manager is None:
+            raise RuntimeError("Tick manager not initialized")
+        self._tick_manager.subscribe(symbol, callback, priority=priority)
+
+    def unsubscribe_ticks(self, symbol: str, callback):
+        if self._tick_manager is None:
+            return
+        self._tick_manager.unsubscribe(symbol, callback)
 
     def _find_matching_symbol(self, desired: str) -> List[str]:
         """Return a list of available MT5 symbol names whose normalized form matches desired (or contains it)."""
