@@ -172,6 +172,83 @@ class MT5Connector:
             
         self._last_request_time = time.time()
         
+    def _normalize_symbol(self, s: str) -> str:
+        """Return normalized symbol string for comparison (alphanumeric upper-case)."""
+        if not s:
+            return ""
+        return ''.join(ch for ch in s.upper() if ch.isalnum())
+
+    def _find_matching_symbol(self, desired: str) -> List[str]:
+        """Return a list of available MT5 symbol names whose normalized form matches desired (or contains it)."""
+        matches: List[str] = []
+        try:
+            all_symbols = mt5.symbols_get()
+        except Exception:
+            return matches
+        if not all_symbols:
+            return matches
+        desired_norm = self._normalize_symbol(desired)
+        for s in all_symbols:
+            try:
+                name_norm = self._normalize_symbol(s.name)
+                if name_norm == desired_norm or desired_norm in name_norm or name_norm in desired_norm:
+                    matches.append(s.name)
+            except Exception:
+                continue
+        return matches
+
+    def ensure_symbol_selected(self, symbol: str) -> Optional[str]:
+        """Ensure symbol is selected in MT5, with flexible matching for common suffix/prefix variations.
+
+        Returns the actual selected symbol name on success, or None on failure.
+        """
+        # Try direct selection
+        try:
+            if mt5.symbol_select(symbol, True):
+                return symbol
+        except Exception:
+            pass
+
+        # Try common variant swaps (#m <-> m#)
+        variants = []
+        if '#m' in symbol and 'm#' not in symbol:
+            variants.append(symbol.replace('#m', 'm#'))
+        if 'm#' in symbol and '#m' not in symbol:
+            variants.append(symbol.replace('m#', '#m'))
+        # Try removing # or m
+        variants.append(symbol.replace('#', ''))
+        variants.append(symbol.replace('m', ''))
+
+        for v in variants:
+            try:
+                if mt5.symbol_select(v, True):
+                    return v
+            except Exception:
+                continue
+
+        # Try scanning available symbols with normalized comparison
+        matches = self._find_matching_symbol(symbol)
+        if matches:
+            self.logger.debug(f"Found candidate symbols for {symbol}: {matches}")
+            for m in matches:
+                try:
+                    if mt5.symbol_select(m, True):
+                        self.logger.info(f"Selected symbol variant: {m} for requested {symbol}")
+                        return m
+                except Exception:
+                    continue
+            self.logger.warning(f"Found candidate symbols but failed to select any for {symbol}: {matches}")
+        else:
+            # Include hint about available symbols for debugging
+            try:
+                sample = mt5.symbols_get()[:20]
+                sample_names = [s.name for s in sample]
+                self.logger.debug(f"Available symbols (sample): {sample_names}")
+            except Exception:
+                pass
+
+        return None
+
     def get_rates(
         self,
         symbol: str,
@@ -198,13 +275,14 @@ class MT5Connector:
         self._rate_limit()
         
         try:
-            # Ensure symbol is selected
-            if not mt5.symbol_select(symbol, True):
+            # Ensure symbol is selected (flexible)
+            selected = self.ensure_symbol_selected(symbol)
+            if not selected:
                 self.logger.error(f"Failed to select symbol {symbol}")
                 return None
                 
             # Fetch rates
-            rates = mt5.copy_rates_from_pos(symbol, timeframe, start_pos, count)
+            rates = mt5.copy_rates_from_pos(selected, timeframe, start_pos, count)
             
             if rates is None or len(rates) == 0:
                 error = mt5.last_error()

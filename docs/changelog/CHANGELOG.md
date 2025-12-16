@@ -1124,7 +1124,7 @@ This marks Herald's **first public release** - a fully autonomous MetaTrader 5 t
 
 ---
 
-## Upcoming Phases (Comprehensive MQL5 Coverage)
+## Upcoming Phases (MQL5)
 
 ### Phase 3 - Advanced Technical Analysis
 - Price Action Analysis (candlestick patterns, S/R zones, CHoCH detection)
