@@ -1,6 +1,6 @@
 ---
 title: Changelog
-description: Herald project release notes and version history (canonical)
+description: Project release notes and version history (canonical)
 tags: [changelog, releases]
 sidebar_position: 3
 ---
@@ -9,7 +9,9 @@ sidebar_position: 3
 
 ![version-badge](https://img.shields.io/badge/version-3.1.0-blue)
 
-This is the canonical changelog for the Herald Project. All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
+ All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
+
+---
 
 ## Unreleased
 
@@ -51,22 +53,6 @@ This is the canonical changelog for the Herald Project. All notable changes are 
 - [2.0.0 — 2024-12-06](#200---2024-12-06)
 - [1.0.0 — 2024-11-15](#100---2024-11-15)
 - [Release Template](#release-template-use-for-future-releases)
-
----
-
-## Unreleased
-
-### Added
-- Placeholder for unreleased features and integration notes.
-
-### Changed
-- Notes for breaking changes, behavior updates, and refactors.
-
-### Fixed
-- Bug fixes and test improvements.
-
-### Security
-- Security-related changes and advisories.
 
 ---
 
