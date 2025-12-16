@@ -56,22 +56,6 @@ sidebar_position: 3
 
 ---
 
-## Unreleased
-
-### Added
-- Placeholder for unreleased features and integration notes.
-
-### Changed
-- Notes for breaking changes, behavior updates, and refactors.
-
-### Fixed
-- Bug fixes and test improvements.
-
-### Security
-- Security-related changes and advisories.
-
----
-
 ## 3.1.0 — 2025-12-07
 
 ### Summary
