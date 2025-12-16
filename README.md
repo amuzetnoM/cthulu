@@ -115,7 +115,7 @@ python scripts/place_external_test_trade.py
 python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --adopt-only --log-level DEBUG
 ```
 
-If SL/TP application fails due to terminal restrictions, Herald performs several aggressive immediate retries, then queues background retries; check logs for `SL/TP` retry messages.
+If SL/TP application fails due to terminal or broker restrictions, Herald performs several aggressive immediate retries, then queues background retries. Herald now *verifies* SL/TP after applying them by reading back the position from MT5; if verification fails the action is logged and a Prometheus metric is emitted (if configured). Review logs for `SL/TP verification failed` messages and check the `herald_sl_tp_failure_total` metric via the Prometheus exporter.
 ### Command Line Options
 
 ```bash

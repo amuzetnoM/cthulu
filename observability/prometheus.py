@@ -119,6 +119,26 @@ class PrometheusExporter:
             "gauge",
             "Total volume of open positions"
         )
+
+    def record_sl_tp_success(self, ticket: int, symbol: str = "unknown"):
+        """Record a successful SL/TP application for observability."""
+        self._update_metric(
+            f"{self.prefix}_sl_tp_success_total",
+            1.0,
+            "counter",
+            "Count of successful SL/TP modifications applied to broker",
+            labels={"symbol": symbol, "ticket": str(ticket)}
+        )
+
+    def record_sl_tp_failure(self, ticket: int, symbol: str = "unknown"):
+        """Record a failed SL/TP modification for observability."""
+        self._update_metric(
+            f"{self.prefix}_sl_tp_failure_total",
+            1.0,
+            "counter",
+            "Count of failed SL/TP modifications applied to broker",
+            labels={"symbol": symbol, "ticket": str(ticket)}
+        )
         
     def set_drawdown(self, drawdown_pct: float):
         """Set current drawdown percentage."""

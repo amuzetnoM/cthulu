@@ -356,6 +356,44 @@ class PositionManager:
                 self.logger.error(f"Failed to set SL/TP for #{ticket}: {err}")
                 return False
 
+            # Verify by reading back the position to ensure broker accepted the SL/TP
+            verified = False
+            for attempt in range(6):  # small wait-and-retry to allow terminal update
+                try:
+                    time.sleep(0.5)
+                    positions = mt5.positions_get(ticket=ticket)
+                    if positions:
+                        p = positions[0]
+                        # Compare sl/tp with slight tolerance for rounding
+                        sl_ok = True
+                        tp_ok = True
+                        if sl is not None:
+                            sl_ok = abs((p.sl or 0.0) - sl) < (10 ** -5)
+                        if tp is not None:
+                            tp_ok = abs((p.tp or 0.0) - tp) < (10 ** -5)
+                        if sl_ok and tp_ok:
+                            verified = True
+                            break
+                    else:
+                        self.logger.debug(f"Verification attempt {attempt+1}: position #{ticket} not found")
+                except Exception as e:
+                    self.logger.debug(f"Verification attempt {attempt+1} error for #{ticket}: {e}")
+
+            if not verified:
+                # Retrieve last error for more context
+                err = mt5.last_error()
+                err_msg = str(err) if err else 'unknown error'
+                self.logger.error(f"SL/TP verification failed for #{ticket} after update (error: {err_msg})")
+                # Publish a Prometheus metric if exporter exists (best-effort)
+                try:
+                    from herald.observability import PrometheusExporter
+                    # This will only increment the metric if an exporter instance is used in main; otherwise it's safe.
+                    exporter = PrometheusExporter()
+                    exporter.record_sl_tp_failure(ticket=ticket, symbol=position_info.symbol)
+                except Exception:
+                    pass
+                return False
+
             # Update tracked position fields
             if sl is not None:
                 position_info.stop_loss = sl

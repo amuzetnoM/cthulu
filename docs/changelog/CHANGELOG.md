@@ -20,7 +20,7 @@ This is the canonical changelog for the Herald Project. All notable changes are 
 - Trade adoption enhancements: automatic application of protective SL/TP (configurable via `risk.emergency_stop_loss_pct` and `strategy.params.risk_reward_ratio`) when adopting external trades.
 - **Interactive shutdown prompt**: on graceful shutdown Herald now prompts the user to Close All / Leave Open / Close specific ticket(s) (use `--no-prompt` to disable for automation).
 - **Symbol matching & market-data robustness**: improved MT5 symbol selection with normalized matching and variant detection to reduce `Failed to select symbol` errors.
-- **SL/TP retry queue**: failed SL/TP updates are recorded and retried automatically until success (with capped attempts) to ensure adopted trades receive protective exits.
+- **SL/TP verification & retry queue**: after setting SL/TP Herald now *verifies* the broker accepted the modification by reading back the position; failures are logged and emit a Prometheus metric (`herald_sl_tp_failure_total`). Failed updates are queued and retried until success (with capped attempts).
 - **Aggressive immediate SL/TP retry**: if initial SL/TP application fails during adoption, Herald makes several quick retry attempts (configurable) before queuing for background retries to ensure protection is applied as soon as possible.
 - Test utilities: `scripts/place_test_trade.py` and `scripts/place_external_test_trade.py` added to place internal and external test trades for end-to-end verification.
 ### Changed
