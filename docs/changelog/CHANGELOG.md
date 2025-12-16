@@ -20,7 +20,7 @@ This is the canonical changelog for the Herald Project. All notable changes are 
 - Trade adoption enhancements: automatic application of protective SL/TP (configurable via `risk.emergency_stop_loss_pct` and `strategy.params.risk_reward_ratio`) when adopting external trades.
 
 ### Changed
-- Default aggressive profiles now restrict orphan adoption to `GOLD#m` and `BTCUSDm#` unless overridden.
+- Default aggressive profiles now restrict orphan adoption to `GOLD#m` only (BTCUSD temporarily disabled) unless overridden.
 - `run_herald_multi_tf.ps1` updated to support multiple symbols and timeframes and dry-run option.
 - Added `--symbol` CLI flag to override trading symbol at startup.
 
