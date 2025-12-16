@@ -18,14 +18,20 @@ This is the canonical changelog for the Herald Project. All notable changes are 
 - Wizard enhancements: multi-timeframe selection, save-as-mindset profiles, and one-click start (dry-run or live) from the wizard.
 - Adopt-only CLI mode (`--adopt-only`) to scan and adopt external trades without entering the main trading loop.
 - Trade adoption enhancements: automatic application of protective SL/TP (configurable via `risk.emergency_stop_loss_pct` and `strategy.params.risk_reward_ratio`) when adopting external trades.
+- **Interactive shutdown prompt**: on graceful shutdown Herald now prompts the user to Close All / Leave Open / Close specific ticket(s) (use `--no-prompt` to disable for automation).
+- **Symbol matching & market-data robustness**: improved MT5 symbol selection with normalized matching and variant detection to reduce `Failed to select symbol` errors.
+- **SL/TP retry queue**: failed SL/TP updates are recorded and retried automatically until success (with capped attempts) to ensure adopted trades receive protective exits.
 
 ### Changed
 - Default aggressive profiles now restrict orphan adoption to `GOLD#m` only (BTCUSD temporarily disabled) unless overridden.
 - `run_herald_multi_tf.ps1` updated to support multiple symbols and timeframes and dry-run option.
 - Added `--symbol` CLI flag to override trading symbol at startup.
+- **Shutdown behavior**: graceful shutdown no longer force-closes positions by default; user must confirm closure interactively (or use `--no-prompt` to skip asking and leave positions intact).
+- Adoption is performed every loop and pending SL/TP operations are retried (more resilient behavior).
 
 ### Fixed
 - Reliability improvements to trade adoption and SL/TP application on adopted trades.
+- Fixed intermittent market data failures caused by symbol-format mismatches (e.g., `GOLDm#` vs. `GOLD#m`) via normalization and candidate symbol selection.
 
 ### Security
 - No security changes in this release.

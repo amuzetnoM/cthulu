@@ -89,6 +89,19 @@ The wizard walks you through:
 4. **Risk Management** — Daily loss limit, position size %, max positions
 5. **Strategy Settings** — SMA periods and other strategy-specific params
 
+**Quickstart / Production checklist**
+
+- Ensure MT5 AutoTrading is enabled (Terminal -> AutoTrading); this allows Herald to apply SL/TP settings to adopted trades automatically.
+- For headless runs, use `--skip-setup` and `--no-prompt` to avoid interactive prompts.
+- Use `--symbol` to override the config symbol at startup (useful for multi-process deployments).
+
+```bash
+# Quick start: run aggressive H1 profile for GOLD#m in non-interactive mode
+python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt
+```
+
+Note: If you see repeated `Failed to select symbol` warnings, enable market watch symbol visibility in MT5 or use `--symbol` with the broker-specific symbol name (Herald now attempts flexible matching and will log candidate matches).
+
 ### Command Line Options
 
 ```bash
@@ -103,6 +116,9 @@ herald --config config.json --dry-run
 
 # Apply a mindset overlay
 herald --config config.json --skip-setup --mindset aggressive
+
+# Disable interactive prompts at shutdown (leave positions open)
+herald --config config.json --no-prompt
 
 # Debug logging
 herald --config config.json --skip-setup --log-level DEBUG
