@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Herald Docs</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --void:#000000;--deep:#050508;--surface:#0a0a0f;--elevated:#12121a;--border:#1a1a25;
+      --muted:#4a4a5a;--text:#e0e0e8;--bright:#ffffff;--accent:#00ff88;--accent-dim:rgba(0,255,136,0.08);
+      --sidebar-width:280px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Space Grotesk',Inter,system-ui,sans-serif;background:var(--void);color:var(--text);min-height:100vh}
+    .layout{display:flex;min-height:100vh}
+    .sidebar{width:var(--sidebar-width);background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;padding:1.25rem 0;overflow:auto}
+    .sidebar .brand{display:flex;align-items:center;gap:0.6rem;padding:0 1.25rem 1rem;border-bottom:1px solid var(--border)}
+    .brand-mark{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#00cc6a);display:flex;align-items:center;justify-content:center;color:var(--void);font-family:JetBrains Mono;font-weight:700}
+    .brand-title{font-family:JetBrains Mono;font-weight:700;color:var(--accent)}
+    .sidebar-section{padding:0.6rem 0}
+    .sidebar-nav{list-style:none}
+    .sidebar-nav a{display:block;padding:0.6rem 1.25rem;color:var(--muted);text-decoration:none;font-size:0.95rem;border-left:3px solid transparent}
+    .sidebar-nav a:hover{background:var(--elevated);color:var(--bright)}
+    .sidebar-nav a.active{background:var(--accent-dim);color:var(--accent);border-left-color:var(--accent)}
+
+    .main{flex:1;margin-left:var(--sidebar-width)}
+    .topbar{position:sticky;top:0;background:linear-gradient(180deg,rgba(0,0,0,0.6),transparent);backdrop-filter:blur(8px);padding:1rem 2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .content{max-width:1000px;padding:2.5rem}
+    h1{font-size:2rem;margin-bottom:0.75rem}
+    p.lead{color:var(--muted);margin-bottom:1rem}
+    .doc-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:1.25rem}
+    .doc-card{background:var(--surface);border:1px solid var(--border);padding:1rem;border-radius:8px;text-decoration:none;color:var(--text)}
+    .doc-card:hover{box-shadow:0 6px 30px rgba(0,255,136,0.04);border-color:var(--accent-dim)}
+    .doc-card-title{font-weight:600;color:var(--bright);margin-bottom:0.5rem}
+    .doc-card-desc{color:var(--muted);font-size:0.95rem}
+
+    footer{padding:2rem;border-top:1px solid var(--border);color:var(--muted);font-size:0.9rem}
+
+    @media(max-width:900px){.doc-cards{grid-template-columns:1fr}.sidebar{display:none}.main{margin-left:0}.content{padding:1.25rem}}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">H</div><div class="brand-title">HERALD</div></div>
+
+      <nav class="sidebar-section">
+        <div class="sidebar-section-title" style="padding:0 1.25rem;color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em">Documentation</div>
+        <ul class="sidebar-nav" style="margin-top:0.5rem">
+          <li><a href="README.md">Overview</a></li>
+          <li><a href="QUICKSTART.md">Quick Start</a></li>
+          <li><a href="ARCHITECTURE.md">Architecture</a></li>
+          <li><a href="RISK_MANAGEMENT.md">Risk Management</a></li>
+          <li><a href="wizard.md">Wizard</a></li>
+          <li><a href="changelog/CHANGELOG.md">Changelog</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div style="font-family:JetBrains Mono;color:var(--muted);font-size:0.9rem">Herald Docs</div>
+        <div style="font-family:JetBrains Mono;color:var(--accent)">v3.2.0</div>
+      </div>
+
+      <div class="content">
+        <h1>Herald Documentation</h1>
+        <p class="lead">Centralized documentation for Herald — tutorials, architecture notes, risk guidance, and the interactive wizard. Theme and visual aesthetic match the Herald UI.</p>
+
+        <div class="doc-cards">
+          <a class="doc-card" href="README.md"><div class="doc-card-title">Overview</div><div class="doc-card-desc">Project summary, purpose, and high-level notes.</div></a>
+          <a class="doc-card" href="QUICKSTART.md"><div class="doc-card-title">Quick Start</div><div class="doc-card-desc">Setup, environment, and steps to launch Herald locally.</div></a>
+          <a class="doc-card" href="ARCHITECTURE.md"><div class="doc-card-title">Architecture</div><div class="doc-card-desc">System architecture, 10-step pipeline, and module responsibilities.</div></a>
+          <a class="doc-card" href="RISK_MANAGEMENT.md"><div class="doc-card-title">Risk Management</div><div class="doc-card-desc">Position sizing, daily limits, and emergency shutdown procedures.</div></a>
+          <a class="doc-card" href="wizard.md"><div class="doc-card-title">Interactive Wizard</div><div class="doc-card-desc">NLP wizard usage, parsing details, and examples.</div></a>
+          <a class="doc-card" href="changelog/CHANGELOG.md"><div class="doc-card-title">Changelog</div><div class="doc-card-desc">Release notes and history.</div></a>
+        </div>
+
+        <section style="margin-top:2rem">
+          <h2>Hosting & Preview</h2>
+          <p class="lead">You can preview this static docs index by opening this file in a browser. For a proper docs site, run a static site generator (MkDocs, Hugo) pointing to the `herald/docs` folder or serve with a simple file server.</p>
+          <pre style="background:var(--surface);padding:1rem;border-radius:8px;border:1px solid var(--border);color:var(--muted)"><code>python -m http.server --directory docs 8000</code></pre>
+        </section>
+      </div>
+
+      <footer>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+          <div><strong>HERALD</strong> v3.2.0 — Adaptive Trading Intelligence</div>
+          <div>MIT License | Trade at your own risk</div>
+        </div>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
