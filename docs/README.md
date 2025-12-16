@@ -15,8 +15,8 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Phase 3](https://img.shields.io/badge/phase%203-%20trade%20management-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
 
-> **Adaptive Trading Intelligence for MetaTrader 5**
-> A complete autonomous trading system with entry and exit execution, technical indicators, and advanced position management
+> **Adaptive Trading Intelligence**
+> A complete autonomous trading system with entry and exit execution, technical indicators, and advanced position management (MT5)
 
 A comprehensive automated trading system for MetaTrader 5 following enterprise-grade architecture patterns.
 Built with focus on incremental development, robust risk management, and production-ready deployment.
