@@ -101,7 +101,21 @@ python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json 
 ```
 
 Note: If you see repeated `Failed to select symbol` warnings, enable market watch symbol visibility in MT5 or use `--symbol` with the broker-specific symbol name (Herald now attempts flexible matching and will log candidate matches).
+### End-to-end testing utilities
 
+Two small helper scripts are provided to validate adoption and SL/TP behavior in a live MT5 account:
+
+- `scripts/place_test_trade.py` — places a **Herald** trade (magic number = Herald's magic); useful to test the full trading loop and reconciliation behavior.
+- `scripts/place_external_test_trade.py` — places an **external** trade (magic = 0) to validate adoption and SL/TP application.
+
+Example: place an external test trade and run adopt-only scan to validate adoption and SL/TP application:
+
+```bash
+python scripts/place_external_test_trade.py
+python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --adopt-only --log-level DEBUG
+```
+
+If SL/TP application fails due to terminal restrictions, Herald performs several aggressive immediate retries, then queues background retries; check logs for `SL/TP` retry messages.
 ### Command Line Options
 
 ```bash
