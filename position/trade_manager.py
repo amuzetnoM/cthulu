@@ -103,6 +103,8 @@ class TradeManager:
         # Track adopted trades
         self._adopted_tickets: Set[int] = set()
         self._adoption_log: List[Dict[str, Any]] = []
+        # Pending SL/TP applications for adopted trades that failed (ticket -> dict)
+        self._pending_sl_tp: Dict[int, Dict[str, Any]] = {}
         self.config = config or {}
         
     def scan_for_external_trades(self) -> List[PositionInfo]:
@@ -123,14 +125,28 @@ class TradeManager:
                 return []
                 
             external_trades = []
+            self.logger.debug(f"MT5 reported {len(mt5_positions)} open positions")
             
             for pos in mt5_positions:
+                # Log basic position info for diagnostics
+                try:
+                    self.logger.debug(
+                        f"Found position: #{pos.ticket} symbol={pos.symbol} magic={getattr(pos,'magic',None)} "
+                        f"type={getattr(pos,'type',None)} volume={getattr(pos,'volume',0)} "
+                        f"open={getattr(pos,'price_open',0)} sl={getattr(pos,'sl',0)} tp={getattr(pos,'tp',0)} time={getattr(pos,'time',None)}"
+                    )
+                except Exception:
+                    # Non-fatal - continue
+                    pass
+                
                 # Skip if already tracked by Herald
                 if pos.ticket in self.position_manager._positions:
+                    self.logger.debug(f"Skipping #{pos.ticket}: already tracked in position manager")
                     continue
                     
                 # Skip if already adopted
                 if pos.ticket in self._adopted_tickets:
+                    self.logger.debug(f"Skipping #{pos.ticket}: already adopted previously")
                     continue
                     
                 # Check if this is Herald's own trade
@@ -152,6 +168,12 @@ class TradeManager:
             self.logger.error(f"Error scanning for external trades: {e}", exc_info=True)
             return []
             
+    def _normalize_symbol(self, s: str) -> str:
+        """Normalize symbol string for flexible matching (remove non-alphanumerics, upper-case)."""
+        if not s:
+            return ""
+        return ''.join(ch for ch in s.upper() if ch.isalnum())
+
     def _should_adopt(self, pos) -> bool:
         """
         Check if a position should be adopted based on policy.
@@ -162,13 +184,24 @@ class TradeManager:
         Returns:
             True if position should be adopted
         """
-        # Check symbol filters
+        # Normalize symbol for robust comparisons
+        pos_sym_norm = self._normalize_symbol(pos.symbol)
+
+        # Check symbol filters (apply normalization)
         if self.policy.adopt_symbols:
-            if pos.symbol not in self.policy.adopt_symbols:
+            adopt_norm = [self._normalize_symbol(s) for s in self.policy.adopt_symbols]
+            if pos_sym_norm not in adopt_norm:
+                self.logger.debug(
+                    f"Skipping #{pos.ticket}: symbol {pos.symbol} (norm={pos_sym_norm}) not in adopt list {self.policy.adopt_symbols} (norm={adopt_norm})"
+                )
                 return False
                 
         if self.policy.ignore_symbols:
-            if pos.symbol in self.policy.ignore_symbols:
+            ignore_norm = [self._normalize_symbol(s) for s in self.policy.ignore_symbols]
+            if pos_sym_norm in ignore_norm:
+                self.logger.debug(
+                    f"Skipping #{pos.ticket}: symbol {pos.symbol} (norm={pos_sym_norm}) is in ignore list {self.policy.ignore_symbols}"
+                )
                 return False
                 
         # Check age limit
@@ -284,14 +317,27 @@ class TradeManager:
                             success = self.position_manager.set_sl_tp(trade.ticket, sl=sl, tp=tp)
                             if success:
                                 self.logger.info(f"Applied protective SL/TP to adopted trade #{trade.ticket}: SL={sl:.5f}, TP={tp:.5f}")
+                                # If there was a pending record, remove it
+                                if trade.ticket in self._pending_sl_tp:
+                                    del self._pending_sl_tp[trade.ticket]
                             else:
-                                self.logger.warning(f"Failed to apply SL/TP to adopted trade #{trade.ticket}")
-
+                                # Record pending SL/TP to retry later and capture MT5 error
+                                err = mt5.last_error()
+                                err_msg = str(err) if err else 'unknown error'
+                                self.logger.warning(f"Failed to apply SL/TP to adopted trade #{trade.ticket}; queuing for retry (error: {err_msg})")
+                                if 'AutoTrading' in err_msg or 'auto' in err_msg.lower():
+                                    self.logger.warning("AutoTrading appears to be disabled in the MT5 client. Please enable AutoTrading to allow SL/TP updates; Herald will retry automatically.")
+                                self._pending_sl_tp[trade.ticket] = {
+                                    'sl': sl,
+                                    'tp': tp,
+                                    'attempts': self._pending_sl_tp.get(trade.ticket, {}).get('attempts', 0) + 1,
+                                    'last_error': err_msg
+                                }
                 except Exception as e:
                     self.logger.error(f"Error applying SL/TP to adopted trade #{trade.ticket}: {e}")
 
+                # Count this as successfully adopted (even if SL/TP failed to apply)
                 adopted_count += 1
-
             except Exception as e:
                 self.logger.error(
                     f"Failed to adopt trade #{trade.ticket}: {e}"
@@ -299,6 +345,26 @@ class TradeManager:
 
         return adopted_count
         
+    def _retry_pending_sl_tp(self):
+        """Retry setting SL/TP for any adopted trades that previously failed to update."""
+        if not self._pending_sl_tp:
+            return
+        self.logger.debug(f"Retrying SL/TP for {len(self._pending_sl_tp)} pending trade(s)")
+        for ticket, info in list(self._pending_sl_tp.items()):
+            try:
+                success = self.position_manager.set_sl_tp(ticket, sl=info.get('sl'), tp=info.get('tp'))
+                info['attempts'] = info.get('attempts', 0) + 1
+                if success:
+                    self.logger.info(f"Successfully applied pending SL/TP to #{ticket}: SL={info.get('sl')}, TP={info.get('tp')}")
+                    del self._pending_sl_tp[ticket]
+                else:
+                    self.logger.debug(f"Retry {info['attempts']} failed for #{ticket}")
+                    if info['attempts'] >= 5:
+                        self.logger.warning(f"Giving up on SL/TP for #{ticket} after {info['attempts']} attempts")
+                        del self._pending_sl_tp[ticket]
+            except Exception as e:
+                self.logger.error(f"Error retrying SL/TP for #{ticket}: {e}", exc_info=True)
+
     def scan_and_adopt(self) -> int:
         """
         Convenience method: scan for external trades and adopt them.
@@ -306,11 +372,18 @@ class TradeManager:
         Returns:
             Number of trades adopted
         """
+        # First, retry applying any pending SL/TP changes
+        try:
+            self._retry_pending_sl_tp()
+        except Exception as e:
+            self.logger.error(f"Error during pending SL/TP retry: {e}", exc_info=True)
+
         trades = self.scan_for_external_trades()
         
         if trades:
             self.logger.info(f"Found {len(trades)} external trades")
-            return self.adopt_trades(trades)
+            adopted = self.adopt_trades(trades)
+            return adopted
             
         return 0
         
