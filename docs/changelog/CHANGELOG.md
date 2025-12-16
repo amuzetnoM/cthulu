@@ -17,9 +17,13 @@ slug: /docs/changelog
 ## UNRELEASED
 
 ### In-Progress
-- **NLP wizard**: added lightweight, local intent parser and interactive `--wizard-ai` option to propose and save configs from natural-language input (symbol, timeframe(s), mindset, risk profile). See `config/wizard.py` for details.
+- **Risk scaling & dynamic sizing**: implementing confidence-scaled position multipliers (ATR-aware) and SL auto-scaling by account-balance buckets. These changes aim to make live mode more aggressive while keeping per-trade protections. See `herald/risk/manager.py` for details.
+
+### Risk & Runtime
+- **Risk tuning (live)**: tightened default live risk profile for small-balance quick trading: `max_position_size_pct` increased to 5%, `max_total_positions` to 5, `min_confidence` introduced (0.6), and `emergency_stop_loss_pct` reduced to 2.5% to enable quicker, tighter trades under dynamic management. These changes are gated by the live-run confirmation env var and can be adjusted in `herald/config.json`.
 
 ### Added
+- **NLP wizard**: added lightweight, local intent parser and interactive `--wizard-ai` option to propose and save configs from natural-language input (symbol, timeframe(s), mindset, risk profile). See `config/wizard.py` for details.
 - **Per-mindset, per-timeframe configuration profiles** (configs/mindsets/*) enabling robust multi-timeframe deployments.
 - **Adopt-only CLI mode** (`--adopt-only`) to scan and adopt external trades without entering the main trading loop.
 -**Trade adoption enhancements**: automatic application of protective SL/TP (configurable via `risk.emergency_stop_loss_pct` and `strategy.params.risk_reward_ratio`) when adopting external trades.
@@ -29,6 +33,18 @@ slug: /docs/changelog
 - **Aggressive immediate SL/TP retry**: if initial SL/TP application fails during adoption, Herald makes several quick retry attempts (configurable) before queuing for background retries to ensure protection is applied as soon as possible.
 - Test utilities: `scripts/place_test_trade.py` and `scripts/place_external_test_trade.py` added to place internal and external test trades for end-to-end verification.
 - **Wizard enhancements**: multi-timeframe selection, save-as-mindset profiles, and one-click start (dry-run or live) from the wizard.
+- **Configurable SL thresholds and emergency stop**:
+- `risk.sl_balance_thresholds` — mapping of balance buckets to relative SL thresholds.
+- `risk.sl_balance_breakpoints` — numeric breakpoints for buckets.
+- `risk.emergency_stop_loss_pct` — default emergency stop percentage used during adoption.
+- `position.risk_manager` now suggests and (optionally) adjusts SLs for both new orders and adoption scenarios when proposed SLs are unusually wide for account size.
+- Market data & tick manager enhancements:
+- `market/tick_manager.py` added: lightweight ring buffers, subscribe API, priority poller.
+- Connector now exposes `get_recent_ticks`, `subscribe_ticks`, and `unsubscribe_ticks`.
+- **Provider fallbacks**: MT5 is primary; planned fallbacks include AlphaVantage and Binance REST (pluggable providers).
+- **Adaptive rate control and token-bucket quota tracking** added to `TickManager` (initial implementation).
+- **Prometheus** metrics for ticks: `herald_tick_age_seconds`, `herald_tick_poll_errors_total`, and `herald_tick_source_switches_total` (exporter hooks added).
+
 
 
 ### Changed
@@ -37,19 +53,6 @@ slug: /docs/changelog
 - Added `--symbol` CLI flag to override trading symbol at startup.
 - **Shutdown behavior**: graceful shutdown no longer force-closes positions by default; user must confirm closure interactively (or use `--no-prompt` to skip asking and leave positions intact).
 - Adoption is performed every loop and pending SL/TP operations are retried (more resilient behavior).
-
-### New (Unreleased)
-- Configurable SL thresholds and emergency stop:
-  - `risk.sl_balance_thresholds` — mapping of balance buckets to relative SL thresholds.
-  - `risk.sl_balance_breakpoints` — numeric breakpoints for buckets.
-  - `risk.emergency_stop_loss_pct` — default emergency stop percentage used during adoption.
-- `position.risk_manager` now suggests and (optionally) adjusts SLs for both new orders and adoption scenarios when proposed SLs are unusually wide for account size.
- - Market data & tick manager enhancements:
-   - `market/tick_manager.py` added: lightweight ring buffers, subscribe API, priority poller.
-   - Connector now exposes `get_recent_ticks`, `subscribe_ticks`, and `unsubscribe_ticks`.
-   - Provider fallbacks: MT5 is primary; planned fallbacks include AlphaVantage and Binance REST (pluggable providers).
-   - Adaptive rate control and token-bucket quota tracking added to `TickManager` (initial implementation).
-   - Prometheus metrics for ticks: `herald_tick_age_seconds`, `herald_tick_poll_errors_total`, and `herald_tick_source_switches_total` (exporter hooks added).
 
 ### Fixed
 - Reliability improvements to trade adoption and SL/TP application on adopted trades.

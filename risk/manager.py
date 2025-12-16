@@ -25,6 +25,10 @@ class RiskLimits:
     min_risk_reward_ratio: float = 1.0
     max_spread_pips: float = 50.0
     volatility_scaling: bool = True
+    # SL scaling buckets: map small/medium/large to relative SL pct (e.g., 0.01 = 1%)
+    sl_balance_thresholds: Dict[str, float] = None
+    sl_balance_breakpoints: list = None
+    min_confidence: float = 0.0
 
     def __post_init__(self):
         # Prefer explicit percent value fields
@@ -34,6 +38,16 @@ class RiskLimits:
                 self.max_position_size_pct = float(self.max_position_size)
             except Exception:
                 pass
+        # defaults for SL buckets if not provided
+        if self.sl_balance_thresholds is None:
+            self.sl_balance_thresholds = {
+                'tiny': 0.01,
+                'small': 0.02,
+                'medium': 0.05,
+                'large': 0.25
+            }
+        if self.sl_balance_breakpoints is None:
+            self.sl_balance_breakpoints = [1000.0, 5000.0, 20000.0]
 
 
 class RiskManager:
@@ -66,8 +80,9 @@ class RiskManager:
     def approve(
         self,
         signal: Signal,
-        account_state: Dict[str, Any],
-        current_positions: int = 0
+        account_state: Dict[str, Any] = None,
+        current_positions: int = 0,
+        **kwargs
     ) -> Tuple[bool, str, Optional[float]]:
         """
         Approve trade signal and calculate position size.
@@ -84,10 +99,17 @@ class RiskManager:
         if self.shutdown_triggered:
             return False, "Emergency shutdown active", None
             
+        # Allow caller to pass `account_info` as keyword
+        if account_state is None and 'account_info' in kwargs:
+            account_state = kwargs.get('account_info')
+
         # Reset daily tracking if new day
         self._check_new_day()
         
         # Check daily loss limit
+        if not account_state:
+            account_state = {}
+
         balance = account_state.get('balance', 0)
         max_daily_loss = balance * self.limits.max_daily_loss_pct
         
@@ -106,6 +128,11 @@ class RiskManager:
         # Validate signal
         if signal.side == SignalType.NONE or signal.side == SignalType.CLOSE:
             return False, "Invalid signal type for new trade", None
+
+        # Minimum confidence check (optional)
+        min_conf = getattr(self.limits, 'min_confidence', 0.0)
+        if getattr(signal, 'confidence', 0.0) < min_conf:
+            return False, f"Signal confidence below threshold ({signal.confidence:.2f} < {min_conf})", None
             
         # Check risk/reward ratio
         if signal.stop_loss and signal.take_profit and signal.price:
@@ -188,11 +215,21 @@ class RiskManager:
                 if avg_atr > 0:
                     volatility_factor = avg_atr / atr
                     lot_size *= volatility_factor
-                    
+
+            # Apply confidence-based multiplier (more aggressive when confidence > 0.5)
+            conf = getattr(signal, 'confidence', 1.0) or 1.0
+            # Multiplier ranges roughly 0.5 -> 1.5 for confidence 0.0 -> 1.0
+            multiplier = 1.0 + (conf - 0.5)
+            lot_size *= multiplier
+
             return self._validate_lot_size(lot_size, symbol_info)
             
         # Default: minimum lot size
-        return self._validate_lot_size(0.01, symbol_info)
+        # apply confidence multiplier to default lot too
+        base = 0.01
+        conf = getattr(signal, 'confidence', 1.0) or 1.0
+        multiplier = 1.0 + (conf - 0.5)
+        return self._validate_lot_size(base * multiplier, symbol_info)
     
     def _calculate_lot_size_with_symbol_info(
         self,
@@ -290,6 +327,30 @@ class RiskManager:
         lot_size = round(lot_size, 2)
         
         return lot_size
+
+    def suggest_scaled_sl(self, price: float, account_balance: float) -> float:
+        """
+        Suggest a stop-loss distance (absolute price difference) based on account balance buckets.
+
+        Returns an absolute price distance (same units as `price`).
+        """
+        # determine bucket from breakpoints
+        bps = self.limits.sl_balance_breakpoints or []
+        th = self.limits.sl_balance_thresholds or {}
+        try:
+            if account_balance <= bps[0]:
+                pct = th.get('tiny', 0.01)
+            elif account_balance <= bps[1]:
+                pct = th.get('small', 0.02)
+            elif account_balance <= bps[2]:
+                pct = th.get('medium', 0.05)
+            else:
+                pct = th.get('large', 0.25)
+        except Exception:
+            pct = th.get('medium', 0.05)
+
+        # absolute distance
+        return max(1e-6, price * float(pct))
         
     def record_trade_result(self, profit: float, account_balance: float = None):
         """

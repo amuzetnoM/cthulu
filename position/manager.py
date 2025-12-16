@@ -6,6 +6,7 @@ Integrates with ExecutionEngine for position data and RiskManager for exposure l
 """
 
 from herald.connector.mt5_connector import mt5
+import re
 import time
 from herald.position import risk_manager
 import logging
@@ -508,7 +509,19 @@ class PositionManager:
             # Determine volume
             close_volume = partial_volume if partial_volume else position_info.volume
             
-            # Create close request
+            # Create close request (strict MT5 comment sanitization)
+            raw_comment = f"Close: {reason}"
+            # Collapse whitespace/newlines and keep only printable ASCII (0x20-0x7E)
+            try:
+                cleaned = re.sub(r"[\r\n\t]+", ' ', raw_comment)
+                cleaned = re.sub(r"\s+", ' ', cleaned).strip()
+                cleaned = ''.join(ch for ch in cleaned if 32 <= ord(ch) <= 126)
+                # MT5 comment limit is 31 characters; enforce strict truncation
+                if len(cleaned) > 31:
+                    cleaned = cleaned[:31]
+            except Exception:
+                cleaned = ''
+
             request = {
                 "action": mt5.TRADE_ACTION_DEAL,
                 "symbol": position_info.symbol,
@@ -518,25 +531,82 @@ class PositionManager:
                 "price": close_price,
                 "deviation": 10,
                 "magic": self.execution_engine.magic_number,
-                "comment": f"Close: {reason}",
                 "type_time": mt5.ORDER_TIME_GTC,
                 "type_filling": mt5.ORDER_FILLING_FOK,
             }
+
+            # Only include `comment` when it is non-empty and <=31 chars (MT5 requirement).
+            if cleaned:
+                request["comment"] = cleaned
+
+            # Log outgoing close request payload at INFO so it appears in current logs
+            try:
+                self.logger.info(
+                    f"Outgoing close request #{ticket}: raw_comment='{raw_comment}' sanitized_comment='{cleaned}'"
+                )
+                self.logger.info(f"Outgoing close request payload: {request}")
+            except Exception:
+                pass
             
             # Send close order
             result = mt5.order_send(request)
-            
-            if result is None or result.retcode != mt5.TRADE_RETCODE_DONE:
-                error = mt5.last_error() if result is None else f"{result.retcode}: {result.comment}"
-                self.logger.error(f"Failed to close position #{ticket}: {error}")
-                return ExecutionResult(
-                    order_id=None,
-                    status=OrderStatus.REJECTED,
-                    executed_price=None,
-                    executed_volume=None,
-                    timestamp=datetime.now(),
-                    error=str(error)
-                )
+
+            # If broker rejects due to invalid comment, retry without comment (robust server-side validation)
+            if result is None or getattr(result, 'retcode', None) != mt5.TRADE_RETCODE_DONE:
+                # Build an error message for logging/inspection
+                error_msg = None
+                try:
+                    if result is None:
+                        last = mt5.last_error()
+                        error_msg = str(last) if last else 'Unknown'
+                    else:
+                        error_msg = f"{getattr(result,'retcode', None)}: {getattr(result,'comment', None)}"
+                except Exception:
+                    error_msg = 'unknown error'
+
+                # Detect MT5 invalid comment rejection and retry without comment
+                try:
+                    comment_text = getattr(result, 'comment', '') if result is not None else ''
+                    if (comment_text and 'Invalid "comment" argument' in comment_text) or (isinstance(error_msg, str) and 'Invalid "comment" argument' in error_msg) or (getattr(result, 'retcode', None) == -2):
+                        self.logger.warning(f"Broker rejected close for #{ticket} due to comment; retrying without comment (was: '{request.get('comment', '')}')")
+                        # remove comment and retry
+                        request_no_comment = {k: v for k, v in request.items() if k != 'comment'}
+                        retry = mt5.order_send(request_no_comment)
+                        if retry is not None and getattr(retry, 'retcode', None) == mt5.TRADE_RETCODE_DONE:
+                            result = retry
+                        else:
+                            # prepare final error info
+                            final_err = getattr(retry, 'comment', None) if retry is not None else mt5.last_error()
+                            self.logger.error(f"Retry without comment failed for #{ticket}: {final_err}")
+                            return ExecutionResult(
+                                order_id=None,
+                                status=OrderStatus.REJECTED,
+                                executed_price=None,
+                                executed_volume=None,
+                                timestamp=datetime.now(),
+                                error=str(final_err)
+                            )
+                    else:
+                        # Not a comment-related rejection; report original error
+                        self.logger.error(f"Failed to close position #{ticket}: {error_msg}")
+                        return ExecutionResult(
+                            order_id=None,
+                            status=OrderStatus.REJECTED,
+                            executed_price=None,
+                            executed_volume=None,
+                            timestamp=datetime.now(),
+                            error=str(error_msg)
+                        )
+                except Exception as e:
+                    self.logger.error(f"Error handling failed close for #{ticket}: {e}", exc_info=True)
+                    return ExecutionResult(
+                        order_id=None,
+                        status=OrderStatus.REJECTED,
+                        executed_price=None,
+                        executed_volume=None,
+                        timestamp=datetime.now(),
+                        error=str(e)
+                    )
                 
             # Calculate realized P&L
             realized_pnl = position_info.unrealized_pnl
