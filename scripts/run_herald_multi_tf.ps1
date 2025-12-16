@@ -1,6 +1,6 @@
 param(
     [string]$Mindset = "aggressive",
-    [string[]]$Symbols = @("GOLD#m","BTCUSDm#"),
+    [string[]]$Symbols = @("GOLD#m"),
     [string[]]$Timeframes = @("TIMEFRAME_H1", "TIMEFRAME_M15"),
     [switch]$DryRun
 )

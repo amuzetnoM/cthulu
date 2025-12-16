@@ -3,7 +3,7 @@
   "mt5": { "login": 0, "password": "FROM_ENV", "server": "FROM_ENV", "timeout": 60000, "path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe" },
   "risk": { "max_position_size": 1.0, "default_position_size": 0.02, "max_daily_loss": 100.0, "max_positions_per_symbol": 2, "max_total_positions": 8, "position_size_pct": 6.0, "use_kelly_sizing": true, "emergency_stop_loss_pct": 8.0, "circuit_breaker_enabled": true, "circuit_breaker_threshold_pct": 5.0 },
   "trading": { "symbol": "GOLD#m", "timeframe": "TIMEFRAME_M1", "poll_interval": 10, "lookback_bars": 200 },
-  "orphan_trades": { "enabled": true, "adopt_symbols": ["GOLD#m","BTCUSDm#"], "ignore_symbols": [], "apply_exit_strategies": true, "max_adoption_age_hours": 0, "log_only": false },
+  "orphan_trades": { "enabled": true, "adopt_symbols": ["GOLD#m"], "ignore_symbols": [], "apply_exit_strategies": true, "max_adoption_age_hours": 0, "log_only": false },
   "strategy": { "type": "sma_crossover", "params": { "fast_period": 3, "slow_period": 9, "symbol": "GOLD#m" } },
   "confidence_threshold": 0.30,
   "exit_strategies": [],

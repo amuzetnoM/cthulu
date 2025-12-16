@@ -213,11 +213,13 @@ def main():
     parser.add_argument('--wizard', action='store_true',
                        help="Open the interactive setup wizard and optionally start profiles")
     parser.add_argument('--version', action='version', version=f"Herald {__version__}")
-    parser.add_argument('--symbol', type=str, default=None, help="Override trading symbol from config")
-    parser.add_argument('--adopt-only', action='store_true', help="Scan and adopt external trades, then exit")
     args = parser.parse_args()
-    
-    # Run interactive setup wizard (default behavior, skip with --skip-setup)
+
+    # If adopt-only is requested, skip interactive setup to avoid blocking prompts
+    if args.adopt_only:
+        args.skip_setup = True
+
+    # Run interactive setup wizard (default behavior, skip with --skip-setup or --adopt-only)
     if args.wizard:
         from config.wizard import run_setup_wizard
         result = run_setup_wizard(args.config)
@@ -228,7 +230,7 @@ def main():
         print("\nWizard completed. Exiting.")
         return 0
 
-    if not args.skip_setup:
+    if not args.skip_setup and not args.adopt_only:
         from config.wizard import run_setup_wizard
         result = run_setup_wizard(args.config)
         if result is None:
