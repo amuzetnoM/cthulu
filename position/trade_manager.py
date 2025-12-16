@@ -8,6 +8,7 @@ to adopt and manage manual/external trades with its exit strategies.
 import logging
 from typing import List, Dict, Any, Optional, Set
 from datetime import datetime
+import time
 from dataclasses import dataclass, field
 
 from herald.connector.mt5_connector import mt5
@@ -321,18 +322,37 @@ class TradeManager:
                                 if trade.ticket in self._pending_sl_tp:
                                     del self._pending_sl_tp[trade.ticket]
                             else:
-                                # Record pending SL/TP to retry later and capture MT5 error
+                                # Immediate aggressive retry loop (small sleeps) before falling back to queue
                                 err = mt5.last_error()
                                 err_msg = str(err) if err else 'unknown error'
-                                self.logger.warning(f"Failed to apply SL/TP to adopted trade #{trade.ticket}; queuing for retry (error: {err_msg})")
-                                if 'AutoTrading' in err_msg or 'auto' in err_msg.lower():
-                                    self.logger.warning("AutoTrading appears to be disabled in the MT5 client. Please enable AutoTrading to allow SL/TP updates; Herald will retry automatically.")
-                                self._pending_sl_tp[trade.ticket] = {
-                                    'sl': sl,
-                                    'tp': tp,
-                                    'attempts': self._pending_sl_tp.get(trade.ticket, {}).get('attempts', 0) + 1,
-                                    'last_error': err_msg
-                                }
+                                self.logger.warning(f"Initial SL/TP apply failed for #{trade.ticket} (error: {err_msg}), starting aggressive retry")
+                                retried = False
+                                for attempt in range(4):
+                                    try:
+                                        time.sleep(1)
+                                        self.logger.debug(f"Retrying SL/TP for #{trade.ticket} (attempt {attempt+1})")
+                                        success = self.position_manager.set_sl_tp(trade.ticket, sl=sl, tp=tp)
+                                        if success:
+                                            retried = True
+                                            self.logger.info(f"Applied SL/TP on retry to adopted trade #{trade.ticket}: SL={sl:.5f}, TP={tp:.5f}")
+                                            if trade.ticket in self._pending_sl_tp:
+                                                del self._pending_sl_tp[trade.ticket]
+                                            break
+                                    except Exception as e:
+                                        self.logger.debug(f"Retry attempt {attempt+1} error for #{trade.ticket}: {e}")
+                                if not retried:
+                                    # Record pending SL/TP to retry later and capture MT5 error
+                                    err = mt5.last_error()
+                                    err_msg = str(err) if err else 'unknown error'
+                                    self.logger.warning(f"Failed to apply SL/TP to adopted trade #{trade.ticket} after retries; queuing for retry (error: {err_msg})")
+                                    if 'AutoTrading' in err_msg or 'auto' in err_msg.lower():
+                                        self.logger.warning("AutoTrading appears to be disabled in the MT5 client. Please enable AutoTrading to allow SL/TP updates; Herald will retry automatically.")
+                                    self._pending_sl_tp[trade.ticket] = {
+                                        'sl': sl,
+                                        'tp': tp,
+                                        'attempts': self._pending_sl_tp.get(trade.ticket, {}).get('attempts', 0) + 1,
+                                        'last_error': err_msg
+                                    }
                 except Exception as e:
                     self.logger.error(f"Error applying SL/TP to adopted trade #{trade.ticket}: {e}")
 
