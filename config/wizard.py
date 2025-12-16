@@ -360,19 +360,23 @@ def parse_natural_language_intent(text: str) -> Dict[str, Any]:
     if suf_match:
         base = suf_match.group(1).upper()
         suffix = suf_match.group(2)
-        # normalize suffix ordering
-        s_low = ''.join(ch for ch in suffix if ch in '#mM').lower()
-        if '#m' in s_low:
-            suf_norm = '#m'
-        elif 'm#' in s_low:
-            suf_norm = 'm#'
-        elif '#' in s_low:
-            suf_norm = '#'
-        elif 'm' in s_low:
-            suf_norm = 'm'
+        # If the base maps to a named asset (e.g., gold -> XAUUSD) prefer that mapping
+        if base.lower() in named:
+            intent['symbol'] = named[base.lower()]
         else:
-            suf_norm = ''
-        intent['symbol'] = (base + suf_norm).upper()
+            # normalize suffix ordering
+            s_low = ''.join(ch for ch in suffix if ch in '#mM').lower()
+            if '#m' in s_low:
+                suf_norm = '#m'
+            elif 'm#' in s_low:
+                suf_norm = 'm#'
+            elif '#' in s_low:
+                suf_norm = '#'
+            elif 'm' in s_low:
+                suf_norm = 'm'
+            else:
+                suf_norm = ''
+            intent['symbol'] = (base + suf_norm).upper()
     else:
         # Prefer longer/common symbols first to preserve suffixes like '#'
         try:
@@ -485,7 +489,15 @@ def parse_natural_language_intent(text: str) -> Dict[str, Any]:
         pass
 
     if tf_candidates:
-        intent['timeframes'] = list(dict.fromkeys(tf_candidates))
+        # de-duplicate preserving order
+        unique = list(dict.fromkeys(tf_candidates))
+        # order by resolution (smaller timeframes first)
+        TIMEFRAME_ORDER = {
+            'TIMEFRAME_M1': 1, 'TIMEFRAME_M5': 5, 'TIMEFRAME_M15': 15, 'TIMEFRAME_M30': 30,
+            'TIMEFRAME_H1': 60, 'TIMEFRAME_H4': 240, 'TIMEFRAME_D1': 1440, 'TIMEFRAME_W1': 10080, 'TIMEFRAME_MN1': 43200
+        }
+        unique.sort(key=lambda x: TIMEFRAME_ORDER.get(x, 99999))
+        intent['timeframes'] = unique
 
     # Position size (percent) e.g., 1%, 2.5 percent, '2 percent'
     pct = re.search(r"(\d+(?:\.\d+)?)\s*(%|percent|pct)", lower)
@@ -499,6 +511,9 @@ def parse_natural_language_intent(text: str) -> Dict[str, Any]:
     money = re.search(r"\$\s*(\d+(?:\.\d+)?)", lower)
     if not money:
         money = re.search(r"max\s*loss\s*(?:is|of|:)??\s*(\d+(?:\.\d+)?)\s*(dollars|usd)?", lower)
+    if not money:
+        # pattern: '200 dollars max loss' or '200 max loss'
+        money = re.search(r"(\d+(?:\.\d+)?)\s*(dollars|usd)?\s*max\s*loss", lower)
     if money:
         try:
             intent['max_daily_loss'] = float(money.group(1))
