@@ -325,6 +325,190 @@ def save_profile_as_mindset(config: Dict[str, Any], mindset: str, timeframe: str
     return profiles[0] if len(profiles) == 1 else profiles
 
 
+def parse_natural_language_intent(text: str) -> Dict[str, Any]:
+    """Very lightweight intent parser for setup wizard.
+
+    Extracts symbol, timeframe(s), mindset, position_size_pct, and max_daily_loss from free text.
+    This is intentionally small and rule-based for reliability and privacy (no network calls).
+    """
+    import re
+    intent = {}
+    t = text.lower()
+
+    # Mindset
+    if re.search(r"\b(aggressive|high[- ]?risk)\b", t):
+        intent['mindset'] = 'aggressive'
+    elif re.search(r"\b(conservative|low[- ]?risk)\b", t):
+        intent['mindset'] = 'conservative'
+    elif re.search(r"\b(balanced|moderate)\b", t):
+        intent['mindset'] = 'balanced'
+
+    # Symbol (simple heuristic: uppercase word, allow # or m#)
+    # Symbol matching: accept variations like GOLD#m, GOLDm#, GOLD#, GOLDm
+    symbol_match = re.search(r"\b([A-Z]{3,6}(?:#m|m#|#|m)?)\b", text)
+    if symbol_match:
+        g = symbol_match.group(1)
+        base = re.match(r"([A-Z]{3,6})", g.upper()).group(1)
+        suffix_chars = ''.join([ch for ch in g if ch in '#mM'])
+        # Canonicalize suffix: prefer '#m' if both present, otherwise preserve order
+        if '#m' in suffix_chars.lower():
+            suffix = '#m'
+        elif 'm#' in suffix_chars.lower():
+            suffix = 'm#'
+        elif '#' in suffix_chars:
+            suffix = '#'
+        elif 'm' in suffix_chars.lower():
+            suffix = 'm'
+        else:
+            suffix = ''
+        intent['symbol'] = (base + suffix).upper() if suffix != '#m' else base + '#m'
+
+    # Timeframes (look for m1,m5,m15,m30,h1,h4,d1,w1,mn1 or words)
+    tfs = []
+    tf_map = {
+        '1m': 'TIMEFRAME_M1', 'm1': 'TIMEFRAME_M1', 'm': 'TIMEFRAME_M1',
+        '5m': 'TIMEFRAME_M5', 'm5': 'TIMEFRAME_M5',
+        '15m': 'TIMEFRAME_M15', 'm15': 'TIMEFRAME_M15', 'h1': 'TIMEFRAME_H1', '1h': 'TIMEFRAME_H1',
+        'h4': 'TIMEFRAME_H4', 'd1': 'TIMEFRAME_D1', '1d': 'TIMEFRAME_D1', 'w1': 'TIMEFRAME_W1', 'mn1': 'TIMEFRAME_MN1'
+    }
+    for k in tf_map:
+        if k in t:
+            tfs.append(tf_map[k])
+    # Also simple words
+    if 'hour' in t and 'h1' not in tfs:
+        tfs.append('TIMEFRAME_H1')
+    if 'minute' in t and 'TIMEFRAME_M1' not in tfs:
+        tfs.append('TIMEFRAME_M1')
+    if tfs:
+        intent['timeframes'] = list(dict.fromkeys(tfs))
+
+    # Position size (percent) e.g., 1%, 2.5 percent
+    pct = re.search(r"(\d+(?:\.\d+)?)\s*%", text)
+    if pct:
+        try:
+            intent['position_size_pct'] = float(pct.group(1))
+        except Exception:
+            pass
+
+    # Max daily loss e.g., $100
+    money = re.search(r"\$\s*(\d+(?:\.\d+)?)", text)
+    if money:
+        try:
+            intent['max_daily_loss'] = float(money.group(1))
+        except Exception:
+            pass
+
+    return intent
+
+
+def run_nlp_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]:
+    """Run the lightweight NLP-driven setup wizard.
+
+    Prompts the user for a natural-language intent sentence, parses it, and proposes a configuration.
+    The user can accept, tweak defaults (one final edit), and save as a profile.
+    """
+    clear_screen()
+    print_banner()
+    print("  Herald NLP setup wizard (lightweight, local).")
+    print("  Describe what you want (e.g., 'Aggressive GOLD#m M15 H1, 2% risk, $100 max loss')")
+    print("  Leave blank to fall back to the interactive wizard.")
+
+    text = input("  Describe your trading intent: ").strip()
+    if not text:
+        print_info("Falling back to interactive wizard.")
+        return run_setup_wizard(config_path)
+
+    parsed = parse_natural_language_intent(text)
+    print_info(f"Parsed intent: {parsed}")
+
+    # Load existing config or defaults
+    config_file = Path(config_path)
+    if config_file.exists():
+        with open(config_file) as f:
+            config = json.load(f)
+        print_success(f"Loaded existing configuration from {config_path}")
+    else:
+        config = {
+            "mt5": {"login": 0, "password": "", "server": ""},
+            "trading": {"symbol": "EURUSD", "timeframe": "TIMEFRAME_H1", "poll_interval": 60, "lookback_bars": 500},
+            "risk": {"max_daily_loss": 50.0, "position_size_pct": 2.0, "max_total_positions": 3},
+            "strategy": {"type": "sma_crossover", "params": {"fast_period": 10, "slow_period": 30}},
+            "exit_strategies": [],
+            "indicators": []
+        }
+
+    # Apply parsed values (merge carefully)
+    if 'symbol' in parsed:
+        config['trading']['symbol'] = parsed['symbol']
+        config['strategy'].setdefault('params', {})['symbol'] = parsed['symbol']
+    if 'timeframes' in parsed and parsed['timeframes']:
+        # take first timeframe as primary
+        config['trading']['timeframe'] = parsed['timeframes'][0]
+    if 'mindset' in parsed:
+        # apply mindset overlay (affects defaults, but we keep it simple: store for save)
+        selected_mindset = parsed['mindset']
+    else:
+        selected_mindset = 'balanced'
+    if 'position_size_pct' in parsed:
+        config['risk']['position_size_pct'] = parsed['position_size_pct']
+    if 'max_daily_loss' in parsed:
+        config['risk']['max_daily_loss'] = parsed['max_daily_loss']
+
+    # Show summary and allow single edit
+    print_section("NLP PROPOSED CONFIG")
+    print(f"  Mindset (suggested): {selected_mindset}")
+    print(f"  Symbol: {config['trading']['symbol']}")
+    print(f"  Timeframe: {config['trading']['timeframe']}")
+    print(f"  Position size (%): {config['risk']['position_size_pct']}")
+    print(f"  Max daily loss ($): {config['risk']['max_daily_loss']}")
+
+    edit = get_input("Would you like to edit any of these before saving? (y/N)", "N").lower()
+    if edit == 'y':
+        # Provide simple edits: symbol, timeframe, position size, daily loss, mindset
+        new_symbol = get_input("Symbol", config['trading']['symbol']).upper()
+        config['trading']['symbol'] = new_symbol
+        config['strategy'].setdefault('params', {})['symbol'] = new_symbol
+
+        # Timeframe selection via existing helper
+        tf = choose_timeframe(config['trading'].get('timeframe', 'TIMEFRAME_H1'))
+        config['trading']['timeframe'] = tf
+
+        # Risk
+        config['risk'] = configure_risk(config.get('risk', {}))
+
+        selected_mindset = get_input("Mindset (aggressive/balanced/conservative)", selected_mindset)
+
+    # Confirm and save
+    save_choice = get_input("Save this configuration and optionally save as mindset profile? (y/N)", "N").lower()
+    if save_choice == 'y':
+        saved = confirm_and_save(config, config_path)
+        if saved:
+            save_profile = get_input("Save as per-mindset profile? (y/N)", "N").lower()
+            if save_profile == 'y':
+                profiles = save_profile_as_mindset(config, selected_mindset, config['trading']['timeframe'])
+                if isinstance(profiles, list):
+                    for p in profiles:
+                        print_success(f"Saved profile: {p}")
+                else:
+                    print_success(f"Saved profile: {profiles}")
+
+                start_choice = get_input("Start these profiles now? (y/N)", "N").lower()
+                if start_choice == 'y':
+                    dry = get_input("Dry run first? (y/N)", "y").lower()
+                    from subprocess import Popen
+                    cfgs = profiles if isinstance(profiles, list) else [profiles]
+                    for cfg in cfgs:
+                        args = ["python", "-m", "herald", "--config", cfg, "--mindset", selected_mindset, "--skip-setup"]
+                        if dry == 'y':
+                            args.append("--dry-run")
+                        Popen(args)
+                        print_info(f"Started Herald for {cfg} (dry-run={dry=='y'})")
+    else:
+        print_info("Configuration not saved. You can run the wizard again or edit manually.")
+
+    return config
+
+
 def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]:
     """
     Run the interactive setup wizard.

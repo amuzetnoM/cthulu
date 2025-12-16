@@ -13,16 +13,21 @@ This is the canonical changelog for the Herald Project. All notable changes are 
 
 ## Unreleased
 
+### In-Progress
+- **NLP wizard**: added lightweight, local intent parser and interactive `--wizard-ai` option to propose and save configs from natural-language input (symbol, timeframe(s), mindset, risk profile). See `config/wizard.py` for details.
+
 ### Added
-- Per-mindset, per-timeframe configuration profiles (configs/mindsets/*) enabling robust multi-timeframe deployments.
-- Wizard enhancements: multi-timeframe selection, save-as-mindset profiles, and one-click start (dry-run or live) from the wizard.
-- Adopt-only CLI mode (`--adopt-only`) to scan and adopt external trades without entering the main trading loop.
-- Trade adoption enhancements: automatic application of protective SL/TP (configurable via `risk.emergency_stop_loss_pct` and `strategy.params.risk_reward_ratio`) when adopting external trades.
+- **Per-mindset, per-timeframe configuration profiles** (configs/mindsets/*) enabling robust multi-timeframe deployments.
+- **Adopt-only CLI mode** (`--adopt-only`) to scan and adopt external trades without entering the main trading loop.
+-**Trade adoption enhancements**: automatic application of protective SL/TP (configurable via `risk.emergency_stop_loss_pct` and `strategy.params.risk_reward_ratio`) when adopting external trades.
 - **Interactive shutdown prompt**: on graceful shutdown Herald now prompts the user to Close All / Leave Open / Close specific ticket(s) (use `--no-prompt` to disable for automation).
 - **Symbol matching & market-data robustness**: improved MT5 symbol selection with normalized matching and variant detection to reduce `Failed to select symbol` errors.
 - **SL/TP verification & retry queue**: after setting SL/TP Herald now *verifies* the broker accepted the modification by reading back the position; failures are logged and emit a Prometheus metric (`herald_sl_tp_failure_total`). Failed updates are queued and retried until success (with capped attempts).
 - **Aggressive immediate SL/TP retry**: if initial SL/TP application fails during adoption, Herald makes several quick retry attempts (configurable) before queuing for background retries to ensure protection is applied as soon as possible.
 - Test utilities: `scripts/place_test_trade.py` and `scripts/place_external_test_trade.py` added to place internal and external test trades for end-to-end verification.
+- **Wizard enhancements**: multi-timeframe selection, save-as-mindset profiles, and one-click start (dry-run or live) from the wizard.
+
+
 ### Changed
 - Default aggressive profiles now restrict orphan adoption to `GOLD#m` only (BTCUSD temporarily disabled) unless overridden.
 - `run_herald_multi_tf.ps1` updated to support multiple symbols and timeframes and dry-run option.

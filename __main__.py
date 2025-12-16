@@ -212,6 +212,10 @@ def main():
                        help="Skip interactive setup wizard (for automation/headless runs)")
     parser.add_argument('--wizard', action='store_true',
                        help="Open the interactive setup wizard and optionally start profiles")
+    parser.add_argument('--wizard-ai', action='store_true',
+                       help="Run the lightweight NLP-based wizard (describe intent in natural language)")
+    parser.add_argument('--no-prompt', action='store_true',
+                       help="Do not prompt on shutdown; leave positions open (useful for automated runs)")
     parser.add_argument('--version', action='version', version=f"Herald {__version__}")
     args = parser.parse_args()
 
@@ -220,6 +224,15 @@ def main():
         args.skip_setup = True
 
     # Run interactive setup wizard (default behavior, skip with --skip-setup or --adopt-only)
+    if args.wizard_ai:
+        from config.wizard import run_nlp_wizard
+        result = run_nlp_wizard(args.config)
+        if result is None:
+            print("Setup cancelled. Exiting.")
+            return 0
+        print("\nNLP wizard completed. Exiting.")
+        return 0
+
     if args.wizard:
         from config.wizard import run_setup_wizard
         result = run_setup_wizard(args.config)
@@ -711,12 +724,37 @@ def main():
         logger.info("Initiating graceful shutdown...")
         
         try:
-            # Close all open positions
+            # Ask user what to do with open positions (do NOT force-close by default)
             if not args.dry_run:
-                logger.info("Closing all open positions...")
-                close_results = position_manager.close_all_positions("System shutdown")
-                logger.info(f"Closed {len(close_results)} positions")
-                
+                interactive = sys.stdin.isatty() and not getattr(args, 'no_prompt', False)
+                if interactive:
+                    try:
+                        print("\nShutdown requested. What should I do with open positions?")
+                        print("  [A] Close ALL positions")
+                        print("  [N] Leave positions OPEN (default)")
+                        print("  [S] Close specific tickets (comma-separated)")
+                        choice = input("Choose (A/n/s): ").strip().lower()
+                    except Exception:
+                        choice = 'n'
+
+                    if choice in ('a', 'all'):
+                        logger.info("User requested: close ALL positions")
+                        close_results = position_manager.close_all_positions("System shutdown")
+                        logger.info(f"Closed {len(close_results)} positions")
+                    elif choice in ('s', 'select'):
+                        tickets = input("Enter ticket numbers to close (comma-separated): ").strip()
+                        ids = [int(x.strip()) for x in tickets.split(',') if x.strip().isdigit()]
+                        closed = 0
+                        for t in ids:
+                            res = position_manager.close_position(ticket=t, reason="User shutdown request")
+                            if res and getattr(res, 'status', None) == getattr(res, 'status', None):
+                                closed += 1
+                        logger.info(f"Closed {closed} user-selected positions")
+                    else:
+                        logger.info("User chose to leave open positions untouched")
+                else:
+                    logger.info("Non-interactive shutdown: leaving open positions untouched (no prompt)")
+
             # Print final metrics
             logger.info("Final performance metrics:")
             metrics.print_summary()
