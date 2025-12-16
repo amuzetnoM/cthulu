@@ -354,50 +354,141 @@ def parse_natural_language_intent(text: str) -> Dict[str, Any]:
             intent['symbol'] = sym
             break
 
-    # Symbol heuristics: uppercase sequences 3-6 chars possibly followed/preceded by # or m
-    # Accept forms like GOLD#m, GOLDm#, GOLD#, GOLDm, EURUSD, EURUSD#
-    sym_match = re.search(r"\b([A-Za-z]{3,6})([#\.mM]{0,2})\b", t)
-    if sym_match and 'symbol' not in intent:
-        base = sym_match.group(1).upper()
-        suffix = sym_match.group(2) or ''
-        # Normalize suffix to one of: '', '#', 'm', '#m'
-        s = ''.join(ch for ch in suffix if ch in '#mM.')
-        s_low = s.lower()
+    # Symbol heuristics: prefer explicit common symbols first (case-insensitive)
+    # First, look for explicit token with suffix like EURUSD# or GOLD#m
+    suf_match = re.search(r"\b([A-Za-z]{3,6})([#mM]{1,2})\b", t)
+    if suf_match:
+        base = suf_match.group(1).upper()
+        suffix = suf_match.group(2)
+        # normalize suffix ordering
+        s_low = ''.join(ch for ch in suffix if ch in '#mM').lower()
         if '#m' in s_low:
-            suf = '#m'
+            suf_norm = '#m'
         elif 'm#' in s_low:
-            suf = 'm#'
+            suf_norm = 'm#'
         elif '#' in s_low:
-            suf = '#'
+            suf_norm = '#'
         elif 'm' in s_low:
-            suf = 'm'
+            suf_norm = 'm'
         else:
-            suf = ''
-        # Canonicalize '#m' case
-        if suf == '#m':
-            intent['symbol'] = base + '#m'
-        else:
-            intent['symbol'] = (base + suf).upper()
+            suf_norm = ''
+        intent['symbol'] = (base + suf_norm).upper()
+    else:
+        # Prefer longer/common symbols first to preserve suffixes like '#'
+        try:
+            for sym in sorted(COMMON_SYMBOLS, key=len, reverse=True):
+                if sym.lower() in lower:
+                    intent['symbol'] = sym
+                    break
+        except Exception:
+            pass
 
-    # Timeframes: flexible detection (1m, 5m, 15m, 30m, 1h, 4h, daily, weekly, monthly)
+        # Token scan fallback: accept ALL-UPPER tokens of 3-6 letters optionally suffixed
+        if 'symbol' not in intent:
+            tokens = re.findall(r"\b[\w#]+\b", t)
+            for tok in tokens:
+                alpha = ''.join(ch for ch in tok if ch.isalpha())
+                if 3 <= len(alpha) <= 6 and tok.isupper():
+                    suf = ''.join(ch for ch in tok if ch in '#mM')
+                    s_low = suf.lower()
+                    if '#m' in s_low:
+                        suf_norm = '#m'
+                    elif 'm#' in s_low:
+                        suf_norm = 'm#'
+                    elif '#' in s_low:
+                        suf_norm = '#'
+                    elif 'm' in s_low:
+                        suf_norm = 'm'
+                    else:
+                        suf_norm = ''
+                    intent['symbol'] = (alpha.upper() + suf_norm).upper()
+                    break
+
+    # Timeframes: flexible detection using numeric + unit patterns and word forms
     tf_candidates = []
-    # numeric-minute/hour patterns
-    for m, tf in [('1m', 'TIMEFRAME_M1'), ('5m', 'TIMEFRAME_M5'), ('15m', 'TIMEFRAME_M15'), ('30m', 'TIMEFRAME_M30'), ('1h', 'TIMEFRAME_H1'), ('4h', 'TIMEFRAME_H4'), ('d1', 'TIMEFRAME_D1'), ('w1', 'TIMEFRAME_W1'), ('mn1', 'TIMEFRAME_MN1')]:
-        if re.search(rf"\b{m}\b", lower) or re.search(rf"\b{m.replace('m',' minute').replace('h',' hour')}\b", lower):
-            tf_candidates.append(tf)
-    # word forms
-    if re.search(r"\bminute\b|\bminutes\b", lower) and 'TIMEFRAME_M1' not in tf_candidates:
-        tf_candidates.append('TIMEFRAME_M1')
-    if re.search(r"\bhour\b|\bhours\b|\bh1\b", lower) and 'TIMEFRAME_H1' not in tf_candidates:
-        tf_candidates.append('TIMEFRAME_H1')
-    if re.search(r"\bdaily|daily|day\b", lower) and 'TIMEFRAME_D1' not in tf_candidates:
-        tf_candidates.append('TIMEFRAME_D1')
+    try:
+        # Patterns: '15m' or '15 m' (digits then unit)
+        for n, unit in re.findall(r"(\d+)\s*(m|h|d|w|mn)\b", lower):
+            unit = unit.lower()
+            if unit == 'm':
+                if n == '1':
+                    tf_candidates.append('TIMEFRAME_M1')
+                elif n == '5':
+                    tf_candidates.append('TIMEFRAME_M5')
+                elif n == '15':
+                    tf_candidates.append('TIMEFRAME_M15')
+                elif n == '30':
+                    tf_candidates.append('TIMEFRAME_M30')
+            elif unit == 'h':
+                if n == '1':
+                    tf_candidates.append('TIMEFRAME_H1')
+                elif n == '4':
+                    tf_candidates.append('TIMEFRAME_H4')
+            elif unit == 'd':
+                tf_candidates.append('TIMEFRAME_D1')
+            elif unit == 'w':
+                tf_candidates.append('TIMEFRAME_W1')
+            elif unit == 'mn':
+                tf_candidates.append('TIMEFRAME_MN1')
+
+        # Patterns: 'm15' or 'h1' (unit then digits)
+        for unit, n in re.findall(r"\b(m|h|d|w|mn)\s*(\d+)\b", lower):
+            unit = unit.lower()
+            if unit == 'm':
+                if n == '1':
+                    tf_candidates.append('TIMEFRAME_M1')
+                elif n == '5':
+                    tf_candidates.append('TIMEFRAME_M5')
+                elif n == '15':
+                    tf_candidates.append('TIMEFRAME_M15')
+                elif n == '30':
+                    tf_candidates.append('TIMEFRAME_M30')
+            elif unit == 'h':
+                if n == '1':
+                    tf_candidates.append('TIMEFRAME_H1')
+                elif n == '4':
+                    tf_candidates.append('TIMEFRAME_H4')
+            elif unit == 'd':
+                tf_candidates.append('TIMEFRAME_D1')
+            elif unit == 'w':
+                tf_candidates.append('TIMEFRAME_W1')
+            elif unit == 'mn':
+                tf_candidates.append('TIMEFRAME_MN1')
+
+        # Compact forms like 'm15' or 'h1'
+        for compact in re.findall(r"\b([mh]\d{1,2})\b", lower):
+            unit = compact[0]
+            n = compact[1:]
+            if unit == 'm':
+                if n == '1':
+                    tf_candidates.append('TIMEFRAME_M1')
+                elif n == '5':
+                    tf_candidates.append('TIMEFRAME_M5')
+                elif n == '15':
+                    tf_candidates.append('TIMEFRAME_M15')
+                elif n == '30':
+                    tf_candidates.append('TIMEFRAME_M30')
+            elif unit == 'h':
+                if n == '1':
+                    tf_candidates.append('TIMEFRAME_H1')
+                elif n == '4':
+                    tf_candidates.append('TIMEFRAME_H4')
+
+        # Word forms
+        if re.search(r"\bminute\b|\bminutes\b", lower) and 'TIMEFRAME_M1' not in tf_candidates:
+            tf_candidates.append('TIMEFRAME_M1')
+        if re.search(r"\bhour\b|\bhours\b", lower) and 'TIMEFRAME_H1' not in tf_candidates:
+            tf_candidates.append('TIMEFRAME_H1')
+        if re.search(r"\bdaily|daily|day\b", lower) and 'TIMEFRAME_D1' not in tf_candidates:
+            tf_candidates.append('TIMEFRAME_D1')
+    except Exception:
+        pass
+
     if tf_candidates:
-        # keep order and uniqueness
         intent['timeframes'] = list(dict.fromkeys(tf_candidates))
 
     # Position size (percent) e.g., 1%, 2.5 percent, '2 percent'
-    pct = re.search(r"(\d+(?:\.\d+)?)\s*(%|percent|pct)\b", lower)
+    pct = re.search(r"(\d+(?:\.\d+)?)\s*(%|percent|pct)", lower)
     if pct:
         try:
             intent['position_size_pct'] = float(pct.group(1))
@@ -480,7 +571,141 @@ def advanced_intent_parser(text: str) -> Optional[Dict[str, Any]]:
         # Advanced parser not available or failed - caller should fallback
         return None
 
-    return intent
+
+def transformer_intent_parser(text: str) -> Optional[dict]:
+    """Best-effort transformer-based parser using sentence-transformers.
+
+    This function is optional and will return None if `sentence_transformers`
+    is not installed. It uses a small set of canned templates (examples)
+    and picks the best-matching template via cosine similarity on SBERT
+    embeddings. The returned dict includes a `_confidence` score (0..1).
+    """
+    try:
+        from sentence_transformers import SentenceTransformer, util
+    except Exception:
+        return None
+
+    try:
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+    except Exception:
+        try:
+            model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+        except Exception:
+            return None
+
+    # Lightweight example templates mapping to expected parsed fields
+    templates = [
+        ("Aggressive gold on M15 and H1 with 2% risk and $100 max loss", {
+            'mindset': 'aggressive', 'symbol': 'XAUUSD', 'timeframes': ['TIMEFRAME_M15', 'TIMEFRAME_H1'], 'position_size_pct': 2.0, 'max_daily_loss': 100.0
+        }),
+        ("Conservative EURUSD 1m with 0.5% position size and $50 max loss", {
+            'mindset': 'conservative', 'symbol': 'EURUSD', 'timeframes': ['TIMEFRAME_M1'], 'position_size_pct': 0.5, 'max_daily_loss': 50.0
+        }),
+        ("Balanced BTC on 5m, 1% position size", {
+            'mindset': 'balanced', 'symbol': 'BTCUSD', 'timeframes': ['TIMEFRAME_M5'], 'position_size_pct': 1.0
+        }),
+        ("Trade gold H1 and M15, balanced", {
+            'mindset': 'balanced', 'symbol': 'XAUUSD', 'timeframes': ['TIMEFRAME_H1', 'TIMEFRAME_M15']
+        }),
+        ("EURUSD daily 2 percent, 200 dollars max loss", {
+            'symbol': 'EURUSD', 'timeframes': ['TIMEFRAME_D1'], 'position_size_pct': 2.0, 'max_daily_loss': 200.0
+        }),
+    ]
+
+    texts = [t for t, _ in templates]
+    emb_texts = model.encode(texts, convert_to_tensor=True)
+    emb_input = model.encode([text], convert_to_tensor=True)
+    cos_scores = util.cos_sim(emb_input, emb_texts)[0]
+
+    # Pick best template
+    best_idx = int(cos_scores.argmax())
+    best_score = float(cos_scores[best_idx])
+    best_template, best_fields = templates[best_idx]
+
+    # Normalize confidence to 0..1 (SBERT cos_sim is -1..1)
+    confidence = max(0.0, min(1.0, (best_score + 1) / 2))
+
+    result = dict(best_fields)
+    result['_confidence'] = confidence
+    result['_source_template'] = best_template
+    return result
+
+
+def aggregate_intent_parsers(text: str) -> dict:
+    """Run all available parsers and pick the strongest candidate.
+
+    Strategy:
+    - Attempt transformer parser (if available) and spaCy parser (if available).
+    - Always run the rule-based parser.
+    - Score candidates by number of fields parsed + confidence weight when present.
+    - Return the chosen dict and log source.
+    """
+    candidates = []
+
+    # Rule-based parser (always available)
+    try:
+        rb = parse_natural_language_intent(text)
+        score_rb = len(rb.keys())
+        candidates.append((rb, float(score_rb), 'rule-based'))
+    except Exception:
+        rb = {}
+
+    # Advanced spaCy parser
+    try:
+        sp = advanced_intent_parser(text)
+        if sp:
+            score_sp = len(sp.keys()) + 0.1
+            candidates.append((sp, float(score_sp), 'spacy'))
+    except Exception:
+        sp = None
+
+    # Transformer parser
+    try:
+        tr = transformer_intent_parser(text)
+        if tr:
+            conf = float(tr.get('_confidence', 0.0))
+            base_score = len([k for k in tr.keys() if not k.startswith('_')])
+            score_tr = base_score + conf
+            candidates.append((tr, float(score_tr), 'transformer'))
+    except Exception:
+        tr = None
+
+    # Choose best candidate by score
+    if not candidates:
+        return {}
+
+    candidates.sort(key=lambda x: x[1], reverse=True)
+    best, best_score, source = candidates[0]
+
+    # Prefer rule-based unless another parser is substantially stronger
+    # (avoid accidental weaker transformer/spacy picks causing regressions)
+    try:
+        rb_score = next(s for (_, s, src) in candidates if src == 'rule-based')
+    except StopIteration:
+        rb_score = 0.0
+
+    if source != 'rule-based' and best_score < (rb_score + 0.5):
+        # pick rule-based instead
+        best = next(c for (c, s, src) in candidates if src == 'rule-based')[0] if False else None
+        # find the rule-based candidate tuple
+        rb_candidate = next((c for (c, s, src) in candidates if src == 'rule-based'), None)
+        if rb_candidate:
+            best = rb_candidate[0]
+            best_score = rb_candidate[1]
+            source = 'rule-based'
+
+    # Merge candidates by priority (highest score first) to produce a robust final result.
+    merged = {}
+    for cand, score, src in candidates:
+        for k, v in cand.items():
+            if k.startswith('_'):
+                continue
+            if k not in merged:
+                merged[k] = v
+
+    merged['_chosen_by'] = source
+    merged['_score'] = best_score
+    return merged
 
 
 def run_nlp_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]:
@@ -515,15 +740,13 @@ def run_nlp_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]
         use_advanced = choice == 'y'
 
     parsed = None
-    if use_advanced:
-        parsed = advanced_intent_parser(text)
-        if parsed is None:
-            print_warning("Advanced parser not available or failed — falling back to rule-based parser.")
+    # Run aggregator to pick the strongest candidate among available parsers
+    parsed = aggregate_intent_parsers(text)
+    if not parsed:
+        print_warning("Failed to parse intent — falling back to interactive wizard.")
+        return run_setup_wizard(config_path)
 
-    if parsed is None:
-        parsed = parse_natural_language_intent(text)
-
-    print_info(f"Parsed intent: {parsed}")
+    print_info(f"Parsed intent (chosen by {parsed.get('_chosen_by')} score={parsed.get('_score'):.2f}): { {k:v for k,v in parsed.items() if not k.startswith('_')} }")
 
     # Load existing config or defaults
     config_file = Path(config_path)
