@@ -198,6 +198,38 @@ MT5 Terminal
     │ (Historical Data)
     ▼
 Strategy.get_candles()
+```
+
+---
+
+## Monitoring & Deployment Recommendations
+
+**Short-term (30-60 min validation)**
+- Run Herald locally in a terminal using the aggressive mindset config and `--log-level DEBUG`:
+
+```bash
+python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt --log-level DEBUG
+```
+
+- Tail logs (e.g., `tail -f herald.log`) and watch for these messages:
+  - `Adopted trade:` — adoption events
+  - `Set SL/TP for #` — confirmed SL/TP set on broker
+  - `SL/TP verification failed` — broker refused modification (investigate immediately)
+  - `Failed to select symbol` — symbol visibility issue in MT5 Market Watch
+
+**Production (recommended)**
+- Containerize with Docker and expose Prometheus metrics via simple endpoint (use `observability/prometheus.py` and a tiny metrics HTTP server).
+- Use an orchestrator (Docker Compose or Kubernetes) and set restart policies, resource limits, and liveness/readiness probes.
+- Centralized logging + alerting (Prometheus + Alertmanager; PagerDuty/Slack integration for critical alerts):
+  - Alert on any `herald_sl_tp_failure_total > 0` within a 1-minute window
+  - Alert on `herald_mt5_connected == 0` for 2 consecutive checks
+  - Alert on repeated adoption failures or repeated market data absence
+
+**Monitoring approach choice**
+- Terminal monitoring: fast, low-friction for smoke tests and short runs (30–60 min). I can run and monitor logs and report back.
+- Containerized monitoring: recommended for production — reproducible, easier integration with metrics and alerting, and safer for long-term uptime.
+
+Let me know if you want me to: **(A)** run a 30–60 minute live terminal monitoring session now, or **(B)** start containerizing Herald and add Prometheus HTTP exposure + alert rules (I can start with a Dockerfile and a metrics endpoint).
     │
     │ (OHLCV DataFrame)
     ▼
@@ -424,6 +456,61 @@ Herald Bot
 ```
 
 ---
+
+```mermaid
+
+flowchart TD
+    subgraph Orchestration
+        O1["__main__.py loop"]
+    end
+
+    A["MT5 Connector<br/>(MT5Connector / mt5)"]
+    B["Data Layer<br/>(DataLayer.normalize_rates)"]
+    C["Indicators<br/>(RSI, MACD, Bollinger, Stochastic, ADX)"]
+    D["Strategy<br/>(SmaCrossover / Strategy.on_bar)"]
+    E["Risk Manager<br/>(RiskManager.approve)"]
+    F["Execution Engine<br/>(ExecutionEngine.place_order)"]
+    G["MT5<br/>(order_send) & Order Result"]
+    H["Position Manager<br/>(PositionManager.track_position / monitor_positions)"]
+    I["Exit Strategies<br/>(Adverse, TimeBased, ProfitTarget, TrailingStop)"]
+    J["Persistence<br/>(Database.record_trade, record_signal, update_trade_exit)"]
+    K["Metrics<br/>(MetricsCollector)"]
+    L["Health & Reconnect checks<br/>(MT5Connector.is_connected, reconnect)"]
+    M["Trade Adoption<br/>(TradeManager.scan_and_adopt → PositionManager.add_position)"]
+
+    O1 --> A
+    O1 --> B
+    O1 --> C
+    O1 --> D
+    O1 --> E
+    O1 --> F
+    O1 --> H
+    O1 --> I
+    O1 --> J
+    O1 --> K
+    O1 --> L
+    O1 --> M
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I -- "Position close" --> F
+    H --> J
+    F --> J
+    H --> K
+    J --> K
+    A --> L
+    L --> H
+    A --> M
+```
+
+---
+
 
 **Current Status:** Phase 1 Complete - Foundation  
 **Architecture:** Modular, extensible, production-ready foundation  
