@@ -333,70 +333,152 @@ def parse_natural_language_intent(text: str) -> Dict[str, Any]:
     """
     import re
     intent = {}
-    t = text.lower()
+    t = text.strip()
+    lower = t.lower()
 
-    # Mindset
-    if re.search(r"\b(aggressive|high[- ]?risk)\b", t):
+    # Mindset (many synonyms)
+    if re.search(r"\b(aggressive|high[- ]?risk|high risk|highrisk)\b", lower):
         intent['mindset'] = 'aggressive'
-    elif re.search(r"\b(conservative|low[- ]?risk)\b", t):
+    elif re.search(r"\b(conservative|low[- ]?risk|low risk|lowrisk)\b", lower):
         intent['mindset'] = 'conservative'
-    elif re.search(r"\b(balanced|moderate)\b", t):
+    elif re.search(r"\b(balanced|moderate|medium risk)\b", lower):
         intent['mindset'] = 'balanced'
 
-    # Symbol (simple heuristic: uppercase word, allow # or m#)
-    # Symbol matching: accept variations like GOLD#m, GOLDm#, GOLD#, GOLDm
-    symbol_match = re.search(r"\b([A-Z]{3,6}(?:#m|m#|#|m)?)\b", text)
-    if symbol_match:
-        g = symbol_match.group(1)
-        base = re.match(r"([A-Z]{3,6})", g.upper()).group(1)
-        suffix_chars = ''.join([ch for ch in g if ch in '#mM'])
-        # Canonicalize suffix: prefer '#m' if both present, otherwise preserve order
-        if '#m' in suffix_chars.lower():
-            suffix = '#m'
-        elif 'm#' in suffix_chars.lower():
-            suffix = 'm#'
-        elif '#' in suffix_chars:
-            suffix = '#'
-        elif 'm' in suffix_chars.lower():
-            suffix = 'm'
-        else:
-            suffix = ''
-        intent['symbol'] = (base + suffix).upper() if suffix != '#m' else base + '#m'
-
-    # Timeframes (look for m1,m5,m15,m30,h1,h4,d1,w1,mn1 or words)
-    tfs = []
-    tf_map = {
-        '1m': 'TIMEFRAME_M1', 'm1': 'TIMEFRAME_M1', 'm': 'TIMEFRAME_M1',
-        '5m': 'TIMEFRAME_M5', 'm5': 'TIMEFRAME_M5',
-        '15m': 'TIMEFRAME_M15', 'm15': 'TIMEFRAME_M15', 'h1': 'TIMEFRAME_H1', '1h': 'TIMEFRAME_H1',
-        'h4': 'TIMEFRAME_H4', 'd1': 'TIMEFRAME_D1', '1d': 'TIMEFRAME_D1', 'w1': 'TIMEFRAME_W1', 'mn1': 'TIMEFRAME_MN1'
+    # Named asset shortcuts (user-friendly)
+    named = {
+        'gold': 'XAUUSD', 'xau': 'XAUUSD', 'silver': 'XAGUSD', 'xag': 'XAGUSD',
+        'bitcoin': 'BTCUSD', 'btc': 'BTCUSD', 'eth': 'ETHUSD', 'ethereum': 'ETHUSD'
     }
-    for k in tf_map:
-        if k in t:
-            tfs.append(tf_map[k])
-    # Also simple words
-    if 'hour' in t and 'h1' not in tfs:
-        tfs.append('TIMEFRAME_H1')
-    if 'minute' in t and 'TIMEFRAME_M1' not in tfs:
-        tfs.append('TIMEFRAME_M1')
-    if tfs:
-        intent['timeframes'] = list(dict.fromkeys(tfs))
+    for name, sym in named.items():
+        if re.search(rf"\b{name}\b", lower):
+            intent['symbol'] = sym
+            break
 
-    # Position size (percent) e.g., 1%, 2.5 percent
-    pct = re.search(r"(\d+(?:\.\d+)?)\s*%", text)
+    # Symbol heuristics: uppercase sequences 3-6 chars possibly followed/preceded by # or m
+    # Accept forms like GOLD#m, GOLDm#, GOLD#, GOLDm, EURUSD, EURUSD#
+    sym_match = re.search(r"\b([A-Za-z]{3,6})([#\.mM]{0,2})\b", t)
+    if sym_match and 'symbol' not in intent:
+        base = sym_match.group(1).upper()
+        suffix = sym_match.group(2) or ''
+        # Normalize suffix to one of: '', '#', 'm', '#m'
+        s = ''.join(ch for ch in suffix if ch in '#mM.')
+        s_low = s.lower()
+        if '#m' in s_low:
+            suf = '#m'
+        elif 'm#' in s_low:
+            suf = 'm#'
+        elif '#' in s_low:
+            suf = '#'
+        elif 'm' in s_low:
+            suf = 'm'
+        else:
+            suf = ''
+        # Canonicalize '#m' case
+        if suf == '#m':
+            intent['symbol'] = base + '#m'
+        else:
+            intent['symbol'] = (base + suf).upper()
+
+    # Timeframes: flexible detection (1m, 5m, 15m, 30m, 1h, 4h, daily, weekly, monthly)
+    tf_candidates = []
+    # numeric-minute/hour patterns
+    for m, tf in [('1m', 'TIMEFRAME_M1'), ('5m', 'TIMEFRAME_M5'), ('15m', 'TIMEFRAME_M15'), ('30m', 'TIMEFRAME_M30'), ('1h', 'TIMEFRAME_H1'), ('4h', 'TIMEFRAME_H4'), ('d1', 'TIMEFRAME_D1'), ('w1', 'TIMEFRAME_W1'), ('mn1', 'TIMEFRAME_MN1')]:
+        if re.search(rf"\b{m}\b", lower) or re.search(rf"\b{m.replace('m',' minute').replace('h',' hour')}\b", lower):
+            tf_candidates.append(tf)
+    # word forms
+    if re.search(r"\bminute\b|\bminutes\b", lower) and 'TIMEFRAME_M1' not in tf_candidates:
+        tf_candidates.append('TIMEFRAME_M1')
+    if re.search(r"\bhour\b|\bhours\b|\bh1\b", lower) and 'TIMEFRAME_H1' not in tf_candidates:
+        tf_candidates.append('TIMEFRAME_H1')
+    if re.search(r"\bdaily|daily|day\b", lower) and 'TIMEFRAME_D1' not in tf_candidates:
+        tf_candidates.append('TIMEFRAME_D1')
+    if tf_candidates:
+        # keep order and uniqueness
+        intent['timeframes'] = list(dict.fromkeys(tf_candidates))
+
+    # Position size (percent) e.g., 1%, 2.5 percent, '2 percent'
+    pct = re.search(r"(\d+(?:\.\d+)?)\s*(%|percent|pct)\b", lower)
     if pct:
         try:
             intent['position_size_pct'] = float(pct.group(1))
         except Exception:
             pass
 
-    # Max daily loss e.g., $100
-    money = re.search(r"\$\s*(\d+(?:\.\d+)?)", text)
+    # Max daily loss e.g., $100, 100 dollars, max loss 100
+    money = re.search(r"\$\s*(\d+(?:\.\d+)?)", lower)
+    if not money:
+        money = re.search(r"max\s*loss\s*(?:is|of|:)??\s*(\d+(?:\.\d+)?)\s*(dollars|usd)?", lower)
     if money:
         try:
             intent['max_daily_loss'] = float(money.group(1))
         except Exception:
             pass
+
+    return intent
+
+
+def advanced_intent_parser(text: str) -> Optional[Dict[str, Any]]:
+    """Optional advanced parser: use local spaCy or transformers when available.
+
+    This function is best-effort: it will return None if no advanced library
+    or model is available so callers can fall back to the rule-based parser.
+    """
+    try:
+        # Try spaCy first (local, fast)
+        import spacy
+        try:
+            nlp = spacy.load("en_core_web_sm")
+        except Exception:
+            # If model not installed, trying the small pipeline via blank English
+            nlp = spacy.blank("en")
+
+        doc = nlp(text)
+        intent = {}
+
+        # Use NER and token shapes to improve symbol detection and numeric extraction
+        # Look for MONEY entities and numeric tokens
+        for ent in getattr(doc, 'ents', []):
+            if ent.label_ in ("MONEY",):
+                # Expect like "$100" -> max_daily_loss
+                m = re.search(r"(\d+(?:\.\d+)?)", ent.text)
+                if m:
+                    try:
+                        intent['max_daily_loss'] = float(m.group(1))
+                    except Exception:
+                        pass
+
+        # Fallback heuristics using tokens
+        # percent tokens
+        for token in doc:
+            if token.like_num:
+                nxt = token.nbor(1).text.lower() if token.i + 1 < len(doc) else ''
+                if nxt in ('%', 'percent', 'pct'):
+                    try:
+                        intent['position_size_pct'] = float(token.text)
+                    except Exception:
+                        pass
+
+        # Symbol detection: look for uppercase-like tokens or currency symbols
+        for token in doc:
+            txt = token.text.strip()
+            if txt.isupper() and 3 <= len(txt) <= 6:
+                intent['symbol'] = txt
+                break
+
+        # Timeframe words
+        lower = text.lower()
+        tfs = []
+        if '15m' in lower or '15 m' in lower or '15-minute' in lower:
+            tfs.append('TIMEFRAME_M15')
+        if '1h' in lower or 'hour' in lower:
+            tfs.append('TIMEFRAME_H1')
+        if tfs:
+            intent['timeframes'] = list(dict.fromkeys(tfs))
+
+        return intent if intent else None
+    except Exception:
+        # Advanced parser not available or failed - caller should fallback
+        return None
 
     return intent
 
@@ -413,12 +495,34 @@ def run_nlp_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]
     print("  Describe what you want (e.g., 'Aggressive GOLD#m M15 H1, 2% risk, $100 max loss')")
     print("  Leave blank to fall back to the interactive wizard.")
 
-    text = input("  Describe your trading intent: ").strip()
+    text = input("  Describe your trading intent (e.g. 'Aggressive GOLD#m M15 H1, 2% risk, $100 max loss'): ").strip()
     if not text:
-        print_info("Falling back to interactive wizard.")
+        print_info("No input provided — falling back to the interactive wizard.")
         return run_setup_wizard(config_path)
 
-    parsed = parse_natural_language_intent(text)
+    # Offer advanced local NLP if available
+    use_advanced = False
+    try:
+        adv_avail = False
+        import importlib
+        if importlib.util.find_spec('spacy') is not None:
+            adv_avail = True
+    except Exception:
+        adv_avail = False
+
+    if adv_avail:
+        choice = get_input("Attempt advanced local NLP parsing if available? (y/N)", "N").lower()
+        use_advanced = choice == 'y'
+
+    parsed = None
+    if use_advanced:
+        parsed = advanced_intent_parser(text)
+        if parsed is None:
+            print_warning("Advanced parser not available or failed — falling back to rule-based parser.")
+
+    if parsed is None:
+        parsed = parse_natural_language_intent(text)
+
     print_info(f"Parsed intent: {parsed}")
 
     # Load existing config or defaults
