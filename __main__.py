@@ -216,6 +216,11 @@ def main():
                        help="Run the lightweight NLP-based wizard (describe intent in natural language)")
     parser.add_argument('--no-prompt', action='store_true',
                        help="Do not prompt on shutdown; leave positions open (useful for automated runs)")
+    # Runtime ML toggle (CLI) — mutually exclusive enable/disable
+    ml_group = parser.add_mutually_exclusive_group()
+    ml_group.add_argument('--enable-ml', dest='enable_ml', action='store_true', help='Enable ML instrumentation (overrides config)')
+    ml_group.add_argument('--disable-ml', dest='enable_ml', action='store_false', help='Disable ML instrumentation (overrides config)')
+    parser.set_defaults(enable_ml=None)
     parser.add_argument('--version', action='version', version=f"Herald {__version__}")
     args = parser.parse_args()
 
@@ -354,20 +359,28 @@ def main():
         logger.info("Initializing metrics collector...")
         metrics = MetricsCollector()
         
-        # 7b. ML instrumentation collector (optional, configurable via config['ml'])
-        ml_collector = None
-        try:
-            ml_config = config.get('ml', {}) if isinstance(config, dict) else {}
-            ml_enabled = ml_config.get('enabled', True)
-            if ml_enabled:
-                from herald.ML_RL.instrumentation import MLDataCollector
-                ml_prefix = ml_config.get('prefix', 'events')
-                ml_collector = MLDataCollector(prefix=ml_prefix)
-                logger.info('MLDataCollector initialized')
-            else:
-                logger.info('ML instrumentation disabled via config')
-        except Exception:
-            logger.exception('Failed to initialize MLDataCollector; continuing without it')
+        # 7b. ML instrumentation collector (optional, configurable via config['ml'] or CLI)
+        def init_ml_collector(config, args, logger):
+            ml_collector = None
+            try:
+                ml_config = config.get('ml', {}) if isinstance(config, dict) else {}
+                ml_enabled = ml_config.get('enabled', True)
+                # CLI overrides config when provided
+                if hasattr(args, 'enable_ml') and args.enable_ml is not None:
+                    ml_enabled = args.enable_ml
+                if ml_enabled:
+                    from herald.ML_RL.instrumentation import MLDataCollector
+                    ml_prefix = ml_config.get('prefix', 'events')
+                    ml_collector = MLDataCollector(prefix=ml_prefix)
+                    logger.info('MLDataCollector initialized')
+                else:
+                    logger.info('ML instrumentation disabled via config/CLI')
+            except Exception:
+                logger.exception('Failed to initialize MLDataCollector; continuing without it')
+            return ml_collector
+
+        ml_collector = init_ml_collector(config, args, logger)
+
 
         # 8. Load indicators
         logger.info("Loading indicators...")

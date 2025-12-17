@@ -17,8 +17,10 @@ slug: /docs/changelog
 ## UNRELEASED
 
 ### In-Progress
-- **ML pipeline & instrumentation (WIP)**: Implemented the `herald/ML_RL` skeleton and `MLDataCollector` to record gzipped JSONL events for `order_request`, `execution`, and `market_snapshot`. Integration test `tests/integration/test_ml_instrumentation_live.py` added (gated) for end-to-end validation. Next steps: feature pipelines, model training/evaluation, serving, monitoring, and a safe deployment path (shadow/advisory modes).
-- **Runtime ML toggle (planned)**: plan to add `--enable-ml` CLI flag to explicitly enable/disable ML instrumentation at runtime (configuration currently reads `config['ml'].enabled`).
+- **ML pipeline & instrumentation**: Implemented the `herald/ML_RL` skeleton and `MLDataCollector` to record gzipped JSONL events for `order_request`, `execution`, and `market_snapshot`. Integration test `tests/integration/test_ml_instrumentation_live.py` added (gated) for end-to-end validation. 
+- Next steps: feature pipelines, model training/evaluation, serving, monitoring, and a safe deployment path (shadow/advisory modes).
+- **Configuration validation**: Added Pydantic-based configuration models in `config/config_schema.py` with environment variable overrides. Updated `config/load_config.py` to use the new schema and validate at startup. Added unit tests in `tests/unit/test_config_validation.py`.
+- **Runtime ML toggle**: Added CLI flags `--enable-ml` / `--disable-ml` to explicitly enable/disable ML instrumentation at startup (overrides `config['ml'].enabled`). Added helper `init_ml_collector()` and unit tests `tests/unit/test_ml_flag.py` to validate behavior.
 - **ML pipeline roadmap**: add feature engineering, offline training scripts, model evaluation, CI for model checks, and drift monitoring (tracked in the docs and `herald/ML_RL/README.md`).
 
 ---
@@ -51,8 +53,6 @@ Release focused on robust trade adoption, SL/TP reliability, and operational hyg
 
 # RELEASE HISTORY
 
-
-# RELEASE HISTORY
 
 ## Table of contents
 - [Unreleased](#unreleased)
