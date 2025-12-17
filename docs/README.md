@@ -18,10 +18,11 @@
 > **Adaptive Trading Intelligence**
 > A complete autonomous trading system with entry and exit execution, technical indicators, and advanced position management (MT5)
 
-A comprehensive automated trading system for MetaTrader 5 following enterprise-grade architecture patterns.
-Built with focus on incremental development, robust risk management, and production-ready deployment.
+Herald is an autonomous and adaptive trading system focused on safe, auditable execution with strong observability and pluggable signal sources. The system is designed to run headless, in a gated live mode, and to produce rich ML-friendly event streams to support downstream model training and analysis.
 
-**NEW in v3.1.0**: External trade adoption, Trade CLI for manual orders, trading mindsets (aggressive/balanced/conservative), and Pydantic config validation.
+**NEW in v3.3.1**: Advisory & Ghost modes (advisory-only signals and small "ghost" test trades), an opt-in News & Economic Calendar ingest pipeline (RSS, NewsAPI, FRED, TradingEconomics) with TTL caching and importance normalization, TradeMonitor-driven alerting (pauses trading on high-impact events), expanded ML instrumentation (`news_event`, `calendar_event`, `advisory.signal`), and comprehensive unit/integration tests and documentation. See `docs/features.md` and `docs/news.md` for full details.
+
+> Note: News ingest is opt-in — enable via `NEWS_INGEST_ENABLED=1` or set `config['news']['enabled']=true`. Integration tests that call external APIs are gated; set `RUN_NEWS_INTEGRATION=1` to run them.
 
 ---
 
@@ -399,6 +400,49 @@ cp config.example.json config.json
 
 # Edit configuration
 notepad config.json  # Windows
+```
+
+## Configuration & Optional Features
+
+### Enabling News & Calendar Ingest
+Herald's NewsIngestor is opt-in and writes `news_event` and `calendar_event` into the ML event stream. To enable:
+
+- Environment: set `NEWS_INGEST_ENABLED=1` or in config set `config['news']['enabled']=true`.
+- Recommended fallback feeds: set `NEWS_RSS_FEEDS` to a comma-separated list of RSS/Atom feeds.
+- Optional provider keys (set in `.env` or environment): `NEWSAPI_KEY`, `FRED_API_KEY`, `ECON_CAL_API_KEY`.
+- Use `NEWS_USE_RSS=true` to prefer RSS (low-rate fallback) and tune `NEWS_CACHE_TTL` (seconds) to control caching.
+
+Note: live integration tests that invoke external providers are gated — use `RUN_NEWS_INTEGRATION=1` to enable them.
+
+### Advisory & Ghost Modes (safety-first)
+Advisory and Ghost modes let you validate signals without immediate full-size risk:
+
+- `advisory`: records advisory signals in the DB and ML stream (`advisory.signal`) but does not place live orders.
+- `ghost`: places small test trades (configurable `ghost_lot_size`) to validate live plumbing; strictly capped via `ghost_max_trades` and `ghost_max_duration` and supports `log_only` mode to never submit real orders.
+
+Example configuration snippet (add to your `config.json`):
+
+```json
+"advisory": {
+  "enabled": true,
+  "mode": "advisory",        // 'advisory' | 'ghost' | 'production'
+  "ghost_lot_size": 0.01,
+  "ghost_max_trades": 5,
+  "ghost_max_duration": 3600,
+  "log_only": false
+}
+```
+
+- The system records advisory decisions to ML as `advisory.signal` and logs details for audit.
+- Ghost mode places small trades with an appended client_tag containing `:ghost` and does not adopt ghost trades as operational positions.
+
+### Gated Integration Tests & Safety
+- MT5 and News integration tests are gated by environment flags to prevent accidental live API calls:
+  - `RUN_MT5_INTEGRATION=1` — enables MT5 live integration tests
+  - `RUN_NEWS_INTEGRATION=1` — enables external news/calendar integration tests
+
+---
+
 nano config.json     # Linux/macOS
 ```
 
