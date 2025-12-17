@@ -18,7 +18,7 @@ import pandas as pd
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-__version__ = "3.3.0"
+__version__ = "3.3.1"
 
 from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
 from herald.data.layer import DataLayer
@@ -381,6 +381,17 @@ def main():
 
         ml_collector = init_ml_collector(config, args, logger)
 
+        # Advisory manager (advisory/ghost modes)
+        try:
+            from herald.advisory.manager import AdvisoryManager
+            advisory_cfg = config.get('advisory', {}) if isinstance(config, dict) else {}
+            advisory_manager = AdvisoryManager(advisory_cfg, execution_engine, ml_collector)
+            if advisory_manager.enabled:
+                logger.info(f"AdvisoryManager enabled (mode={advisory_manager.mode})")
+        except Exception:
+            advisory_manager = None
+            logger.exception('Failed to initialize AdvisoryManager; continuing without it')
+
 
         # 8. Load indicators
         logger.info("Loading indicators...")
@@ -398,6 +409,62 @@ def main():
         logger.info(f"Loaded {len(exit_strategies)} exit strategies")
         for es in exit_strategies:
             logger.info(f"  - {es.name} (priority: {es.priority}, enabled: {es.is_enabled()})")
+
+        # 11. Start trade monitor (optional, non-blocking)
+        try:
+            from herald.monitoring.trade_monitor import TradeMonitor
+            monitor = TradeMonitor(position_manager, trade_manager=trade_manager, poll_interval=config.get('monitor_poll_interval', 5.0), ml_collector=metrics if metrics else None)
+            monitor.start()
+            logger.info('TradeMonitor started')
+        except Exception:
+            logger.exception('Failed to start TradeMonitor; continuing without it')
+
+        # 11b. Optional News / Calendar ingest pipeline (opt-in via config or env)
+        try:
+            news_cfg = config.get('news', {}) if isinstance(config, dict) else {}
+            env_enable = os.getenv('NEWS_INGEST_ENABLED')
+            news_enabled = news_cfg.get('enabled', False) or (env_enable == '1')
+            news_ingestor = None
+            if news_enabled:
+                from herald.news import RssAdapter, NewsApiAdapter, FREDAdapter, TradingEconomicsAdapter, NewsIngestor, NewsManager
+                adapters = []
+                # RSS fallback
+                if os.getenv('NEWS_USE_RSS', str(news_cfg.get('use_rss', True))).lower() in ('1', 'true', 'yes'):
+                    feeds = os.getenv('NEWS_RSS_FEEDS', news_cfg.get('rss_feeds', ''))
+                    feeds_list = [f.strip() for f in feeds.split(',') if f.strip()]
+                    if feeds_list:
+                        adapters.append(RssAdapter(feeds=feeds_list))
+
+                # API-based adapters
+                if os.getenv('NEWSAPI_KEY'):
+                    adapters.append(NewsApiAdapter(api_key=os.getenv('NEWSAPI_KEY')))
+                if os.getenv('FRED_API_KEY'):
+                    adapters.append(FREDAdapter(api_key=os.getenv('FRED_API_KEY')))
+
+                cache_ttl = int(os.getenv('NEWS_CACHE_TTL', news_cfg.get('cache_ttl', 300)))
+                news_manager = NewsManager(adapters=adapters, cache_ttl=cache_ttl)
+
+                cal_adapter = None
+                if os.getenv('ECON_CAL_API_KEY'):
+                    cal_adapter = TradingEconomicsAdapter(api_key=os.getenv('ECON_CAL_API_KEY'))
+
+                if ml_collector is None:
+                    logger.warning('News ingest requested but MLDataCollector is not initialized; skipping NewsIngestor')
+                else:
+                    interval = int(os.getenv('NEWS_INGEST_INTERVAL', news_cfg.get('interval_seconds', 300)))
+                    news_ingestor = NewsIngestor(news_manager, cal_adapter, ml_collector, interval_seconds=interval)
+                    news_ingestor.start()
+                    logger.info('NewsIngestor started (interval %ss). Adapters: %s calendar=%s', interval, [type(a).__name__ for a in adapters], type(cal_adapter).__name__ if cal_adapter else None)
+                    # Wire monitor -> news_manager for real-time alerts
+                    try:
+                        if 'monitor' in locals() and monitor:
+                            monitor.news_manager = news_manager
+                            monitor.news_alert_window = int(os.getenv('NEWS_ALERT_WINDOW', news_cfg.get('alert_window', 600)))
+                            logger.info('TradeMonitor wired to NewsManager for alerts (window %ss)', monitor.news_alert_window)
+                    except Exception:
+                        logger.exception('Failed to wire NewsManager to TradeMonitor')
+        except Exception:
+            logger.exception('Failed to initialize NewsIngestor; continuing without it')
             
     except Exception as e:
         logger.error(f"Failed to initialize modules: {e}", exc_info=True)
@@ -559,57 +626,106 @@ def main():
                                 sl=signal.stop_loss,
                                 tp=signal.take_profit
                             )
-                            
-                            # Execute order
-                            logger.info(f"Placing {order_req.side} order for {order_req.volume} lots")
-                            result = execution_engine.place_order(order_req)
-                            
-                            if result.status == OrderStatus.FILLED:
-                                logger.info(
-                                    f"Order filled: ticket={result.order_id}, "
-                                    f"price={result.fill_price:.5f}"
-                                )
-                                
-                                # Track position
-                                position_info = position_manager.track_position(
-                                    result,
-                                    metadata=signal.metadata
-                                )
-                                
-                                # Record in database
+
+                            # Advisory / ghost handling
+                            try:
+                                if 'advisory_manager' in locals() and advisory_manager and advisory_manager.enabled:
+                                    decision = advisory_manager.decide(order_req, signal)
+                                else:
+                                    decision = {'action': 'execute', 'result': None}
+                            except Exception:
+                                logger.exception('Advisory manager decision failed; defaulting to execute')
+                                decision = {'action': 'execute', 'result': None}
+
+                            if decision['action'] == 'execute':
+                                # Execute order
+                                logger.info(f"Placing {order_req.side} order for {order_req.volume} lots")
+                                result = execution_engine.place_order(order_req)
+
+                                if result.status == OrderStatus.FILLED:
+                                    logger.info(
+                                        f"Order filled: ticket={result.order_id}, "
+                                        f"price={result.fill_price:.5f}"
+                                    )
+                                    
+                                    # Track position
+                                    position_info = position_manager.track_position(
+                                        result,
+                                        metadata=signal.metadata
+                                    )
+                                    
+                                    # Record in database
+                                    signal_record = SignalRecord(
+                                        timestamp=signal.timestamp,
+                                        symbol=signal.symbol,
+                                        side=signal.side.name,
+                                        confidence=signal.confidence,
+                                        price=result.fill_price,
+                                        stop_loss=signal.stop_loss,
+                                        take_profit=signal.take_profit,
+                                        strategy_name=strategy.__class__.__name__,
+                                        metadata=signal.metadata,
+                                        executed=True,
+                                        execution_timestamp=datetime.now()
+                                    )
+                                    database.record_signal(signal_record)
+                                    
+                                    trade_record = TradeRecord(
+                                        signal_id=signal.id,
+                                        order_id=result.order_id,
+                                        symbol=signal.symbol,
+                                        side=signal.side.name,
+                                        entry_price=result.fill_price,
+                                        volume=result.filled_volume,
+                                        stop_loss=signal.stop_loss,
+                                        take_profit=signal.take_profit,
+                                        entry_time=datetime.now(),
+                                        commission=result.commission
+                                    )
+                                    database.record_trade(trade_record)
+                                    
+                                else:
+                                    logger.error(
+                                        f"Order failed: {result.status.name} - {result.message}"
+                                    )
+
+                            elif decision['action'] == 'advisory':
+                                logger.info('Advisory decision: not executing order; recording advisory signal')
                                 signal_record = SignalRecord(
                                     timestamp=signal.timestamp,
                                     symbol=signal.symbol,
                                     side=signal.side.name,
                                     confidence=signal.confidence,
-                                    price=result.fill_price,
+                                    price=None,
                                     stop_loss=signal.stop_loss,
                                     take_profit=signal.take_profit,
                                     strategy_name=strategy.__class__.__name__,
-                                    metadata=signal.metadata,
-                                    executed=True,
-                                    execution_timestamp=datetime.now()
+                                    metadata={**signal.metadata, 'advisory': True},
+                                    executed=False
                                 )
                                 database.record_signal(signal_record)
-                                
-                                trade_record = TradeRecord(
-                                    signal_id=signal.id,
-                                    order_id=result.order_id,
+
+                            elif decision['action'] == 'ghost':
+                                logger.info('Ghost decision: small test trade executed (or attempted)')
+                                res = decision.get('result')
+                                # Record ghost attempt (do not adopt as live trade)
+                                signal_record = SignalRecord(
+                                    timestamp=signal.timestamp,
                                     symbol=signal.symbol,
                                     side=signal.side.name,
-                                    entry_price=result.fill_price,
-                                    volume=result.filled_volume,
+                                    confidence=signal.confidence,
+                                    price=getattr(res, 'fill_price', None) if res else None,
                                     stop_loss=signal.stop_loss,
                                     take_profit=signal.take_profit,
-                                    entry_time=datetime.now(),
-                                    commission=result.commission
+                                    strategy_name=strategy.__class__.__name__,
+                                    metadata={**signal.metadata, 'advisory': 'ghost', 'advisory_result': getattr(res, 'order_id', None) if res else None},
+                                    executed=False
                                 )
-                                database.record_trade(trade_record)
-                                
+                                database.record_signal(signal_record)
+
                             else:
-                                logger.error(
-                                    f"Order failed: {result.status.name} - {result.message}"
-                                )
+                                logger.warning('Advisory manager rejected order request')
+
                         else:
                             logger.info("[DRY RUN] Would place order here")
                     else:
@@ -790,6 +906,22 @@ def main():
             # Disconnect from MT5
             connector.disconnect()
             logger.info("Disconnected from MT5")
+
+            # Stop NewsIngestor if it was started
+            try:
+                if 'news_ingestor' in locals() and news_ingestor:
+                    news_ingestor.stop()
+                    logger.info('NewsIngestor stopped')
+            except Exception:
+                logger.exception('Failed to stop NewsIngestor cleanly')
+
+            # Close ML collector if present
+            try:
+                if 'ml_collector' in locals() and ml_collector:
+                    ml_collector.close()
+                    logger.info('MLDataCollector closed')
+            except Exception:
+                logger.exception('Failed to close MLDataCollector')
             
         except Exception as e:
             logger.error(f"Error during shutdown: {e}", exc_info=True)

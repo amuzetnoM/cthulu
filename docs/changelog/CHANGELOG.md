@@ -8,7 +8,7 @@ slug: /docs/changelog
 
 • [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
 
-![version-badge](https://img.shields.io/badge/version-3.1.0-blue)
+![version-badge](https://img.shields.io/badge/version-3.3.1-blue)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
 
@@ -18,10 +18,13 @@ slug: /docs/changelog
 
 ### In-Progress
 - **ML pipeline & instrumentation**: Implemented the `herald/ML_RL` skeleton and `MLDataCollector` to record gzipped JSONL events for `order_request`, `execution`, and `market_snapshot`. Integration test `tests/integration/test_ml_instrumentation_live.py` added (gated) for end-to-end validation. 
-- Next steps: feature pipelines, model training/evaluation, serving, monitoring, and a safe deployment path (shadow/advisory modes).
+- **News & calendar ingest**: Added `NewsIngestor`, `NewsManager` and adapters (`RssAdapter`, `NewsApiAdapter`, `FREDAdapter`, `TradingEconomicsAdapter`) with caching and fallback. The ingest records `news_event` and `calendar_event` to the ML collector and includes a gated integration test `tests/integration/test_news_ingest_live.py` (requires `RUN_NEWS_INTEGRATION=1`).
+- **Advisory & Ghost modes**: Added `AdvisoryManager` to support advisory-only signals and configurable ghost test trades (strict caps and log-only mode). Advisory events are recorded as `advisory.signal` for ML. Unit tests added in `tests/unit/test_advisory_manager.py`.
+- **TradeMonitor alerts**: TradeMonitor now supports wiring to the `NewsManager` and will emit `monitor.news_alert` ML events for high-impact calendar/news items and can pause trading for a configurable window.
+- **TradingEconomics importance mapping**: The TradingEconomics adapter now normalizes event importance/impact into `low` / `medium` / `high` and includes `meta.importance` in events for ML features.
 - **Configuration validation**: Added Pydantic-based configuration models in `config/config_schema.py` with environment variable overrides. Updated `config/load_config.py` to use the new schema and validate at startup. Added unit tests in `tests/unit/test_config_validation.py`.
 - **Runtime ML toggle**: Added CLI flags `--enable-ml` / `--disable-ml` to explicitly enable/disable ML instrumentation at startup (overrides `config['ml'].enabled`). Added helper `init_ml_collector()` and unit tests `tests/unit/test_ml_flag.py` to validate behavior.
-- **ML pipeline roadmap**: add feature engineering, offline training scripts, model evaluation, CI for model checks, and drift monitoring (tracked in the docs and `herald/ML_RL/README.md`).
+- **Docs & feature list**: Added `herald/docs/features.md` and `herald/docs/news.md` documenting capabilities and how to enable news ingest.
 
 ---
 

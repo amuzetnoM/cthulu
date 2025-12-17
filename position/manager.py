@@ -474,6 +474,23 @@ class PositionManager:
                 err = mt5.last_error()
                 err_msg = str(err) if err else 'unknown error'
                 self.logger.error(f"SL/TP verification failed for #{ticket} after update (error: {err_msg})")
+                # ML instrumentation: record SL/TP failure (best-effort)
+                try:
+                    if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'ml_collector', None):
+                        payload = {
+                            'ticket': ticket,
+                            'symbol': position_info.symbol,
+                            'sl': sl,
+                            'tp': tp,
+                            'status': 'FAILED',
+                            'error': err_msg
+                        }
+                        try:
+                            self.execution_engine.ml_collector.record_execution(payload)
+                        except Exception:
+                            self.logger.exception('ML collector failed')
+                except Exception:
+                    pass
                 # Publish a Prometheus metric if exporter exists (best-effort)
                 try:
                     from herald.observability import PrometheusExporter
@@ -491,6 +508,22 @@ class PositionManager:
                 position_info.take_profit = tp
 
             self.logger.info(f"Set SL/TP for #{ticket}: SL={position_info.stop_loss}, TP={position_info.take_profit}")
+            # ML instrumentation: record SL/TP update if collector available (best-effort)
+            try:
+                if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'ml_collector', None):
+                    payload = {
+                        'ticket': ticket,
+                        'symbol': position_info.symbol,
+                        'sl': position_info.stop_loss,
+                        'tp': position_info.take_profit,
+                        'status': 'SET'
+                    }
+                    try:
+                        self.execution_engine.ml_collector.record_execution(payload)
+                    except Exception:
+                        self.logger.exception('ML collector failed')
+            except Exception:
+                pass
             return True
         except Exception as e:
             self.logger.error(f"Error setting SL/TP for #{ticket}: {e}", exc_info=True)
@@ -572,7 +605,7 @@ class PositionManager:
             # Send close order
             result = mt5.order_send(request)
 
-            # If broker rejects due to invalid comment, retry without comment (robust server-side validation)
+            # If broker rejects due to invalid comment or unsupported filling mode, attempt robust fallbacks
             if result is None or getattr(result, 'retcode', None) != mt5.TRADE_RETCODE_DONE:
                 # Build an error message for logging/inspection
                 error_msg = None
@@ -585,30 +618,63 @@ class PositionManager:
                 except Exception:
                     error_msg = 'unknown error'
 
-                # Detect MT5 invalid comment rejection and retry without comment
+                # Try to detect known rejection causes and retry with fallbacks
                 try:
                     comment_text = getattr(result, 'comment', '') if result is not None else ''
+
+                    # 1) If broker rejects comment, retry without comment
                     if (comment_text and 'Invalid "comment" argument' in comment_text) or (isinstance(error_msg, str) and 'Invalid "comment" argument' in error_msg) or (getattr(result, 'retcode', None) == -2):
                         self.logger.warning(f"Broker rejected close for #{ticket} due to comment; retrying without comment (was: '{request.get('comment', '')}')")
-                        # remove comment and retry
                         request_no_comment = {k: v for k, v in request.items() if k != 'comment'}
                         retry = mt5.order_send(request_no_comment)
                         if retry is not None and getattr(retry, 'retcode', None) == mt5.TRADE_RETCODE_DONE:
                             result = retry
                         else:
-                            # prepare final error info
                             final_err = getattr(retry, 'comment', None) if retry is not None else mt5.last_error()
                             self.logger.error(f"Retry without comment failed for #{ticket}: {final_err}")
+                            # continue to try other fallbacks below
+
+                    # 2) If unsupported filling mode is reported or we still have a non-DONE result, try alternative filling modes
+                    if (isinstance(error_msg, str) and 'Unsupported filling mode' in error_msg) or (getattr(result, 'retcode', None) not in (None, mt5.TRADE_RETCODE_DONE)):
+                        # Try ORDER_FILLING_FOK then no type_filling
+                        tried = []
+                        try_modes = []
+                        try:
+                            try_modes.append(('FOK', mt5.ORDER_FILLING_FOK))
+                        except Exception:
+                            pass
+                        # Also try removing the type_filling entirely
+                        try_modes.append(('NO_FILLING', None))
+
+                        attempted_success = False
+                        for mode_name, mode_val in try_modes:
+                            self.logger.info(f"Attempting close retry #{mode_name} for #{ticket}")
+                            request_retry = request.copy()
+                            if mode_val is None:
+                                request_retry.pop('type_filling', None)
+                            else:
+                                request_retry['type_filling'] = mode_val
+                            retry2 = mt5.order_send(request_retry)
+                            if retry2 is not None and getattr(retry2, 'retcode', None) == mt5.TRADE_RETCODE_DONE:
+                                result = retry2
+                                attempted_success = True
+                                break
+                            else:
+                                tried.append((mode_name, getattr(retry2, 'retcode', None), getattr(retry2, 'comment', None)))
+
+                        if not attempted_success:
+                            self.logger.error(f"All filling mode fallbacks failed for #{ticket}: {tried}")
                             return ExecutionResult(
                                 order_id=None,
                                 status=OrderStatus.REJECTED,
                                 executed_price=None,
                                 executed_volume=None,
                                 timestamp=datetime.now(),
-                                error=str(final_err)
+                                error=str(error_msg)
                             )
-                    else:
-                        # Not a comment-related rejection; report original error
+
+                    # If we have not returned yet and result still indicates failure, return an error
+                    if result is None or getattr(result, 'retcode', None) != mt5.TRADE_RETCODE_DONE:
                         self.logger.error(f"Failed to close position #{ticket}: {error_msg}")
                         return ExecutionResult(
                             order_id=None,

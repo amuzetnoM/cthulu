@@ -7,7 +7,7 @@
 ```
 
 # Herald
-*version 3.3.0*  [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
+*version 3.3.1*  [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
 
 ![Status](https://img.shields.io/badge/status-production--ready-success?style=for-the-badge)
 [![Python](https://img.shields.io/badge/python-3.10--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)

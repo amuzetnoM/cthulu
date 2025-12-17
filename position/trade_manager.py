@@ -108,6 +108,8 @@ class TradeManager:
         # Pending SL/TP applications for adopted trades that failed (ticket -> dict)
         self._pending_sl_tp: Dict[int, Dict[str, Any]] = {}
         self.config = config or {}
+        # Pause control used by monitors/alerts to temporarily block new orders
+        self._paused_until: Optional[float] = None
         
     def scan_for_external_trades(self) -> List[PositionInfo]:
         """
@@ -370,6 +372,20 @@ class TradeManager:
                 )
 
         return adopted_count
+
+    def pause_trading(self, duration_seconds: float):
+        """Pause new order execution for the specified number of seconds."""
+        try:
+            self._paused_until = time.time() + float(duration_seconds)
+            self.logger.info(f"Trading paused for {duration_seconds}s until {self._paused_until}")
+        except Exception:
+            self.logger.exception('Failed to set pause')
+
+    def is_paused(self) -> bool:
+        """Return whether trading is currently paused by TradeManager."""
+        if self._paused_until is None:
+            return False
+        return time.time() < self._paused_until
         
     def _retry_pending_sl_tp(self):
         """Retry setting SL/TP for any adopted trades that previously failed to update."""

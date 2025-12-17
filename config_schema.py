@@ -70,6 +70,16 @@ class OrphanConfig(BaseModel):
     log_only: bool = False  # If True, only log orphans without adopting
 
 
+class AdvisoryConfig(BaseModel):
+    """Configuration for advisory and ghost modes."""
+    enabled: bool = False
+    mode: str = 'advisory'  # 'advisory' | 'ghost' | 'production'
+    ghost_lot_size: float = 0.01
+    ghost_max_trades: int = 5
+    ghost_max_duration: int = 3600  # seconds
+    log_only: bool = False  # If True, do not actually place ghost trades; only log/record
+
+
 class Config(BaseModel):
     mt5: MT5Config
     risk: RiskConfig
@@ -88,6 +98,7 @@ class Config(BaseModel):
     indicators: Optional[list] = Field(default_factory=list)
     exit_strategies: Optional[list] = Field(default_factory=list)
     orphan_trades: OrphanConfig = Field(default_factory=OrphanConfig)
+    advisory: AdvisoryConfig = Field(default_factory=AdvisoryConfig)
     database: Dict[str, Any] = Field(default_factory=lambda: {"path": "herald.db"})
     cache_enabled: bool = True
     logging: Dict[str, Any] = Field(default_factory=dict)

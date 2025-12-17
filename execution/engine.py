@@ -304,6 +304,7 @@ class ExecutionEngine:
                 try:
                     if self.ml_collector:
                         order_payload = {
+                            'source': 'herald',
                             'signal_id': order_req.signal_id,
                             'symbol': order_req.symbol,
                             'side': order_req.side,
@@ -318,6 +319,7 @@ class ExecutionEngine:
                         self.ml_collector.record_order(order_payload)
 
                         exec_payload = {
+                            'source': 'herald',
                             'order_id': getattr(result, 'order', None),
                             'position_ticket': position_ticket,
                             'status': 'FILLED',
