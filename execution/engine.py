@@ -116,7 +116,7 @@ class ExecutionEngine:
     - Order modification and cancellation
     """
     
-    def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None):
+    def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None, metrics=None):
         """
         Initialize execution engine.
         
@@ -132,6 +132,8 @@ class ExecutionEngine:
         # Optional risk configuration overrides (from app config)
         self.risk_config = risk_config or {}
         self.logger = logging.getLogger("herald.execution")
+        # Optional metrics collector (MetricsCollector)
+        self.metrics = metrics
         
         # Order tracking for idempotency
         self._submitted_orders: Dict[str, int] = {}

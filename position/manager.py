@@ -419,7 +419,20 @@ class PositionManager:
                 request["sl"] = sl
             if tp is not None:
                 request["tp"] = tp
+            # Log outgoing SL/TP request for observability
+            try:
+                self.logger.info(f"Outgoing SL/TP request for #{ticket}: {request}")
+            except Exception:
+                pass
+
             result = mt5.order_send(request)
+
+            # Log result for debugging broker responses
+            try:
+                self.logger.info(f"SL/TP order_send result for #{ticket}: retcode={getattr(result,'retcode',None)} comment={getattr(result,'comment',None)}")
+            except Exception:
+                pass
+
             if result is None or getattr(result, 'retcode', None) != mt5.TRADE_RETCODE_DONE:
                 err = getattr(result, 'comment', None) if result else "Unknown"
                 self.logger.error(f"Failed to set SL/TP for #{ticket}: {err}")
@@ -433,13 +446,21 @@ class PositionManager:
                     positions = mt5.positions_get(ticket=ticket)
                     if positions:
                         p = positions[0]
-                        # Compare sl/tp with slight tolerance for rounding
+                        # Compare sl/tp with tolerance for broker rounding and symbol digits
                         sl_ok = True
                         tp_ok = True
+                        try:
+                            sym_info = mt5.symbol_info(position_info.symbol)
+                            digits = getattr(sym_info, 'digits', 5) if sym_info is not None else 5
+                            # tolerance: at least 1e-5, but scale with symbol digits (e.g., 0.01 for 2 digits)
+                            tol = max(10 ** -digits, 1e-5)
+                        except Exception:
+                            tol = 1e-5
+
                         if sl is not None:
-                            sl_ok = abs((p.sl or 0.0) - sl) < (10 ** -5)
+                            sl_ok = abs((p.sl or 0.0) - sl) <= tol
                         if tp is not None:
-                            tp_ok = abs((p.tp or 0.0) - tp) < (10 ** -5)
+                            tp_ok = abs((p.tp or 0.0) - tp) <= tol
                         if sl_ok and tp_ok:
                             verified = True
                             break
@@ -532,7 +553,7 @@ class PositionManager:
                 "deviation": 10,
                 "magic": self.execution_engine.magic_number,
                 "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_FOK,
+                    "type_filling": mt5.ORDER_FILLING_IOC,
             }
 
             # Only include `comment` when it is non-empty and <=31 chars (MT5 requirement).
@@ -626,6 +647,13 @@ class PositionManager:
                 f"P&L: {realized_pnl:+.2f} | "
                 f"Reason: {reason}"
             )
+
+            # Record trade result in metrics collector if available
+            try:
+                if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'metrics', None):
+                    self.execution_engine.metrics.record_trade(float(realized_pnl))
+            except Exception:
+                self.logger.debug('Failed to record trade in metrics collector', exc_info=True)
             
             return ExecutionResult(
                 order_id=result.order,

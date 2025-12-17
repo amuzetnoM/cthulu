@@ -328,11 +328,13 @@ class TradeManager:
                                 err = mt5.last_error()
                                 err_msg = str(err) if err else 'unknown error'
                                 self.logger.warning(f"Initial SL/TP apply failed for #{trade.ticket} (error: {err_msg}), starting aggressive retry")
+                                # Exponential backoff retry strategy (1s,2s,4s,8s)
                                 retried = False
+                                backoff = 1
                                 for attempt in range(4):
                                     try:
-                                        time.sleep(1)
-                                        self.logger.debug(f"Retrying SL/TP for #{trade.ticket} (attempt {attempt+1})")
+                                        time.sleep(backoff)
+                                        self.logger.debug(f"Retrying SL/TP for #{trade.ticket} (attempt {attempt+1}, backoff={backoff}s)")
                                         success = self.position_manager.set_sl_tp(trade.ticket, sl=sl, tp=tp)
                                         if success:
                                             retried = True
@@ -342,6 +344,7 @@ class TradeManager:
                                             break
                                     except Exception as e:
                                         self.logger.debug(f"Retry attempt {attempt+1} error for #{trade.ticket}: {e}")
+                                    backoff = min(backoff * 2, 60)
                                 if not retried:
                                     # Record pending SL/TP to retry later and capture MT5 error
                                     err = mt5.last_error()
@@ -349,11 +352,13 @@ class TradeManager:
                                     self.logger.warning(f"Failed to apply SL/TP to adopted trade #{trade.ticket} after retries; queuing for retry (error: {err_msg})")
                                     if 'AutoTrading' in err_msg or 'auto' in err_msg.lower():
                                         self.logger.warning("AutoTrading appears to be disabled in the MT5 client. Please enable AutoTrading to allow SL/TP updates; Herald will retry automatically.")
+                                    now_ts = int(time.time())
                                     self._pending_sl_tp[trade.ticket] = {
                                         'sl': sl,
                                         'tp': tp,
                                         'attempts': self._pending_sl_tp.get(trade.ticket, {}).get('attempts', 0) + 1,
-                                        'last_error': err_msg
+                                        'last_error': err_msg,
+                                        'next_retry_ts': now_ts + 2 ** min(self._pending_sl_tp.get(trade.ticket, {}).get('attempts', 0), 6)
                                     }
                 except Exception as e:
                     self.logger.error(f"Error applying SL/TP to adopted trade #{trade.ticket}: {e}")
@@ -373,15 +378,25 @@ class TradeManager:
         self.logger.debug(f"Retrying SL/TP for {len(self._pending_sl_tp)} pending trade(s)")
         for ticket, info in list(self._pending_sl_tp.items()):
             try:
+                now = int(time.time())
+                next_retry = info.get('next_retry_ts', 0)
+                if now < next_retry:
+                    self.logger.debug(f"Skipping retry for #{ticket}; next retry at {next_retry} (now={now})")
+                    continue
+
                 success = self.position_manager.set_sl_tp(ticket, sl=info.get('sl'), tp=info.get('tp'))
                 info['attempts'] = info.get('attempts', 0) + 1
                 if success:
                     self.logger.info(f"Successfully applied pending SL/TP to #{ticket}: SL={info.get('sl')}, TP={info.get('tp')}")
                     del self._pending_sl_tp[ticket]
                 else:
-                    self.logger.debug(f"Retry {info['attempts']} failed for #{ticket}")
-                    if info['attempts'] >= 5:
-                        self.logger.warning(f"Giving up on SL/TP for #{ticket} after {info['attempts']} attempts")
+                    attempts = info['attempts']
+                    # exponential backoff for next retry (cap at 5 minutes)
+                    delay = min(2 ** min(attempts, 8), 300)
+                    info['next_retry_ts'] = int(time.time()) + delay
+                    self.logger.debug(f"Retry {attempts} failed for #{ticket}; scheduling next retry in {delay}s")
+                    if attempts >= 6:
+                        self.logger.warning(f"Giving up on SL/TP for #{ticket} after {attempts} attempts")
                         del self._pending_sl_tp[ticket]
             except Exception as e:
                 self.logger.error(f"Error retrying SL/TP for #{ticket}: {e}", exc_info=True)
