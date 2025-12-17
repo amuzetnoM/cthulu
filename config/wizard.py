@@ -360,23 +360,28 @@ def parse_natural_language_intent(text: str) -> Dict[str, Any]:
     if suf_match:
         base = suf_match.group(1).upper()
         suffix = suf_match.group(2)
-        # If the base maps to a named asset (e.g., gold -> XAUUSD) prefer that mapping
-        if base.lower() in named:
-            intent['symbol'] = named[base.lower()]
+        # Normalize suffix ordering
+        s_low = ''.join(ch for ch in suffix if ch in '#mM').lower()
+        if '#m' in s_low:
+            suf_norm = '#m'
+        elif 'm#' in s_low:
+            suf_norm = 'm#'
+        elif '#' in s_low:
+            suf_norm = '#'
+        elif 'm' in s_low:
+            suf_norm = 'm'
         else:
-            # normalize suffix ordering
-            s_low = ''.join(ch for ch in suffix if ch in '#mM').lower()
-            if '#m' in s_low:
-                suf_norm = '#m'
-            elif 'm#' in s_low:
-                suf_norm = 'm#'
-            elif '#' in s_low:
-                suf_norm = '#'
-            elif 'm' in s_low:
-                suf_norm = 'm'
-            else:
-                suf_norm = ''
+            suf_norm = ''
+        # If a suffix was provided by the user, prefer the explicit token (e.g., 'GOLD#m')
+        # rather than mapping a base name like 'GOLD' to a common asset name like 'XAUUSD'.
+        if suf_norm:
             intent['symbol'] = (base + suf_norm).upper()
+        else:
+            # No suffix provided: if the base maps to a named asset (e.g., gold -> XAUUSD), use that mapping
+            if base.lower() in named:
+                intent['symbol'] = named[base.lower()]
+            else:
+                intent['symbol'] = base.upper()
     else:
         # Prefer longer/common symbols first to preserve suffixes like '#'
         try:

@@ -17,7 +17,7 @@ from config.wizard import parse_natural_language_intent
             "Aggressive GOLD#m M15 H1, 2% risk, $100 max loss",
             {
                 'mindset': 'aggressive',
-                'symbol': 'XAUUSD',
+                'symbol': 'GOLD#M',
                 'timeframes': ['TIMEFRAME_M15', 'TIMEFRAME_H1'],
                 'position_size_pct': 2.0,
                 'max_daily_loss': 100.0,
