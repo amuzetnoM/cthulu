@@ -320,7 +320,7 @@ def main():
         
         # 4. Execution Engine
         logger.info("Initializing execution engine...")
-        execution_engine = ExecutionEngine(connector, risk_config=risk_config)
+        execution_engine = ExecutionEngine(connector, risk_config=risk_config, ml_collector=ml_collector)
         
         # 5. Position Manager
         logger.info("Initializing position manager...")
@@ -354,6 +354,21 @@ def main():
         logger.info("Initializing metrics collector...")
         metrics = MetricsCollector()
         
+        # 7b. ML instrumentation collector (optional, configurable via config['ml'])
+        ml_collector = None
+        try:
+            ml_config = config.get('ml', {}) if isinstance(config, dict) else {}
+            ml_enabled = ml_config.get('enabled', True)
+            if ml_enabled:
+                from herald.ML_RL.instrumentation import MLDataCollector
+                ml_prefix = ml_config.get('prefix', 'events')
+                ml_collector = MLDataCollector(prefix=ml_prefix)
+                logger.info('MLDataCollector initialized')
+            else:
+                logger.info('ML instrumentation disabled via config')
+        except Exception:
+            logger.exception('Failed to initialize MLDataCollector; continuing without it')
+
         # 8. Load indicators
         logger.info("Loading indicators...")
         indicators = load_indicators(config.get('indicators', []))

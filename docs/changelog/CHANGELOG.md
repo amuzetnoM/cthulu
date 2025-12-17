@@ -17,51 +17,40 @@ slug: /docs/changelog
 ## UNRELEASED
 
 ### In-Progress
-- **Risk scaling & dynamic sizing**: implementing confidence-scaled position multipliers (ATR-aware) and SL auto-scaling by account-balance buckets. These changes aim to make live mode more aggressive while keeping per-trade protections. See `herald/risk/manager.py` for details.
-
-### Risk & Runtime
-- **Risk tuning (live)**: tightened default live risk profile for small-balance quick trading: `max_position_size_pct` increased to 5%, `max_total_positions` to 5, `min_confidence` introduced (0.6), and `emergency_stop_loss_pct` reduced to 2.5% to enable quicker, tighter trades under dynamic management. These changes are gated by the live-run confirmation env var and can be adjusted in `herald/config.json`.
-
-### Added
-- **NLP wizard**: added lightweight, local intent parser and interactive `--wizard-ai` option to propose and save configs from natural-language input (symbol, timeframe(s), mindset, risk profile). See `config/wizard.py` for details.
-- **Per-mindset, per-timeframe configuration profiles** (configs/mindsets/*) enabling robust multi-timeframe deployments.
-- **Adopt-only CLI mode** (`--adopt-only`) to scan and adopt external trades without entering the main trading loop.
--**Trade adoption enhancements**: automatic application of protective SL/TP (configurable via `risk.emergency_stop_loss_pct` and `strategy.params.risk_reward_ratio`) when adopting external trades.
-- **Interactive shutdown prompt**: on graceful shutdown Herald now prompts the user to Close All / Leave Open / Close specific ticket(s) (use `--no-prompt` to disable for automation).
-- **Symbol matching & market-data robustness**: improved MT5 symbol selection with normalized matching and variant detection to reduce `Failed to select symbol` errors.
-- **SL/TP verification & retry queue**: after setting SL/TP Herald now *verifies* the broker accepted the modification by reading back the position; failures are logged and emit a Prometheus metric (`herald_sl_tp_failure_total`). Failed updates are queued and retried until success (with capped attempts).
-- **Aggressive immediate SL/TP retry**: if initial SL/TP application fails during adoption, Herald makes several quick retry attempts (configurable) before queuing for background retries to ensure protection is applied as soon as possible.
-- Test utilities: `scripts/place_test_trade.py` and `scripts/place_external_test_trade.py` added to place internal and external test trades for end-to-end verification.
-- **Wizard enhancements**: multi-timeframe selection, save-as-mindset profiles, and one-click start (dry-run or live) from the wizard.
-- **Configurable SL thresholds and emergency stop**:
-- `risk.sl_balance_thresholds` — mapping of balance buckets to relative SL thresholds.
-- `risk.sl_balance_breakpoints` — numeric breakpoints for buckets.
-- `risk.emergency_stop_loss_pct` — default emergency stop percentage used during adoption.
-- `position.risk_manager` now suggests and (optionally) adjusts SLs for both new orders and adoption scenarios when proposed SLs are unusually wide for account size.
-- Market data & tick manager enhancements:
-- `market/tick_manager.py` added: lightweight ring buffers, subscribe API, priority poller.
-- Connector now exposes `get_recent_ticks`, `subscribe_ticks`, and `unsubscribe_ticks`.
-- **Provider fallbacks**: MT5 is primary; planned fallbacks include AlphaVantage and Binance REST (pluggable providers).
-- **Adaptive rate control and token-bucket quota tracking** added to `TickManager` (initial implementation).
-- **Prometheus** metrics for ticks: `herald_tick_age_seconds`, `herald_tick_poll_errors_total`, and `herald_tick_source_switches_total` (exporter hooks added).
-
-
-
-### Changed
-- Default aggressive profiles now restrict orphan adoption to `GOLD#m` only (BTCUSD temporarily disabled) unless overridden.
-- `run_herald_multi_tf.ps1` updated to support multiple symbols and timeframes and dry-run option.
-- Added `--symbol` CLI flag to override trading symbol at startup.
-- **Shutdown behavior**: graceful shutdown no longer force-closes positions by default; user must confirm closure interactively (or use `--no-prompt` to skip asking and leave positions intact).
-- Adoption is performed every loop and pending SL/TP operations are retried (more resilient behavior).
-
-### Fixed
-- Reliability improvements to trade adoption and SL/TP application on adopted trades.
-- Fixed intermittent market data failures caused by symbol-format mismatches (e.g., `GOLDm#` vs. `GOLD#m`) via normalization and candidate symbol selection.
-
-### Security
-- No security changes in this release.
+- **ML pipeline & instrumentation (WIP)**: Implemented the `herald/ML_RL` skeleton and `MLDataCollector` to record gzipped JSONL events for `order_request`, `execution`, and `market_snapshot`. Integration test `tests/integration/test_ml_instrumentation_live.py` added (gated) for end-to-end validation. Next steps: feature pipelines, model training/evaluation, serving, monitoring, and a safe deployment path (shadow/advisory modes).
+- **Runtime ML toggle (planned)**: plan to add `--enable-ml` CLI flag to explicitly enable/disable ML instrumentation at runtime (configuration currently reads `config['ml'].enabled`).
+- **ML pipeline roadmap**: add feature engineering, offline training scripts, model evaluation, CI for model checks, and drift monitoring (tracked in the docs and `herald/ML_RL/README.md`).
 
 ---
+
+## **3.2.0 — 2025-12-17**
+
+### Summary
+Release focused on robust trade adoption, SL/TP reliability, and operational hygiene. Also includes scripting utilities for testing and improved observability.
+
+### Added
+- **SL/TP verification & retry queue**: After applying SL/TP Herald verifies broker acceptance and queues failed updates for scheduled retries; emits Prometheus metric `herald_sl_tp_failure_total` on failures.
+- **Exponential backoff retry scheduling**: SL/TP and other retriable operations now use capped exponential backoff scheduling to reduce retry storms.
+- **Close flow improvements**: Use IOC filling for closes, sanitize comments to avoid broker rejections, and retry fallback without comments when needed.
+- **Metrics on close and SL/TP events**: Instrumented execution flows to record metrics for closed trades and SL/TP events for performance summaries.
+- **Test & diagnostic tools archived**: Moved ad-hoc diagnostic scripts into `herald/.archive/` and added `.archive/README.md` for provenance.
+- **Backup snapshot**: Created a full repository snapshot at `C:\workspace\_dev\_backup\herald` for recoverability and audits.
+- **System mapping docs**: Updated `herald/docs/system_mapping.md` to reflect archive, backup, and component mapping.
+
+### Changed
+- **Adoption & retry behavior**: improved adoption flow to aggressively apply SL/TP then fallback to scheduled retries; pending operations persist in memory until successful.
+- **Symbol matching**: enhanced MT5 symbol matching to normalize variants and avoid mis-selection errors (e.g., `GOLDm#` vs `GOLD#m`).
+- **Execution engine**: added optional `ml_collector` parameter and non-blocking instrumentation calls for orders and closes.
+- **Tests**: removed mocked-only instrumentation unit test in favor of a gated live integration test for end-to-end ML instrumentation validation.
+
+### Fixed
+- Fixed intermittent failures when applying SL/TP due to rounding/filling behavior by introducing digit-aware tolerances and read-back verification.
+- Addressed unsupported filling mode errors for close orders by switching to IOC filling and retrying without comments if broker rejects the request.
+
+---
+
+# RELEASE HISTORY
+
 
 # RELEASE HISTORY
 

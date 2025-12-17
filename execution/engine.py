@@ -116,7 +116,7 @@ class ExecutionEngine:
     - Order modification and cancellation
     """
     
-    def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None, metrics=None):
+    def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None, metrics=None, ml_collector=None):
         """
         Initialize execution engine.
         
@@ -134,6 +134,8 @@ class ExecutionEngine:
         self.logger = logging.getLogger("herald.execution")
         # Optional metrics collector (MetricsCollector)
         self.metrics = metrics
+        # Optional ML instrumentation collector
+        self.ml_collector = ml_collector
         
         # Order tracking for idempotency
         self._submitted_orders: Dict[str, int] = {}
@@ -214,6 +216,18 @@ class ExecutionEngine:
             if result is None:
                 error = mt5.last_error()
                 self.logger.error(f"Order submission failed: {error}")
+                # Instrumentation: record failed execution if collector available
+                try:
+                    if self.ml_collector:
+                        exec_payload = {
+                            'order_id': None,
+                            'status': 'REJECTED',
+                            'error': str(error)
+                        }
+                        self.ml_collector.record_execution(exec_payload)
+                except Exception:
+                    self.logger.exception('ML collector failed')
+
                 return ExecutionResult(
                     order_id=None,
                     status=OrderStatus.REJECTED,
@@ -286,6 +300,37 @@ class ExecutionEngine:
                 except Exception:
                     position_ticket = None
 
+                # Instrumentation: record order and execution events for ML
+                try:
+                    if self.ml_collector:
+                        order_payload = {
+                            'signal_id': order_req.signal_id,
+                            'symbol': order_req.symbol,
+                            'side': order_req.side,
+                            'volume': order_req.volume,
+                            'order_type': order_req.order_type.value if hasattr(order_req.order_type, 'value') else str(order_req.order_type),
+                            'price': order_req.price,
+                            'sl': order_req.sl,
+                            'tp': order_req.tp,
+                            'client_tag': order_req.client_tag,
+                            'metadata': order_req.metadata
+                        }
+                        self.ml_collector.record_order(order_payload)
+
+                        exec_payload = {
+                            'order_id': getattr(result, 'order', None),
+                            'position_ticket': position_ticket,
+                            'status': 'FILLED',
+                            'price': getattr(result, 'price', None),
+                            'volume': getattr(result, 'volume', None),
+                            'timestamp': datetime.utcnow().isoformat() + 'Z',
+                            'metadata': md
+                        }
+                        self.ml_collector.record_execution(exec_payload)
+                except Exception:
+                    # Best-effort: do not fail order flow if instrumentation errors
+                    self.logger.exception('ML collector failed')
+
                 return ExecutionResult(
                     order_id=result.order,
                     position_ticket=position_ticket,
@@ -297,6 +342,19 @@ class ExecutionEngine:
                 )
             else:
                 self.logger.error(f"Order rejected: {result.retcode} - {result.comment}")
+                # Instrumentation: record failed execution
+                try:
+                    if self.ml_collector:
+                        exec_payload = {
+                            'order_id': None,
+                            'status': 'REJECTED',
+                            'error': f"{result.retcode}: {getattr(result, 'comment', None)}",
+                            'metadata': {'retcode': getattr(result, 'retcode', None), 'comment': getattr(result, 'comment', None)}
+                        }
+                        self.ml_collector.record_execution(exec_payload)
+                except Exception:
+                    self.logger.exception('ML collector failed')
+
                 return ExecutionResult(
                     order_id=None,
                     status=OrderStatus.REJECTED,
@@ -309,6 +367,17 @@ class ExecutionEngine:
                 
         except Exception as e:
             self.logger.error(f"Order execution error: {e}", exc_info=True)
+            try:
+                if self.ml_collector:
+                    exec_payload = {
+                        'order_id': None,
+                        'status': 'REJECTED',
+                        'error': str(e)
+                    }
+                    self.ml_collector.record_execution(exec_payload)
+            except Exception:
+                self.logger.exception('ML collector failed')
+
             return ExecutionResult(
                 order_id=None,
                 status=OrderStatus.REJECTED,
@@ -374,6 +443,21 @@ class ExecutionEngine:
             
             if result and result.retcode == mt5.TRADE_RETCODE_DONE:
                 self.logger.info(f"Position closed: #{ticket} | Profit: {result.profit:.2f}")
+                try:
+                    if self.ml_collector:
+                        exec_payload = {
+                            'position_ticket': ticket,
+                            'order_id': getattr(result, 'order', None),
+                            'status': 'CLOSED',
+                            'price': getattr(result, 'price', None),
+                            'volume': getattr(result, 'volume', None),
+                            'profit': getattr(result, 'profit', None),
+                            'timestamp': datetime.utcnow().isoformat() + 'Z',
+                        }
+                        self.ml_collector.record_execution(exec_payload)
+                except Exception:
+                    self.logger.exception('ML collector failed')
+
                 return ExecutionResult(
                     order_id=result.order,
                     status=OrderStatus.FILLED,
@@ -384,6 +468,19 @@ class ExecutionEngine:
                 )
             else:
                 error = result.comment if result else "Unknown error"
+                try:
+                    if self.ml_collector:
+                        exec_payload = {
+                            'position_ticket': ticket,
+                            'order_id': None,
+                            'status': 'REJECTED',
+                            'error': error,
+                            'timestamp': datetime.utcnow().isoformat() + 'Z'
+                        }
+                        self.ml_collector.record_execution(exec_payload)
+                except Exception:
+                    self.logger.exception('ML collector failed')
+
                 return ExecutionResult(
                     order_id=None,
                     status=OrderStatus.REJECTED,
@@ -395,6 +492,19 @@ class ExecutionEngine:
                 
         except Exception as e:
             self.logger.error(f"Position close error: {e}")
+            try:
+                if self.ml_collector:
+                    exec_payload = {
+                        'position_ticket': ticket,
+                        'order_id': None,
+                        'status': 'REJECTED',
+                        'error': str(e),
+                        'timestamp': datetime.utcnow().isoformat() + 'Z'
+                    }
+                    self.ml_collector.record_execution(exec_payload)
+            except Exception:
+                self.logger.exception('ML collector failed')
+
             return ExecutionResult(
                 order_id=None,
                 status=OrderStatus.REJECTED,
