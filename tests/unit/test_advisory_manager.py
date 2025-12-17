@@ -52,15 +52,19 @@ def test_ghost_mode_places_limited_trades():
     assert m.ghost_max_trades == 2
 
     r1 = m.decide(req)
-    if r1['action'] == 'reject':
-        # provide debug info from ML events
-        last = ml.events[-1] if ml.events else None
-        raise AssertionError(f'First ghost decision rejected; ml={last}')
     assert r1['action'] == 'ghost'
+    # immediate exec_engine.calls should be empty because ghost runs asynchronously
+    assert not exec_engine.calls
+
+    # Wait briefly for background worker to process the queued ghost
+    import time as _t
+    _t.sleep(0.1)
     assert exec_engine.calls and exec_engine.calls[-1].volume == 0.02
 
     r2 = m.decide(req)
     assert r2['action'] == 'ghost'
+
+    _t.sleep(0.1)
     assert len(exec_engine.calls) == 2
 
     r3 = m.decide(req)
