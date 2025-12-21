@@ -323,6 +323,9 @@ def main():
         )
         risk_manager = RiskManager(risk_limits)
         
+        # Ensure ml_collector is defined (safe default) so the execution engine construction does not raise
+        ml_collector = None
+        
         # 4. Execution Engine
         logger.info("Initializing execution engine...")
         execution_engine = ExecutionEngine(connector, risk_config=risk_config, ml_collector=ml_collector)
