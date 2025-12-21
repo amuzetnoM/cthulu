@@ -50,57 +50,10 @@ shutdown_requested = False
 
 
 def signal_handler(signum, frame):
-    """Handle shutdown signals gracefully with enhanced diagnostics.
-
-    Logs the signal number, PID, parent PID, thread name, and a short stack trace
-    to both the application logger and a persistent `shutdown_signals.log` file so
-    we can determine the source of unexpected shutdowns.
-    """
+    """Handle shutdown signals gracefully."""
     global shutdown_requested
     shutdown_requested = True
-
-    # Friendly console message for operators
     print("\nShutdown signal received, closing positions...")
-
-    # Best-effort diagnostics (non-fatal)
-    try:
-        import os
-        import datetime
-        import traceback
-        import threading
-        logger = logging.getLogger('herald')
-
-        ts = datetime.datetime.utcnow().isoformat() + 'Z'
-        pid = os.getpid()
-        ppid = os.getppid() if hasattr(os, 'getppid') else None
-        thread_name = threading.current_thread().name
-
-        # frame may be None in some environments
-        stack = ''.join(traceback.format_stack(frame)) if frame is not None else 'no-frame-available'
-
-        msg = (
-            f"Shutdown signal received: signum={signum}, pid={pid}, ppid={ppid}, thread={thread_name}\n"
-            f"Stack:\n{stack}"
-        )
-
-        # Log to structured logger and a persistent file for forensics
-        try:
-            logger.info(msg)
-        except Exception:
-            # Ensure we do not raise from the handler
-            pass
-
-        try:
-            with open('shutdown_signals.log', 'a', encoding='utf-8') as fh:
-                fh.write(f"{ts} {msg}\n")
-        except Exception:
-            pass
-
-    except Exception:
-        try:
-            logging.getLogger('herald').exception('Error while recording shutdown diagnostics')
-        except Exception:
-            pass
 
 
 from config_schema import Config
@@ -210,29 +163,6 @@ def load_exit_strategies(exit_configs: Dict[str, Any]) -> List:
     exit_strategies.sort(key=lambda x: x.priority, reverse=True)
     
     return exit_strategies
-
-
-def init_ml_collector(config, args, logger):
-    """
-    Initialize and return MLDataCollector based on config and CLI args.
-    """
-    ml_collector = None
-    try:
-        ml_config = config.get('ml', {}) if isinstance(config, dict) else {}
-        ml_enabled = ml_config.get('enabled', True)
-        # CLI overrides config when provided
-        if hasattr(args, 'enable_ml') and args.enable_ml is not None:
-            ml_enabled = args.enable_ml
-        if ml_enabled:
-            from herald.ML_RL.instrumentation import MLDataCollector
-            ml_prefix = ml_config.get('prefix', 'events')
-            ml_collector = MLDataCollector(prefix=ml_prefix)
-            logger.info('MLDataCollector initialized')
-        else:
-            logger.info('ML instrumentation disabled via config/CLI')
-    except Exception:
-        logger.exception('Failed to initialize MLDataCollector; continuing without it')
-    return ml_collector
 
 
 def main():
@@ -393,14 +323,11 @@ def main():
         )
         risk_manager = RiskManager(risk_limits)
         
-        # 4. ML instrumentation (initialize before creating the Execution Engine so the engine can use it)
-        ml_collector = init_ml_collector(config, args, logger)
-        
-        # 5. Execution Engine
+        # 4. Execution Engine
         logger.info("Initializing execution engine...")
         execution_engine = ExecutionEngine(connector, risk_config=risk_config, ml_collector=ml_collector)
         
-        # 6. Position Manager
+        # 5. Position Manager
         logger.info("Initializing position manager...")
         position_manager = PositionManager(connector, execution_engine)
         
@@ -432,7 +359,27 @@ def main():
         logger.info("Initializing metrics collector...")
         metrics = MetricsCollector()
         
-        # ML instrumentation initialized earlier (before engine construction)
+        # 7b. ML instrumentation collector (optional, configurable via config['ml'] or CLI)
+        def init_ml_collector(config, args, logger):
+            ml_collector = None
+            try:
+                ml_config = config.get('ml', {}) if isinstance(config, dict) else {}
+                ml_enabled = ml_config.get('enabled', True)
+                # CLI overrides config when provided
+                if hasattr(args, 'enable_ml') and args.enable_ml is not None:
+                    ml_enabled = args.enable_ml
+                if ml_enabled:
+                    from herald.ML_RL.instrumentation import MLDataCollector
+                    ml_prefix = ml_config.get('prefix', 'events')
+                    ml_collector = MLDataCollector(prefix=ml_prefix)
+                    logger.info('MLDataCollector initialized')
+                else:
+                    logger.info('ML instrumentation disabled via config/CLI')
+            except Exception:
+                logger.exception('Failed to initialize MLDataCollector; continuing without it')
+            return ml_collector
+
+        ml_collector = init_ml_collector(config, args, logger)
 
         # Advisory manager (advisory/ghost modes)
         try:
@@ -466,9 +413,9 @@ def main():
         # 11. Start trade monitor (optional, non-blocking)
         try:
             from herald.monitoring.trade_monitor import TradeMonitor
-            monitor = TradeMonitor(position_manager, trade_manager=trade_manager, poll_interval=config.get('monitor_poll_interval', 5.0), ml_collector=ml_collector if ml_collector else None)
+            monitor = TradeMonitor(position_manager, trade_manager=trade_manager, poll_interval=config.get('monitor_poll_interval', 5.0), ml_collector=metrics if metrics else None)
             monitor.start()
-            logger.info(f"TradeMonitor started (ml_collector={type(monitor.ml_collector)})")
+            logger.info('TradeMonitor started')
         except Exception:
             logger.exception('Failed to start TradeMonitor; continuing without it')
 
