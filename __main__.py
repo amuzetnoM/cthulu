@@ -416,9 +416,9 @@ def main():
         # 11. Start trade monitor (optional, non-blocking)
         try:
             from herald.monitoring.trade_monitor import TradeMonitor
-            monitor = TradeMonitor(position_manager, trade_manager=trade_manager, poll_interval=config.get('monitor_poll_interval', 5.0), ml_collector=metrics if metrics else None)
+            monitor = TradeMonitor(position_manager, trade_manager=trade_manager, poll_interval=config.get('monitor_poll_interval', 5.0), ml_collector=ml_collector if ml_collector else None)
             monitor.start()
-            logger.info('TradeMonitor started')
+            logger.info(f"TradeMonitor started (ml_collector={type(monitor.ml_collector)})")
         except Exception:
             logger.exception('Failed to start TradeMonitor; continuing without it')
 
