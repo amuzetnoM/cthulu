@@ -524,20 +524,47 @@ class ExecutionEngine:
         else:
             mt5_type = mt5.ORDER_TYPE_SELL
             
+        # Ensure symbol exists and select the proper variant
+        selected_symbol = self.connector.ensure_symbol_selected(order_req.symbol) or order_req.symbol
+
         # Get current price if market order
         if order_req.order_type == OrderType.MARKET:
-            symbol_info = self.connector.get_symbol_info(order_req.symbol)
-            if order_req.side.upper() == 'BUY':
-                price = symbol_info['ask']
+            symbol_info = self.connector.get_symbol_info(selected_symbol)
+            price = None
+            if symbol_info and symbol_info.get('ask') is not None and symbol_info.get('bid') is not None:
+                price = symbol_info['ask'] if order_req.side.upper() == 'BUY' else symbol_info['bid']
             else:
-                price = symbol_info['bid']
+                # Fallback to tick data
+                tick = self.connector._mt5_symbol_info_tick(selected_symbol)
+                if tick is not None:
+                    price = getattr(tick, 'ask', None) if order_req.side.upper() == 'BUY' else getattr(tick, 'bid', None)
+
+            if price is None:
+                raise ValueError(f"Cannot determine market price for {selected_symbol}")
         else:
             price = order_req.price
-            
+
+        # Validate volume against symbol constraints when available
+        final_volume = order_req.volume
+        if symbol_info:
+            try:
+                min_v = float(symbol_info.get('volume_min', 0.01))
+                max_v = float(symbol_info.get('volume_max', 100.0))
+                step = float(symbol_info.get('volume_step', 0.01))
+                if final_volume < min_v:
+                    raise ValueError(f"Requested volume {final_volume} < minimum {min_v} for {selected_symbol}")
+                if final_volume > max_v:
+                    raise ValueError(f"Requested volume {final_volume} > maximum {max_v} for {selected_symbol}")
+                # Normalize to step
+                final_volume = round(round(final_volume / step) * step, 2)
+            except Exception:
+                # If validation fails, let the order submit and let MT5 reject with clearer message
+                pass
+
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
-            "symbol": order_req.symbol,
-            "volume": order_req.volume,
+            "symbol": selected_symbol,
+            "volume": final_volume,
             "type": mt5_type,
             "price": price,
             "deviation": self.slippage,
@@ -557,31 +584,62 @@ class ExecutionEngine:
                 balance = None
 
             if balance is not None and price is not None:
-                # Pass risk_config thresholds to the risk manager if provided
-                thresholds = None
-                breakpoints = None
+                # Compute a proposed SL distance using RiskManager helper
                 try:
-                    thresholds = self.risk_config.get('sl_balance_thresholds')
-                    breakpoints = self.risk_config.get('sl_balance_breakpoints')
-                except Exception:
-                    thresholds = None
-                    breakpoints = None
+                    # suggest_scaled_sl returns an absolute price distance to use as SL
+                    dist = self.limits = None
+                    try:
+                        # Try to use risk manager helper located in herald.position.risk_manager
+                        from herald.position.risk_manager import suggest_sl_adjustment as _sugg_fn
+                        from herald.position.risk_manager import _threshold_from_config as _thr_fn
+                        # Compute a naive proposed SL by using a relative threshold
+                        threshold = _threshold_from_config(balance, self.risk_config.get('sl_balance_thresholds') if isinstance(self.risk_config, dict) else None, self.risk_config.get('sl_balance_breakpoints') if isinstance(self.risk_config, dict) else None)
+                        if order_req.side.upper() == 'BUY':
+                            proposed_sl = float(price) * (1.0 - threshold)
+                        else:
+                            proposed_sl = float(price) * (1.0 + threshold)
+                    except Exception:
+                        # Fallback: use small percent of price (1%)
+                        if order_req.side.upper() == 'BUY':
+                            proposed_sl = float(price) * 0.99
+                        else:
+                            proposed_sl = float(price) * 1.01
 
-                suggestion = risk_manager.suggest_sl_adjustment(
-                    order_req.symbol,
-                    balance,
-                    float(price),
-                    float(price),
-                    side=order_req.side.upper(),
-                    thresholds=self.risk_config.get('sl_balance_thresholds') if isinstance(self.risk_config, dict) else None,
-                    breakpoints=self.risk_config.get('sl_balance_breakpoints') if isinstance(self.risk_config, dict) else None,
-                )
-                # If suggestion indicates within threshold, it returns adjusted_sl=None
-                adj = suggestion.get('adjusted_sl')
-                if adj is not None:
+                    # Ask the risk helper to refine the proposed SL
+                    suggestion = _sugg_fn(
+                        order_req.symbol,
+                        balance,
+                        float(price),
+                        float(proposed_sl),
+                        side=order_req.side.upper(),
+                        thresholds=self.risk_config.get('sl_balance_thresholds') if isinstance(self.risk_config, dict) else None,
+                        breakpoints=self.risk_config.get('sl_balance_breakpoints') if isinstance(self.risk_config, dict) else None,
+                    )
+                    adj = suggestion.get('adjusted_sl')
+                    if adj is not None:
+                        final_sl = adj
+                    else:
+                        final_sl = proposed_sl
+
                     order_req.metadata.setdefault('risk_suggestion', suggestion)
-                    order_req.sl = adj
+                    order_req.sl = float(final_sl)
                     self.logger.info(f"Risk-managed SL for {order_req.symbol}: {order_req.sl} (balance={balance})")
+                except Exception:
+                    self.logger.exception('Failed to compute risk-managed SL; proceeding without SL')
+
+        # If we now have SL but no TP, set TP using a conservative RR (2.0) based on distance
+        if order_req.sl and not order_req.tp and price is not None:
+            try:
+                rr = self.risk_config.get('default_rr', 2.0) if isinstance(self.risk_config, dict) else 2.0
+                if order_req.side.upper() == 'BUY':
+                    sl_dist = float(price) - float(order_req.sl)
+                    order_req.tp = float(price) + abs(sl_dist) * float(rr)
+                else:
+                    sl_dist = float(order_req.sl) - float(price)
+                    order_req.tp = float(price) - abs(sl_dist) * float(rr)
+                self.logger.info(f"Auto TP for {order_req.symbol}: {order_req.tp} (RR={rr})")
+            except Exception:
+                self.logger.exception('Failed to compute auto TP')
 
         if order_req.sl:
             request["sl"] = order_req.sl

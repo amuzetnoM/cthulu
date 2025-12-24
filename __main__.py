@@ -216,6 +216,12 @@ def main():
                        help="Run the lightweight NLP-based wizard (describe intent in natural language)")
     parser.add_argument('--no-prompt', action='store_true',
                        help="Do not prompt on shutdown; leave positions open (useful for automated runs)")
+    parser.add_argument('--manual-prompt', action='store_true',
+                       help="Enable persistent interactive manual trade prompt in the terminal (interactive only)")
+    parser.add_argument('--enable-rpc', action='store_true', help='Enable local RPC server (binds to localhost)')
+    parser.add_argument('--rpc-host', type=str, default='127.0.0.1', help='RPC server host (default 127.0.0.1)')
+    parser.add_argument('--rpc-port', type=int, default=8181, help='RPC server port (default 8181)')
+
     # Runtime ML toggle (CLI) — mutually exclusive enable/disable
     ml_group = parser.add_mutually_exclusive_group()
     ml_group.add_argument('--enable-ml', dest='enable_ml', action='store_true', help='Enable ML instrumentation (overrides config)')
@@ -421,6 +427,137 @@ def main():
             logger.info(f"TradeMonitor started (ml_collector={type(monitor.ml_collector)})")
         except Exception:
             logger.exception('Failed to start TradeMonitor; continuing without it')
+
+        # 11b. Optional interactive manual trade prompt (runs in background thread if enabled and interactive)
+        def _manual_trade_prompt_thread(ex_engine, pos_manager, db, default_symbol: str):
+            """Background thread that offers a persistent prompt to the user to place manual trades.
+
+            This thread uses blocking input() calls so must only be used in interactive terminals.
+            It will construct an OrderRequest and submit it via the provided ExecutionEngine.
+            """
+            import threading
+            import sys
+
+            thread_name = threading.current_thread().name
+            logger.info(f"Manual trade prompt thread started ({thread_name})")
+            try:
+                while True:
+                    try:
+                        ans = input('\nPlace manual trade? (y/N): ').strip().lower()
+                    except EOFError:
+                        # Non-interactive stream closed
+                        logger.info('Manual prompt input closed; stopping prompt thread')
+                        break
+
+                    if ans not in ('y', 'yes'):
+                        # small delay to avoid tight loop
+                        time.sleep(0.5)
+                        continue
+
+                    # Gather trade details
+                    try:
+                        symbol = input(f"Symbol [{default_symbol}]: ").strip() or default_symbol
+                        side = (input("Side (BUY/SELL) [BUY]: ").strip() or 'BUY').upper()
+                        volume_raw = input("Volume (lots) [0.01]: ").strip() or '0.01'
+                        volume = float(volume_raw)
+                        price_raw = input("Price (enter 'market' or a numeric limit price) [market]: ").strip() or 'market'
+                        sl_raw = input("Stop Loss (optional, leave blank for none): ").strip() or None
+                        tp_raw = input("Take Profit (optional, leave blank for none): ").strip() or None
+                    except Exception as e:
+                        logger.exception(f"Manual prompt input error: {e}")
+                        continue
+
+                    # Determine order type
+                    try:
+                        if price_raw.lower() in ('market', 'm', 'current', 'c'):
+                            order_type = OrderType.MARKET
+                            price = None
+                        else:
+                            order_type = OrderType.LIMIT
+                            price = float(price_raw)
+                    except Exception as e:
+                        logger.error(f"Invalid price input: {e}")
+                        continue
+
+                    sl = float(sl_raw) if sl_raw else None
+                    tp = float(tp_raw) if tp_raw else None
+
+                    # Build and submit order
+                    order_req = OrderRequest(
+                        signal_id='manual_prompt',
+                        symbol=symbol,
+                        side='BUY' if side == 'BUY' else 'SELL',
+                        volume=volume,
+                        order_type=order_type,
+                        price=price,
+                        sl=sl,
+                        tp=tp
+                    )
+
+                    logger.info(f"Manual request: {order_req.side} {order_req.volume} {order_req.symbol} @ {order_req.price or 'market'}")
+
+                    try:
+                        res = ex_engine.place_order(order_req)
+                        if res and res.status == OrderStatus.FILLED:
+                            logger.info(f"Manual order filled: ticket={res.order_id} price={res.fill_price}")
+                            # Track position in registry
+                            try:
+                                tracked = pos_manager.track_position(res, signal_metadata={})
+                                if tracked:
+                                    logger.info(f"Tracked manual position: #{tracked.ticket}")
+                                # Record to DB
+                                try:
+                                    tr = TradeRecord(
+                                        signal_id='manual_prompt',
+                                        order_id=res.order_id,
+                                        symbol=order_req.symbol,
+                                        side=order_req.side,
+                                        entry_price=res.fill_price,
+                                        volume=res.filled_volume,
+                                        entry_time=datetime.now(),
+                                    )
+                                    db.record_trade(tr)
+                                except Exception:
+                                    logger.exception('Failed to record manual trade to DB')
+                            except Exception:
+                                logger.exception('Failed to track manual position')
+                        else:
+                            logger.error(f"Manual order failed: {getattr(res,'message',str(res))}")
+                    except Exception:
+                        logger.exception('Error placing manual order via ExecutionEngine')
+
+            except Exception:
+                logger.exception('Manual prompt thread failed')
+
+        # Start interactive prompt if user requested it or if running interactively and stdin is a TTY
+        try:
+            import sys as _sys
+            if (args.manual_prompt or (_sys.stdin.isatty() and not args.adopt_only)) and _sys.stdin.isatty():
+                try:
+                    import threading as _threading
+                    prompt_thread = _threading.Thread(target=_manual_trade_prompt_thread, args=(execution_engine, position_manager, database, config.get('trading', {}).get('symbol', '')), daemon=True, name='manual-prompt')
+                    prompt_thread.start()
+                    logger.info('Manual trade prompt enabled (interactive)')
+                except Exception:
+                    logger.exception('Failed to start manual trade prompt thread')
+        except Exception:
+            logger.exception('Error initializing manual trade prompt')
+
+        # Start RPC server if requested or if HERALD_API_TOKEN provided in env
+        try:
+            import os as _os
+            if args.enable_rpc or _os.getenv('HERALD_API_TOKEN'):
+                token = _os.getenv('HERALD_API_TOKEN')
+                from herald.rpc.server import run_rpc_server
+                try:
+                    if args.enable_rpc and not token:
+                        logger.warning('RPC server enabled without HERALD_API_TOKEN; running unauthenticated (local only)')
+                    rpc_thread, rpc_server = run_rpc_server(args.rpc_host, args.rpc_port, token, execution_engine, risk_manager, position_manager, database)
+                    logger.info('RPC server started')
+                except Exception:
+                    logger.exception('Failed to start RPC server')
+        except Exception:
+            logger.exception('Error initializing RPC server')
 
         # 11b. Optional News / Calendar ingest pipeline (opt-in via config or env)
         try:

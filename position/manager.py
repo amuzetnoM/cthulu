@@ -301,6 +301,46 @@ class PositionManager:
                     except Exception:
                         # Keep monitoring robust; log at debug level
                         self.logger.debug('Dynamic manager evaluation failed', exc_info=True)
+
+                    # If a tracked position is missing SL/TP, attempt to apply a conservative default
+                    try:
+                        if (position_info.stop_loss is None or float(position_info.stop_loss) == 0.0) and getattr(self, 'connector', None) and self.connector.is_connected():
+                            # Avoid rapid repeated attempts per position
+                            last_attempt = position_info.metadata.get('sl_set_attempt_ts')
+                            now_ts = datetime.now().timestamp()
+                            cooldown = float(getattr(self, 'sl_set_cooldown', 60))
+                            if not last_attempt or (now_ts - float(last_attempt)) > cooldown:
+                                try:
+                                    acct = self.connector.get_account_info()
+                                    balance = float(acct.get('balance')) if acct and acct.get('balance') is not None else None
+                                except Exception:
+                                    balance = None
+
+                                if balance and position_info.open_price:
+                                    from herald.position.risk_manager import _threshold_from_config, suggest_sl_adjustment
+                                    threshold = _threshold_from_config(balance, None, None)
+                                    if position_info.side == 'BUY':
+                                        proposed_sl = float(position_info.open_price) * (1.0 - threshold)
+                                    else:
+                                        proposed_sl = float(position_info.open_price) * (1.0 + threshold)
+
+                                    suggestion = suggest_sl_adjustment(position_info.symbol, balance, float(position_info.open_price), float(proposed_sl), side=position_info.side)
+                                    adj = suggestion.get('adjusted_sl') or proposed_sl
+
+                                    # Compute TP using RR 2.0 by default
+                                    rr = 2.0
+                                    if position_info.side == 'BUY':
+                                        tp = float(position_info.open_price) + (float(position_info.open_price) - float(adj)) * rr
+                                    else:
+                                        tp = float(position_info.open_price) - (float(adj) - float(position_info.open_price)) * rr
+
+                                    ok = self.set_sl_tp(position_info.ticket, sl=adj, tp=tp)
+                                    position_info.metadata['sl_set_attempt_ts'] = now_ts
+                                    position_info.metadata.setdefault('dynamic_actions', []).append({'ts': now_ts, 'action': 'apply_default_sl_tp', 'sl': adj, 'tp': tp, 'reason': suggestion.get('reason')})
+                                    if ok:
+                                        self.logger.info(f"Applied default SL/TP to position #{position_info.ticket}: sl={adj}, tp={tp}")
+                    except Exception:
+                        self.logger.exception('Failed to apply default SL/TP to tracked position')
                     
                 else:
                     # Position closed externally - remove from tracking

@@ -1,0 +1,225 @@
+import json
+import urllib.request
+import urllib.error
+import time
+from herald.rpc.server import run_rpc_server
+from herald.execution.engine import OrderStatus
+
+
+class DummyExecutionEngine:
+    def __init__(self, result):
+        self._result = result
+        self.placed = False
+
+    def place_order(self, order_req):
+        self.placed = True
+        return self._result
+
+
+class DummyRiskManager:
+    def __init__(self, approved=True, reason='ok', position_size=None):
+        self.approved = approved
+        self.reason = reason
+        self.position_size = position_size
+        self.called = False
+
+    def approve(self, *args, **kwargs):
+        self.called = True
+        return (self.approved, self.reason, self.position_size)
+
+
+class DummyPositionManager:
+    def __init__(self):
+        self.positions = []
+        self.tracked = False
+
+    def get_positions(self, symbol=None):
+        return self.positions
+
+    def track_position(self, result, signal_metadata=None):
+        self.tracked = True
+        class T:
+            ticket = getattr(result, 'order_id', 12345)
+        return T()
+
+
+class DummyDatabase:
+    def __init__(self):
+        self.recorded = False
+        self.last = None
+
+    def record_trade(self, tr):
+        self.recorded = True
+        self.last = tr
+
+
+class SimpleResult:
+    def __init__(self, status=OrderStatus.FILLED, order_id=1, fill_price=123.45, filled_volume=0.01, message='ok'):
+        self.status = status
+        self.order_id = order_id
+        self.fill_price = fill_price
+        self.filled_volume = filled_volume
+        self.message = message
+
+
+def post(url, data, headers=None):
+    req = urllib.request.Request(url, method='POST')
+    body = json.dumps(data).encode('utf-8')
+    req.add_header('Content-Type', 'application/json')
+    req.add_header('Content-Length', str(len(body)))
+    if headers:
+        for k, v in headers.items():
+            req.add_header(k, v)
+    try:
+        return urllib.request.urlopen(req, data=body)
+    except urllib.error.HTTPError as e:
+        return e
+
+
+def test_missing_auth_allows_when_no_token():
+    result = SimpleResult()
+    exec_engine = DummyExecutionEngine(result)
+    risk = DummyRiskManager(approved=True)
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, None, exec_engine, risk, pos, db)
+    port = server.server_port
+    url = f'http://127.0.0.1:{port}/trade'
+
+    data = {'symbol': 'BTCUSD#m', 'side': 'BUY', 'volume': 0.01}
+    resp = post(url, data)
+    assert resp.code == 200
+    body = json.loads(resp.read())
+    assert body['status'] == 'FILLED'
+    assert exec_engine.placed
+
+    server.shutdown()
+    thread.join(timeout=2)
+
+
+def test_invalid_token_rejected():
+    result = SimpleResult()
+    exec_engine = DummyExecutionEngine(result)
+    risk = DummyRiskManager(approved=True)
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, 'secret', exec_engine, risk, pos, db)
+    port = server.server_port
+    url = f'http://127.0.0.1:{port}/trade'
+
+    data = {'symbol': 'BTCUSD#m', 'side': 'BUY', 'volume': 0.01}
+    resp = post(url, data)  # no auth header
+    assert resp.code == 401
+
+    # valid token provided should succeed
+    headers = {'Authorization': 'Bearer secret'}
+    resp2 = post(url, data, headers=headers)
+    assert resp2.code == 200
+
+    server.shutdown()
+    thread.join(timeout=2)
+
+
+def test_malformed_json_returns_400():
+    result = SimpleResult()
+    exec_engine = DummyExecutionEngine(result)
+    risk = DummyRiskManager(approved=True)
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, None, exec_engine, risk, pos, db)
+    port = server.server_port
+    url = f'http://127.0.0.1:{port}/trade'
+
+    # Use invalid JSON by passing a non-JSON body via urllib without proper encoding
+    req = urllib.request.Request(url, method='POST', data=b'not-json')
+    req.add_header('Content-Type', 'application/json')
+    try:
+        urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+        assert e.code == 400
+
+    server.shutdown()
+    thread.join(timeout=2)
+
+
+def test_missing_fields_returns_400():
+    result = SimpleResult()
+    exec_engine = DummyExecutionEngine(result)
+    risk = DummyRiskManager(approved=True)
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, None, exec_engine, risk, pos, db)
+    port = server.server_port
+    url = f'http://127.0.0.1:{port}/trade'
+
+    data = {'side': 'BUY', 'volume': 0.01}  # missing symbol
+    resp = post(url, data)
+    assert resp.code == 400
+
+    server.shutdown()
+    thread.join(timeout=2)
+
+
+def test_volume_non_numeric_returns_400():
+    result = SimpleResult()
+    exec_engine = DummyExecutionEngine(result)
+    risk = DummyRiskManager(approved=True)
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, None, exec_engine, risk, pos, db)
+    port = server.server_port
+    url = f'http://127.0.0.1:{port}/trade'
+
+    data = {'symbol': 'BTCUSD#m', 'side': 'BUY', 'volume': 'abc'}
+    resp = post(url, data)
+    assert resp.code == 400
+
+    server.shutdown()
+    thread.join(timeout=2)
+
+
+def test_risk_rejected_returns_403():
+    result = SimpleResult()
+    exec_engine = DummyExecutionEngine(result)
+    risk = DummyRiskManager(approved=False, reason='too risky')
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, None, exec_engine, risk, pos, db)
+    port = server.server_port
+    url = f'http://127.0.0.1:{port}/trade'
+
+    data = {'symbol': 'BTCUSD#m', 'side': 'BUY', 'volume': 0.01}
+    resp = post(url, data)
+    assert resp.code == 403
+
+    server.shutdown()
+    thread.join(timeout=2)
+
+
+def test_successful_filled_calls_db_and_track():
+    result = SimpleResult()
+    exec_engine = DummyExecutionEngine(result)
+    risk = DummyRiskManager(approved=True)
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, None, exec_engine, risk, pos, db)
+    port = server.server_port
+    url = f'http://127.0.0.1:{port}/trade'
+
+    data = {'symbol': 'BTCUSD#m', 'side': 'BUY', 'volume': 0.01}
+    resp = post(url, data)
+    assert resp.code == 200
+    body = json.loads(resp.read())
+    assert body['status'] == 'FILLED'
+    assert pos.tracked
+    assert db.recorded
+
+    server.shutdown()
+    thread.join(timeout=2)
