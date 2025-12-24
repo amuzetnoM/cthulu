@@ -19,6 +19,8 @@ slug: /docs/changelog
 ### In-Progress
 - **ML pipeline & instrumentation**: Implemented the `herald/ML_RL` skeleton and `MLDataCollector` to record gzipped JSONL events for `order_request`, `execution`, and `market_snapshot`. Integration test `tests/integration/test_ml_instrumentation_live.py` added (gated) for end-to-end validation. 
 - **News & calendar ingest**: Added `NewsIngestor`, `NewsManager` and adapters (`RssAdapter`, `NewsApiAdapter`, `FREDAdapter`, `TradingEconomicsAdapter`) with caching and fallback. The ingest records `news_event` and `calendar_event` to the ML collector and includes a gated integration test `tests/integration/test_news_ingest_live.py` (requires `RUN_NEWS_INTEGRATION=1`).
+ - **RPC server (default enabled)**: Added a lightweight local-only RPC server (`herald/rpc/server.py`) that is now started by default at process start. The server exposes a protected `/trade` endpoint for manual trade placement and integrates with `ExecutionEngine`, `RiskManager`, `PositionManager`, and `Database`. Use `HERALD_API_TOKEN` to secure the endpoint; when not set the server remains bound to localhost but will run unauthenticated (recommended only for development). Documentation added in `herald/docs/rpc.md` and changelog entry recorded.
+ - **ML pipeline & instrumentation**: Implemented the `herald/ML_RL` skeleton and `MLDataCollector` to record gzipped JSONL events for `order_request`, `execution`, and `market_snapshot`. Integration test `tests/integration/test_ml_instrumentation_live.py` added (gated) for end-to-end validation. 
 - **Advisory & Ghost modes**: Added `AdvisoryManager` to support advisory-only signals and configurable ghost test trades (strict caps and log-only mode). Advisory events are recorded as `advisory.signal` for ML. Unit tests added in `tests/unit/test_advisory_manager.py`.
 - **TradeMonitor alerts**: TradeMonitor now supports wiring to the `NewsManager` and will emit `monitor.news_alert` ML events for high-impact calendar/news items and can pause trading for a configurable window.
 - **TradingEconomics importance mapping**: The TradingEconomics adapter now normalizes event importance/impact into `low` / `medium` / `high` and includes `meta.importance` in events for ML features.
@@ -27,6 +29,35 @@ slug: /docs/changelog
 - **Docs & feature list**: Added `herald/docs/features.md` and `herald/docs/news.md` documenting capabilities and how to enable news ingest.
 
 ---
+
+# RELEASE HISTORY
+
+
+## Table of contents
+ - [Unreleased](#unreleased)
+ - [3.3.1 — 2025-12-24](#331---2025-12-24)
+ - [3.2.0 — 2025-12-17](#320---2025-12-17)
+ - [3.1.0 — 2025-12-07](#310---2025-12-07)
+ - [3.0.0 — 2024-12-07](#300---2024-12-07)
+ - [2.0.0 — 2024-12-06](#200---2024-12-06)
+ - [1.0.0 — 2024-11-15](#100---2024-11-15)
+ - [Release Template](#release-template-use-for-future-releases)
+
+ ---
+
+## **3.3.1 — 2025-12-24**
+
+### Summary
+Small maintenance release to tidy documentation and operational defaults. Highlights:
+- RPC server is now documented as enabled by default (binds to `127.0.0.1:8181`).
+- Documentation clarified for Linux MT5 integration (recommend `mt5linux` or Docker bridge).
+
+### Changed
+- Documentation: updated `docs/rpc.md`, `herald/.env`, and README to reflect default RPC behavior and Linux MT5 options.
+
+### Fixed
+- Changelog and release notes tidied for consistency.
+
 
 ## **3.2.0 — 2025-12-17**
 
@@ -52,20 +83,6 @@ Release focused on robust trade adoption, SL/TP reliability, and operational hyg
 - Fixed intermittent failures when applying SL/TP due to rounding/filling behavior by introducing digit-aware tolerances and read-back verification.
 - Addressed unsupported filling mode errors for close orders by switching to IOC filling and retrying without comments if broker rejects the request.
 
----
-
-# RELEASE HISTORY
-
-
-## Table of contents
-- [Unreleased](#unreleased)
-- [3.1.0 — 2025-12-07](#310---2025-12-07)
-- [3.0.0 — 2024-12-07](#300---2024-12-07)
-- [2.0.0 — 2024-12-06](#200---2024-12-06)
-- [1.0.0 — 2024-11-15](#100---2024-11-15)
-- [Release Template](#release-template-use-for-future-releases)
-
----
 
 ## **3.1.0 — 2025-12-07**
 
@@ -90,8 +107,6 @@ Enhances trade management capabilities, adds CLI tooling, improves configuration
 ### Security
 - Pre-commit hooks configured with `detect-secrets` and a `.secrets.baseline` file for secret scanning.
 
----
-
 ## **3.0.0 — 2024-12-07**
 
 ### Summary
@@ -108,7 +123,6 @@ Production-ready system release with full MT5 integration, comprehensive testing
 ### Fixed
 - MT5 connection handling, market data compatibility, and test edge cases.
 
----
 
 ## **2.0.0 — 2024-12-06**
 

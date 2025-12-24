@@ -543,19 +543,18 @@ def main():
         except Exception:
             logger.exception('Error initializing manual trade prompt')
 
-        # Start RPC server if requested or if HERALD_API_TOKEN provided in env
+        # Start RPC server by default (no CLI flag required) - local-only by design
         try:
             import os as _os
-            if args.enable_rpc or _os.getenv('HERALD_API_TOKEN'):
-                token = _os.getenv('HERALD_API_TOKEN')
-                from herald.rpc.server import run_rpc_server
-                try:
-                    if args.enable_rpc and not token:
-                        logger.warning('RPC server enabled without HERALD_API_TOKEN; running unauthenticated (local only)')
-                    rpc_thread, rpc_server = run_rpc_server(args.rpc_host, args.rpc_port, token, execution_engine, risk_manager, position_manager, database)
-                    logger.info('RPC server started')
-                except Exception:
-                    logger.exception('Failed to start RPC server')
+            token = _os.getenv('HERALD_API_TOKEN')
+            from herald.rpc.server import run_rpc_server
+            try:
+                if not token:
+                    logger.warning('HERALD_API_TOKEN not set; RPC server running locally unauthenticated')
+                rpc_thread, rpc_server = run_rpc_server(args.rpc_host, args.rpc_port, token, execution_engine, risk_manager, position_manager, database)
+                logger.info('RPC server started (default enabled)')
+            except Exception:
+                logger.exception('Failed to start RPC server')
         except Exception:
             logger.exception('Error initializing RPC server')
 

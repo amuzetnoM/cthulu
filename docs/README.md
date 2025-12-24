@@ -15,6 +15,8 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Phase 3](https://img.shields.io/badge/phase%203-%20trade%20management-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
 
+> Note on MT5 (Linux vs Windows): The official `MetaTrader5` Python package is Windows-only. On Linux use the `mt5linux` adapter or run a Docker-based MT5 bridge (for example `jsfrnc/mt5-docker-api`) and connect via the Linux client adapter. See `docs/mt5.md` for platform-specific setup notes.
+
 > **Adaptive Trading Intelligence**
 > A complete autonomous trading system with entry and exit execution, technical indicators, and advanced position management (MT5)
 
