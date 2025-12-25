@@ -367,6 +367,13 @@ def main():
         # 7. Metrics
         logger.info("Initializing metrics collector...")
         metrics = MetricsCollector()
+
+        # Attach metrics to execution engine if it exists so PositionManager can report opens
+        try:
+            if 'execution_engine' in locals() and execution_engine is not None:
+                execution_engine.metrics = metrics
+        except Exception:
+            logger.debug('Failed to attach metrics to execution engine')
         
         # 7b. ML instrumentation collector (optional, configurable via config['ml'] or CLI)
         def init_ml_collector(config, args, logger):

@@ -28,6 +28,7 @@ class PerformanceMetrics:
     profit_factor: float = 0.0
     max_drawdown: float = 0.0
     sharpe_ratio: float = 0.0
+    positions_opened: int = 0
     returns: List[float] = field(default_factory=list)
 
 
@@ -57,6 +58,8 @@ class MetricsCollector:
         self.losing_trades = 0
         self.total_profit = 0.0
         self.total_loss = 0.0
+        # Open positions counter
+        self.positions_opened = 0
         
     def record_trade(self, profit: float):
         """
@@ -93,6 +96,17 @@ class MetricsCollector:
             f"Total trades: {self.total_trades} | "
             f"Net P&L: {current_equity:+.2f}"
         )
+
+    def record_position_opened(self):
+        """
+        Record that a new position was opened/tracked by the system.
+        This does not imply a closed trade; it is useful for observability.
+        """
+        try:
+            self.positions_opened += 1
+            self.logger.debug(f"Position opened recorded: total_opened={self.positions_opened}")
+        except Exception:
+            pass
         
     def get_metrics(self) -> PerformanceMetrics:
         """
@@ -128,6 +142,11 @@ class MetricsCollector:
             
         # Max drawdown
         metrics.max_drawdown = self.max_drawdown
+        # Open positions
+        try:
+            metrics.positions_opened = self.positions_opened
+        except Exception:
+            metrics.positions_opened = 0
         
         # Sharpe ratio (simplified)
         if len(self.trade_results) > 1:
@@ -156,6 +175,7 @@ class MetricsCollector:
         self.logger.info(f"Avg Loss:        {metrics.avg_loss:.2f}")
         self.logger.info(f"Profit Factor:   {metrics.profit_factor:.2f}")
         self.logger.info(f"Max Drawdown:    {metrics.max_drawdown:.1%}")
+        self.logger.info(f"Positions Opened: {getattr(metrics, 'positions_opened', 0)}")
         self.logger.info(f"Sharpe Ratio:    {metrics.sharpe_ratio:.2f}")
         self.logger.info("=" * 60)
         

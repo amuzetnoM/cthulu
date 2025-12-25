@@ -155,10 +155,20 @@ class TradeManager:
                     
                 # Check if this is Herald's own trade
                 if pos.magic == self.magic_number:
-                    # Herald trade not in registry - should reconcile
-                    self.logger.warning(
-                        f"Herald trade #{pos.ticket} not in registry, reconciling"
-                    )
+                    # Herald trade not in registry - reconcile into position manager
+                    try:
+                        self.logger.info(f"Reconciling Herald trade #{pos.ticket} into registry")
+                        # Build PositionInfo and add to position manager so the bot knows about its own trade
+                        pi = self._create_position_info(pos)
+                        # Use add_position (compat shim) to avoid requiring an ExecutionResult
+                        try:
+                            self.position_manager.add_position(pi)
+                            self.logger.info(f"Reconciled Herald trade #{pos.ticket} added to registry")
+                        except Exception as e:
+                            self.logger.error(f"Failed to add reconciled trade #{pos.ticket} to registry: {e}")
+                    except Exception:
+                        self.logger.exception(f"Failed to reconcile Herald trade #{getattr(pos, 'ticket', 'unknown')}")
+                    # Skip adoption for own trades
                     continue
                     
                 # This is an external trade - check adoption policy

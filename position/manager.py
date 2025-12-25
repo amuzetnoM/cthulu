@@ -239,6 +239,16 @@ class PositionManager:
             # Add to registry
             self._positions[position_info.ticket] = position_info
             self._total_positions_opened += 1
+
+            # Record opened position in metrics collector if available
+            try:
+                if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'metrics', None):
+                    try:
+                        self.execution_engine.metrics.record_position_opened()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
             
             self.logger.info(
                 f"Position tracked: #{position_info.ticket} | "
@@ -393,6 +403,15 @@ class PositionManager:
         """Add a position to the manager (compat shim)."""
         self._positions[position.ticket] = position
         self._total_positions_opened += 1
+        # Record opened position in metrics collector if available
+        try:
+            if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'metrics', None):
+                try:
+                    self.execution_engine.metrics.record_position_opened()
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
     def remove_position(self, ticket: int):
         """Remove a position from the manager (compat shim)."""
