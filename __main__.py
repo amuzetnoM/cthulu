@@ -371,6 +371,16 @@ def main():
         # Terminal UI integration removed per user request.
         ui = None
 
+        # Optional Prometheus exporter
+        exporter = None
+        try:
+            prom_cfg = config.get('observability', {}).get('prometheus', {}) if isinstance(config, dict) else {}
+            if prom_cfg.get('enabled', False):
+                from herald.observability.prometheus import PrometheusExporter
+                exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'herald'))
+                logger.info('Prometheus exporter initialized')
+        except Exception:
+            logger.exception('Failed to initialize Prometheus exporter; continuing without it')
 
         # Attach metrics to execution engine if it exists so PositionManager can report opens
         try:
@@ -799,10 +809,7 @@ def main():
                                     )
                                     
                                     # Track position
-                                    position_info = position_manager.track_position(
-                                        result,
-                                        metadata=signal.metadata
-                                    )
+                                    position_info = position_manager.track_position(result, signal_metadata=signal.metadata)
                                     
                                     # Record in database
                                     signal_record = SignalRecord(
@@ -969,13 +976,13 @@ def main():
                                             profit=position.unrealized_pnl,
                                             exit_reason=exit_signal.reason
                                         )
-                                        
-                                        # Record metrics
-                                        metrics.record_trade(
-                                            profit=position.unrealized_pnl,
-                                            symbol=position.symbol
-                                        )
-                                        
+
+                                        # Record position closed for metrics (PositionManager already records the realized trade)
+                                        try:
+                                            metrics.record_position_closed(position.symbol)
+                                        except Exception:
+                                            logger.debug('Failed to record position closed in metrics', exc_info=True)
+
                                         # Update risk manager
                                         risk_manager.record_trade_result(position.unrealized_pnl)
                                         
@@ -1015,8 +1022,19 @@ def main():
                 logger.info(f"Performance metrics after {loop_count} loops:")
                 metrics.print_summary()
                 
-                # Position statistics
+                # Position statistics - sync into metrics for live view
                 stats = position_manager.get_statistics()
+                try:
+                    pos_summary = position_manager.get_position_summary_by_symbol()
+                    metrics.sync_with_positions_summary(stats, pos_summary)
+                    # Publish to Prometheus exporter if present
+                    try:
+                        if exporter is not None:
+                            metrics.publish_to_prometheus(exporter)
+                    except Exception:
+                        logger.debug('Failed to publish metrics to Prometheus exporter')
+                except Exception:
+                    logger.exception('Failed to sync position summary into metrics')
                 logger.info(f"Position stats: {stats}")
                 
             # 10. Wait for next cycle

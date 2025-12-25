@@ -234,6 +234,53 @@ class PrometheusExporter:
             "gauge",
             "Profit factor (gross profit / gross loss)"
         )
+
+    def update_from_metrics_dict(self, metrics: Dict[str, Any]):
+        """Update exporter metrics from a PerformanceMetrics.to_dict() output.
+
+        This method maps commonly used performance keys to Prometheus gauges/counters
+        and labels per-symbol metrics where available.
+        """
+        try:
+            # Basic counts and PnL
+            self._update_metric(f"{self.prefix}_trades_total", metrics.get('total_trades', 0), 'counter', 'Total number of trades')
+            self._update_metric(f"{self.prefix}_trades_won", metrics.get('winning_trades', 0), 'counter', 'Winning trades')
+            self._update_metric(f"{self.prefix}_trades_lost", metrics.get('losing_trades', 0), 'counter', 'Losing trades')
+            self._update_metric(f"{self.prefix}_pnl_total", metrics.get('net_profit', 0.0), 'gauge', 'Net profit/loss')
+            self._update_metric(f"{self.prefix}_profit_total", metrics.get('gross_profit', 0.0), 'counter', 'Gross profit')
+            self._update_metric(f"{self.prefix}_loss_total", metrics.get('gross_loss', 0.0), 'counter', 'Gross loss')
+            self._update_metric(f"{self.prefix}_win_rate", metrics.get('win_rate', 0.0), 'gauge', 'Win rate (0-1)')
+            self._update_metric(f"{self.prefix}_profit_factor", metrics.get('profit_factor', 0.0) or 0.0, 'gauge', 'Profit factor')
+
+            # Drawdown magnitudes
+            self._update_metric(f"{self.prefix}_drawdown_percent", metrics.get('max_drawdown_pct', 0.0) * 100.0, 'gauge', 'Max drawdown percent')
+            self._update_metric(f"{self.prefix}_drawdown_abs", metrics.get('max_drawdown_abs', 0.0), 'gauge', 'Max drawdown absolute')
+
+            # Drawdown durations
+            self._update_metric(f"{self.prefix}_drawdown_duration_seconds", metrics.get('max_drawdown_duration_seconds', 0.0), 'gauge', 'Max drawdown duration in seconds')
+            self._update_metric(f"{self.prefix}_current_drawdown_duration_seconds", metrics.get('current_drawdown_duration_seconds', 0.0), 'gauge', 'Current drawdown duration in seconds')
+
+            # Risk/Reward and expectancy
+            self._update_metric(f"{self.prefix}_avg_rr", metrics.get('avg_risk_reward', 0.0) or 0.0, 'gauge', 'Average risk:reward')
+            self._update_metric(f"{self.prefix}_median_rr", metrics.get('median_risk_reward', 0.0) or 0.0, 'gauge', 'Median risk:reward')
+            self._update_metric(f"{self.prefix}_rr_count", metrics.get('rr_count', 0), 'counter', 'Risk:Reward count')
+            self._update_metric(f"{self.prefix}_expectancy", metrics.get('expectancy', 0.0) or 0.0, 'gauge', 'Expectancy per trade')
+
+            # Sharpe metrics
+            self._update_metric(f"{self.prefix}_sharpe", metrics.get('sharpe_ratio', 0.0) or 0.0, 'gauge', 'Sharpe ratio')
+            self._update_metric(f"{self.prefix}_rolling_sharpe", metrics.get('rolling_sharpe', 0.0) or 0.0, 'gauge', 'Rolling Sharpe ratio')
+
+            # Per-symbol metrics
+            sym_map = metrics.get('symbol_aggregates', {}) or {}
+            for s, v in sym_map.items():
+                labels = {'symbol': s}
+                self._update_metric(f"{self.prefix}_symbol_realized_pnl", v.get('realized_pnl', 0.0), 'gauge', 'Realized PnL per symbol', labels=labels)
+                self._update_metric(f"{self.prefix}_symbol_unrealized_pnl", v.get('unrealized_pnl', 0.0), 'gauge', 'Unrealized PnL per symbol', labels=labels)
+                self._update_metric(f"{self.prefix}_symbol_open_positions", v.get('open_positions', 0), 'gauge', 'Open positions per symbol', labels=labels)
+                self._update_metric(f"{self.prefix}_symbol_exposure", v.get('exposure', 0.0), 'gauge', 'Exposure per symbol', labels=labels)
+
+        except Exception as e:
+            self.logger.exception(f"Failed to update metrics from performance snapshot: {e}")
     
     def export_text(self) -> str:
         """

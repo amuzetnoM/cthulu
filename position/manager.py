@@ -244,12 +244,13 @@ class PositionManager:
             try:
                 if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'metrics', None):
                     try:
-                        self.execution_engine.metrics.record_position_opened()
+                        self.execution_engine.metrics.record_position_opened(position_info.symbol)
                     except Exception:
-                        pass
+                        self.logger.exception('Failed to record position opened')
             except Exception:
-                pass
-            
+                # Safeguard in case metrics object access raises
+                self.logger.debug('Metrics recording skipped due to error', exc_info=True)
+
             self.logger.info(
                 f"Position tracked: #{position_info.ticket} | "
                 f"{position_info.symbol} {position_info.side} {position_info.volume:.2f} @ {position_info.open_price:.5f}"
@@ -407,11 +408,16 @@ class PositionManager:
         try:
             if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'metrics', None):
                 try:
-                    self.execution_engine.metrics.record_position_opened()
+                    # Backwards-compatible add_position should include symbol when available
+                    sym = getattr(position, 'symbol', None) or getattr(position, 'symbol', None)
+                    if sym:
+                        self.execution_engine.metrics.record_position_opened(sym)
+                    else:
+                        self.execution_engine.metrics.record_position_opened('unknown')
                 except Exception:
-                    pass
+                    self.logger.exception('Failed to record position opened in add_position')
         except Exception:
-            pass
+            self.logger.debug('Metrics recording skipped in add_position due to error', exc_info=True)
 
     def remove_position(self, ticket: int):
         """Remove a position from the manager (compat shim)."""
@@ -773,10 +779,18 @@ class PositionManager:
                 f"Reason: {reason}"
             )
 
-            # Record trade result in metrics collector if available
+            # Compute risk and reward amounts (currency amounts based on price * volume)
             try:
+                risk_amt = None
+                reward_amt = None
+                if position_info.open_price and position_info.stop_loss:
+                    risk_amt = abs(position_info.open_price - position_info.stop_loss) * position_info.volume
+                if position_info.open_price and position_info.take_profit:
+                    reward_amt = abs(position_info.take_profit - position_info.open_price) * position_info.volume
+
+                # Record trade result in metrics collector if available
                 if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'metrics', None):
-                    self.execution_engine.metrics.record_trade(float(realized_pnl), position_info.symbol)
+                    self.execution_engine.metrics.record_trade(float(realized_pnl), position_info.symbol, risk=risk_amt, reward=reward_amt)
             except Exception:
                 self.logger.debug('Failed to record trade in metrics collector', exc_info=True)
             
@@ -939,3 +953,14 @@ class PositionManager:
             'total_unrealized_pnl': self.get_total_unrealized_pnl(),
             'total_exposure': self.get_total_exposure()
         }
+
+    def get_position_summary_by_symbol(self) -> Dict[str, Dict[str, Any]]:
+        """Return per-symbol aggregates for open positions."""
+        summary: Dict[str, Dict[str, Any]] = {}
+        for pos in self._positions.values():
+            s = pos.symbol
+            entry = summary.setdefault(s, {'open_positions': 0, 'unrealized_pnl': 0.0, 'exposure': 0.0})
+            entry['open_positions'] += 1
+            entry['unrealized_pnl'] += getattr(pos, 'unrealized_pnl', 0.0)
+            entry['exposure'] += abs(getattr(pos, 'volume', 0.0)) * getattr(pos, 'entry_price', 0.0)
+        return summary
