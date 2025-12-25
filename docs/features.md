@@ -161,8 +161,9 @@ Herald is an autonomous and adaptive trading system focused on safe, auditable e
 - Files: `herald/observability/*`
 - Features:
   - JSON/human log output via `setup_logger` with rotation
-  - `MetricsCollector` for: trade counts, win rate, P&L, Sharpe-like stats, drawdown
-  - Prometheus exporters or hooks can be added via `MetricsCollector`
+  - **Performance metrics collector** (`MetricsCollector`) with expanded metrics: R:R (avg/median/count), expectancy, max drawdown (magnitude and duration), equity curve, rolling Sharpe, per-symbol aggregates (realized/unrealized PnL, open positions, exposure)
+  - **Prometheus exporter**: built-in mapping from `PerformanceMetrics` to Prometheus metrics (enable via `config['observability']['prometheus']`). For details and metric names see `docs/observability/metrics.md`.
+  - Historical replay of closed trades and seeding of open positions at startup to ensure accurate historical metrics and live sync with `PositionManager` during runtime.
 
 ### ML & Instrumentation
 - File: `herald/ML_RL/instrumentation.py` (MLDataCollector)

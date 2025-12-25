@@ -4,11 +4,13 @@ This document describes the interactive setup wizard and the optional NLP-driven
 
 ## Quick start
 
-Run the wizard:
+Run the wizard (requires an interactive terminal/TTY):
 
 ```powershell
 python -m herald --wizard
 ```
+
+> Note: the wizard uses blocking `input()` calls and requires a TTY. If you run Herald in a non-interactive session (CI, background service, or when `stdin` is not a TTY), the wizard will not start — instead use `--skip-setup` and set configuration via `config.json` or run the wizard interactively from an attached terminal.
 
 Run the NLP-driven wizard (lightweight, local):
 

@@ -17,16 +17,45 @@ slug: /docs/changelog
 ## UNRELEASED
 
 ### In-Progress
-- **ML pipeline & instrumentation**: Implemented the `herald/ML_RL` skeleton and `MLDataCollector` to record gzipped JSONL events for `order_request`, `execution`, and `market_snapshot`. Integration test `tests/integration/test_ml_instrumentation_live.py` added (gated) for end-to-end validation. 
-- **News & calendar ingest**: Added `NewsIngestor`, `NewsManager` and adapters (`RssAdapter`, `NewsApiAdapter`, `FREDAdapter`, `TradingEconomicsAdapter`) with caching and fallback. The ingest records `news_event` and `calendar_event` to the ML collector and includes a gated integration test `tests/integration/test_news_ingest_live.py` (requires `RUN_NEWS_INTEGRATION=1`).
- - **RPC server (default enabled)**: Added a lightweight local-only RPC server (`herald/rpc/server.py`) that is now started by default at process start. The server exposes a protected `/trade` endpoint for manual trade placement and integrates with `ExecutionEngine`, `RiskManager`, `PositionManager`, and `Database`. Use `HERALD_API_TOKEN` to secure the endpoint; when not set the server remains bound to localhost but will run unauthenticated (recommended only for development). Documentation added in `herald/docs/rpc.md` and changelog entry recorded.
- - **ML pipeline & instrumentation**: Implemented the `herald/ML_RL` skeleton and `MLDataCollector` to record gzipped JSONL events for `order_request`, `execution`, and `market_snapshot`. Integration test `tests/integration/test_ml_instrumentation_live.py` added (gated) for end-to-end validation. 
-- **Advisory & Ghost modes**: Added `AdvisoryManager` to support advisory-only signals and configurable ghost test trades (strict caps and log-only mode). Advisory events are recorded as `advisory.signal` for ML. Unit tests added in `tests/unit/test_advisory_manager.py`.
-- **TradeMonitor alerts**: TradeMonitor now supports wiring to the `NewsManager` and will emit `monitor.news_alert` ML events for high-impact calendar/news items and can pause trading for a configurable window.
-- **TradingEconomics importance mapping**: The TradingEconomics adapter now normalizes event importance/impact into `low` / `medium` / `high` and includes `meta.importance` in events for ML features.
-- **Configuration validation**: Added Pydantic-based configuration models in `config/config_schema.py` with environment variable overrides. Updated `config/load_config.py` to use the new schema and validate at startup. Added unit tests in `tests/unit/test_config_validation.py`.
-- **Runtime ML toggle**: Added CLI flags `--enable-ml` / `--disable-ml` to explicitly enable/disable ML instrumentation at startup (overrides `config['ml'].enabled`). Added helper `init_ml_collector()` and unit tests `tests/unit/test_ml_flag.py` to validate behavior.
-- **Docs & feature list**: Added `herald/docs/features.md` and `herald/docs/news.md` documenting capabilities and how to enable news ingest.
+
+#### Metrics & Observability (major)
+- **Performance metrics overhaul**: Reworked `herald/observability/metrics.py` to provide more accurate and production-grade performance metrics:
+  - Added **risk:reward (R:R)** tracking (per-trade and per-symbol): average, median, and sample counts (fields: `avg_risk_reward`, `median_risk_reward`, `rr_count`).
+  - **Expectancy** calculation per trade (E = win_rate*avg_win - (1-win_rate)*avg_loss).
+  - Improved P&L fields: `gross_profit`, `gross_loss`, `net_profit`, per-symbol realized/unrealized aggregates and exposures.
+  - **Drawdown durations**: track `max_drawdown_duration_seconds` and `current_drawdown_duration_seconds` (start/peak time tracking and recovery timing).
+  - **Rolling Sharpe**: configurable windowed Sharpe (`rolling_sharpe`) to monitor recent performance stability.
+  - Equity curve, peak tracking, and cleaner drawdown magnitude handling (abs and pct).
+
+- **Prometheus exporter wiring**: Added robust mapping from performance snapshot to Prometheus metrics in `herald/observability/prometheus.py` and a `publish_to_prometheus()` method on the collector. Exported metrics include:
+  - `herald_*` metrics for trades, wins/losses, profit/loss, win rate, profit factor, drawdown magnitude & durations, avg/median RR, RR count, expectancy, sharpe & rolling_sharpe, and per-symbol gauges (`_symbol_realized_pnl`, `_symbol_unrealized_pnl`, `_symbol_open_positions`, `_symbol_exposure`) with `symbol` label.
+  - Configurable via `config['observability']['prometheus']` (enable and optional `prefix`).
+
+- **Live accuracy & syncing**: `MetricsCollector` now loads historical closed trades and seeds open positions from the database at startup and **syncs live position summaries** from `PositionManager` at runtime to ensure accurate live reporting.
+
+- **Human-friendly summary**: `print_summary()` improved with structured output showing Avg/Median R:R, Expectancy, Drawdown duration, and Rolling Sharpe.
+
+#### Tests & tooling
+- **Unit tests added**:
+  - `tests/unit/test_metrics_improved.py` — R:R, expectancy, drawdown, per-symbol aggregates.
+  - `tests/unit/test_metrics_prometheus_integration.py` — drawdown duration, rolling sharpe, Prometheus mapping.
+- **Diagnostic helpers**: `scripts/check_metrics_try.py` and `scripts/ast_check.py` to detect syntax problems (orphan try/except/finally blocks). 
+- **Push helper**: `scripts/git_commit_push.py` prepared to stage, commit, and push changes (for environments with `git` configured).
+
+#### Fixes & Stability
+- **Wizard startup & robustness**: Fixed issues that could cause the interactive setup wizard to not appear or crash in some environments; added explicit checks and clearer logging for non-interactive stdin cases.
+- **Syntax & exception fixes**: Addressed orphan `try` blocks and missing `except` handlers found during smoke tests (notably in `observability/metrics.py` and `position/manager.py`) so the package imports cleanly on startup.
+- **Position manager & metrics integration**:
+  - Fixed `track_position()` call-sites to use `signal_metadata` parameter consistently (avoids unexpected kwarg errors).
+  - Ensured position opens/closes call the metrics collector (`record_position_opened` / `record_trade`) with symbol and computed risk/reward amounts so R:R and expectancy are recorded reliably.
+- **Strategy symbol resolution**: Fixed `sma_crossover` strategy to source symbol from configured params to avoid `UNKNOWN` symbol warnings during startup/reconciliation.
+
+#### Documentation & release prep
+- Added a dedicated observability/metrics doc (docs/observability/metrics.md) with setup and Prometheus mapping guidance.
+- Updated `docs/README.md` and `docs/changelog/CHANGELOG.md` to include the new metrics and Prometheus usage notes.
+- Prepared unit tests and CI-friendly artifacts to validate metrics and exporter behavior.
+
+---
 
 ---
 
