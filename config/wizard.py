@@ -845,11 +845,10 @@ def run_nlp_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]
                     from subprocess import Popen
                     cfgs = profiles if isinstance(profiles, list) else [profiles]
                     for cfg in cfgs:
-                        args = ["python", "-m", "herald", "--config", cfg, "--mindset", selected_mindset, "--skip-setup"]
-                        if dry == 'y':
-                            args.append("--dry-run")
+                        # Start Herald using the fixed launcher command only (no extra flags)
+                        args = ["python", "-m", "herald", "--config", "C:\\workspace\\herald\\config.json"]
                         Popen(args)
-                        print_info(f"Started Herald for {cfg} (dry-run={dry=='y'})")
+                        print_info(f"Started Herald for {cfg} using fixed launcher")
     else:
         print_info("Configuration not saved. You can run the wizard again or edit manually.")
 
@@ -952,18 +951,16 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
                 procs = []
                 cfgs = profiles if isinstance(profiles, list) else [profiles]
                 for cfg in cfgs:
-                    args = ["python", "-m", "herald", "--config", cfg, "--mindset", mindset, "--skip-setup"]
-                    if dry == 'y':
-                        args.append("--dry-run")
+                    # Always start Herald with the single fixed command; do not add flags
+                    args = ["python", "-m", "herald", "--config", "C:\\workspace\\herald\\config.json"]
                     Popen(args)
-                    print_info(f"Started Herald for {cfg} (dry-run={dry=='y'})")
+                    print_info(f"Started Herald for {cfg} using fixed launcher")
         
         print()
         print(f"  \033[92m{'═' * 48}\033[0m")
         print(f"  \033[92m  Herald is ready! Run with:\033[0m")
-        print(f"  \033[96m  python -m herald --config {config_path}\033[0m")
-        if mindset != 'balanced':
-            print(f"  \033[96m  python -m herald --config {config_path} --mindset {mindset}\033[0m")
+        # Always instruct to run with the exact, single canonical command
+        print(f"  \033[96m  python -m herald --config C:\\workspace\\herald\\config.json\033[0m")
         print(f"  \033[92m{'═' * 48}\033[0m")
         print()
         return config
