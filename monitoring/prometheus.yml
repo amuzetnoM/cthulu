@@ -1,0 +1,18 @@
+# Prometheus configuration for Herald Trading System
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'herald-monitor'
+
+scrape_configs:
+  - job_name: 'herald'
+    static_configs:
+      - targets: ['herald:8181']
+        labels:
+          service: 'herald-trading'
+    
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
