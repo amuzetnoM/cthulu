@@ -12,8 +12,8 @@
     "default_position_size": 0.01,
     "max_daily_loss": 5.0,
     "max_positions_per_symbol": 2,
-    "max_total_positions": 5,
-    "position_size_pct": 0.1,
+    "max_total_positions": 3,
+    "position_size_pct": 2.0,
     "max_position_size_pct": 0.05,
     "min_confidence": 0.6,
     "use_kelly_sizing": false,
@@ -22,8 +22,8 @@
     "circuit_breaker_threshold_pct": 3.0
   },
   "trading": {
-    "symbol": "BTCUSD#M",
-    "timeframe": "TIMEFRAME_M1",
+    "symbol": "BTCUSD#",
+    "timeframe": "TIMEFRAME_H1",
     "poll_interval": 5,
     "lookback_bars": 500
   },
@@ -32,7 +32,7 @@
     "params": {
       "fast_period": 10,
       "slow_period": 30,
-      "symbol": "BTCUSD#M"
+      "symbol": "BTCUSD#"
     }
   },
   "indicators": [

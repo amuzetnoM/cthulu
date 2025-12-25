@@ -6,7 +6,7 @@ Tracks PnL, trades, win rate, Sharpe ratio, max drawdown.
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 import statistics
@@ -30,6 +30,24 @@ class PerformanceMetrics:
     sharpe_ratio: float = 0.0
     positions_opened: int = 0
     returns: List[float] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'timestamp': self.timestamp.isoformat(),
+            'total_trades': self.total_trades,
+            'winning_trades': self.winning_trades,
+            'losing_trades': self.losing_trades,
+            'total_profit': self.total_profit,
+            'total_loss': self.total_loss,
+            'net_profit': self.net_profit,
+            'win_rate': self.win_rate,
+            'avg_win': self.avg_win,
+            'avg_loss': self.avg_loss,
+            'profit_factor': self.profit_factor,
+            'max_drawdown': self.max_drawdown,
+            'sharpe_ratio': self.sharpe_ratio,
+            'positions_opened': self.positions_opened,
+        }
 
 
 class MetricsCollector:

@@ -368,6 +368,10 @@ def main():
         logger.info("Initializing metrics collector...")
         metrics = MetricsCollector()
 
+        # Terminal UI integration removed per user request.
+        ui = None
+
+
         # Attach metrics to execution engine if it exists so PositionManager can report opens
         try:
             if 'execution_engine' in locals() and execution_engine is not None:
@@ -892,15 +896,34 @@ def main():
             # 8. Monitor positions and check exits
             try:
                 positions = position_manager.monitor_positions()
-                
                 if positions:
                     logger.debug(f"Monitoring {len(positions)} open positions")
-                    
+
                     total_pnl = sum(p.unrealized_pnl for p in positions)
                     logger.debug(f"Total unrealized P&L: {total_pnl:.2f}")
-                    
-                    # Check each position against exit strategies
-                    for position in positions:
+
+                # Push latest positions and metrics to UI when available
+                try:
+                    if 'ui' in locals() and ui is not None:
+                        # Convert PositionInfo -> serializable dicts
+                        simple_positions = []
+                        for p in positions:
+                            simple_positions.append({
+                                'ticket': getattr(p, 'ticket', None),
+                                'symbol': getattr(p, 'symbol', None),
+                                'side': getattr(p, 'side', None),
+                                'volume': getattr(p, 'volume', 0.0),
+                                'price': getattr(p, 'open_price', getattr(p, 'entry_price', None)),
+                                'sl': getattr(p, 'stop_loss', None),
+                                'tp': getattr(p, 'take_profit', None),
+                                'pnl': getattr(p, 'unrealized_pnl', 0.0),
+                            })
+
+                except Exception:
+                    logger.exception('Failed to update Terminal UI')
+
+                # Check each position against exit strategies
+                for position in positions:
                         # Prepare market data for exit strategies
                         exit_data = {
                             'current_price': position.current_price,
