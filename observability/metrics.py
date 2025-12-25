@@ -61,12 +61,13 @@ class MetricsCollector:
         # Open positions counter
         self.positions_opened = 0
         
-    def record_trade(self, profit: float):
+    def record_trade(self, profit: float, symbol: str):
         """
         Record trade result.
         
         Args:
             profit: Trade profit/loss
+            symbol: Trading symbol
         """
         self.total_trades += 1
         self.trade_results.append(profit)
@@ -92,7 +93,7 @@ class MetricsCollector:
                 self.max_drawdown = drawdown
                 
         self.logger.debug(
-            f"Trade recorded: {profit:+.2f} | "
+            f"Trade recorded: {profit:+.2f} on {symbol} | "
             f"Total trades: {self.total_trades} | "
             f"Net P&L: {current_equity:+.2f}"
         )
