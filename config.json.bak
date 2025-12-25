@@ -23,7 +23,7 @@
   },
   "trading": {
     "symbol": "BTCUSD#",
-    "timeframe": "TIMEFRAME_H1",
+    "timeframe": "TIMEFRAME_M1",
     "poll_interval": 5,
     "lookback_bars": 500
   },

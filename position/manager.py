@@ -776,7 +776,7 @@ class PositionManager:
             # Record trade result in metrics collector if available
             try:
                 if getattr(self, 'execution_engine', None) and getattr(self.execution_engine, 'metrics', None):
-                    self.execution_engine.metrics.record_trade(float(realized_pnl))
+                    self.execution_engine.metrics.record_trade(float(realized_pnl), position_info.symbol)
             except Exception:
                 self.logger.debug('Failed to record trade in metrics collector', exc_info=True)
             

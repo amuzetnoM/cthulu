@@ -366,7 +366,7 @@ def main():
         
         # 7. Metrics
         logger.info("Initializing metrics collector...")
-        metrics = MetricsCollector()
+        metrics = MetricsCollector(database=database)
 
         # Terminal UI integration removed per user request.
         ui = None

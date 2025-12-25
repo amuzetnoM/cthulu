@@ -62,9 +62,10 @@ class MetricsCollector:
     - Trade statistics
     """
     
-    def __init__(self):
+    def __init__(self, database=None):
         """Initialize metrics collector."""
         self.logger = logging.getLogger("herald.metrics")
+        self.database = database
         self.trade_results: List[float] = []
         self.equity_curve: List[float] = [0.0]
         self.peak_equity: float = 0.0
@@ -79,6 +80,32 @@ class MetricsCollector:
         # Open positions counter
         self.positions_opened = 0
         
+        # Load historical trades if database is available
+        if self.database:
+            self._load_historical_trades()
+        
+    def _load_historical_trades(self):
+        """Load historical closed trades from database and replay them."""
+        try:
+            # Get all closed trades with profit
+            cursor = self.database.conn.cursor()
+            cursor.execute("""
+                SELECT profit, symbol FROM trades
+                WHERE status = 'CLOSED' AND profit IS NOT NULL
+                ORDER BY exit_time ASC
+            """)
+            
+            for row in cursor.fetchall():
+                profit = row['profit']
+                symbol = row['symbol']
+                # Replay the trade without incrementing positions_opened
+                self._record_trade_internal(profit, symbol, update_positions=False)
+                
+            self.logger.info(f"Loaded {self.total_trades} historical trades from database")
+            
+        except Exception as e:
+            self.logger.warning(f"Failed to load historical trades: {e}")
+        
     def record_trade(self, profit: float, symbol: str):
         """
         Record trade result.
@@ -87,6 +114,9 @@ class MetricsCollector:
             profit: Trade profit/loss
             symbol: Trading symbol
         """
+        self._record_trade_internal(profit, symbol, update_positions=True)
+        
+    def _record_trade_internal(self, profit: float, symbol: str, update_positions: bool = True):
         self.total_trades += 1
         self.trade_results.append(profit)
         
