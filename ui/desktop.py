@@ -1,18 +1,22 @@
 import sys
 import time
 import threading
+import re
+import json
 from pathlib import Path
 
 try:
     import tkinter as tk
     from tkinter import ttk
     from tkinter.scrolledtext import ScrolledText
+    import requests
 except Exception:
     print("Tkinter not available; GUI cannot start.")
     sys.exit(2)
 
 LOG_PATH = Path(__file__).parents[1] / 'herald.log'
 SUMMARY_PATH = Path(__file__).parents[1] / 'logs' / 'latest_summary.txt'
+STRATEGY_INFO_PATH = Path(__file__).parents[1] / 'logs' / 'strategy_info.txt'
 
 REFRESH_INTERVAL = 2000  # ms
 TAIL_LINES = 200
@@ -90,7 +94,7 @@ class HeraldGUI:
         metrics_frame = ttk.Frame(root)
         metrics_frame.pack(fill='x', padx=10, pady=(10, 6))
 
-        ttk.Label(metrics_frame, text='Performance Summary', style='Header.TLabel').grid(row=0, column=0, sticky='w', pady=(0,6))
+        ttk.Label(metrics_frame, text='Performance Summary', style='Header.TLabel').grid(row=0, column=0, columnspan=4, sticky='w', pady=(0,6))
         self.metrics_labels = {}
         metric_keys = ['Total Trades', 'Win Rate', 'Net Profit', 'Profit Factor', 'Max Drawdown', 'Active Positions', 'Sharpe Ratio', 'Expectancy']
         for i, key in enumerate(metric_keys):
@@ -101,6 +105,18 @@ class HeraldGUI:
             k_lbl.grid(row=r*2-1, column=c*2, sticky='w', padx=6, pady=2)
             v_lbl.grid(row=r*2, column=c*2, sticky='w', padx=6, pady=2)
             self.metrics_labels[key] = v_lbl
+
+        # Strategy Info Section (new)
+        strategy_frame = ttk.Frame(root)
+        strategy_frame.pack(fill='x', padx=10, pady=(6, 6))
+        
+        ttk.Label(strategy_frame, text='Active Strategy', style='Header.TLabel').grid(row=0, column=0, sticky='w', pady=(0,4))
+        self.strategy_label = ttk.Label(strategy_frame, text='—', style='Metric.TLabel')
+        self.strategy_label.grid(row=1, column=0, sticky='w', padx=6)
+        
+        ttk.Label(strategy_frame, text='Market Regime', style='Header.TLabel').grid(row=0, column=1, sticky='w', pady=(0,4), padx=(20,0))
+        self.regime_label = ttk.Label(strategy_frame, text='—', style='Metric.TLabel')
+        self.regime_label.grid(row=1, column=1, sticky='w', padx=6)
 
         # Middle: Trades and history
         middle_frame = ttk.Frame(root)
@@ -199,6 +215,30 @@ class HeraldGUI:
         set_metric('Sharpe Ratio')
         set_metric('Expectancy')
 
+        # Update strategy info
+        try:
+            strategy_info = read_summary(STRATEGY_INFO_PATH)
+            lines = [l.strip() for l in strategy_info.splitlines() if l.strip()]
+            for l in lines:
+                if l.startswith('Current Strategy:'):
+                    self.strategy_label.configure(text=l.split(':', 1)[1].strip())
+                elif l.startswith('Current Regime:'):
+                    regime = l.split(':', 1)[1].strip()
+                    # Color code regime
+                    if 'trending_up' in regime.lower():
+                        color = '#4ade80'  # Green
+                    elif 'trending_down' in regime.lower():
+                        color = '#f87171'  # Red
+                    elif 'volatile' in regime.lower():
+                        color = '#fbbf24'  # Yellow
+                    elif 'ranging' in regime.lower():
+                        color = '#60a5fa'  # Blue
+                    else:
+                        color = THEME_FG
+                    self.regime_label.configure(text=regime, foreground=color)
+        except Exception:
+            pass
+
         # Update trades by scanning recent log for order fills and position events
         log_text = tail_file(LOG_PATH, TAIL_LINES)
         self._update_trades_from_log(log_text)
@@ -216,7 +256,6 @@ class HeraldGUI:
         for l in lines:
             if 'Order filled:' in l or 'Order executed' in l:
                 # Try to extract ticket and price
-                import re
                 m = re.search(r'Ticket #?(\d+).*Price: ([0-9\.]+)', l) or re.search(r'ticket=(\d+), price=([0-9\.]+)', l)
                 if m:
                     ticket = m.group(1)
@@ -224,7 +263,6 @@ class HeraldGUI:
                     seen[ticket] = {'ticket': ticket, 'symbol': '', 'side': '', 'volume': '', 'price': price, 'pnl': ''}
             if 'Position #' in l and 'closed' not in l.lower():
                 # e.g., Position #499011910 added to registry
-                import re
                 m = re.search(r'Position #?(\d+)', l)
                 if m:
                     tid = m.group(1)
@@ -282,7 +320,6 @@ class HeraldGUI:
             'order_type': 'market'
         }
 
-        import json, requests
         success = False
         last_err = None
         for ep in RPC_ENDPOINTS:
@@ -302,7 +339,6 @@ class HeraldGUI:
 
     def _show_status(self, msg: str):
         # temporary status (could be improved)
-        import tkinter as tk
         status = tk.Toplevel(self.root)
         status.title('Status')
         ttk.Label(status, text=msg).pack(padx=10, pady=10)
