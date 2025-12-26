@@ -9,16 +9,14 @@
 # Herald
 *version 4.0.0*  [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
 
-![Status](https://img.shields.io/badge/status-production--ready-success?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-hardened-success?style=for-the-badge)
 [![Python](https://img.shields.io/badge/python-3.10--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![MT5](https://img.shields.io/badge/MetaTrader-5-0066CC?style=for-the-badge)](https://www.metatrader5.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Phase 4](https://img.shields.io/badge/phase%204-%20multi--strategy-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
 
-> Note on MT5 (Linux vs Windows): The official `MetaTrader5` Python package is Windows-only. On Linux use the `mt5linux` adapter or run a Docker-based MT5 bridge (for example `jsfrnc/mt5-docker-api`) and connect via the Linux client adapter. See `docs/mt5.md` for platform-specific setup notes.
-
 > **Adaptive Trading Intelligence**
-> A complete autonomous multi-strategy trading system with dynamic strategy selection, next-gen indicators, and enhanced GUI monitoring
+<br> A complete autonomous multi-strategy trading system with dynamic strategy selection, next-gen indicators, and enhanced monitoring
 
 Herald is an autonomous and adaptive trading system focused on safe, auditable execution with strong observability and pluggable signal sources. The system is designed to run headless, in a gated live mode, and to produce rich ML-friendly event streams to support downstream model training and analysis.
 
