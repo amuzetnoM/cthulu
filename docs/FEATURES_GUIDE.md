@@ -1,8 +1,9 @@
-# Herald Trading System Upgrade - Advanced Features Guide
+# Herald Trading System 
+> Advanced Features Guide
 
 ## Overview
 
-This document describes the major upgrades to the Herald trading system, transforming it from a basic SMA crossover system into a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection and next-generation indicators.
+This document describes the major features of the Herald trading system, and its transformation from a basic SMA crossover system into a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection and next-generation indicators.
 
 ## Table of Contents
 
