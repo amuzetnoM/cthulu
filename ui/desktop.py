@@ -3,6 +3,7 @@ import time
 import threading
 import re
 import json
+import os
 from pathlib import Path
 
 try:
@@ -77,18 +78,53 @@ class HeraldGUI:
             style.theme_use('clam')
         except Exception:
             pass
-        # Base label styles
+        
+        # Configure all ttk widgets for dark mode
+        # Frame styling (critical for dark mode)
+        style.configure('TFrame', background=THEME_BG)
+        
+        # Label styles
         style.configure('TLabel', background=THEME_BG, foreground=THEME_FG)
         style.configure('Header.TLabel', font=('Segoe UI', 12, 'bold'), foreground=ACCENT, background=THEME_BG)
         style.configure('Metric.TLabel', font=('Consolas', 12, 'bold'), foreground=THEME_FG, background=THEME_BG)
+        
         # Entry styling
-        style.configure('TEntry', fieldbackground='#0b1220', foreground=THEME_FG)
-        # Button accent
-        style.configure('Accent.TButton', background=ACCENT, foreground=THEME_FG)
-        # Treeview look & feel
-        style.configure('Treeview', background='#07121a', fieldbackground='#07121a', foreground=THEME_FG, rowheight=24)
-        style.configure('Treeview.Heading', font=('Segoe UI', 10, 'bold'), foreground=THEME_FG, background='#0b1220')
-        style.map('Treeview', background=[('selected', '#1f2937')], foreground=[('selected', THEME_FG)])
+        style.configure('TEntry', fieldbackground='#0b1220', foreground=THEME_FG, insertcolor=THEME_FG)
+        style.map('TEntry', 
+                  fieldbackground=[('readonly', '#07121a'), ('disabled', '#07121a')],
+                  foreground=[('readonly', '#808080'), ('disabled', '#606060')])
+        
+        # Combobox styling
+        style.configure('TCombobox', fieldbackground='#0b1220', foreground=THEME_FG, 
+                       background='#0b1220', selectbackground='#1f2937', selectforeground=THEME_FG)
+        style.map('TCombobox',
+                  fieldbackground=[('readonly', '#0b1220'), ('disabled', '#07121a')],
+                  selectbackground=[('readonly', '#1f2937')],
+                  selectforeground=[('readonly', THEME_FG)])
+        
+        # Button styling
+        style.configure('TButton', background='#1f2937', foreground=THEME_FG, borderwidth=1, 
+                       focuscolor='none', relief='flat')
+        style.configure('Accent.TButton', background=ACCENT, foreground='#ffffff', borderwidth=1,
+                       focuscolor='none', relief='flat')
+        style.map('TButton',
+                  background=[('active', '#374151'), ('pressed', '#111827')],
+                  foreground=[('active', THEME_FG), ('pressed', THEME_FG)])
+        style.map('Accent.TButton',
+                  background=[('active', '#7c3aed'), ('pressed', '#6d28d9')],
+                  foreground=[('active', '#ffffff'), ('pressed', '#ffffff')])
+        
+        # Treeview styling
+        style.configure('Treeview', background='#07121a', fieldbackground='#07121a', 
+                       foreground=THEME_FG, rowheight=24, borderwidth=0)
+        style.configure('Treeview.Heading', font=('Segoe UI', 10, 'bold'), 
+                       foreground=THEME_FG, background='#0b1220', borderwidth=1, relief='flat')
+        style.map('Treeview', 
+                  background=[('selected', '#1f2937')], 
+                  foreground=[('selected', THEME_FG)])
+        style.map('Treeview.Heading',
+                  background=[('active', '#1f2937')],
+                  foreground=[('active', ACCENT)])
 
         # Top: Metrics grid (no scroll)
         metrics_frame = ttk.Frame(root)
@@ -346,6 +382,60 @@ class HeraldGUI:
 
 
 def main():
+    # Prevent multiple instances using a lock file
+    lock_file = Path(__file__).parent.parent / 'logs' / '.gui_lock'
+    lock_file.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Check if another instance is running
+    if lock_file.exists():
+        try:
+            # Check if the PID in lock file is still running
+            with open(lock_file, 'r') as f:
+                pid = int(f.read().strip())
+            
+            # Try to check if process exists
+            if sys.platform == 'win32':
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                PROCESS_QUERY_INFORMATION = 0x0400
+                handle = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
+                if handle:
+                    kernel32.CloseHandle(handle)
+                    print(f"Herald GUI is already running (PID: {pid})")
+                    sys.exit(0)
+            else:
+                # Unix-like systems
+                try:
+                    os.kill(pid, 0)
+                    print(f"Herald GUI is already running (PID: {pid})")
+                    sys.exit(0)
+                except OSError:
+                    # Process doesn't exist, remove stale lock
+                    lock_file.unlink()
+        except Exception:
+            # If we can't read/check the lock, remove it and continue
+            try:
+                lock_file.unlink()
+            except Exception:
+                pass
+    
+    # Write our PID to lock file
+    try:
+        with open(lock_file, 'w') as f:
+            f.write(str(os.getpid()))
+    except Exception:
+        pass
+    
+    # Ensure lock is removed on exit
+    def cleanup_lock():
+        try:
+            lock_file.unlink()
+        except Exception:
+            pass
+    
+    import atexit
+    atexit.register(cleanup_lock)
+    
     root = tk.Tk()
     app = HeraldGUI(root)
     try:
@@ -355,6 +445,8 @@ def main():
             root.destroy()
         except Exception:
             pass
+    finally:
+        cleanup_lock()
 
 
 if __name__ == '__main__':

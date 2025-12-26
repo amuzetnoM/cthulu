@@ -16,7 +16,7 @@ Usage:
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from copy import deepcopy
 
 # Available mindsets from mindsets.py
@@ -222,6 +222,87 @@ def configure_risk(current_risk: Dict[str, Any]) -> Dict[str, Any]:
     return risk
 
 
+def configure_indicators(current_indicators: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    """Configure technical indicators."""
+    print_section("STEP 5.5: Technical Indicators (Optional)")
+    print("  Add technical indicators to enhance your strategy:\n")
+    
+    indicators = []
+    
+    print_option("1", "RSI", "Relative Strength Index - momentum oscillator")
+    print_option("2", "MACD", "Moving Average Convergence Divergence")
+    print_option("3", "Bollinger Bands", "Volatility indicator")
+    print_option("4", "Stochastic", "Momentum indicator")
+    print_option("5", "ADX", "Average Directional Index - trend strength")
+    print_option("6", "Supertrend", "Trend-following indicator")
+    print_option("7", "VWAP", "Volume Weighted Average Price")
+    print_option("8", "None", "Skip indicators")
+    print()
+    
+    choice = get_input("Select indicators (comma-separated, e.g., 1,2,6) or 8 for none", "8")
+    
+    if choice != "8":
+        for ind_choice in choice.split(','):
+            ind_choice = ind_choice.strip()
+            
+            if ind_choice == "1":
+                period = get_int("RSI period", 14, min_val=5, max_val=50)
+                indicators.append({
+                    'type': 'rsi',
+                    'params': {'period': period, 'overbought': 70, 'oversold': 30}
+                })
+                print_success(f"Added RSI with period {period}")
+                
+            elif ind_choice == "2":
+                indicators.append({
+                    'type': 'macd',
+                    'params': {'fast_period': 12, 'slow_period': 26, 'signal_period': 9}
+                })
+                print_success("Added MACD with standard settings")
+                
+            elif ind_choice == "3":
+                period = get_int("Bollinger Bands period", 20, min_val=10, max_val=50)
+                std_dev = get_float("Standard deviations", 2.0, min_val=1.0, max_val=3.0)
+                indicators.append({
+                    'type': 'bollinger',
+                    'params': {'period': period, 'std_dev': std_dev}
+                })
+                print_success(f"Added Bollinger Bands ({period}, {std_dev})")
+                
+            elif ind_choice == "4":
+                indicators.append({
+                    'type': 'stochastic',
+                    'params': {'k_period': 14, 'd_period': 3, 'smooth': 3}
+                })
+                print_success("Added Stochastic oscillator")
+                
+            elif ind_choice == "5":
+                period = get_int("ADX period", 14, min_val=10, max_val=30)
+                indicators.append({
+                    'type': 'adx',
+                    'params': {'period': period}
+                })
+                print_success(f"Added ADX with period {period}")
+                
+            elif ind_choice == "6":
+                period = get_int("Supertrend ATR period", 10, min_val=5, max_val=20)
+                multiplier = get_float("ATR multiplier", 3.0, min_val=1.0, max_val=5.0)
+                indicators.append({
+                    'type': 'supertrend',
+                    'params': {'atr_period': period, 'atr_multiplier': multiplier}
+                })
+                print_success(f"Added Supertrend ({period}, {multiplier})")
+                
+            elif ind_choice == "7":
+                indicators.append({
+                    'type': 'vwap',
+                    'params': {}
+                })
+                print_success("Added VWAP")
+    
+    return indicators
+
+
 def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
     """Configure strategy-specific settings."""
     print_section("STEP 5: Strategy Settings")
@@ -230,31 +311,129 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
     params = strategy.get('params', {})
     
     strategy_type = strategy.get('type', 'sma_crossover')
-    print(f"  Current strategy: \033[96m{strategy_type}\033[0m\n")
     
-    if strategy_type == 'sma_crossover':
-        print_info("SMA Crossover uses fast and slow moving averages")
+    # Ask if user wants dynamic strategy selection
+    print("  Choose strategy mode:\n")
+    print_option("1", "Single Strategy", "Use one strategy for all trades")
+    print_option("2", "Dynamic Selection", "Automatically switch between strategies based on market regime")
+    print()
+    
+    mode_choice = get_input("Strategy mode (1-2)", "1")
+    
+    if mode_choice == "2":
+        # Dynamic strategy mode
+        strategy['type'] = 'dynamic'
+        strategy['dynamic_selection'] = {
+            'regime_detection_enabled': True,
+            'performance_tracking_enabled': True,
+            'min_confidence_threshold': 0.6,
+            'switch_cooldown_bars': 10
+        }
         
-        params['fast_period'] = get_int(
-            "Fast SMA period",
-            params.get('fast_period', params.get('short_window', 10)),
-            min_val=3, max_val=50
-        )
-        
-        params['slow_period'] = get_int(
-            "Slow SMA period",
-            params.get('slow_period', params.get('long_window', 30)),
-            min_val=10, max_val=200
-        )
-        
-        # Ensure fast < slow
-        if params['fast_period'] >= params['slow_period']:
-            print_warning("Fast period must be less than slow period. Adjusting...")
-            params['slow_period'] = params['fast_period'] + 20
-        
+        # Configure which strategies to include
         print()
-        print_success(f"Fast SMA: {params['fast_period']} periods")
-        print_success(f"Slow SMA: {params['slow_period']} periods")
+        print("  Select strategies to include (comma-separated):\n")
+        print_option("1", "SMA Crossover", "Simple Moving Average crossover")
+        print_option("2", "EMA Crossover", "Exponential Moving Average crossover")
+        print_option("3", "Momentum Breakout", "Price momentum and breakout detection")
+        print_option("4", "Scalping", "Fast scalping with tight stops")
+        print()
+        
+        strategies_choice = get_input("Select strategies (e.g., 1,2,3)", "1,2,3")
+        strategies_list = []
+        
+        for choice in strategies_choice.split(','):
+            choice = choice.strip()
+            if choice == "1":
+                strategies_list.append({
+                    'type': 'sma_crossover',
+                    'params': {'fast_period': 10, 'slow_period': 30}
+                })
+            elif choice == "2":
+                strategies_list.append({
+                    'type': 'ema_crossover',
+                    'params': {'fast_period': 12, 'slow_period': 26}
+                })
+            elif choice == "3":
+                strategies_list.append({
+                    'type': 'momentum_breakout',
+                    'params': {'lookback_period': 20, 'breakout_threshold': 1.5}
+                })
+            elif choice == "4":
+                strategies_list.append({
+                    'type': 'scalping',
+                    'params': {'quick_period': 5, 'trend_period': 20}
+                })
+        
+        strategy['strategies'] = strategies_list
+        print_success(f"Dynamic mode with {len(strategies_list)} strategies enabled")
+        
+    else:
+        # Single strategy mode
+        print()
+        print("  Choose strategy type:\n")
+        print_option("1", "SMA Crossover", "Simple Moving Average crossover (recommended)")
+        print_option("2", "EMA Crossover", "Exponential Moving Average crossover")
+        print_option("3", "Momentum Breakout", "Price momentum and breakout detection")
+        print_option("4", "Scalping", "Fast scalping with tight stops")
+        print()
+        
+        strat_choice = get_input("Select strategy (1-4)", "1")
+        
+        if strat_choice == "1":
+            strategy['type'] = 'sma_crossover'
+            print_info("SMA Crossover uses fast and slow moving averages")
+            
+            params['fast_period'] = get_int(
+                "Fast SMA period",
+                params.get('fast_period', params.get('short_window', 10)),
+                min_val=3, max_val=50
+            )
+            
+            params['slow_period'] = get_int(
+                "Slow SMA period",
+                params.get('slow_period', params.get('long_window', 30)),
+                min_val=10, max_val=200
+            )
+            
+            # Ensure fast < slow
+            if params['fast_period'] >= params['slow_period']:
+                print_warning("Fast period must be less than slow period. Adjusting...")
+                params['slow_period'] = params['fast_period'] + 20
+            
+            print()
+            print_success(f"Fast SMA: {params['fast_period']} periods")
+            print_success(f"Slow SMA: {params['slow_period']} periods")
+            
+        elif strat_choice == "2":
+            strategy['type'] = 'ema_crossover'
+            print_info("EMA Crossover uses exponential moving averages for faster response")
+            
+            params['fast_period'] = get_int("Fast EMA period", 12, min_val=3, max_val=50)
+            params['slow_period'] = get_int("Slow EMA period", 26, min_val=10, max_val=200)
+            
+            if params['fast_period'] >= params['slow_period']:
+                params['slow_period'] = params['fast_period'] + 10
+            
+            print_success(f"Fast EMA: {params['fast_period']}, Slow EMA: {params['slow_period']}")
+            
+        elif strat_choice == "3":
+            strategy['type'] = 'momentum_breakout'
+            print_info("Momentum Breakout detects strong price movements")
+            
+            params['lookback_period'] = get_int("Lookback period", 20, min_val=10, max_val=100)
+            params['breakout_threshold'] = get_float("Breakout threshold (ATR multiplier)", 1.5, min_val=1.0, max_val=3.0)
+            
+            print_success(f"Lookback: {params['lookback_period']}, Threshold: {params['breakout_threshold']}")
+            
+        elif strat_choice == "4":
+            strategy['type'] = 'scalping'
+            print_info("Scalping strategy for quick trades with tight stops")
+            
+            params['quick_period'] = get_int("Quick period", 5, min_val=3, max_val=20)
+            params['trend_period'] = get_int("Trend period", 20, min_val=10, max_val=50)
+            
+            print_success(f"Quick: {params['quick_period']}, Trend: {params['trend_period']}")
     
     strategy['params'] = params
     return strategy
@@ -922,6 +1101,9 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
     
     # Step 5: Strategy Settings
     config['strategy'] = configure_strategy(config.get('strategy', {}))
+    
+    # Step 5.5: Indicators (new)
+    config['indicators'] = configure_indicators(config.get('indicators', []))
     
     # Step 6: Confirm and save
     print()

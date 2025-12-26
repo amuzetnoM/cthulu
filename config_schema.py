@@ -152,14 +152,29 @@ class Config(BaseModel):
         raw = json.loads(text)
         raw = cls._map_legacy_keys(raw)
 
+        # Process FROM_ENV placeholders before validation
+        if 'mt5' in raw:
+            mt5_cfg = raw['mt5']
+            if mt5_cfg.get('password') == 'FROM_ENV':
+                mt5_cfg['password'] = os.getenv('MT5_PASSWORD', '')
+            if mt5_cfg.get('server') == 'FROM_ENV':
+                mt5_cfg['server'] = os.getenv('MT5_SERVER', '')
+            # Login might be 0 or FROM_ENV as string
+            if str(mt5_cfg.get('login', '')).upper() == 'FROM_ENV':
+                mt5_cfg['login'] = int(os.getenv('MT5_LOGIN', '0'))
+
         try:
-            cfg = cls.parse_obj(raw)
+            # Pydantic v2 uses model_validate, v1 uses parse_obj
+            if hasattr(cls, 'model_validate'):
+                cfg = cls.model_validate(raw)
+            else:
+                cfg = cls.parse_obj(raw)
         except Exception as e:
             # Try a simple validation fallback if pydantic isn't available
             # This approach will still yield a reasonable config for the app
             raise
 
-        # Allow environment variable overrides for sensitive fields
+        # Allow environment variable overrides for sensitive fields (takes priority)
         mt5_login = os.getenv('MT5_LOGIN')
         mt5_password = os.getenv('MT5_PASSWORD')
         mt5_server = os.getenv('MT5_SERVER')
