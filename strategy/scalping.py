@@ -85,10 +85,25 @@ class ScalpingStrategy(Strategy):
         ema_fast_col = f'ema_{self.fast_ema}'
         ema_slow_col = f'ema_{self.slow_ema}'
         
-        if ema_fast_col not in bar or ema_slow_col not in bar:
-            self.logger.warning("EMA indicators not found")
+        missing = []
+        if ema_fast_col not in bar:
+            missing.append(ema_fast_col)
+        if ema_slow_col not in bar:
+            missing.append(ema_slow_col)
+        # Also treat NaN values as missing indicators
+        try:
+            import pandas as _pd
+            if ema_fast_col in bar and _pd.isna(bar[ema_fast_col]):
+                missing.append(ema_fast_col)
+            if ema_slow_col in bar and _pd.isna(bar[ema_slow_col]):
+                missing.append(ema_slow_col)
+        except Exception:
+            pass
+
+        if missing:
+            self.logger.warning("EMA indicators missing or NaN: %s", ','.join(sorted(set(missing))))
             return None
-        
+
         # Try to find RSI with specified period, fallback to default
         rsi_col = f'rsi_{self.rsi_period}' if f'rsi_{self.rsi_period}' in bar else 'rsi'
         if rsi_col not in bar or 'atr' not in bar:

@@ -224,6 +224,255 @@ def load_exit_strategies(exit_configs: Dict[str, Any]) -> List:
         'profit_target': ProfitTargetExit,
         'adverse_movement': AdverseMovementExit
     }
+
+
+def ensure_runtime_indicators(df, indicators, strategy, config, logger):
+    """Ensure indicators required by the active strategy/config are present.
+
+    This function inspects the given strategy and configuration to find
+    indicators (or indicator parameters) that the strategies expect to exist
+    in the market data (e.g., EMA periods, RSI period, ADX). If missing,
+    it creates indicator instances (temporary) and returns them so the
+    main loop will calculate their columns during the same iteration.
+    """
+    # Avoid circular imports at module load-time; indicator classes are already imported above
+    required_emas = set()
+    extra_indicators = []
+
+    def collect_ema_periods(obj):
+        if obj is None:
+            return
+        for attr in ('fast_period', 'slow_period', 'fast_ema', 'slow_ema', 'short_window', 'long_window'):
+            if hasattr(obj, attr):
+                try:
+                    val = int(getattr(obj, attr))
+                    if 'ema' in attr or 'fast_period' in attr or 'slow_period' in attr or 'fast_ema' in attr or 'slow_ema' in attr:
+                        required_emas.add(val)
+                except Exception:
+                    pass
+
+    # Strategy instance inspection
+    try:
+        from herald.strategy.strategy_selector import StrategySelector
+        if isinstance(strategy, StrategySelector):
+            for s in strategy.strategies.values():
+                collect_ema_periods(s)
+        else:
+            collect_ema_periods(strategy)
+    except Exception:
+        collect_ema_periods(strategy)
+
+    # Also check config-level strategies
+    try:
+        strat_cfg = config.get('strategy', {}) if isinstance(config, dict) else {}
+        if strat_cfg.get('type') == 'dynamic':
+            for s in strat_cfg.get('strategies', []):
+                params = s.get('params', {}) or {}
+                for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window'):
+                    if key in params and params[key]:
+                        try:
+                            required_emas.add(int(params[key]))
+                        except Exception:
+                            pass
+        else:
+            params = strat_cfg.get('params', {}) or {}
+            for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window'):
+                if key in params and params[key]:
+                    try:
+                        required_emas.add(int(params[key]))
+                    except Exception:
+                        pass
+
+        # If scalping present, ensure scalping defaults
+        try:
+            if strat_cfg.get('type') == 'dynamic':
+                for s in strat_cfg.get('strategies', []):
+                    if s.get('type', '').lower() == 'scalping':
+                        p = s.get('params', {}) or {}
+                        if p.get('fast_ema'):
+                            required_emas.add(int(p.get('fast_ema')))
+                        if p.get('slow_ema'):
+                            required_emas.add(int(p.get('slow_ema')))
+            else:
+                if strat_cfg.get('type', '').lower() == 'scalping':
+                    p = strat_cfg.get('params', {}) or {}
+                    if p.get('fast_ema'):
+                        required_emas.add(int(p.get('fast_ema')))
+                    if p.get('slow_ema'):
+                        required_emas.add(int(p.get('slow_ema')))
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    # Always include scalping defaults if strategy includes scalping
+    try:
+        from herald.strategy.strategy_selector import StrategySelector
+        if isinstance(strategy, StrategySelector):
+            if 'scalping' in (name.lower() for name in strategy.strategies.keys()):
+                required_emas.update({5, 10})
+        else:
+            if getattr(strategy, 'name', '').lower() == 'scalping':
+                required_emas.update({getattr(strategy, 'fast_ema', 5), getattr(strategy, 'slow_ema', 10)})
+    except Exception:
+        # Best effort: also check config strategies
+        try:
+            if strat_cfg.get('type') == 'dynamic':
+                for s in strat_cfg.get('strategies', []):
+                    if s.get('type', '').lower() == 'scalping':
+                        required_emas.update({5, 10})
+        except Exception:
+            pass
+
+    # Compute EMA columns if missing
+    try:
+        if required_emas:
+            for p in sorted(required_emas):
+                col = f'ema_{p}'
+                if col not in df.columns:
+                    df[col] = df['close'].ewm(span=int(p), adjust=False).mean()
+            logger.debug(f"Computed EMA columns: {[f'ema_{p}' for p in sorted(required_emas)]}")
+    except Exception:
+        logger.exception('Failed to compute EMA columns; continuing')
+
+    # Gather existing indicator types already present
+    existing_types = set()
+    for ind in indicators:
+        existing_types.add(ind.__class__.__name__.lower())
+
+    # Helper to check and append indicator instances if missing
+    def _add_indicator_if_missing(ind_cls, typename, params=None):
+        params = params or {}
+        # If an instance of this class with matching key params exists, skip
+        for ind in indicators:
+            if ind.__class__.__name__.lower() == typename:
+                # Simple param match: check period-like keys
+                if params:
+                    # Compare any matching param
+                    match = True
+                    for k, v in params.items():
+                        if ind.params.get(k) != v:
+                            match = False
+                            break
+                    if match:
+                        return
+                else:
+                    return
+        # Not present — create and append
+        try:
+            inst = ind_cls(**params) if params else ind_cls()
+            extra_indicators.append(inst)
+            logger.info(f"Added runtime indicator: {inst.name} with params {getattr(inst, 'params', {})}")
+        except Exception:
+            logger.exception(f"Failed to create runtime indicator {typename}")
+
+    # Ensure RSI if strategies reference it
+    try:
+        rsi_periods = set()
+        # Strategy attrs
+        try:
+            if hasattr(strategy, 'rsi_period'):
+                rsi_periods.add(int(getattr(strategy, 'rsi_period')))
+        except Exception:
+            pass
+        # Config strategies
+        try:
+            if strat_cfg.get('type') == 'dynamic':
+                for s in strat_cfg.get('strategies', []):
+                    params = s.get('params', {}) or {}
+                    if 'rsi_period' in params and params.get('rsi_period'):
+                        rsi_periods.add(int(params.get('rsi_period')))
+            else:
+                if 'rsi_period' in strat_cfg.get('params', {}) and strat_cfg['params'].get('rsi_period'):
+                    rsi_periods.add(int(strat_cfg['params'].get('rsi_period')))
+        except Exception:
+            pass
+
+        # If scalping uses rsi attribute, include
+        try:
+            if getattr(strategy, 'name', '').lower() == 'scalping':
+                rsi_periods.add(getattr(strategy, 'rsi_period', 7) or 7)
+        except Exception:
+            pass
+
+        for p in rsi_periods:
+            col = 'rsi' if p == 14 else f'rsi_{p}'
+            if col not in df.columns:
+                _add_indicator_if_missing(RSI, 'rsi', params={'period': p})
+    except Exception:
+        logger.exception('Failed to ensure RSI')
+
+    # Ensure ADX if strategy selector needs it (regime detection uses ADX)
+    try:
+        need_adx = False
+        try:
+            from herald.strategy.strategy_selector import StrategySelector
+            if isinstance(strategy, StrategySelector):
+                need_adx = True
+        except Exception:
+            # If any config strategy mentions adx in params, we should include it
+            try:
+                for s in strat_cfg.get('strategies', []):
+                    if 'adx' in (s.get('params') or {}):
+                        need_adx = True
+            except Exception:
+                pass
+        if need_adx and 'adx' not in df.columns:
+            _add_indicator_if_missing(ADX, 'adx', params={'period': 14})
+    except Exception:
+        logger.exception('Failed to ensure ADX')
+
+    # Generic fallback: ensure other indicators (macd, bollinger, stochastic, supertrend, vwap) if strategy params mention them
+    try:
+        # MACD: check for 'macd' mention or 'signal_period' in params
+        need_macd = False
+        try:
+            for s in strat_cfg.get('strategies', []):
+                p = s.get('params', {}) or {}
+                if any(k in p for k in ('macd', 'signal_period', 'signal_period')):
+                    need_macd = True
+        except Exception:
+            pass
+        if need_macd and 'macd' not in df.columns and 'macd' not in existing_types:
+            _add_indicator_if_missing(MACD, 'macd', params={'fast_period': 12, 'slow_period': 26, 'signal_period': 9})
+
+        # Bollinger
+        if 'bb_upper' not in df.columns and 'bollingerbands' not in existing_types:
+            # If configured in file, ensure it; otherwise no-op
+            try:
+                if any((i.get('type', '').lower() == 'bollinger') for i in config.get('indicators', [])):
+                    _add_indicator_if_missing(BollingerBands, 'bollingerbands', params={'period': 20, 'std_dev': 2.0})
+            except Exception:
+                pass
+
+        # Stochastic
+        if ('stoch_k' not in df.columns or 'stoch_d' not in df.columns) and 'stochastic' not in existing_types:
+            try:
+                if any((i.get('type', '').lower() == 'stochastic') for i in config.get('indicators', [])):
+                    _add_indicator_if_missing(Stochastic, 'stochastic', params={'k_period': 14, 'd_period': 3, 'smooth_k': 3})
+            except Exception:
+                pass
+
+        # Supertrend
+        if 'supertrend' not in df.columns and 'supertrend' not in existing_types:
+            try:
+                if any((i.get('type', '').lower() == 'supertrend') for i in config.get('indicators', [])):
+                    _add_indicator_if_missing(Supertrend, 'supertrend', params={'atr_period': 10, 'atr_multiplier': 3.0})
+            except Exception:
+                pass
+
+        # VWAP
+        if 'vwap' not in df.columns and 'vwap' not in existing_types:
+            try:
+                if any((i.get('type', '').lower() == 'vwap') for i in config.get('indicators', [])):
+                    _add_indicator_if_missing(VWAP, 'vwap', params={})
+            except Exception:
+                pass
+    except Exception:
+        logger.exception('Failed to ensure generic indicators')
+
+    return extra_indicators
+
     
     # Handle both list and dict formats
     if isinstance(exit_configs, list):
@@ -1031,68 +1280,117 @@ def main():
                     df['sma_20'] = df['close'].rolling(window=20).mean()
                     df['sma_50'] = df['close'].rolling(window=50).mean()
                 
-                    # Compute required EMA columns for strategies (so EMA-based strategies find their inputs)
-                    try:
-                        required_emas = set()
+                # Compute required EMA columns for strategies (so EMA-based strategies find their inputs)
+                try:
+                    required_emas = set()
 
-                        def collect_ema_periods(obj):
-                            if obj is None:
-                                return
-                            # Common attribute names used across strategies
-                            for attr in ('fast_period', 'slow_period', 'fast_ema', 'slow_ema', 'short_window', 'long_window'):
-                                if hasattr(obj, attr):
+                    def collect_ema_periods(obj):
+                        if obj is None:
+                            return
+                        # Common attribute names used across strategies
+                        for attr in ('fast_period', 'slow_period', 'fast_ema', 'slow_ema', 'short_window', 'long_window'):
+                            if hasattr(obj, attr):
+                                try:
+                                    val = int(getattr(obj, attr))
+                                    # skip sma names (short/long windows already handled)
+                                    if 'ema' in attr or 'fast_period' in attr or 'slow_period' in attr or 'fast_ema' in attr or 'slow_ema' in attr:
+                                        required_emas.add(val)
+                                except Exception:
+                                    pass
+
+                    # If using StrategySelector, inspect child strategies
+                    try:
+                        from herald.strategy.strategy_selector import StrategySelector
+                        if isinstance(strategy, StrategySelector):
+                            for s in strategy.strategies.values():
+                                collect_ema_periods(s)
+                        else:
+                            collect_ema_periods(strategy)
+                    except Exception:
+                        collect_ema_periods(strategy)
+
+                    # Also inspect scalping-specific attrs
+                    try:
+                        if hasattr(strategy, 'fast_ema'):
+                            required_emas.add(int(getattr(strategy, 'fast_ema')))
+                        if hasattr(strategy, 'slow_ema'):
+                            required_emas.add(int(getattr(strategy, 'slow_ema')))
+                    except Exception:
+                        pass
+
+                    # Fallback: collect EMA periods from configuration to ensure coverage
+                    try:
+                        strat_cfg = config.get('strategy', {}) if isinstance(config, dict) else {}
+                        if strat_cfg.get('type') == 'dynamic':
+                            for s in strat_cfg.get('strategies', []):
+                                params = s.get('params', {}) if isinstance(s.get('params', {}), dict) else {}
+                                for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window'):
+                                    if key in params and params[key]:
+                                        try:
+                                            required_emas.add(int(params[key]))
+                                        except Exception:
+                                            pass
+                        else:
+                            params = strat_cfg.get('params', {}) if isinstance(strat_cfg.get('params', {}), dict) else {}
+                            for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window'):
+                                if key in params and params[key]:
                                     try:
-                                        val = int(getattr(obj, attr))
-                                        # skip sma names (short/long windows already handled)
-                                        if 'ema' in attr or 'fast_period' in attr or 'slow_period' in attr or 'fast_ema' in attr or 'slow_ema' in attr:
-                                            required_emas.add(val)
+                                        required_emas.add(int(params[key]))
                                     except Exception:
                                         pass
 
-                        # If using StrategySelector, inspect child strategies
+                        # If scalping is part of configured strategies ensure its default EMAs are included
                         try:
-                            from herald.strategy.strategy_selector import StrategySelector
-                            if isinstance(strategy, StrategySelector):
-                                for s in strategy.strategies.values():
-                                    collect_ema_periods(s)
+                            scalping_periods = set()
+                            # Check dynamic strategies
+                            if strat_cfg.get('type') == 'dynamic':
+                                for s in strat_cfg.get('strategies', []):
+                                    if s.get('type', '').lower() == 'scalping':
+                                        params = s.get('params', {}) or {}
+                                        # scalping may define explicit fast_ema/slow_ema
+                                        if params.get('fast_ema'):
+                                            scalping_periods.add(int(params.get('fast_ema')))
+                                        if params.get('slow_ema'):
+                                            scalping_periods.add(int(params.get('slow_ema')))
                             else:
-                                collect_ema_periods(strategy)
-                        except Exception:
-                            collect_ema_periods(strategy)
+                                if strat_cfg.get('type', '').lower() == 'scalping':
+                                    params = strat_cfg.get('params', {}) or {}
+                                    if params.get('fast_ema'):
+                                        scalping_periods.add(int(params.get('fast_ema')))
+                                    if params.get('slow_ema'):
+                                        scalping_periods.add(int(params.get('slow_ema')))
 
-                        # Also inspect scalping-specific attrs
-                        try:
-                            if hasattr(strategy, 'fast_ema'):
-                                required_emas.add(int(getattr(strategy, 'fast_ema')))
-                            if hasattr(strategy, 'slow_ema'):
-                                required_emas.add(int(getattr(strategy, 'slow_ema')))
+                            # If scalping is present among runtime strategies, add defaults (5,10) as safe fallback
+                            try:
+                                from herald.strategy.strategy_selector import StrategySelector
+                                if isinstance(strategy, StrategySelector):
+                                    if 'scalping' in (name.lower() for name in strategy.strategies.keys()):
+                                        scalping_periods.update({5, 10})
+                            except Exception:
+                                # Direct strategy instance
+                                try:
+                                    if getattr(strategy, 'name', '').lower() == 'scalping':
+                                        scalping_periods.update({getattr(strategy, 'fast_ema', 5), getattr(strategy, 'slow_ema', 10)})
+                                except Exception:
+                                    pass
+
+                            required_emas.update({int(x) for x in scalping_periods if x})
                         except Exception:
                             pass
 
-                        # Compute EMA columns
-                        if required_emas:
-                            for p in sorted(required_emas):
-                                col = f'ema_{p}'
-                                if col not in df.columns:
-                                    df[col] = df['close'].ewm(span=int(p), adjust=False).mean()
-                            logger.debug(f"Computed EMA columns: {[f'ema_{p}' for p in sorted(required_emas)]}")
+                        logger.debug(f"Collected EMA periods from config: {sorted(required_emas)}")
                     except Exception:
-                        logger.exception('Failed to compute EMA columns; continuing')
-                
-                # Calculate ATR for stop loss calculation
-                high_low = df['high'] - df['low']
-                high_close = (df['high'] - df['close'].shift()).abs()
-                low_close = (df['low'] - df['close'].shift()).abs()
-                true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
-                df['atr'] = true_range.rolling(window=14).mean()
-                
-                # Calculate additional indicators from config
-                for indicator in indicators:
-                    indicator_data = indicator.calculate(df)
-                    # Merge indicator data into main DataFrame
-                    if indicator_data is not None:
-                        df = df.join(indicator_data, how='left')
-                        
+                        pass
+
+                    # Compute EMA columns
+                    if required_emas:
+                        for p in sorted(required_emas):
+                            col = f'ema_{p}'
+                            if col not in df.columns:
+                                df[col] = df['close'].ewm(span=int(p), adjust=False).mean()
+                        logger.debug(f"Computed EMA columns: {[f'ema_{p}' for p in sorted(required_emas)]}")
+                except Exception:
+                    logger.exception('Failed to compute EMA columns; continuing')
                 logger.debug(f"Calculated SMA, ATR, and {len(indicators)} additional indicators")
                 
             except Exception as e:
