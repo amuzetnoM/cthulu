@@ -7,6 +7,7 @@ Main orchestrator implementing the Phase 2 autonomous trading loop.
 import sys
 import time
 import signal as sig_module
+import subprocess
 import logging
 import argparse
 from pathlib import Path
@@ -250,9 +251,10 @@ def main():
         if result is None:
             print("Setup cancelled. Exiting.")
             return 0
-        # If wizard started profiles, user likely wants to exit the one-off wizard
-        print("\nWizard completed. Exiting.")
-        return 0
+        # Wizard completed — continue to start Herald (do not exit).
+        print("\nWizard completed. Continuing to start Herald...\n")
+        # Avoid running the setup wizard twice (also guarded by not args.skip_setup later)
+        args.skip_setup = True
 
     if not args.skip_setup and not args.adopt_only:
         from config.wizard import run_setup_wizard
@@ -261,8 +263,6 @@ def main():
             print("Setup cancelled. Exiting.")
             return 0
         print("\nStarting Herald with configured settings...\n")
-    
-    # Setup logging
     logger = setup_logger(
         name='herald',
         level=args.log_level,
@@ -381,6 +381,112 @@ def main():
                 logger.info('Prometheus exporter initialized')
         except Exception:
             logger.exception('Failed to initialize Prometheus exporter; continuing without it')
+
+        # Persisted summary helper and GUI autostart/monitoring
+        def _persist_summary(metrics_collector, logger_obj, out_path: Path):
+            try:
+                from io import StringIO
+                stream = StringIO()
+                handler = logging.StreamHandler(stream)
+                handler.setLevel(logging.INFO)
+                logger_obj.addHandler(handler)
+                try:
+                    metrics_collector.print_summary()
+                finally:
+                    logger_obj.removeHandler(handler)
+                content = stream.getvalue()
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(out_path, 'w', encoding='utf-8') as fh:
+                    fh.write(content)
+            except Exception:
+                logger_obj.exception('Failed to persist metrics summary')
+
+        # Summary file path (persisted so terminal summary survives backgrounding)
+        summary_path = Path(__file__).parent / 'logs' / 'latest_summary.txt'
+
+        # Print and persist an initial summary now that metrics exists
+        try:
+            _persist_summary(metrics, logger, summary_path)
+        except Exception:
+            logger.exception('Failed to persist initial metrics summary')
+
+        # Auto-launch GUI by default unless explicitly disabled in config
+        gui_proc = None
+        try:
+            ui_cfg = config.get('ui', {}) if isinstance(config, dict) else {}
+            autostart_gui = True
+            if 'enabled' in ui_cfg:
+                autostart_gui = bool(ui_cfg.get('enabled'))
+            if 'autostart' in ui_cfg:
+                autostart_gui = bool(ui_cfg.get('autostart'))
+
+            if autostart_gui:
+                gui_cmd = [sys.executable, '-m', 'herald.ui.desktop']
+                try:
+                    # Capture GUI stdout/stderr to files to diagnose immediate failures
+                    gui_out = Path(__file__).parent / 'logs' / 'gui_stdout.log'
+                    gui_err = Path(__file__).parent / 'logs' / 'gui_stderr.log'
+                    gui_out.parent.mkdir(parents=True, exist_ok=True)
+                    out_f = open(gui_out, 'a', encoding='utf-8')
+                    err_f = open(gui_err, 'a', encoding='utf-8')
+                    gui_proc = subprocess.Popen(gui_cmd, stdout=out_f, stderr=err_f)
+                    # Wait briefly to detect immediate failures
+                    time.sleep(0.5)
+                    if gui_proc.poll() is not None:
+                        # Process exited quickly — treat as launch failure
+                        logger.error('Desktop GUI process exited immediately (check logs/gui_stderr.log)')
+                        try:
+                            out_f.close(); err_f.close()
+                        except Exception:
+                            pass
+                        gui_proc = None
+                    else:
+                        logger.info('Desktop GUI launched (best-effort). Closing GUI will stop Herald.')
+                        # Hide console window on Windows so terminal goes to background
+                        try:
+                            if os.name == 'nt':
+                                import ctypes
+                                hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+                                if hwnd:
+                                    ctypes.windll.user32.ShowWindow(hwnd, 0)  # SW_HIDE
+                        except Exception:
+                            logger.exception('Failed to hide console window')
+                except Exception:
+                    logger.exception('Failed to launch Desktop GUI; continuing in terminal mode')
+
+            # If GUI started and is still running, monitor it and request shutdown when it exits
+            if gui_proc is not None:
+                import threading
+
+                def _monitor_gui(p):
+                    try:
+                            p.wait()
+                            rc = p.returncode
+                            logger.info('GUI process exited with return code %s', rc)
+                            # If GUI exited cleanly (user closed it), treat as explicit shutdown request.
+                            # If GUI crashed (non-zero), keep Herald running as the primary terminal and restore console.
+                            if rc == 0:
+                                logger.info('GUI closed by user; requesting shutdown of Herald')
+                                global shutdown_requested
+                                shutdown_requested = True
+                            else:
+                                logger.error('GUI crashed (non-zero exit). Continuing in terminal mode.')
+                                try:
+                                    # Attempt to restore console visibility on Windows so operator can see terminal
+                                    if os.name == 'nt':
+                                        import ctypes
+                                        hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+                                        if hwnd:
+                                            ctypes.windll.user32.ShowWindow(hwnd, 5)  # SW_SHOW
+                                except Exception:
+                                    logger.exception('Failed to restore console visibility')
+                    except Exception:
+                        logger.exception('Exception while monitoring GUI process')
+
+                monitor_t = threading.Thread(target=_monitor_gui, args=(gui_proc,), daemon=True, name='gui-monitor')
+                monitor_t.start()
+        except Exception:
+            logger.exception('GUI autostart handling failed; running in terminal mode')
 
         # Attach metrics to execution engine if it exists so PositionManager can report opens
         try:
@@ -1020,13 +1126,15 @@ def main():
             # Performance monitoring
             if loop_count % 100 == 0:
                 logger.info(f"Performance metrics after {loop_count} loops:")
-                metrics.print_summary()
-                
-                # Position statistics - sync into metrics for live view
+                # Sync latest position stats into metrics and persist the printed summary
                 stats = position_manager.get_statistics()
                 try:
                     pos_summary = position_manager.get_position_summary_by_symbol()
                     metrics.sync_with_positions_summary(stats, pos_summary)
+                    try:
+                        _persist_summary(metrics, logger, summary_path)
+                    except Exception:
+                        logger.exception('Failed to persist periodic metrics summary')
                     # Publish to Prometheus exporter if present
                     try:
                         if exporter is not None:
@@ -1086,9 +1194,12 @@ def main():
                 else:
                     logger.info("Non-interactive shutdown: leaving open positions untouched (no prompt)")
 
-            # Print final metrics
+            # Print final metrics and persist to summary file
             logger.info("Final performance metrics:")
-            metrics.print_summary()
+            try:
+                _persist_summary(metrics, logger, summary_path)
+            except Exception:
+                logger.exception('Failed to persist final metrics summary')
             
             # Disconnect from MT5
             connector.disconnect()

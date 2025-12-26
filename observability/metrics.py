@@ -513,7 +513,17 @@ class MetricsCollector:
 """)
 
         # High-level numbers
-        pf = f"{metrics.profit_factor:.2f}" if (metrics.profit_factor is not None and metrics.profit_factor != float('inf')) else ("∞" if metrics.profit_factor == float('inf') else "N/A")
+        # Use ASCII-friendly representation to avoid console encoding errors on Windows
+        pf = None
+        if metrics.profit_factor is None:
+            pf = "N/A"
+        elif metrics.profit_factor == float('inf'):
+            pf = "INF"
+        else:
+            try:
+                pf = f"{metrics.profit_factor:.2f}"
+            except Exception:
+                pf = str(metrics.profit_factor)
         rr_display = f"{metrics.avg_risk_reward:.2f} (n={metrics.rr_count})" if metrics.avg_risk_reward is not None else "N/A"
         median_rr_display = f"{metrics.median_risk_reward:.2f}" if metrics.median_risk_reward is not None else "N/A"
         expectancy_display = f"{metrics.expectancy:+.2f}" if metrics.expectancy is not None else "N/A"
@@ -536,7 +546,10 @@ class MetricsCollector:
         self.logger.info(f"Active Positions   : {metrics.active_positions}")
         self.logger.info(f"Total Opened       : {metrics.positions_opened_total}")
         sharpe_disp = f"{metrics.sharpe_ratio:.2f}" if metrics.sharpe_ratio is not None else "N/A"
-        rsh_disp = f"{metrics.rolling_sharpe:.2f}" if metrics.rolling_sharpe is not None else "N/A"
+        try:
+            rsh_disp = f"{metrics.rolling_sharpe:.2f}" if metrics.rolling_sharpe is not None else "N/A"
+        except Exception:
+            rsh_disp = "N/A"
         self.logger.info(f"Sharpe Ratio       : {sharpe_disp} | Rolling Sharpe: {rsh_disp}")
 
         # Symbol breakdown
