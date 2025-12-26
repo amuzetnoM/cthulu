@@ -336,6 +336,51 @@ class Database:
             self.logger.error(f"Failed to get open trades: {e}", exc_info=True)
             return []
             
+    def get_all_trades(self, limit: int = 100) -> List[TradeRecord]:
+        """
+        Get all trades (open and closed), most recent first.
+        
+        Args:
+            limit: Maximum number of trades to return
+            
+        Returns:
+            List of trade records
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                SELECT * FROM trades
+                ORDER BY entry_time DESC
+                LIMIT ?
+            """, (limit,))
+            
+            trades = []
+            for row in cursor.fetchall():
+                trades.append(TradeRecord(
+                    id=row['id'],
+                    signal_id=row['signal_id'],
+                    order_id=row['order_id'],
+                    symbol=row['symbol'],
+                    side=row['side'],
+                    volume=row['volume'],
+                    entry_price=row['entry_price'],
+                    exit_price=row['exit_price'],
+                    stop_loss=row['stop_loss'],
+                    take_profit=row['take_profit'],
+                    entry_time=row['entry_time'],
+                    exit_time=row['exit_time'],
+                    profit=row['profit'],
+                    status=row['status'],
+                    exit_reason=row['exit_reason'],
+                    metadata=row['metadata']
+                ))
+            
+            return trades
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get all trades: {e}", exc_info=True)
+            return []
+            
     def record_metric(self, name: str, value: float, metadata: str = "") -> bool:
         """
         Record a performance metric.

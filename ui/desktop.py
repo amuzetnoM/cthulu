@@ -15,6 +15,11 @@ except Exception:
     print("Tkinter not available; GUI cannot start.")
     sys.exit(2)
 
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from herald.persistence.database import Database, TradeRecord
+
 LOG_PATH = Path(__file__).parents[1] / 'herald.log'
 SUMMARY_PATH = Path(__file__).parents[1] / 'logs' / 'latest_summary.txt'
 STRATEGY_INFO_PATH = Path(__file__).parents[1] / 'logs' / 'strategy_info.txt'
@@ -84,9 +89,9 @@ class HeraldGUI:
         style.configure('TFrame', background=THEME_BG)
         
         # Label styles
-        style.configure('TLabel', background=THEME_BG, foreground=THEME_FG)
-        style.configure('Header.TLabel', font=('Segoe UI', 12, 'bold'), foreground=ACCENT, background=THEME_BG)
-        style.configure('Metric.TLabel', font=('Consolas', 12, 'bold'), foreground=THEME_FG, background=THEME_BG)
+        style.configure('TLabel', background=THEME_BG, foreground=THEME_FG, font=('Segoe UI', 10))
+        style.configure('Header.TLabel', font=('Segoe UI', 14, 'bold'), foreground=ACCENT, background=THEME_BG)
+        style.configure('Metric.TLabel', font=('Consolas', 11, 'bold'), foreground=THEME_FG, background=THEME_BG)
         
         # Entry styling
         style.configure('TEntry', fieldbackground='#0b1220', foreground=THEME_FG, insertcolor=THEME_FG)
@@ -116,8 +121,8 @@ class HeraldGUI:
         
         # Treeview styling
         style.configure('Treeview', background='#07121a', fieldbackground='#07121a', 
-                       foreground=THEME_FG, rowheight=24, borderwidth=0)
-        style.configure('Treeview.Heading', font=('Segoe UI', 10, 'bold'), 
+                       foreground=THEME_FG, rowheight=26, borderwidth=0, font=('Segoe UI', 10))
+        style.configure('Treeview.Heading', font=('Segoe UI', 11, 'bold'), 
                        foreground=THEME_FG, background='#0b1220', borderwidth=1, relief='flat')
         style.map('Treeview', 
                   background=[('selected', '#1f2937')], 
@@ -168,8 +173,8 @@ class HeraldGUI:
             self.trades_tree.column(col, width=100, anchor='center')
         # alternating row tags for better readability
         try:
-            self.trades_tree.tag_configure('odd', background='#07121a')
-            self.trades_tree.tag_configure('even', background='#0b1220')
+            self.trades_tree.tag_configure('odd', background='#0f1720')
+            self.trades_tree.tag_configure('even', background='#1a2332')
         except Exception:
             pass
         self.trades_tree.pack(fill='both', expand=True, pady=4)
@@ -178,13 +183,13 @@ class HeraldGUI:
         right = ttk.Frame(middle_frame)
         right.pack(side='left', fill='both', expand=True, padx=(6,0))
         ttk.Label(right, text='Trade History', style='Header.TLabel').pack(anchor='w')
-        self.history_tree = ttk.Treeview(right, columns=('time','symbol','side','price','result'), show='headings', height=10)
-        for col in ('time','symbol','side','price','result'):
+        self.history_tree = ttk.Treeview(right, columns=('time','symbol','side','volume','entry','exit','pnl','status'), show='headings', height=10)
+        for col, width in [('time', 120), ('symbol', 80), ('side', 60), ('volume', 70), ('entry', 80), ('exit', 80), ('pnl', 70), ('status', 80)]:
             self.history_tree.heading(col, text=col.capitalize())
-            self.history_tree.column(col, width=120, anchor='center')
+            self.history_tree.column(col, width=width, anchor='center')
         try:
-            self.history_tree.tag_configure('odd', background='#07121a')
-            self.history_tree.tag_configure('even', background='#0b1220')
+            self.history_tree.tag_configure('odd', background='#0f1720')
+            self.history_tree.tag_configure('even', background='#1a2332')
         except Exception:
             pass
         self.history_tree.pack(fill='both', expand=True, pady=4)
@@ -222,6 +227,13 @@ class HeraldGUI:
 
         # Internal live state
         self._trades = {}
+
+        # Database connection for trade history
+        try:
+            self.db = Database("herald.db")
+        except Exception as e:
+            print(f"Warning: Could not connect to database: {e}")
+            self.db = None
 
         # Start periodic update
         self.update()
@@ -313,6 +325,38 @@ class HeraldGUI:
             self.trades_tree.insert('', 'end', values=(data['ticket'], data['symbol'], data['side'], data['volume'], data['price'], pnl), tags=(tag,))
 
     def _update_history_from_log(self, log_text: str):
+        # Get trade history from database
+        if self.db:
+            try:
+                trades = self.db.get_all_trades(limit=50)
+                for i in self.history_tree.get_children():
+                    self.history_tree.delete(i)
+                for idx, trade in enumerate(trades):
+                    tag = 'even' if idx % 2 == 0 else 'odd'
+                    # Format trade data
+                    entry_time = trade.entry_time.strftime('%Y-%m-%d %H:%M') if trade.entry_time else '—'
+                    exit_time = trade.exit_time.strftime('%Y-%m-%d %H:%M') if trade.exit_time else '—'
+                    pnl = f"{trade.profit:.2f}" if trade.profit is not None else '—'
+                    status = trade.status
+                    result = f"{trade.side} {trade.volume}@{trade.entry_price:.5f} → {pnl} ({status})"
+                    if trade.exit_price:
+                        result += f" exit@{trade.exit_price:.5f}"
+                    
+                    self.history_tree.insert('', 'end', values=(
+                        entry_time, 
+                        trade.symbol, 
+                        trade.side, 
+                        f"{trade.volume:.2f}", 
+                        f"{trade.entry_price:.5f}", 
+                        f"{trade.exit_price:.5f}" if trade.exit_price else '—', 
+                        f"{trade.profit:.2f}" if trade.profit is not None else '—',
+                        trade.status
+                    ), tags=(tag,))
+                return
+            except Exception as e:
+                print(f"Database error: {e}")
+        
+        # Fallback to log parsing if database unavailable
         lines = log_text.splitlines()
         history = []
         for l in lines:
@@ -330,6 +374,8 @@ class HeraldGUI:
 
     def on_close(self):
         try:
+            if self.db:
+                self.db.close()
             self.root.destroy()
         finally:
             # Exit cleanly with 0 so herald treats this as user-closed GUI

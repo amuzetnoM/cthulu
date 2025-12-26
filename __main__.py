@@ -970,7 +970,7 @@ def main():
                     time.sleep(poll_interval)
                     continue
                     
-                df = data_layer.normalize_rates(rates, symbol=symbol)
+                df = data_layer.normalize_rates(rates)
                 logger.debug(f"Retrieved {len(df)} bars for {symbol}")
                 
             except Exception as e:

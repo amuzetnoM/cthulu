@@ -2,8 +2,8 @@
   "_comment": "MT5 credentials are loaded from .env file - see .env.example",
   "mt5": {
     "login": 0,
-    "password": "FROM_ENV",
-    "server": "FROM_ENV",
+    "password": "",
+    "server": "",
     "timeout": 60000,
     "path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
   },
@@ -22,8 +22,8 @@
     "circuit_breaker_threshold_pct": 3.0
   },
   "trading": {
-    "symbol": "BTCUSD#",
-    "timeframe": "TIMEFRAME_M1",
+    "symbol": "GOLD#",
+    "timeframe": "TIMEFRAME_H1",
     "poll_interval": 5,
     "lookback_bars": 500
   },
@@ -32,7 +32,7 @@
     "params": {
       "fast_period": 10,
       "slow_period": 30,
-      "symbol": "BTCUSD#"
+      "symbol": "GOLD#"
     }
   },
   "indicators": [
