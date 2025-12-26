@@ -1,7 +1,7 @@
 # Herald Architecture Overview
 **Version 4.0.0 - Phase 4: Multi-Strategy Autonomous Trading**
 
-## 🏗️ System Architecture (Phase 4)
+## System Architecture (Phase 4)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -168,7 +168,7 @@
           └──────────────────────┘
 ```
 
-## 🔄 Autonomous Trading Flow (Phase 2)
+## Autonomous Trading Flow (Phase 2)
 
 ```
 1. Initialization (Orchestrator)
@@ -252,7 +252,7 @@
    └─> Exit gracefully
 ```
 
-## 📊 Data Flow
+## Data Flow
 
 ```
 MT5 Terminal
@@ -323,7 +323,7 @@ Logger.trade_opened()
 RiskManager.update_daily_pnl()
 ```
 
-## 🎯 Component Responsibilities
+## Component Responsibilities
 
 ### Core Components
 
@@ -376,7 +376,7 @@ RiskManager.update_daily_pnl()
 - Trade-specific logging
 - Error tracking
 
-## 🔐 Safety Features
+## Safety Features
 
 ### Multi-Layer Risk Protection
 
@@ -403,7 +403,7 @@ RiskManager.update_daily_pnl()
    - Automatic trading halt at loss limit
    - Position count enforcement
 
-## 📈 Extensibility Points
+## Extensibility Points
 
 ### Adding New Strategies
 
@@ -446,7 +446,7 @@ def my_indicator(df, period=14):
    - Model prediction integration
    - Confidence-based filtering
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
 ### Unit Tests
 - Component isolation testing
@@ -463,7 +463,7 @@ def my_indicator(df, period=14):
 - Performance metrics
 - Optimization runs
 
-## 📦 Deployment Architecture
+## Deployment Architecture
 
 ```
 Development Environment
@@ -481,7 +481,7 @@ Production Environment (Future)
 └── Alert system
 ```
 
-## 🔄 Future Architecture Evolution
+## Future Architecture Evolution
 
 ### Phase 2: Multi-Strategy
 ```

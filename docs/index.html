@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Herald v3.2.0 - Autonomous Trading Intelligence for MetaTrader 5">
-    <title>HERALD v3.2.0 | Autonomous Trading System</title>
+    <meta name="description" content="Herald v4.0.0 - Multi-strategy Autonomous Trading System for MetaTrader 5">
+    <title>HERALD v4.0.0 | Autonomous Trading System</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
         
@@ -919,7 +919,7 @@
     <nav>
         <div class="nav-left">
             <span class="logo">HERALD</span>
-            <span class="version-tag">v3.2.0</span>
+            <span class="version-tag">v4.0.0</span>
             <div class="live-indicator">
                 <span class="live-dot"></span>
                 <span>LIVE</span>
@@ -950,13 +950,13 @@
                         <span class="prompt">$</span> <span class="command">python -m herald --status</span>
                     </div>
                     <div class="terminal-line" style="animation-delay: 0.3s">
-                        <span class="output info">[INFO] Herald Autonomous Trading System v3.2.0</span>
+                        <span class="output info">[INFO] Herald Autonomous Trading System v4.0.0 — Multi-strategy</span>
                     </div>
                     <div class="terminal-line" style="animation-delay: 0.5s">
                         <span class="output success">[OK] MT5 Connection: Connected</span>
                     </div>
                     <div class="terminal-line" style="animation-delay: 0.7s">
-                        <span class="output success">[OK] Indicators: RSI, MACD, Bollinger, Stochastic, ADX</span>
+                        <span class="output success">[OK] Indicators: RSI, MACD, Bollinger, Stochastic, ADX, Supertrend, VWAP</span>
                     </div>
                     <div class="terminal-line" style="animation-delay: 0.9s">
                         <span class="output success">[OK] Exit Strategies: Trailing, Time, Profit, Adverse</span>
@@ -979,11 +979,11 @@
             <div class="status-grid">
                 <div class="status-card">
                     <div class="status-label">Phase</div>
-                    <div class="status-value">03</div>
+                    <div class="status-value">04</div>
                 </div>
                 <div class="status-card">
                     <div class="status-label">Indicators</div>
-                    <div class="status-value info">6</div>
+                    <div class="status-value info">8</div>
                 </div>
                 <div class="status-card">
                     <div class="status-label">Exit Strategies</div>
@@ -1001,7 +1001,7 @@
     <section id="architecture">
         <div class="section-header">
             <div class="section-tag">System Architecture</div>
-            <h2 class="section-title">10-Step Trading Pipeline</h2>
+            <h2 class="section-title">11-Step Trading Pipeline</h2>
         </div>
 
         <div class="flow-container">
@@ -1089,6 +1089,16 @@
                 </div>
                 <div class="flow-step">
                     <span class="flow-number">10</span>
+                    <div class="flow-icon">✦</div>
+                    <div class="flow-content">
+                        <div class="flow-title">Strategy Orchestrator</div>
+                        <div class="flow-desc">Dynamic strategy selection, multi-strategy arbitration, and live tuning with safeties.</div>
+                    </div>
+                    <div class="flow-connector"></div>
+                </div>
+
+                <div class="flow-step">
+                    <span class="flow-number">11</span>
                     <div class="flow-icon">○</div>
                     <div class="flow-content">
                         <div class="flow-title">Health Monitoring</div>
@@ -1308,13 +1318,21 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                 </div>
             </div>
 
-            <div class="roadmap-item">
-                <div class="roadmap-phase">Phase 04</div>
-                <div class="roadmap-title">Machine Learning</div>
-                <span class="roadmap-status planned">Planned</span>
+            <div class="roadmap-item expandable" data-phase="4">
+                <div class="roadmap-header">
+                    <div class="roadmap-phase">Phase 04</div>
+                    <div class="roadmap-title">Multi-Strategy & GUI</div>
+                    <span class="roadmap-status current">Current</span>
+                    <span class="roadmap-toggle">▼</span>
+                </div>
                 <div class="roadmap-desc">
-                    Feature engineering pipeline, supervised learning models,
-                    model training and evaluation, walk-forward validation.
+                    Runtime multi-strategy orchestration, dynamic strategy selection, desktop GUI with trade history and monitoring, and next-gen indicators.
+                </div>
+                <div class="roadmap-details">
+                    <div class="detail-item">Strategy orchestration & arbitration</div>
+                    <div class="detail-item">Desktop GUI: trade history, charts, and logs</div>
+                    <div class="detail-item">Next-gen indicators: Supertrend, VWAP</div>
+                    <div class="detail-item">Environment variable field overrides & security hardening</div>
                 </div>
             </div>
 
@@ -1338,6 +1356,10 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
         </div>
 
         <div class="release-container">
+            <div class="release-note">
+                <a href="releases/4.0.0.md">v4.0.0 — 2025-12-26 — Multi-Strategy Release</a>
+                <p>Introduces multi-strategy orchestration, desktop GUI with persistent trade history, Supertrend & VWAP indicators, env routing improvements, and stability fixes.</p>
+            </div>
             <div class="release-note">
                 <a href="releases/3.1.0.md">v3.1.0 — 2025-12-07 — Trade Management</a>
                 <p>External trade adoption, manual trade CLI (`herald-trade`), config validation, observability, and security hardening.</p>
@@ -1373,8 +1395,8 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
     <!-- Footer -->
     <footer>
         <div class="footer-content">
-            <div class="footer-left">
-                <strong>HERALD</strong> v3.2.0 | Adaptive Trading Intelligence<br>
+                <div class="footer-left">
+                <strong>HERALD</strong> v4.0.0 | Adaptive Trading Intelligence<br>
                 MIT License | Educational purposes only | Trade at your own risk
             </div>
             <div class="footer-links">

@@ -1,187 +1,298 @@
-# Herald Quick Start Guide
+# Quick Start Guide - Herald v4.0.0 Upgraded
 
-## Version 4.0.0 - Multi-Strategy Autonomous Trading
+## 🚀 Getting Started
 
-## 📦 Installation
+### 1. Initial Setup
 
-### 1. Set Up Python Environment
-
-```powershell
-# Navigate to Herald directory
-cd C:\workspace\herald
-
-# Create virtual environment (Python 3.10-3.14 recommended)
-python -m venv venv312
-
-# Activate virtual environment
-.\venv312\Scripts\Activate.ps1
+```bash
+# Clone or update repository
+git clone https://github.com/amuzetnoM/herald.git
+cd herald
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Create your .env file
+cp .env.example .env
 ```
 
-### 2. Configure MT5 Credentials
+### 2. Configure Credentials
 
-**Option 1: Environment Variables (Recommended)**
-```powershell
-# Set environment variables
-$env:MT5_LOGIN = "your_account_number"
-$env:MT5_PASSWORD = "your_password"
-$env:MT5_SERVER = "YourBroker-MT5"
+Edit `.env` file:
+```bash
+# MetaTrader 5 Credentials
+MT5_LOGIN=your_account_number
+MT5_PASSWORD=your_password
+MT5_SERVER=your_broker_server
+
+# Trading Configuration
+ACCOUNT_CURRENCY=USD
+RISK_PER_TRADE=0.02
+MAX_DAILY_LOSS=0.05
 ```
 
-**Option 2: Config File**
-```powershell
-# Run setup wizard (recommended)
-python -m herald --wizard --config config.json
+### 3. Run Setup Wizard
 
-# Or edit config.json directly
-code config.json
+Choose one of two wizards:
+
+#### Interactive Wizard (Recommended for beginners)
+```bash
+python -m herald --wizard
+```
+Step-by-step prompts for:
+- Trading mindset (aggressive/balanced/conservative)
+- Symbol and timeframe
+- Risk management
+- Strategy selection (single or dynamic)
+- Technical indicators
+
+#### NLP Wizard (Advanced - describe in natural language)
+```bash
+python -m herald --wizard-ai
+```
+Example input:
+```
+Aggressive GOLD#m on M15 and H1, 2% risk, $100 max loss
 ```
 
-### 3. Enable Algo Trading in MT5
+### 4. Start Trading
 
-**IMPORTANT:** Before running Herald:
-1. Open MetaTrader 5 terminal
-2. Go to **Tools → Options → Expert Advisors**
-3. Check **Allow automated trading**
-4. Check **Allow DLL imports** (if applicable)
-5. Click OK
+```bash
+# Dry run (recommended first)
+python -m herald --config config.json --dry-run
 
-### 4. Verify Installation
-
-```powershell
-# Check MT5 installation
-python -c "import MetaTrader5 as mt5; print('MT5 version:', mt5.version())"
-
-# Check Herald installation
-python -c "import herald; print('Herald version:', herald.__version__)"
+# Live trading (requires confirmation)
+export LIVE_RUN_CONFIRM=1
+python -m herald --config config.json
 ```
-
-## 🚀 Running Herald
-
-### Start Multi-Strategy Autonomous Trading
-
-```powershell
-# Start Herald with interactive setup wizard (recommended)
-python -m herald --wizard --config config.json
-```
-
-The **interactive setup wizard** will guide you through:
-1. **Trading Mindset** — Choose conservative, balanced, or aggressive
-2. **Symbol** — Enter your trading instrument (EURUSD, XAUUSD#, BTCUSD#, etc.)
-3. **Timeframe** — Select M5, M15, M30, H1, H4, or D1
-4. **Risk Management** — Set daily loss limit, position size, max positions
-5. **Strategy Settings** — Choose from 4 strategies: SMA, EMA, Momentum, Scalping
-6. **Technical Indicators** — Select from 8 indicators including Supertrend, VWAP
-
-After setup, Herald will:
-1. Save your configuration to `config.json`
-2. Connect to MT5 terminal
-3. Load selected indicators and strategy
-4. Start the autonomous multi-strategy trading loop
-5. Monitor positions and execute exits automatically
-6. Display desktop GUI for monitoring (optional)
-
-### Launch Desktop GUI
-
-```powershell
-# Launch monitoring GUI only
-python -m herald --gui
-```
-
-### Skip Setup Wizard (Automation)
-
-```powershell
-# Use existing config without wizard (for CI/automation)
-python -m herald --config config.json --skip-setup
-```
-
-### Choose Trading Mindset
-
-```powershell
-# Use predefined risk profiles
-python -m herald --config config.json --mindset aggressive
-python -m herald --config config.json --mindset balanced    # default
-python -m herald --config config.json --mindset conservative
-```
-
-### Monitor Logs
-
-```powershell
-# View logs in real-time
-Get-Content .\herald.log -Wait -Tail 50
-```
-
-## 🎯 Pre-Launch Checklist
-
-- [ ] Virtual environment created and activated (Python 3.10-3.14)
-- [ ] Dependencies installed (`pip list` shows MetaTrader5, pandas, pydantic)
-- [ ] MT5 credentials configured (env vars or config file)
-- [ ] MT5 terminal installed with algo trading enabled
-- [ ] Demo/Training account credentials configured
-- [ ] Trading symbol available on your broker
-- [ ] Test run completed successfully
-
-## 📊 Multi-Strategy System Architecture
-
-**Phase 4 Multi-Strategy Trading:**
-
-1. **Market Regime Detection** - Analyze current market conditions (5 regimes)
-2. **Dynamic Strategy Selection** - Choose optimal strategy based on regime and performance
-3. **Market Data Ingestion** - Get OHLCV from MT5 with provider fallbacks
-4. **Indicator Calculation** - 8 indicators: RSI, MACD, Bollinger, Stochastic, ADX, Supertrend, VWAP, Anchored VWAP
-5. **Signal Generation** - Selected strategy evaluates indicator confluence
-6. **Risk Approval** - Position sizing and limit checks with Kelly/dynamic sizing
-7. **Order Execution** - Idempotent market orders with ML instrumentation
-8. **Position Tracking** - Real-time monitoring with external trade adoption
-9. **Exit Detection** - 4 exit strategies with priority system
-10. **Performance Learning** - Update strategy affinity matrix
-11. **Health Monitoring** - Connection recovery, reconciliation, GUI updates
-
-## 🔧 Common Issues
-
-### "Authorization failed"
-- Ensure algo trading is enabled in MT5: Tools → Options → Expert Advisors
-- Verify credentials (MT5_LOGIN, MT5_PASSWORD, MT5_SERVER) are correct
-- Check server name matches your broker exactly
-
-### "Failed to connect to MT5"
-- MT5 terminal must be installed and running
-- Try closing MT5 before running Herald (it will restart it)
-- Check the MT5 path in config.json
-
-### "Symbol not found"
-- Check if your symbol is available on your broker
-- Enable the symbol in MT5 MarketWatch first
-- Change symbol in config to one your broker supports
-
-### "Trading not allowed"
-- Verify your account allows automated trading
-- Check MT5 terminal Options → Expert Advisors → Allow automated trading
-- For live trading, set LIVE_RUN_CONFIRM=1 environment variable
-
-### "Config validation error"
-- Run the wizard: `python -m herald --wizard --config config.json`
-- Or check config.json syntax and required fields
-
-## 🛑 Stopping Herald
-
-Press `Ctrl+C` to gracefully shut down. The bot will:
-1. Stop generating new signals
-2. Optionally close all open positions
-3. Disconnect from MT5 terminal
-4. Save final state and logs
-5. Close GUI if running
-
-## 📚 Documentation
-
-- **FEATURES_GUIDE.md** - Complete feature overview
-- **ARCHITECTURE.md** - System design and data flow
-- **CHANGELOG.md** - Version history and updates
-- **SECURITY.md** - Security hardening and best practices
-- **PERFORMANCE_TUNING.md** - Optimization and monitoring
 
 ---
 
-**Remember:** Always test with a demo/training account before going live!
+## 🎨 GUI Features
+
+The Herald GUI launches automatically and provides:
+
+### Dark Mode Interface
+- Real-time performance metrics
+- Live trade monitoring
+- Trade history
+- Active strategy display
+- Market regime indicator
+- Manual trade placement
+
+### Color-Coded Regimes
+- 🟢 **Trending Up**: Green
+- 🔴 **Trending Down**: Red  
+- 🟡 **Volatile**: Yellow
+- 🔵 **Ranging**: Blue
+
+### Features
+- Auto-refresh every 2 seconds
+- Singleton instance (no duplicates)
+- Graceful shutdown
+- Log file monitoring
+
+---
+
+## 📊 Strategy Modes
+
+### Single Strategy Mode
+Choose one strategy:
+- **SMA Crossover**: Simple moving average crossover (beginner-friendly)
+- **EMA Crossover**: Exponential moving average (responsive)
+- **Momentum Breakout**: Price momentum detection (aggressive)
+- **Scalping**: Quick trades with tight stops (advanced)
+
+### Dynamic Strategy Selection (New!)
+System automatically switches between strategies based on:
+- Market regime detection
+- Strategy performance tracking
+- Real-time conditions
+- Confidence scores
+
+Example config:
+```json
+{
+  "strategy": {
+    "type": "dynamic",
+    "dynamic_selection": {
+      "regime_detection_enabled": true,
+      "performance_tracking_enabled": true,
+      "min_confidence_threshold": 0.6
+    },
+    "strategies": [
+      {"type": "sma_crossover", "params": {"fast_period": 10, "slow_period": 30}},
+      {"type": "ema_crossover", "params": {"fast_period": 12, "slow_period": 26}},
+      {"type": "momentum_breakout", "params": {"lookback_period": 20}},
+      {"type": "scalping", "params": {"quick_period": 5, "trend_period": 20}}
+    ]
+  }
+}
+```
+
+---
+
+## 📈 Technical Indicators
+
+Add indicators to enhance your strategy:
+
+### Available Indicators
+1. **RSI** (Relative Strength Index)
+   - Momentum oscillator
+   - Default: period=14, overbought=70, oversold=30
+
+2. **MACD** (Moving Average Convergence Divergence)
+   - Trend following
+   - Default: fast=12, slow=26, signal=9
+
+3. **Bollinger Bands**
+   - Volatility indicator
+   - Default: period=20, std_dev=2.0
+
+4. **Stochastic**
+   - Momentum indicator
+   - Default: k=14, d=3, smooth=3
+
+5. **ADX** (Average Directional Index)
+   - Trend strength
+   - Default: period=14
+
+6. **Supertrend** ⭐ NEW in v4.0.0
+   - Trend following
+   - Default: atr_period=10, multiplier=3.0
+
+7. **VWAP** ⭐ NEW in v4.0.0
+   - Volume weighted average price
+   - Intraday trading
+
+Example config:
+```json
+{
+  "indicators": [
+    {"type": "supertrend", "params": {"atr_period": 10, "atr_multiplier": 3.0}},
+    {"type": "rsi", "params": {"period": 14}},
+    {"type": "vwap", "params": {}}
+  ]
+}
+```
+
+---
+
+## 🎯 Mindset Presets
+
+Pre-configured risk profiles:
+
+### Aggressive
+- Position size: 5% per trade
+- Max positions: 5
+- Daily loss limit: $100
+- Faster signals, tighter stops
+
+### Balanced (Recommended)
+- Position size: 2% per trade
+- Max positions: 3
+- Daily loss limit: $50
+- Moderate risk/reward
+
+### Conservative
+- Position size: 1% per trade
+- Max positions: 2
+- Daily loss limit: $25
+- Wider stops, stricter filters
+
+Apply via CLI:
+```bash
+python -m herald --config config.json --mindset aggressive
+```
+
+Or during wizard setup.
+
+---
+
+## 🔧 Command Line Options
+
+```bash
+# Basic
+python -m herald --config config.json                    # Start with config
+
+# Wizard
+python -m herald --wizard                                 # Interactive setup
+python -m herald --wizard-ai                             # NLP-based setup
+python -m herald --config config.json --skip-setup       # Skip wizard
+
+# Trading Modes
+python -m herald --config config.json --dry-run          # Simulate trades
+python -m herald --config config.json --adopt-only       # Only manage existing trades
+
+# Customization
+python -m herald --config config.json --mindset aggressive
+python -m herald --config config.json --symbol GOLD#m
+python -m herald --config config.json --enable-ml        # Enable ML features
+
+# RPC Server
+python -m herald --config config.json --enable-rpc       # Enable RPC for GUI
+```
+
+---
+
+## 🛠️ Troubleshooting
+
+### MT5 Not Connecting
+1. Check `.env` file has correct credentials
+2. Verify MT5 terminal is installed and running
+3. Check config uses FROM_ENV:
+   ```json
+   "mt5": {
+     "password": "FROM_ENV",
+     "server": "FROM_ENV"
+   }
+   ```
+
+### GUI Issues
+- **Dark mode broken**: Update to latest version (fixed)
+- **Multiple GUIs**: Update to latest version (singleton pattern added)
+- **Can't launch**: Check `logs/gui_stderr.log` for errors
+
+### Configuration Issues
+- Run wizard: `python -m herald --wizard`
+- Check example: `config.example.json`
+- See documentation: `UPGRADE_FIXES.md`
+
+---
+
+## 📚 Additional Resources
+
+- **Full Documentation**: `UPGRADE_GUIDE.md`
+- **Fix Details**: `UPGRADE_FIXES.md`
+- **Release Notes**: `release_notes/v4.0.0.md`
+- **Implementation**: `IMPLEMENTATION_SUMMARY.md`
+
+---
+
+## 🎉 What's New in v4.0.0
+
+1. **Multi-Strategy Framework**: Dynamic strategy switching
+2. **New Strategies**: EMA Crossover, Momentum Breakout, Scalping
+3. **New Indicators**: Supertrend, VWAP, Enhanced RSI
+4. **Enhanced GUI**: Dark mode, auto-launch, real-time monitoring
+5. **Improved Wizard**: NLP support, indicator configuration
+6. **Better Connectivity**: FROM_ENV config support
+
+---
+
+## 💡 Tips
+
+1. **Start with dry-run**: Test your config without risking capital
+2. **Use balanced mindset**: Good for most traders
+3. **Monitor GUI**: Keep eye on active strategy and regime
+4. **Review logs**: Check `herald.log` for detailed activity
+5. **Adjust gradually**: Small changes, measure impact
+
+---
+
+## 🆘 Support
+
+- Issues: https://github.com/amuzetnoM/herald/issues
+- Discussions: https://github.com/amuzetnoM/herald/discussions
+
+Happy Trading! 🚀📈
