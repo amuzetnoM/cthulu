@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Herald — Architecture & Data Flow">
+    <title>HERALD — Architecture</title>
+    <style>
+        /* Core theme copied from index.html (trimmed for brevity) */
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+        :root{--void:#000;--text:#e0e0e8;--accent:#00ff88;--surface:#0a0a0f;--border:#1a1a25;--muted:#4a4a5a;--bright:#fff}
+        *{box-sizing:border-box}body{font-family:'Space Grotesk',sans-serif;background:var(--void);color:var(--text);margin:0;padding:0}
+        nav{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;border-bottom:1px solid var(--border);z-index:1000}
+        .logo{font-family:'JetBrains Mono',monospace;color:var(--accent);letter-spacing:3px}
+        .nav-links{display:flex;gap:1.5rem;list-style:none}
+        .nav-links a{color:var(--muted);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:.8rem}
+        .hero{padding:6rem 2rem 3rem;min-height:28vh;display:flex;align-items:center}
+        .hero-title{font-size:2.4rem;color:var(--bright);margin-bottom:.5rem}
+        .hero-sub{color:var(--muted)}
+        section{padding:3rem 2rem;max-width:1100px;margin:0 auto}
+        .flow-svg{width:100%;height:260px;background:linear-gradient(90deg,rgba(0,255,136,.02),transparent);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;border-radius:6px}
+        .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem}
+        .card{background:var(--surface);padding:1rem;border:1px solid var(--border);border-radius:6px}
+        footer{padding:2rem;border-top:1px solid var(--border);background:var(--surface);margin-top:2rem}
+    </style>
+</head>
+<body>
+    <nav>
+        <div style="display:flex;align-items:center;gap:1rem"><span class="logo">HERALD</span><span style="font-family:JetBrains Mono; font-size:.75rem;color:var(--muted)">v4.0.0</span></div>
+        <ul class="nav-links">
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="features.html">Features</a></li>
+            <li><a href="quickstart.html">Quick Start</a></li>
+            <li><a href="gui.html">GUI</a></li>
+            <li><a href="roadmap.html">Roadmap</a></li>
+            <li><a href="releases.html">Releases</a></li>
+            <li><a href="https://github.com/amuzetnoM/herald">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div>
+            <h1 class="hero-title">System Architecture</h1>
+            <div class="hero-sub">Visual overview of the 11-step trading pipeline and component responsibilities — quick, scannable, and interactive.</div>
+        </div>
+    </section>
+
+    <section>
+        <div class="flow-svg" aria-hidden>
+            <!-- Simple SVG flow visualization -->
+            <svg width="90%" height="80%" viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <linearGradient id="g" x1="0" x2="1">
+                        <stop offset="0" stop-color="#00ff88" stop-opacity=".8"/>
+                        <stop offset="1" stop-color="#00aaff" stop-opacity=".6"/>
+                    </linearGradient>
+                </defs>
+                <g font-family="JetBrains Mono, monospace" fill="#e0e0e8" font-size="12">
+                    <!-- nodes -->
+                    <rect x="10" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
+                    <text x="70" y="80" text-anchor="middle">Market Data</text>
+
+                    <rect x="150" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
+                    <text x="210" y="80" text-anchor="middle">Normalization</text>
+
+                    <rect x="290" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
+                    <text x="350" y="80" text-anchor="middle">Indicators</text>
+
+                    <rect x="430" y="40" width="140" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
+                    <text x="500" y="80" text-anchor="middle">Strategy Orchestrator</text>
+
+                    <rect x="580" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
+                    <text x="640" y="80" text-anchor="middle">Execution</text>
+
+                    <rect x="720" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
+                    <text x="780" y="80" text-anchor="middle">Persistence</text>
+
+                    <!-- connectors -->
+                    <line x1="130" y1="70" x2="150" y2="70" stroke="url(#g)" stroke-width="2" />
+                    <line x1="270" y1="70" x2="290" y2="70" stroke="url(#g)" stroke-width="2" />
+                    <line x1="410" y1="70" x2="430" y2="70" stroke="url(#g)" stroke-width="2" />
+                    <line x1="570" y1="70" x2="580" y2="70" stroke="url(#g)" stroke-width="2" />
+                    <line x1="700" y1="70" x2="720" y2="70" stroke="url(#g)" stroke-width="2" />
+                </g>
+            </svg>
+        </div>
+
+        <div class="cards">
+            <div class="card"><strong>Data Layer</strong><div style="color:var(--muted);margin-top:.5rem">OHLCV normalization, multi-timeframe resampling, caching.</div></div>
+            <div class="card"><strong>Indicators</strong><div style="color:var(--muted);margin-top:.5rem">Vectorized Supertrend, VWAP, RSI variants, ATR; strategy-driven compute.</div></div>
+            <div class="card"><strong>Strategy Orchestrator</strong><div style="color:var(--muted);margin-top:.5rem">Regime detection, affinity mapping, live switching with safeties.</div></div>
+        </div>
+    </section>
+
+    <footer>
+        <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center">
+            <div style="font-family:JetBrains Mono;color:var(--muted)"><strong>HERALD</strong> v4.0.0</div>
+            <div><a href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a></div>
+        </div>
+    </footer>
+</body>
+</html>
