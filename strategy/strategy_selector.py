@@ -39,11 +39,12 @@ class StrategyPerformance:
         self.last_signal_time = None
         self.confidence_scores = deque(maxlen=window_size)
         
-    def add_signal(self, signal: Signal, outcome: Optional[str] = None, pnl: Optional[float] = None):
+    def add_signal(self, signal: Optional[Signal] = None, outcome: Optional[str] = None, pnl: Optional[float] = None):
         """Record a signal and its outcome."""
-        self.signals_count += 1
-        self.last_signal_time = datetime.now()
-        self.confidence_scores.append(signal.confidence)
+        if signal:
+            self.signals_count += 1
+            self.last_signal_time = datetime.now()
+            self.confidence_scores.append(signal.confidence)
         
         if outcome:
             self.recent_signals.append({

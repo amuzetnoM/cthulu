@@ -72,15 +72,19 @@ class Supertrend(Indicator):
         final_upper = basic_upper.copy()
         final_lower = basic_lower.copy()
         
-        # Calculate final bands
+        # Calculate final bands using vectorized operations
+        final_upper = basic_upper.copy()
+        final_lower = basic_lower.copy()
+        
+        # Vectorized calculation with shift
         for i in range(1, len(df)):
-            # Upper band
+            # Upper band: if current basic < previous final OR close crossed above
             if basic_upper.iloc[i] < final_upper.iloc[i-1] or df['close'].iloc[i-1] > final_upper.iloc[i-1]:
                 final_upper.iloc[i] = basic_upper.iloc[i]
             else:
                 final_upper.iloc[i] = final_upper.iloc[i-1]
                 
-            # Lower band
+            # Lower band: if current basic > previous final OR close crossed below
             if basic_lower.iloc[i] > final_lower.iloc[i-1] or df['close'].iloc[i-1] < final_lower.iloc[i-1]:
                 final_lower.iloc[i] = basic_lower.iloc[i]
             else:

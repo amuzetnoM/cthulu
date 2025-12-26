@@ -80,8 +80,8 @@ class RSI(Indicator):
         self._state['is_oversold'] = rsi.iloc[-1] < 30 if len(rsi) > 0 else False
         self.update_calculation_time()
         
-        # Name the series
-        rsi.name = 'rsi'
+        # Name the series with period to avoid conflicts
+        rsi.name = f'rsi_{self.period}' if self.period != 14 else 'rsi'
         
         return rsi
         

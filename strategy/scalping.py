@@ -88,15 +88,17 @@ class ScalpingStrategy(Strategy):
         if ema_fast_col not in bar or ema_slow_col not in bar:
             self.logger.warning("EMA indicators not found")
             return None
-            
-        if 'rsi' not in bar or 'atr' not in bar:
+        
+        # Try to find RSI with specified period, fallback to default
+        rsi_col = f'rsi_{self.rsi_period}' if f'rsi_{self.rsi_period}' in bar else 'rsi'
+        if rsi_col not in bar or 'atr' not in bar:
             self.logger.warning("RSI or ATR not found")
             return None
             
         # Get values
         ema_fast = bar[ema_fast_col]
         ema_slow = bar[ema_slow_col]
-        rsi = bar['rsi']
+        rsi = bar[rsi_col]
         atr = bar['atr']
         close = bar['close']
         

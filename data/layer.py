@@ -66,11 +66,12 @@ class DataLayer:
         df = df[['open', 'high', 'low', 'close', 'volume']]
         
         # Add real_volume if available
-        if 'real_volume' in rates.dtype.names if hasattr(rates, 'dtype') else False:
+        has_dtype = hasattr(rates, 'dtype')
+        if has_dtype and 'real_volume' in rates.dtype.names:
             df['real_volume'] = rates['real_volume']
             
         # Add spread if available
-        if 'spread' in rates.dtype.names if hasattr(rates, 'dtype') else False:
+        if has_dtype and 'spread' in rates.dtype.names:
             df['spread'] = rates['spread']
             
         self.logger.debug(f"Normalized {len(df)} bars with columns: {list(df.columns)}")

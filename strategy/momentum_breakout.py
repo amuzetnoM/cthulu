@@ -72,11 +72,17 @@ class MomentumBreakout(Strategy):
         if f'high_{self.lookback_period}' not in bar or f'low_{self.lookback_period}' not in bar:
             self.logger.warning(f"Lookback period data not found")
             return None
+        
+        # Try to find RSI column (default or with period)
+        rsi_col = 'rsi' if 'rsi' in bar else 'rsi_14'
+        if rsi_col not in bar:
+            self.logger.warning("RSI indicator not found")
+            return None
             
         close = bar['close']
         high = bar['high']
         low = bar['low']
-        rsi = bar['rsi']
+        rsi = bar[rsi_col]
         atr = bar['atr']
         volume = bar['volume']
         
