@@ -291,16 +291,13 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
         strat_cfg = config.get('strategy', {}) if isinstance(config, dict) else {}
         if strat_cfg.get('type') == 'dynamic':
             for s in strat_cfg.get('strategies', []):
-                params = s.get('params', {}) or {}
-                for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window'):
-                    if key in params and params[key]:
-                        try:
-                            required_emas.add(int(params[key]))
-                        except Exception:
-                            pass
-        else:
-            params = strat_cfg.get('params', {}) or {}
-            for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window'):
+                # Strategy instance inspection (modified to handle exceptions better)
+                from herald.strategy.strategy_selector import StrategySelector
+                if isinstance(strategy, StrategySelector):
+                    for s in strategy.strategies.values():
+                        collect_ema_periods(s)
+                else:
+                    collect_ema_periods(strategy)
                 if key in params and params[key]:
                     try:
                         required_emas.add(int(params[key]))
