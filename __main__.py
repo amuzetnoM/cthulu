@@ -43,6 +43,8 @@ from herald.indicators.macd import MACD
 from herald.indicators.bollinger import BollingerBands
 from herald.indicators.stochastic import Stochastic
 from herald.indicators.adx import ADX
+from herald.indicators.supertrend import Supertrend
+from herald.indicators.vwap import VWAP, AnchoredVWAP
 
 
 # Global shutdown flag
@@ -76,7 +78,10 @@ def load_indicators(indicator_configs: Dict[str, Any]) -> List:
         'macd': MACD,
         'bollinger': BollingerBands,
         'stochastic': Stochastic,
-        'adx': ADX
+        'adx': ADX,
+        'supertrend': Supertrend,
+        'vwap': VWAP,
+        'anchored_vwap': AnchoredVWAP
     }
     
     # Handle both list and dict formats
@@ -109,14 +114,48 @@ def load_strategy(strategy_config: Dict[str, Any]) -> Strategy:
         strategy_config: Strategy configuration
         
     Returns:
-        Configured strategy instance
+        Configured strategy instance or StrategySelector for dynamic mode
     """
     from herald.strategy.sma_crossover import SmaCrossover
+    from herald.strategy.ema_crossover import EmaCrossover
+    from herald.strategy.momentum_breakout import MomentumBreakout
+    from herald.strategy.scalping import ScalpingStrategy
+    from herald.strategy.strategy_selector import StrategySelector
     
     strategy_type = strategy_config['type'].lower()
     
-    if strategy_type == 'sma_crossover':
+    # Dynamic strategy selection mode
+    if strategy_type == 'dynamic':
+        dynamic_config = strategy_config.get('dynamic_selection', {})
+        strategies_config = strategy_config.get('strategies', [])
+        
+        # Load all configured strategies
+        strategies = []
+        for strat_cfg in strategies_config:
+            strat_type = strat_cfg['type'].lower()
+            if strat_type == 'sma_crossover':
+                strategies.append(SmaCrossover(config=strat_cfg))
+            elif strat_type == 'ema_crossover':
+                strategies.append(EmaCrossover(config=strat_cfg))
+            elif strat_type == 'momentum_breakout':
+                strategies.append(MomentumBreakout(config=strat_cfg))
+            elif strat_type == 'scalping':
+                strategies.append(ScalpingStrategy(config=strat_cfg))
+                
+        if not strategies:
+            raise ValueError("Dynamic mode requires at least one strategy configuration")
+            
+        return StrategySelector(strategies=strategies, config=dynamic_config)
+    
+    # Single strategy mode
+    elif strategy_type == 'sma_crossover':
         return SmaCrossover(config=strategy_config)
+    elif strategy_type == 'ema_crossover':
+        return EmaCrossover(config=strategy_config)
+    elif strategy_type == 'momentum_breakout':
+        return MomentumBreakout(config=strategy_config)
+    elif strategy_type == 'scalping':
+        return ScalpingStrategy(config=strategy_config)
     else:
         raise ValueError(f"Unknown strategy type: {strategy_type}")
 
