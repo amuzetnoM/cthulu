@@ -1,12 +1,15 @@
 import sys
 import time
 import threading
+import re
+import json
 from pathlib import Path
 
 try:
     import tkinter as tk
     from tkinter import ttk
     from tkinter.scrolledtext import ScrolledText
+    import requests
 except Exception:
     print("Tkinter not available; GUI cannot start.")
     sys.exit(2)
@@ -234,7 +237,6 @@ class HeraldGUI:
         for l in lines:
             if 'Order filled:' in l or 'Order executed' in l:
                 # Try to extract ticket and price
-                import re
                 m = re.search(r'Ticket #?(\d+).*Price: ([0-9\.]+)', l) or re.search(r'ticket=(\d+), price=([0-9\.]+)', l)
                 if m:
                     ticket = m.group(1)
@@ -242,7 +244,6 @@ class HeraldGUI:
                     seen[ticket] = {'ticket': ticket, 'symbol': '', 'side': '', 'volume': '', 'price': price, 'pnl': ''}
             if 'Position #' in l and 'closed' not in l.lower():
                 # e.g., Position #499011910 added to registry
-                import re
                 m = re.search(r'Position #?(\d+)', l)
                 if m:
                     tid = m.group(1)
@@ -296,7 +297,6 @@ class HeraldGUI:
             'order_type': 'market'
         }
 
-        import json, requests
         success = False
         last_err = None
         for ep in RPC_ENDPOINTS:
@@ -316,7 +316,6 @@ class HeraldGUI:
 
     def _show_status(self, msg: str):
         # temporary status (could be improved)
-        import tkinter as tk
         status = tk.Toplevel(self.root)
         status.title('Status')
         ttk.Label(status, text=msg).pack(padx=10, pady=10)
