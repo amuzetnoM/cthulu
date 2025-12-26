@@ -11,7 +11,7 @@ from .connector.mt5_connector import MT5Connector, ConnectionConfig
 from .strategy.base import Strategy, Signal, SignalType
 from .execution.engine import ExecutionEngine, OrderRequest, ExecutionResult
 from .risk.manager import RiskManager, RiskLimits
-from .data.layer import DataLayer, BarData
+from .data.layer import DataLayer
 from .persistence.database import Database, TradeRecord, SignalRecord
 from .observability.metrics import MetricsCollector, PerformanceMetrics
 
@@ -27,7 +27,6 @@ __all__ = [
     "RiskManager",
     "RiskLimits",
     "DataLayer",
-    "BarData",
     "Database",
     "TradeRecord",
     "SignalRecord",
