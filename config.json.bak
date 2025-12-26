@@ -23,12 +23,12 @@
   },
   "trading": {
     "symbol": "GOLD#",
-    "timeframe": "TIMEFRAME_M1",
+    "timeframe": "TIMEFRAME_H1",
     "poll_interval": 5,
     "lookback_bars": 500
   },
   "strategy": {
-    "type": "dynamic",
+    "type": "sma_crossover",
     "params": {
       "fast_period": 10,
       "slow_period": 30,
@@ -71,48 +71,7 @@
       }
     ]
   },
-  "indicators": [
-    {
-      "type": "rsi",
-      "params": {
-        "period": 14,
-        "overbought": 70,
-        "oversold": 30
-      }
-    },
-    {
-      "type": "macd",
-      "params": {
-        "fast_period": 12,
-        "slow_period": 26,
-        "signal_period": 9
-      }
-    },
-    {
-      "type": "bollinger",
-      "params": {
-        "period": 20,
-        "std_dev": 2.0
-      }
-    },
-    {
-      "type": "adx",
-      "params": {
-        "period": 14
-      }
-    },
-    {
-      "type": "supertrend",
-      "params": {
-        "atr_period": 10,
-        "atr_multiplier": 3.0
-      }
-    },
-    {
-      "type": "vwap",
-      "params": {}
-    }
-  ],
+  "indicators": [],
   "exit_strategies": [
     {
       "type": "adverse_movement",

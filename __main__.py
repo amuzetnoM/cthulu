@@ -426,6 +426,46 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
     except Exception:
         logger.exception('Failed to ensure RSI')
 
+    # Ensure ATR if scalping (or any strategy references `atr`)
+    try:
+        need_atr = False
+        # Strategy-level check
+        try:
+            if getattr(strategy, 'name', '').lower() == 'scalping':
+                need_atr = True
+            # Some strategies may have an atr_period attribute
+            if hasattr(strategy, 'atr_period'):
+                need_atr = True
+        except Exception:
+            pass
+
+        # Config-level check
+        try:
+            if strat_cfg.get('type') == 'dynamic':
+                for s in strat_cfg.get('strategies', []):
+                    p = s.get('params', {}) or {}
+                    if 'atr_period' in p or 'atr' in p:
+                        need_atr = True
+            else:
+                if 'atr_period' in strat_cfg.get('params', {}) or 'atr' in strat_cfg.get('params', {}):
+                    need_atr = True
+        except Exception:
+            pass
+
+        # If ATR is needed and missing, compute it here with sensible default
+        if need_atr and 'atr' not in df.columns:
+            try:
+                from herald.indicators.atr import calculate_atr
+                # Prefer strategy-specific period, else default 14
+                period = getattr(strategy, 'atr_period', None) or strat_cfg.get('params', {}).get('atr_period', 14) or 14
+                period = int(period)
+                df['atr'] = calculate_atr(df, period=period)
+                logger.info(f"Computed runtime ATR (period={period})")
+            except Exception:
+                logger.exception('Failed to compute runtime ATR')
+    except Exception:
+        logger.exception('Failed to ensure ATR')
+
     # Ensure ADX if strategy selector needs it (regime detection uses ADX)
     try:
         need_adx = False
