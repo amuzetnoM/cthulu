@@ -28,6 +28,7 @@ REFRESH_INTERVAL = 2000  # ms
 TAIL_LINES = 200
 
 RPC_ENDPOINTS = [
+    'http://127.0.0.1:8181/trade',
     'http://127.0.0.1:8181/order',
     'http://127.0.0.1:8181/rpc/order',
     'http://127.0.0.1:8181/place_order',
