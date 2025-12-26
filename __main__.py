@@ -1457,6 +1457,32 @@ def main():
                         logger.debug(f"Computed EMA columns: {[f'ema_{p}' for p in sorted(required_emas)]}")
                 except Exception:
                     logger.exception('Failed to compute EMA columns; continuing')
+
+                # Ensure runtime indicators (RSI/ATR/MACD/etc.) are added if the strategy needs them
+                try:
+                    extra_indicators = ensure_runtime_indicators(df, indicators, strategy, config, logger)
+                    if extra_indicators:
+                        indicators.extend(extra_indicators)
+                        try:
+                            names = [getattr(i, 'name', i.__class__.__name__) for i in extra_indicators]
+                        except Exception:
+                            names = [i.__class__.__name__ for i in extra_indicators]
+                        logger.info(f"Added {len(extra_indicators)} runtime indicators: {names}")
+                except Exception:
+                    logger.exception('Failed to ensure runtime indicators')
+
+                # Calculate configured indicators (and any runtime-added ones)
+                try:
+                    for indicator in indicators:
+                        try:
+                            indicator_data = indicator.calculate(df)
+                            if indicator_data is not None:
+                                df = df.join(indicator_data, how='left')
+                        except Exception:
+                            logger.exception(f"Failed to calculate indicator {getattr(indicator, 'name', indicator.__class__.__name__)}")
+                except Exception:
+                    logger.exception('Failed during indicator calculations')
+
                 logger.debug(f"Calculated SMA, ATR, and {len(indicators)} additional indicators")
                 
             except Exception as e:
