@@ -7,8 +7,10 @@ Main orchestrator implementing the Phase 2 autonomous trading loop.
 import sys
 import time
 import signal as sig_module
+import subprocess
 import logging
 import argparse
+import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -18,7 +20,7 @@ import pandas as pd
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-__version__ = "3.3.1"
+__version__ = "4.0.0"
 
 from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
 from herald.data.layer import DataLayer
@@ -487,6 +489,127 @@ def main():
             logger.info(f"TradeMonitor started (ml_collector={type(monitor.ml_collector)})")
         except Exception:
             logger.exception('Failed to start TradeMonitor; continuing without it')
+
+        # Persisted summary helper and GUI autostart/monitoring
+        def _persist_summary(metrics_collector, logger_obj, out_path: Path):
+            try:
+                from io import StringIO
+                stream = StringIO()
+                handler = logging.StreamHandler(stream)
+                handler.setLevel(logging.INFO)
+                logger_obj.addHandler(handler)
+                try:
+                    metrics_collector.print_summary()
+                finally:
+                    logger_obj.removeHandler(handler)
+                content = stream.getvalue()
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(out_path, 'w', encoding='utf-8') as fh:
+                    fh.write(content)
+                    
+                # Also persist strategy info if using dynamic selector
+                try:
+                    from herald.strategy.strategy_selector import StrategySelector
+                    if isinstance(strategy, StrategySelector):
+                        with open(out_path.parent / 'strategy_info.txt', 'w', encoding='utf-8') as fh:
+                            fh.write(f"Current Strategy: {strategy.current_strategy.name if strategy.current_strategy else 'None'}\n")
+                            fh.write(f"Current Regime: {strategy.current_regime}\n")
+                            fh.write(f"\nAvailable Strategies:\n")
+                            for name in strategy.strategies.keys():
+                                perf = strategy.performance[name]
+                                fh.write(f"  - {name}: {perf.signals_count} signals, {perf.win_rate:.1%} win rate\n")
+                except Exception:
+                    pass
+                    
+            except Exception:
+                logger_obj.exception('Failed to persist metrics summary')
+
+        # Summary file path (persisted so terminal summary survives backgrounding)
+        summary_path = Path(__file__).parent / 'logs' / 'latest_summary.txt'
+
+        # Print and persist an initial summary now that metrics exists
+        try:
+            _persist_summary(metrics, logger, summary_path)
+        except Exception:
+            logger.exception('Failed to persist initial metrics summary')
+
+        # Auto-launch GUI by default unless explicitly disabled in config
+        gui_proc = None
+        try:
+            ui_cfg = config.get('ui', {}) if isinstance(config, dict) else {}
+            autostart_gui = True
+            if 'enabled' in ui_cfg:
+                autostart_gui = bool(ui_cfg.get('enabled'))
+            if 'autostart' in ui_cfg:
+                autostart_gui = bool(ui_cfg.get('autostart'))
+
+            if autostart_gui:
+                gui_cmd = [sys.executable, '-m', 'herald.ui.desktop']
+                try:
+                    # Capture GUI stdout/stderr to files to diagnose immediate failures
+                    gui_out = Path(__file__).parent / 'logs' / 'gui_stdout.log'
+                    gui_err = Path(__file__).parent / 'logs' / 'gui_stderr.log'
+                    gui_out.parent.mkdir(parents=True, exist_ok=True)
+                    out_f = open(gui_out, 'a', encoding='utf-8')
+                    err_f = open(gui_err, 'a', encoding='utf-8')
+                    gui_proc = subprocess.Popen(gui_cmd, stdout=out_f, stderr=err_f)
+                    # Wait briefly to detect immediate failures
+                    time.sleep(0.5)
+                    if gui_proc.poll() is not None:
+                        # Process exited quickly — treat as launch failure
+                        logger.error('Desktop GUI process exited immediately (check logs/gui_stderr.log)')
+                        try:
+                            out_f.close(); err_f.close()
+                        except Exception:
+                            pass
+                        gui_proc = None
+                    else:
+                        logger.info('Desktop GUI launched (best-effort). Closing GUI will stop Herald.')
+                        # Hide console window on Windows so terminal goes to background
+                        try:
+                            if os.name == 'nt':
+                                import ctypes
+                                hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+                                if hwnd:
+                                    ctypes.windll.user32.ShowWindow(hwnd, 0)  # SW_HIDE
+                        except Exception:
+                            logger.exception('Failed to hide console window')
+                except Exception:
+                    logger.exception('Failed to launch Desktop GUI; continuing in terminal mode')
+
+            # If GUI started and is still running, monitor it and request shutdown when it exits
+            if gui_proc is not None:
+                import threading
+
+                def _monitor_gui(p):
+                    try:
+                        p.wait()
+                        rc = p.returncode
+                        logger.info('GUI process exited with return code %s', rc)
+                        # If GUI exited cleanly (user closed it), treat as explicit shutdown request.
+                        # If GUI crashed (non-zero), keep Herald running as the primary terminal and restore console.
+                        if rc == 0:
+                            logger.info('GUI closed by user; requesting shutdown of Herald')
+                            global shutdown_requested
+                            shutdown_requested = True
+                        else:
+                            logger.error('GUI crashed (non-zero exit). Continuing in terminal mode.')
+                            try:
+                                # Attempt to restore console visibility on Windows so operator can see terminal
+                                if os.name == 'nt':
+                                    import ctypes
+                                    hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+                                    if hwnd:
+                                        ctypes.windll.user32.ShowWindow(hwnd, 1)  # SW_SHOWNORMAL
+                            except Exception:
+                                logger.exception('Failed to restore console window')
+                    except Exception:
+                        logger.exception('GUI monitor thread exception')
+
+                gui_thread = threading.Thread(target=_monitor_gui, args=(gui_proc,), daemon=True, name='GUIMonitor')
+                gui_thread.start()
+        except Exception:
+            logger.exception('Failed to handle GUI autostart')
 
         # 11b. Optional interactive manual trade prompt (runs in background thread if enabled and interactive)
         def _manual_trade_prompt_thread(ex_engine, pos_manager, db, default_symbol: str):
