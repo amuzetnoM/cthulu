@@ -16,7 +16,7 @@ Usage:
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from copy import deepcopy
 
 # Available mindsets from mindsets.py

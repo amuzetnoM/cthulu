@@ -164,7 +164,11 @@ class Config(BaseModel):
                 mt5_cfg['login'] = int(os.getenv('MT5_LOGIN', '0'))
 
         try:
-            cfg = cls.parse_obj(raw)
+            # Pydantic v2 uses model_validate, v1 uses parse_obj
+            if hasattr(cls, 'model_validate'):
+                cfg = cls.model_validate(raw)
+            else:
+                cfg = cls.parse_obj(raw)
         except Exception as e:
             # Try a simple validation fallback if pydantic isn't available
             # This approach will still yield a reasonable config for the app
