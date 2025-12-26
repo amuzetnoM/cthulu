@@ -96,14 +96,6 @@
       }
     },
     {
-      "type": "stochastic",
-      "params": {
-        "k_period": 14,
-        "d_period": 3,
-        "smooth": 3
-      }
-    },
-    {
       "type": "adx",
       "params": {
         "period": 14

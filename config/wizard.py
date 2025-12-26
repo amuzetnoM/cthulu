@@ -58,35 +58,57 @@ def print_banner():
     ─────────────────────────────
     Interactive Setup Wizard
     """
-    print("\033[96m" + banner + "\033[0m")
+    try:
+        safe_print("\033[96m" + banner + "\033[0m")
+    except Exception:
+        # Fallback to a plain ASCII banner
+        safe_print("*** Herald Interactive Setup Wizard ***")
 
 
 def print_section(title: str):
     """Print a section header."""
-    print(f"\n\033[93m{'─' * 50}\033[0m")
-    print(f"\033[93m  {title}\033[0m")
-    print(f"\033[93m{'─' * 50}\033[0m\n")
+    safe_print(f"\n\033[93m{'─' * 50}\033[0m")
+    safe_print(f"\033[93m  {title}\033[0m")
+    safe_print(f"\033[93m{'─' * 50}\033[0m\n")
 
 
 def print_option(key: str, label: str, description: str = "", selected: bool = False):
     """Print a menu option."""
     marker = "●" if selected else "○"
     if description:
-        print(f"  [{key}] {marker} {label} - \033[90m{description}\033[0m")
+        safe_print(f"  [{key}] {marker} {label} - \033[90m{description}\033[0m")
     else:
-        print(f"  [{key}] {marker} {label}")
+        safe_print(f"  [{key}] {marker} {label}")
+
+
+import sys
+
+
+def safe_print(text: str):
+    """Print text but gracefully handle UnicodeEncodeError on restricted consoles."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        # Replace non-ascii characters to avoid crashing terminals with narrow encodings
+        try:
+            safe = text.encode('ascii', errors='replace').decode('ascii')
+            print(safe)
+        except Exception:
+            # Last resort: strip non-printable characters
+            filtered = ''.join(ch if ord(ch) < 128 else '?' for ch in text)
+            print(filtered)
 
 
 def print_success(msg: str):
-    print(f"\033[92m  ✓ {msg}\033[0m")
+    safe_print(f"\033[92m  ✓ {msg}\033[0m")
 
 
 def print_info(msg: str):
-    print(f"\033[94m  ℹ {msg}\033[0m")
+    safe_print(f"\033[94m  ℹ {msg}\033[0m")
 
 
 def print_warning(msg: str):
-    print(f"\033[93m  ⚠ {msg}\033[0m")
+    safe_print(f"\033[93m  ⚠ {msg}\033[0m")
 
 
 class WizardCancelled(Exception):

@@ -225,6 +225,30 @@ def load_exit_strategies(exit_configs: Dict[str, Any]) -> List:
         'adverse_movement': AdverseMovementExit
     }
 
+    # Handle both list and dict formats
+    if isinstance(exit_configs, list):
+        # List format: [{"type": "trailing_stop", "enabled": true, ...}, ...]
+        for exit_config in exit_configs:
+            exit_type = exit_config.get('type', '').lower()
+            enabled = exit_config.get('enabled', True)
+
+            if exit_type in exit_map and enabled:
+                strategy = exit_map[exit_type](exit_config)
+                exit_strategies.append(strategy)
+    else:
+        # Dict format: {"trailing_stop": {...}, "time_based": {...}}
+        for exit_type, config_ in exit_configs.items():
+            exit_type_lower = exit_type.lower()
+            enabled = config_.get('enabled', True)
+
+            if exit_type_lower in exit_map and enabled:
+                strategy = exit_map[exit_type_lower](config_)
+                exit_strategies.append(strategy)
+
+    # Sort by priority (highest first)
+    exit_strategies.sort(key=lambda x: x.priority, reverse=True)
+
+    return exit_strategies
 
 def ensure_runtime_indicators(df, indicators, strategy, config, logger):
     """Ensure indicators required by the active strategy/config are present.
