@@ -73,10 +73,18 @@ class HeraldGUI:
             style.theme_use('clam')
         except Exception:
             pass
+        # Base label styles
         style.configure('TLabel', background=THEME_BG, foreground=THEME_FG)
-        style.configure('Header.TLabel', font=('Segoe UI', 12, 'bold'), foreground=ACCENT)
-        style.configure('Metric.TLabel', font=('Consolas', 11), foreground=THEME_FG, background=THEME_BG)
-        style.configure('Treeview', background='#0b1220', fieldbackground='#0b1220', foreground=THEME_FG)
+        style.configure('Header.TLabel', font=('Segoe UI', 12, 'bold'), foreground=ACCENT, background=THEME_BG)
+        style.configure('Metric.TLabel', font=('Consolas', 12, 'bold'), foreground=THEME_FG, background=THEME_BG)
+        # Entry styling
+        style.configure('TEntry', fieldbackground='#0b1220', foreground=THEME_FG)
+        # Button accent
+        style.configure('Accent.TButton', background=ACCENT, foreground=THEME_FG)
+        # Treeview look & feel
+        style.configure('Treeview', background='#07121a', fieldbackground='#07121a', foreground=THEME_FG, rowheight=24)
+        style.configure('Treeview.Heading', font=('Segoe UI', 10, 'bold'), foreground=THEME_FG, background='#0b1220')
+        style.map('Treeview', background=[('selected', '#1f2937')], foreground=[('selected', THEME_FG)])
 
         # Top: Metrics grid (no scroll)
         metrics_frame = ttk.Frame(root)
@@ -106,6 +114,12 @@ class HeraldGUI:
         for col in ('ticket','symbol','side','volume','price','pnl'):
             self.trades_tree.heading(col, text=col.capitalize())
             self.trades_tree.column(col, width=100, anchor='center')
+        # alternating row tags for better readability
+        try:
+            self.trades_tree.tag_configure('odd', background='#07121a')
+            self.trades_tree.tag_configure('even', background='#0b1220')
+        except Exception:
+            pass
         self.trades_tree.pack(fill='both', expand=True, pady=4)
 
         # Trade history panel
@@ -116,6 +130,11 @@ class HeraldGUI:
         for col in ('time','symbol','side','price','result'):
             self.history_tree.heading(col, text=col.capitalize())
             self.history_tree.column(col, width=120, anchor='center')
+        try:
+            self.history_tree.tag_configure('odd', background='#07121a')
+            self.history_tree.tag_configure('even', background='#0b1220')
+        except Exception:
+            pass
         self.history_tree.pack(fill='both', expand=True, pady=4)
 
         # Bottom: Manual trade panel
@@ -123,28 +142,28 @@ class HeraldGUI:
         bottom.pack(fill='x', padx=10, pady=(6,10))
         ttk.Label(bottom, text='Manual Trade', style='Header.TLabel').grid(row=0, column=0, columnspan=6, sticky='w')
 
-        ttk.Label(bottom, text='Symbol:', style='TLabel').grid(row=1, column=0, sticky='e')
+        ttk.Label(bottom, text='Symbol:', style='TLabel').grid(row=1, column=0, sticky='e', padx=(4,2))
         self.symbol_var = tk.StringVar()
-        ttk.Entry(bottom, textvariable=self.symbol_var, width=12).grid(row=1, column=1, sticky='w')
+        ttk.Entry(bottom, textvariable=self.symbol_var, width=12).grid(row=1, column=1, sticky='w', padx=(0,8))
 
         ttk.Label(bottom, text='Side:', style='TLabel').grid(row=1, column=2, sticky='e')
         self.side_var = tk.StringVar(value='BUY')
-        ttk.Combobox(bottom, textvariable=self.side_var, values=['BUY','SELL'], width=6).grid(row=1, column=3, sticky='w')
+        ttk.Combobox(bottom, textvariable=self.side_var, values=['BUY','SELL'], width=6).grid(row=1, column=3, sticky='w', padx=(0,8))
 
         ttk.Label(bottom, text='Volume:', style='TLabel').grid(row=1, column=4, sticky='e')
         self.volume_var = tk.StringVar(value='0.01')
-        ttk.Entry(bottom, textvariable=self.volume_var, width=8).grid(row=1, column=5, sticky='w')
+        ttk.Entry(bottom, textvariable=self.volume_var, width=8).grid(row=1, column=5, sticky='w', padx=(0,8))
 
         ttk.Label(bottom, text='SL:', style='TLabel').grid(row=2, column=0, sticky='e')
         self.sl_var = tk.StringVar()
-        ttk.Entry(bottom, textvariable=self.sl_var, width=12).grid(row=2, column=1, sticky='w')
+        ttk.Entry(bottom, textvariable=self.sl_var, width=12).grid(row=2, column=1, sticky='w', padx=(0,8))
 
         ttk.Label(bottom, text='TP:', style='TLabel').grid(row=2, column=2, sticky='e')
         self.tp_var = tk.StringVar()
-        ttk.Entry(bottom, textvariable=self.tp_var, width=12).grid(row=2, column=3, sticky='w')
+        ttk.Entry(bottom, textvariable=self.tp_var, width=12).grid(row=2, column=3, sticky='w', padx=(0,8))
 
-        self.place_btn = ttk.Button(bottom, text='Place Trade', command=self.place_manual_trade)
-        self.place_btn.grid(row=2, column=5, sticky='e')
+        self.place_btn = ttk.Button(bottom, text='Place Trade', style='Accent.TButton', command=self.place_manual_trade)
+        self.place_btn.grid(row=2, column=5, sticky='e', padx=(0,4))
 
         # Close behavior
         root.protocol('WM_DELETE_WINDOW', self.on_close)
@@ -211,11 +230,13 @@ class HeraldGUI:
                     tid = m.group(1)
                     seen.setdefault(tid, {'ticket': tid, 'symbol': '', 'side': '', 'volume': '', 'price': '', 'pnl': ''})
 
-        # Refresh tree
+        # Refresh tree with alternating rows
         for i in self.trades_tree.get_children():
             self.trades_tree.delete(i)
-        for t, data in seen.items():
-            self.trades_tree.insert('', 'end', values=(data['ticket'], data['symbol'], data['side'], data['volume'], data['price'], data['pnl']))
+        for idx, (t, data) in enumerate(sorted(seen.items(), key=lambda x: int(x[0]) if x[0].isdigit() else 0)):
+            tag = 'even' if idx % 2 == 0 else 'odd'
+            pnl = data.get('pnl') if data.get('pnl') not in (None, '') else '—'
+            self.trades_tree.insert('', 'end', values=(data['ticket'], data['symbol'], data['side'], data['volume'], data['price'], pnl), tags=(tag,))
 
     def _update_history_from_log(self, log_text: str):
         lines = log_text.splitlines()
@@ -228,8 +249,10 @@ class HeraldGUI:
         history = history[-50:]
         for i in self.history_tree.get_children():
             self.history_tree.delete(i)
-        for h in history:
-            self.history_tree.insert('', 'end', values=(h[:19], '', '', '', h))
+        for idx, h in enumerate(history):
+            tag = 'even' if idx % 2 == 0 else 'odd'
+            # put the full line into the 'result' column and a truncated time into time
+            self.history_tree.insert('', 'end', values=(h[:19], '', '', '', h), tags=(tag,))
 
     def on_close(self):
         try:
