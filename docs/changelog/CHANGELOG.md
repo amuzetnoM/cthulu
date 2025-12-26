@@ -17,7 +17,7 @@ slug: /docs/changelog
 ## UNRELEASED
 
 ---
-
+> unreleased changes appear here
 ---
 
 # RELEASE HISTORY
@@ -136,8 +136,6 @@ This is a transformative release that upgrades Herald from a single-strategy sys
 - **Configuration**: New strategy types available, old configs remain compatible
 
 ---
-
-## **3.3.1 — 2025-12-24**
 
 ## **3.3.1 — 2025-12-24**
 
