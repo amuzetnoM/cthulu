@@ -12,7 +12,7 @@ High-level layout:
 - monitoring: drift detectors, model health monitors
 - utils: helpers, schema definitions
 
-MVP approach (short):
+Architecture:
 1. Instrumentation to capture order, execution, and market snapshots.
 2. Offline experiments (simple tree model like LightGBM/XGBoost) predicting short-term probability of positive returns for 1-5 bar horizons.
 3. Shadow / advisory mode: model outputs are recorded and sent to Discord (via webhook) as "signals" in advisory mode only.
