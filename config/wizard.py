@@ -24,6 +24,7 @@ MINDSETS = {
     "1": ("conservative", "Lower risk, wider stops, capital preservation"),
     "2": ("balanced", "Moderate risk, standard settings (recommended)"),
     "3": ("aggressive", "Higher risk, faster entries, tighter stops"),
+    "4": ("ultra_aggressive", "Ultra high-frequency scalping with dynamic strategies (expert traders)"),
 }
 
 TIMEFRAMES = {

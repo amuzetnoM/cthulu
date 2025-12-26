@@ -291,18 +291,13 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
         strat_cfg = config.get('strategy', {}) if isinstance(config, dict) else {}
         if strat_cfg.get('type') == 'dynamic':
             for s in strat_cfg.get('strategies', []):
-                # Strategy instance inspection (modified to handle exceptions better)
-                from herald.strategy.strategy_selector import StrategySelector
-                if isinstance(strategy, StrategySelector):
-                    for s in strategy.strategies.values():
-                        collect_ema_periods(s)
-                else:
-                    collect_ema_periods(strategy)
-                if key in params and params[key]:
-                    try:
-                        required_emas.add(int(params[key]))
-                    except Exception:
-                        pass
+                params = s.get('params', {}) if isinstance(s.get('params', {}), dict) else {}
+                for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period'):
+                    if key in params and params[key]:
+                        try:
+                            required_emas.add(int(params[key]))
+                        except Exception:
+                            pass
 
         # If scalping present, ensure scalping defaults
         try:
@@ -539,32 +534,6 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
 
     return extra_indicators
 
-    
-    # Handle both list and dict formats
-    if isinstance(exit_configs, list):
-        # List format: [{"type": "trailing_stop", "enabled": true, ...}, ...]
-        for exit_config in exit_configs:
-            exit_type = exit_config.get('type', '').lower()
-            enabled = exit_config.get('enabled', True)
-            
-            if exit_type in exit_map and enabled:
-                strategy = exit_map[exit_type](exit_config)
-                exit_strategies.append(strategy)
-    else:
-        # Dict format: {"trailing_stop": {...}, "time_based": {...}}
-        for exit_type, config in exit_configs.items():
-            exit_type_lower = exit_type.lower()
-            enabled = config.get('enabled', True)
-            
-            if exit_type_lower in exit_map and enabled:
-                strategy = exit_map[exit_type_lower](config)
-                exit_strategies.append(strategy)
-            
-    # Sort by priority (highest first)
-    exit_strategies.sort(key=lambda x: x.priority, reverse=True)
-    
-    return exit_strategies
-
 
 def main():
     """Main autonomous trading loop for Phase 2."""
@@ -780,37 +749,6 @@ def main():
                 logger.info('Prometheus exporter initialized')
         except Exception:
             logger.exception('Failed to initialize Prometheus exporter; continuing without it')
-
-        # Persisted summary helper and GUI autostart/monitoring
-        def _persist_summary(metrics_collector, logger_obj, out_path: Path):
-            try:
-                from io import StringIO
-                stream = StringIO()
-                handler = logging.StreamHandler(stream)
-                handler.setLevel(logging.INFO)
-                logger_obj.addHandler(handler)
-                try:
-                    metrics_collector.print_summary()
-                finally:
-                    logger_obj.removeHandler(handler)
-                content = stream.getvalue()
-                out_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(out_path, 'w', encoding='utf-8') as fh:
-                    fh.write(content)
-            except Exception:
-                logger_obj.exception('Failed to persist metrics summary')
-
-        # Summary file path (persisted so terminal summary survives backgrounding)
-        summary_path = Path(__file__).parent / 'logs' / 'latest_summary.txt'
-
-        # Print and persist an initial summary now that metrics exists
-        try:
-            _persist_summary(metrics, logger, summary_path)
-        except Exception:
-            logger.exception('Failed to persist initial metrics summary')
-
-        # GUI autostart handled later in this function (single controlled block to avoid duplicate launches)
-        gui_proc = None
 
         # Attach metrics to execution engine if it exists so PositionManager can report opens
         try:

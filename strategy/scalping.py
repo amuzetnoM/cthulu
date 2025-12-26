@@ -41,6 +41,7 @@ class ScalpingStrategy(Strategy):
         self.rsi_oversold = config.get('params', {}).get('rsi_oversold', 25)
         self.rsi_overbought = config.get('params', {}).get('rsi_overbought', 75)
         self.atr_multiplier = config.get('params', {}).get('atr_multiplier', 1.0)
+        self.atr_period = config.get('params', {}).get('atr_period', 14)
         self.risk_reward_ratio = config.get('params', {}).get('risk_reward_ratio', 2.0)
         self.spread_limit_pips = config.get('params', {}).get('spread_limit_pips', 2.0)
         
@@ -54,7 +55,8 @@ class ScalpingStrategy(Strategy):
         
         self.logger.info(
             f"Scalping Strategy initialized: fast_ema={self.fast_ema}, "
-            f"slow_ema={self.slow_ema}, rsi_oversold={self.rsi_oversold}"
+            f"slow_ema={self.slow_ema}, rsi_period={self.rsi_period}, "
+            f"rsi_oversold={self.rsi_oversold}, atr_multiplier={self.atr_multiplier}"
         )
         
     def on_tick(self, tick: Dict[str, Any]) -> Optional[Signal]:
@@ -90,32 +92,47 @@ class ScalpingStrategy(Strategy):
             missing.append(ema_fast_col)
         if ema_slow_col not in bar:
             missing.append(ema_slow_col)
+        
         # Also treat NaN values as missing indicators
         try:
             import pandas as _pd
             if ema_fast_col in bar and _pd.isna(bar[ema_fast_col]):
-                missing.append(ema_fast_col)
+                missing.append(f"{ema_fast_col} (NaN)")
             if ema_slow_col in bar and _pd.isna(bar[ema_slow_col]):
-                missing.append(ema_slow_col)
+                missing.append(f"{ema_slow_col} (NaN)")
         except Exception:
             pass
 
         if missing:
-            self.logger.warning("EMA indicators missing or NaN: %s", ','.join(sorted(set(missing))))
+            self.logger.warning("EMA indicators missing or NaN: %s", ', '.join(sorted(set(missing))))
             return None
 
         # Try to find RSI with specified period, fallback to default
         rsi_col = f'rsi_{self.rsi_period}' if f'rsi_{self.rsi_period}' in bar else 'rsi'
-        if rsi_col not in bar or 'atr' not in bar:
-            self.logger.warning("RSI or ATR not found")
+        
+        # Check for required indicators
+        if rsi_col not in bar:
+            self.logger.warning(f"RSI column '{rsi_col}' not found in bar")
+            return None
+        if 'atr' not in bar:
+            self.logger.warning("ATR not found in bar")
             return None
             
-        # Get values
+        # Get values and check for NaN
         ema_fast = bar[ema_fast_col]
         ema_slow = bar[ema_slow_col]
         rsi = bar[rsi_col]
         atr = bar['atr']
         close = bar['close']
+        
+        # Validate all values are numeric and not NaN
+        try:
+            import pandas as _pd
+            if any(_pd.isna(v) for v in [ema_fast, ema_slow, rsi, atr, close]):
+                self.logger.warning("One or more indicator values are NaN")
+                return None
+        except Exception:
+            pass
         
         # Check spread if available
         spread = bar.get('spread', 0)
@@ -123,7 +140,7 @@ class ScalpingStrategy(Strategy):
         spread_pips = spread / pip_value if pip_value > 0 else 0
         
         if spread_pips > self.spread_limit_pips:
-            self.logger.debug(f"Spread too high: {spread_pips:.1f} pips")
+            self.logger.debug(f"Spread too high: {spread_pips:.1f} pips (limit: {self.spread_limit_pips})")
             return None
         
         # Update state
@@ -133,30 +150,34 @@ class ScalpingStrategy(Strategy):
         self._state['ema_fast'] = ema_fast
         self._state['ema_slow'] = ema_slow
         
-        # Need previous values
+        # Need previous values for crossover detection
         if prev_fast is None or prev_slow is None:
             return None
         
         # Bullish scalp: Fast EMA crosses above slow + RSI oversold recovery
+        # More aggressive: allow signals when RSI is recovering from oversold
         if (prev_fast <= prev_slow and ema_fast > ema_slow and 
-            rsi > self.rsi_oversold and rsi < 60):
+            rsi > self.rsi_oversold and rsi < 65):
             
             signal = self._create_long_signal(close, atr, bar)
             if self.validate_signal(signal):
                 self._state['last_signal'] = SignalType.LONG
                 self._state['last_trade_time'] = datetime.now()
+                self.logger.info(f"Bullish scalp signal: EMA cross, RSI={rsi:.1f}")
                 return signal
-                
+                 
         # Bearish scalp: Fast EMA crosses below slow + RSI overbought recovery
+        # More aggressive: allow signals when RSI is recovering from overbought
         elif (prev_fast >= prev_slow and ema_fast < ema_slow and 
-              rsi < self.rsi_overbought and rsi > 40):
+              rsi < self.rsi_overbought and rsi > 35):
             
             signal = self._create_short_signal(close, atr, bar)
             if self.validate_signal(signal):
                 self._state['last_signal'] = SignalType.SHORT
                 self._state['last_trade_time'] = datetime.now()
+                self.logger.info(f"Bearish scalp signal: EMA cross, RSI={rsi:.1f}")
                 return signal
-                
+                 
         return None
         
     def _create_long_signal(self, price: float, atr: float, bar: pd.Series) -> Signal:
