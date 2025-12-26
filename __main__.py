@@ -424,9 +424,13 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
 
     # Generic fallback: ensure other indicators (macd, bollinger, stochastic, supertrend, vwap) if strategy params mention them
     try:
-        # MACD: check for 'macd' mention or 'signal_period' in params
+        # MACD: check for 'macd' mention in config or 'signal_period' in strategy params
         need_macd = False
         try:
+            # Check explicit indicators in config
+            if any((i.get('type', '').lower() == 'macd') for i in config.get('indicators', [])):
+                need_macd = True
+            # Check strategy params
             for s in strat_cfg.get('strategies', []):
                 p = s.get('params', {}) or {}
                 if any(k in p for k in ('macd', 'signal_period', 'signal_period')):
@@ -457,7 +461,8 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
         if 'supertrend' not in df.columns and 'supertrend' not in existing_types:
             try:
                 if any((i.get('type', '').lower() == 'supertrend') for i in config.get('indicators', [])):
-                    _add_indicator_if_missing(Supertrend, 'supertrend', params={'atr_period': 10, 'atr_multiplier': 3.0})
+                    # Use canonical parameter names expected by Supertrend.__init__
+                    _add_indicator_if_missing(Supertrend, 'supertrend', params={'period': 10, 'multiplier': 3.0})
             except Exception:
                 pass
 
