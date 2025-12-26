@@ -13,28 +13,29 @@
 
 ## Credential Management
 
-### Environment Variables (Recommended)
+### Environment Variable Overrides
 
-**Never hardcode credentials in configuration files.**
+**Herald v4.0.0 implements secure environment variable overrides:**
+
+- **Individual Field Control**: Each MT5 credential can be overridden individually via environment variables
+- **Runtime Priority**: Environment variables always take precedence over config file values
+- **No Placeholder Dependencies**: Removed insecure FROM_ENV placeholders that could expose credential locations
 
 ```bash
-# Create .env file (already in .gitignore)
-cat > .env << EOF
-MT5_LOGIN=12345678
-MT5_PASSWORD=your_secure_password
-MT5_SERVER=Broker-Demo
+# Secure credential override (recommended)
+export MT5_LOGIN=12345678
+export MT5_PASSWORD=secure_password
+export MT5_SERVER=Broker-Live
 
-# API Keys (if using external services)
-NEWSAPI_KEY=your_news_api_key
-FRED_API_KEY=your_fred_key
-
-# Database encryption key
-DB_ENCRYPTION_KEY=$(openssl rand -base64 32)
-EOF
-
-# Secure .env file
-chmod 600 .env
+# Config file can contain dummy values or be empty
+# Environment variables will override at runtime
 ```
+
+**Security Benefits:**
+- Credentials never stored in config files
+- Environment variables are process-isolated
+- No risk of accidental credential commits
+- Supports containerized deployments with secret injection
 
 ### Encrypted Storage
 

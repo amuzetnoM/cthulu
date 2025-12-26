@@ -202,17 +202,30 @@ Trades placed via `herald-trade` use Herald's magic number, so they are automati
 | **Reconciliation** | Automatic position sync after connection loss |
 | **Dry-Run Mode** | Test strategies without real orders |
 
-### Trade Management (Phase 3) 🆕
+### Multi-Strategy Framework (Phase 4) 🆕
 
 | Component | Description |
 |-----------|-------------|
-| **Interactive Setup Wizard** | Guided configuration of symbol, timeframe, risk, and strategy 🆕 |
-| **Trade Manager** | Adopt and manage external/manual trades placed outside Herald |
-| **Trade CLI** | Command-line interface: `herald-trade --symbol BTCUSD# --side BUY` |
-| **Trading Mindsets** | Pre-configured risk profiles: aggressive, balanced, conservative |
-| **Config Validation** | Pydantic-based typed configuration with environment variable overrides |
-| **Startup Reconciliation** | Automatically track trades from previous sessions |
-| **Security Hardening** | Pre-commit hooks with detect-secrets, masked account logging |
+| **Dynamic Strategy Selection** | Autonomous switching between 4 strategies based on market regime and performance |
+| **Market Regime Detection** | 5 regime types: trending up/down, volatile, ranging, sideways |
+| **Advanced Indicators** | Next-gen indicators: Supertrend, VWAP, Anchored VWAP |
+| **Strategy Performance Tracking** | Real-time affinity matrix and confidence scoring |
+| **Enhanced GUI** | Desktop interface with live trade monitoring, detailed trade history from database |
+| **ML Instrumentation** | Batched JSONL event streams for model training |
+| **News Integration** | Optional news ingestion from multiple sources (NewsAPI, RSS, FRED) |
+| **Ultra-Aggressive Mode** | High-frequency trading with dynamic position sizing |
+| **Configurable Mindsets** | 3 predefined risk profiles with CLI selection (`--mindset aggressive`) |
+
+### Monitoring & Observability (Enhanced)
+
+| Component | Description |
+|-----------|-------------|
+| **Desktop GUI** | Tkinter-based interface with trade history, metrics dashboard, manual trading |
+| **Database-Driven History** | Complete trade records with entry/exit details, P&L, timestamps |
+| **Prometheus Metrics** | Performance snapshots, rolling Sharpe ratio, drawdown tracking |
+| **Structured Logging** | JSON-formatted logs with correlation IDs |
+| **Health Monitoring** | Connection status, position reconciliation, emergency shutdown |
+| **RPC Interface** | Local HTTP API for external integrations |
 
 ---
 
@@ -220,34 +233,64 @@ Trades placed via `herald-trade` use Herald's magic number, so they are automati
 
 ```
 herald/
-├── connector/         # MT5 connection management
+├── config/           # Configuration management
+│   ├── wizard.py     # Interactive setup wizard
+│   ├── mindsets.py   # Risk profiles
+│   └── schema.py     # Typed config validation
+├── connector/        # MT5 connection management
 │   └── mt5_connector.py
-├── data/             # Market data normalization
+├── data/             # Market data normalization & indicators
 │   └── layer.py
-├── strategy/         # Trading strategies
+├── strategy/         # Multi-strategy framework
 │   ├── base.py
-│   └── sma_crossover.py
+│   ├── strategy_selector.py  # Dynamic strategy selection
+│   ├── sma_crossover.py
+│   ├── ema_crossover.py
+│   ├── momentum_breakout.py
+│   └── scalping.py
+├── indicators/       # Technical indicators
+│   ├── base.py
+│   ├── rsi.py, macd.py, bollinger.py
+│   ├── stochastic.py, adx.py
+│   ├── supertrend.py, vwap.py  # Next-gen
+│   └── anchored_vwap.py
 ├── execution/        # Order execution
 │   └── engine.py
 ├── risk/             # Risk management
 │   └── manager.py
-├── indicators/       # Technical indicators
-│   ├── base.py
-│   ├── rsi.py
-│   ├── macd.py
-│   ├── bollinger.py
-│   ├── stochastic.py
-│   └── adx.py
-├── position/         # Position management
+├── position/         # Position & trade management
 │   ├── manager.py
-│   └── trade_manager.py   # 🆕 External trade adoption
+│   └── trade_manager.py
 ├── exit/             # Exit strategies
-│   ├── base.py
-│   ├── exit_manager.py
-│   ├── stop_loss.py
-│   ├── take_profit.py
 │   ├── trailing_stop.py
 │   ├── time_based.py
+│   ├── profit_target.py
+│   └── adverse_movement.py
+├── persistence/      # Database layer
+│   └── database.py
+├── observability/    # Monitoring & metrics
+│   ├── logger.py
+│   ├── metrics.py
+│   └── health.py
+├── ui/               # Desktop interface
+│   └── desktop.py
+├── rpc/              # HTTP API
+│   └── server.py
+├── market/           # Market data providers
+│   └── tick_manager.py
+├── news/             # News integration (opt-in)
+│   ├── manager.py
+│   ├── ingest.py
+│   └── cache.py
+├── monitoring/       # Trade monitoring
+│   └── trade_monitor.py
+├── ML_RL/            # ML instrumentation
+│   └── instrumentation.py
+└── utils/            # Utilities
+    ├── rate_limiting.py
+    ├── circuit_breaker.py
+    └── retry.py
+```
 │   ├── profit_target.py
 │   └── adverse_movement.py
 ├── config/           # 🆕 Configuration

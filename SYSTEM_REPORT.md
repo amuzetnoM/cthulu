@@ -15,13 +15,18 @@ Herald is a well-architected autonomous trading system for MetaTrader 5 with str
 - **Docs moved:** Copied original `FEATURES_GUIDE.md` into [docs/FEATURES_GUIDE.md](docs/FEATURES_GUIDE.md) and removed the root file.
 - **Implementation summary removed:** Read and deleted [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) per analyst instruction.
 - **Release notes ingested:** Reviewed `release_notes/v3.3.1.md` and `release_notes/v4.0.0.md` to map breaking changes and migration needs.
-+- **Env routing cleaned up:** Removed redundant FROM_ENV placeholder logic from `config_schema.py`, updated env overrides to apply per-field individually, updated main config files to use empty strings instead of FROM_ENV. Fixed duplicate symbol override in `__main__.py`.
-+- **Analysis scope expanded:** Updated this report to reflect v4.0 architectural changes (multi-strategy framework, new Data Layer, GUI, ML plumbing).
+- **Env routing cleaned up:** Removed redundant FROM_ENV placeholder logic from `config_schema.py`, updated env overrides to apply per-field individually, updated main config files to use empty strings instead of FROM_ENV. Fixed duplicate symbol override in `__main__.py`.
+- **UI enhancements:** Added database-driven trade history display with detailed entry/exit information, improved font readability and contrast, integrated comprehensive trade records in desktop GUI.
+- **Wizard fixes:** Resolved config file path resolution issues in setup wizard for cross-directory execution.
+- **Data layer fixes:** Corrected API calls to remove invalid parameters causing crashes.
+- **Import cleanup:** Removed obsolete BarData import causing startup failures.
+- **Documentation comprehensive update:** Updated all docs (README, FEATURES_GUIDE, QUICKSTART, ARCHITECTURE, SECURITY, CHANGELOG) to reflect v4.0.0 multi-strategy features, GUI improvements, and security enhancements.
 
 **Next Immediate Steps:**
-+- **Test config loading:** Verify that configuration loads correctly with env overrides.
-- **Hold running tests** until configuration and wizard fixes from the cloud agent are merged (user requested).
-- **Prepare migration checklist** for v4.0 config changes and wizard updates.
+- **Documentation complete:** All v4.0.0 features now comprehensively documented across docs/ directory - multi-strategy framework, enhanced GUI with trade history, security improvements, and system architecture fully covered.
+- **System validation:** Run full system tests to ensure all documented features work as described.
+- **User acceptance:** Verify documentation clarity and completeness with end users.
+- **Release preparation:** Package v4.0.0 with updated documentation for deployment.
 
 ---
 

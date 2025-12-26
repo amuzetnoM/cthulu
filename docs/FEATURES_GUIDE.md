@@ -578,6 +578,50 @@ Track these metrics:
 
 ---
 
+## Desktop GUI Interface
+
+### Overview
+Herald includes a comprehensive desktop GUI (`python -m herald --gui`) that provides real-time monitoring and manual trading capabilities.
+
+### Features
+
+#### Live Trade Monitoring
+- **Real-time Positions**: View all open positions with ticket numbers, symbols, sides, volumes, current prices, and P&L
+- **Automatic Updates**: Refreshes every 2 seconds with latest market data
+- **Alternating Rows**: Improved readability with color-coded rows
+
+#### Detailed Trade History
+- **Database-Driven**: Pulls complete trade records from SQLite database
+- **Comprehensive Details**: Shows entry/exit times, prices, volumes, P&L, and trade status
+- **Historical Records**: Displays up to 50 most recent trades, ordered by entry time
+- **Status Tracking**: OPEN, CLOSED, CANCELLED status with exit reasons
+
+#### Performance Dashboard
+- **Key Metrics**: Total trades, win rate, net profit, profit factor, max drawdown, Sharpe ratio
+- **Real-time Updates**: Metrics update from performance logs
+- **Strategy Info**: Current active strategy and detected market regime
+
+#### Manual Trading
+- **Order Placement**: GUI interface for placing manual trades
+- **Risk Validation**: Orders validated against risk limits before submission
+- **RPC Integration**: Uses internal HTTP API for order execution
+
+### Usage
+```bash
+# Launch GUI
+python -m herald --gui
+
+# Or run full system with GUI
+python -m herald --config config.json
+```
+
+### Configuration
+The GUI automatically connects to the running Herald instance and displays data from:
+- `herald.db` - Trade database
+- `herald.log` - Live log updates
+- `logs/latest_summary.txt` - Performance metrics
+- `logs/strategy_info.txt` - Strategy status
+
 ## Conclusion
 
 These upgrades transform Herald from a basic single-strategy system into a sophisticated multi-strategy platform with:
