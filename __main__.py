@@ -1467,6 +1467,24 @@ def main():
             # 6. Generate strategy signals
             try:
                 current_bar = df.iloc[-1]
+                # Diagnostic: log presence of RSI/ATR before strategy signal generation
+                try:
+                    rsi_period = getattr(strategy, 'rsi_period', None)
+                    try:
+                        rsi_period_int = int(rsi_period) if rsi_period is not None else None
+                    except Exception:
+                        rsi_period_int = None
+                    rsi_col = f"rsi_{rsi_period_int}" if rsi_period_int and rsi_period_int != 14 else 'rsi'
+                    has_rsi = rsi_col in current_bar.index
+                    has_atr = 'atr' in current_bar.index
+                    logger.debug(f"Before strategy signal: has_rsi={has_rsi} (col={rsi_col}), has_atr={has_atr}")
+                    if has_rsi:
+                        logger.debug(f"rsi value: {current_bar.get(rsi_col)}")
+                    if has_atr:
+                        logger.debug(f"atr value: {current_bar.get('atr')}")
+                except Exception:
+                    logger.exception('Failed to log indicator presence before strategy signal')
+
                 # If dynamic selector, use its generator method
                 try:
                     from herald.strategy.strategy_selector import StrategySelector
