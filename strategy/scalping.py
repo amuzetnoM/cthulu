@@ -40,6 +40,10 @@ class ScalpingStrategy(Strategy):
         self.rsi_period = config.get('params', {}).get('rsi_period', 7)
         self.rsi_oversold = config.get('params', {}).get('rsi_oversold', 25)
         self.rsi_overbought = config.get('params', {}).get('rsi_overbought', 75)
+        # Upper threshold for long entries (RSI recovery zone)
+        self.rsi_long_max = config.get('params', {}).get('rsi_long_max', 65)
+        # Lower threshold for short entries (RSI recovery zone)
+        self.rsi_short_min = config.get('params', {}).get('rsi_short_min', 35)
         self.atr_multiplier = config.get('params', {}).get('atr_multiplier', 1.0)
         self.atr_period = config.get('params', {}).get('atr_period', 14)
         self.risk_reward_ratio = config.get('params', {}).get('risk_reward_ratio', 2.0)
@@ -56,7 +60,9 @@ class ScalpingStrategy(Strategy):
         self.logger.info(
             f"Scalping Strategy initialized: fast_ema={self.fast_ema}, "
             f"slow_ema={self.slow_ema}, rsi_period={self.rsi_period}, "
-            f"rsi_oversold={self.rsi_oversold}, atr_multiplier={self.atr_multiplier}"
+            f"rsi_oversold={self.rsi_oversold}, rsi_overbought={self.rsi_overbought}, "
+            f"rsi_long_max={self.rsi_long_max}, rsi_short_min={self.rsi_short_min}, "
+            f"atr_multiplier={self.atr_multiplier}"
         )
         
     def on_tick(self, tick: Dict[str, Any]) -> Optional[Signal]:
@@ -157,7 +163,7 @@ class ScalpingStrategy(Strategy):
         # Bullish scalp: Fast EMA crosses above slow + RSI oversold recovery
         # More aggressive: allow signals when RSI is recovering from oversold
         if (prev_fast <= prev_slow and ema_fast > ema_slow and 
-            rsi > self.rsi_oversold and rsi < 65):
+            rsi > self.rsi_oversold and rsi < self.rsi_long_max):
             
             signal = self._create_long_signal(close, atr, bar)
             if self.validate_signal(signal):
@@ -169,7 +175,7 @@ class ScalpingStrategy(Strategy):
         # Bearish scalp: Fast EMA crosses below slow + RSI overbought recovery
         # More aggressive: allow signals when RSI is recovering from overbought
         elif (prev_fast >= prev_slow and ema_fast < ema_slow and 
-              rsi < self.rsi_overbought and rsi > 35):
+              rsi < self.rsi_overbought and rsi > self.rsi_short_min):
             
             signal = self._create_short_signal(close, atr, bar)
             if self.validate_signal(signal):

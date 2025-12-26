@@ -50,7 +50,7 @@ def calculate_atr(data: pd.DataFrame, period: int = 14) -> pd.Series:
     atr = tr.ewm(span=period, adjust=False, min_periods=1).mean()
     
     # Fill any NaN values at the start with the first valid value
-    atr = atr.fillna(method='bfill')
+    atr = atr.bfill()
     
     atr.name = 'atr'
     return atr

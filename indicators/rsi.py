@@ -12,6 +12,9 @@ import numpy as np
 from typing import Dict, Any
 from .base import Indicator
 
+# Small epsilon to avoid division by zero in RSI calculation
+EPSILON = 1e-10
+
 
 class RSI(Indicator):
     """
@@ -72,7 +75,7 @@ class RSI(Indicator):
         
         # Calculate RS and RSI
         # Handle division by zero: when avg_loss is 0, RSI = 100
-        rs = avg_gain / avg_loss.replace(0, 1e-10)  # Avoid division by zero
+        rs = avg_gain / avg_loss.replace(0, EPSILON)  # Avoid division by zero
         rsi = 100.0 - (100.0 / (1.0 + rs))
         
         # Clip to ensure values stay within bounds
