@@ -335,11 +335,6 @@ def main():
         if args.symbol:
             config['trading']['symbol'] = args.symbol
             logger.info(f"Overriding trading symbol via CLI: {args.symbol}")
-
-        # Apply symbol override if provided
-        if args.symbol:
-            config['trading']['symbol'] = args.symbol
-            logger.info(f"Overriding trading symbol to: {args.symbol}")
     except Exception as e:
         logger.error(f"Failed to load configuration: {e}")
         return 1

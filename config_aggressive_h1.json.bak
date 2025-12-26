@@ -1,0 +1,42 @@
+{
+  "_comment": "Aggressive profile, H1 timeframe - for multi-timeframe run",
+  "mt5": {
+    "login": 0,
+    "password": "FROM_ENV",
+    "server": "FROM_ENV",
+    "timeout": 60000,
+    "path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
+  },
+  "risk": {
+    "max_position_size": 1.0,
+    "default_position_size": 0.05,
+    "max_daily_loss": 5.0,
+    "max_positions_per_symbol": 2,
+    "max_total_positions": 3,
+    "position_size_pct": 2.0,
+    "use_kelly_sizing": true,
+    "emergency_stop_loss_pct": 8.0,
+    "circuit_breaker_enabled": true,
+    "circuit_breaker_threshold_pct": 5.0
+  },
+  "trading": {
+    "symbol": "BTCUSD#",
+    "timeframe": "TIMEFRAME_M1",
+    "poll_interval": 30,
+    "lookback_bars": 300
+  },
+  "strategy": {
+    "type": "sma_crossover",
+    "params": {
+      "fast_period": 5,
+      "slow_period": 15,
+      "symbol": "BTCUSD#"
+    }
+  },
+  "confidence_threshold": 0.35,
+  "exit_strategies": [],
+  "indicators": [],
+  "database": {
+    "path": "herald.db"
+  }
+}

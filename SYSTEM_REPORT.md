@@ -15,10 +15,11 @@ Herald is a well-architected autonomous trading system for MetaTrader 5 with str
 - **Docs moved:** Copied original `FEATURES_GUIDE.md` into [docs/FEATURES_GUIDE.md](docs/FEATURES_GUIDE.md) and removed the root file.
 - **Implementation summary removed:** Read and deleted [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) per analyst instruction.
 - **Release notes ingested:** Reviewed `release_notes/v3.3.1.md` and `release_notes/v4.0.0.md` to map breaking changes and migration needs.
-- **Analysis scope expanded:** Updated this report to reflect v4.0 architectural changes (multi-strategy framework, new Data Layer, GUI, ML plumbing).
++- **Env routing cleaned up:** Removed redundant FROM_ENV placeholder logic from `config_schema.py`, updated env overrides to apply per-field individually, updated main config files to use empty strings instead of FROM_ENV. Fixed duplicate symbol override in `__main__.py`.
++- **Analysis scope expanded:** Updated this report to reflect v4.0 architectural changes (multi-strategy framework, new Data Layer, GUI, ML plumbing).
 
 **Next Immediate Steps:**
-- **Update remaining per-file summaries** for indicators and minor modules (small set outstanding).
++- **Test config loading:** Verify that configuration loads correctly with env overrides.
 - **Hold running tests** until configuration and wizard fixes from the cloud agent are merged (user requested).
 - **Prepare migration checklist** for v4.0 config changes and wizard updates.
 
