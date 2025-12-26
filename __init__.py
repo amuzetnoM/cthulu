@@ -4,7 +4,7 @@ Herald - Adaptive Trading Intelligence for MetaTrader 5
 A modular, event-driven trading bot emphasizing safety, testability, and extensibility.
 """
 
-__version__ = "3.0.0"
+__version__ = "4.0.0"
 __author__ = "Herald Project"
 
 from .connector.mt5_connector import MT5Connector, ConnectionConfig

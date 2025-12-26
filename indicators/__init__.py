@@ -10,6 +10,8 @@ from .macd import MACD
 from .bollinger import BollingerBands
 from .stochastic import Stochastic
 from .adx import ADX
+from .supertrend import Supertrend
+from .vwap import VWAP, AnchoredVWAP
 
 __all__ = [
     "Indicator",
@@ -18,4 +20,7 @@ __all__ = [
     "BollingerBands",
     "Stochastic",
     "ADX",
+    "Supertrend",
+    "VWAP",
+    "AnchoredVWAP",
 ]

@@ -7,22 +7,22 @@
 ```
 
 # Herald
-*version 3.3.1*  [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
+*version 4.0.0*  [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
 
 ![Status](https://img.shields.io/badge/status-production--ready-success?style=for-the-badge)
 [![Python](https://img.shields.io/badge/python-3.10--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![MT5](https://img.shields.io/badge/MetaTrader-5-0066CC?style=for-the-badge)](https://www.metatrader5.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
-[![Phase 3](https://img.shields.io/badge/phase%203-%20trade%20management-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
+[![Phase 4](https://img.shields.io/badge/phase%204-%20multi--strategy-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
 
 > Note on MT5 (Linux vs Windows): The official `MetaTrader5` Python package is Windows-only. On Linux use the `mt5linux` adapter or run a Docker-based MT5 bridge (for example `jsfrnc/mt5-docker-api`) and connect via the Linux client adapter. See `docs/mt5.md` for platform-specific setup notes.
 
 > **Adaptive Trading Intelligence**
-> A complete autonomous trading system with entry and exit execution, technical indicators, and advanced position management (MT5)
+> A complete autonomous multi-strategy trading system with dynamic strategy selection, next-gen indicators, and enhanced GUI monitoring
 
 Herald is an autonomous and adaptive trading system focused on safe, auditable execution with strong observability and pluggable signal sources. The system is designed to run headless, in a gated live mode, and to produce rich ML-friendly event streams to support downstream model training and analysis.
 
-**NEW in v3.3.1**: Advisory & Ghost modes (advisory-only signals and small "ghost" test trades), an opt-in News & Economic Calendar ingest pipeline (RSS, NewsAPI, FRED, TradingEconomics) with TTL caching and importance normalization, TradeMonitor-driven alerting (pauses trading on high-impact events), expanded ML instrumentation (`news_event`, `calendar_event`, `advisory.signal`), and comprehensive unit/integration tests and documentation. See `docs/features.md` and `docs/news.md` for full details.
+**NEW in v4.0.0**: Multi-strategy trading system with dynamic strategy selection! Features 4 advanced strategies (EMA Crossover, Momentum Breakout, Scalping, SMA Crossover), autonomous market regime detection (5 regimes), next-generation indicators (Supertrend, VWAP), enhanced GUI with strategy monitoring, and ultra-aggressive trading mode. System now adapts strategies in real-time based on performance and market conditions. See `UPGRADE_GUIDE.md` and `IMPLEMENTATION_SUMMARY.md` for full details.
 
 > Note: News ingest is opt-in — enable via `NEWS_INGEST_ENABLED=1` or set `config['news']['enabled']=true`. Integration tests that call external APIs are gated; set `RUN_NEWS_INTEGRATION=1` to run them.
 
