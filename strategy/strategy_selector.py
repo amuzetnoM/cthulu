@@ -233,8 +233,20 @@ class StrategySelector:
             'volatility_ratio': volatility_ratio
         })
         
-        self.logger.info(f"Market regime detected: {regime} (ADX={adx:.1f if adx else 'N/A'}, "
-                        f"Returns={returns*100:.2f}%, Vol={volatility_ratio:.2f})")
+        # Format ADX safely
+        try:
+            adx_str = f"{adx:.1f}" if adx is not None else "N/A"
+        except Exception:
+            adx_str = "N/A"
+
+        try:
+            returns_pct = returns * 100 if returns is not None else 0.0
+        except Exception:
+            returns_pct = 0.0
+
+        self.logger.info(
+            f"Market regime detected: {regime} (ADX={adx_str}, Returns={returns_pct:.2f}%, Vol={volatility_ratio:.2f})"
+        )
         
         return regime
         

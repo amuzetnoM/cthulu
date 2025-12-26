@@ -123,8 +123,16 @@ def load_strategy(strategy_config: Dict[str, Any]) -> Strategy:
     from herald.strategy.momentum_breakout import MomentumBreakout
     from herald.strategy.scalping import ScalpingStrategy
     from herald.strategy.strategy_selector import StrategySelector
-    
-    strategy_type = strategy_config['type'].lower()
+
+    # Normalize strategy config: keep nested 'params' but expose its keys at top-level
+    strat_cfg = dict(strategy_config) if isinstance(strategy_config, dict) else {}
+    params = strat_cfg.get('params', {}) if isinstance(strat_cfg.get('params', {}), dict) else {}
+    # Expose param keys at top-level without removing nested structure
+    for k, v in params.items():
+        if k not in strat_cfg:
+            strat_cfg[k] = v
+
+    strategy_type = strat_cfg.get('type', '').lower()
     
     # Dynamic strategy selection mode
     if strategy_type == 'dynamic':
@@ -134,15 +142,21 @@ def load_strategy(strategy_config: Dict[str, Any]) -> Strategy:
         # Load all configured strategies
         strategies = []
         for strat_cfg in strategies_config:
-            strat_type = strat_cfg['type'].lower()
+            # Normalize each child strategy config similarly
+            child = dict(strat_cfg) if isinstance(strat_cfg, dict) else {}
+            child_params = child.get('params', {}) if isinstance(child.get('params', {}), dict) else {}
+            for k, v in child_params.items():
+                if k not in child:
+                    child[k] = v
+            strat_type = child.get('type', '').lower()
             if strat_type == 'sma_crossover':
-                strategies.append(SmaCrossover(config=strat_cfg))
+                strategies.append(SmaCrossover(config=child))
             elif strat_type == 'ema_crossover':
-                strategies.append(EmaCrossover(config=strat_cfg))
+                strategies.append(EmaCrossover(config=child))
             elif strat_type == 'momentum_breakout':
-                strategies.append(MomentumBreakout(config=strat_cfg))
+                strategies.append(MomentumBreakout(config=child))
             elif strat_type == 'scalping':
-                strategies.append(ScalpingStrategy(config=strat_cfg))
+                strategies.append(ScalpingStrategy(config=child))
                 
         if not strategies:
             raise ValueError("Dynamic mode requires at least one strategy configuration")
@@ -151,13 +165,13 @@ def load_strategy(strategy_config: Dict[str, Any]) -> Strategy:
     
     # Single strategy mode
     elif strategy_type == 'sma_crossover':
-        return SmaCrossover(config=strategy_config)
+        return SmaCrossover(config=strat_cfg)
     elif strategy_type == 'ema_crossover':
-        return EmaCrossover(config=strategy_config)
+        return EmaCrossover(config=strat_cfg)
     elif strategy_type == 'momentum_breakout':
-        return MomentumBreakout(config=strategy_config)
+        return MomentumBreakout(config=strat_cfg)
     elif strategy_type == 'scalping':
-        return ScalpingStrategy(config=strategy_config)
+        return ScalpingStrategy(config=strat_cfg)
     else:
         raise ValueError(f"Unknown strategy type: {strategy_type}")
 
@@ -247,8 +261,8 @@ def main():
     parser.add_argument('--symbol', type=str, default=None, help="Override trading symbol in config (e.g. GOLD#m)")
     parser.add_argument('--adopt-only', action='store_true', help="Only run external trade adoption and exit")
     parser.add_argument('--mindset', type=str, default=None,
-                       choices=['aggressive', 'balanced', 'conservative'],
-                       help="Trading mindset/risk profile (aggressive, balanced, conservative)")
+                       choices=['aggressive', 'balanced', 'conservative', 'ultra_aggressive', 'ultra'],
+                       help="Trading mindset/risk profile (aggressive, balanced, conservative, ultra_aggressive)")
     parser.add_argument('--skip-setup', action='store_true',
                        help="Skip interactive setup wizard (for automation/headless runs)")
     parser.add_argument('--wizard', action='store_true',
@@ -262,6 +276,9 @@ def main():
     parser.add_argument('--enable-rpc', action='store_true', help='Enable local RPC server (binds to localhost)')
     parser.add_argument('--rpc-host', type=str, default='127.0.0.1', help='RPC server host (default 127.0.0.1)')
     parser.add_argument('--rpc-port', type=int, default=8181, help='RPC server port (default 8181)')
+    # GUI / headless control
+    parser.add_argument('--no-gui', action='store_true', help='Disable auto-launching the desktop GUI (headless)')
+    parser.add_argument('--headless', action='store_true', help='Alias for --no-gui (run without GUI)')
 
     # Runtime ML toggle (CLI) — mutually exclusive enable/disable
     ml_group = parser.add_mutually_exclusive_group()
@@ -269,6 +286,7 @@ def main():
     ml_group.add_argument('--disable-ml', dest='enable_ml', action='store_false', help='Disable ML instrumentation (overrides config)')
     parser.set_defaults(enable_ml=None)
     parser.add_argument('--version', action='version', version=f"Herald {__version__}")
+    parser.add_argument('--max-loops', type=int, default=0, help='Exit after N main loop iterations (0 = run until shutdown)')
     args = parser.parse_args()
 
     # If adopt-only is requested, skip interactive setup to avoid blocking prompts
@@ -567,6 +585,11 @@ def main():
                 autostart_gui = bool(ui_cfg.get('enabled'))
             if 'autostart' in ui_cfg:
                 autostart_gui = bool(ui_cfg.get('autostart'))
+
+            # Respect CLI headless flags to disable GUI regardless of config
+            if getattr(args, 'no_gui', False) or getattr(args, 'headless', False):
+                autostart_gui = False
+                logger.info('GUI autostart disabled via CLI (--no-gui/--headless)')
 
             if autostart_gui:
                 gui_cmd = [sys.executable, '-m', 'herald.ui.desktop']
@@ -948,9 +971,69 @@ def main():
                 
             # 5. Calculate indicators
             try:
-                # Calculate SMA indicators for strategy (required by sma_crossover)
-                df['sma_20'] = df['close'].rolling(window=20).mean()
-                df['sma_50'] = df['close'].rolling(window=50).mean()
+                # Calculate SMA indicators for strategy (use strategy params when available)
+                try:
+                    short_w = getattr(strategy, 'short_window', None)
+                    long_w = getattr(strategy, 'long_window', None)
+                    if short_w and long_w:
+                        df[f'sma_{short_w}'] = df['close'].rolling(window=int(short_w)).mean()
+                        df[f'sma_{long_w}'] = df['close'].rolling(window=int(long_w)).mean()
+                    else:
+                        # Fallback to legacy defaults
+                        df['sma_20'] = df['close'].rolling(window=20).mean()
+                        df['sma_50'] = df['close'].rolling(window=50).mean()
+                except Exception:
+                    # If anything goes wrong, compute defaults and continue
+                    df['sma_20'] = df['close'].rolling(window=20).mean()
+                    df['sma_50'] = df['close'].rolling(window=50).mean()
+                
+                    # Compute required EMA columns for strategies (so EMA-based strategies find their inputs)
+                    try:
+                        required_emas = set()
+
+                        def collect_ema_periods(obj):
+                            if obj is None:
+                                return
+                            # Common attribute names used across strategies
+                            for attr in ('fast_period', 'slow_period', 'fast_ema', 'slow_ema', 'short_window', 'long_window'):
+                                if hasattr(obj, attr):
+                                    try:
+                                        val = int(getattr(obj, attr))
+                                        # skip sma names (short/long windows already handled)
+                                        if 'ema' in attr or 'fast_period' in attr or 'slow_period' in attr or 'fast_ema' in attr or 'slow_ema' in attr:
+                                            required_emas.add(val)
+                                    except Exception:
+                                        pass
+
+                        # If using StrategySelector, inspect child strategies
+                        try:
+                            from herald.strategy.strategy_selector import StrategySelector
+                            if isinstance(strategy, StrategySelector):
+                                for s in strategy.strategies.values():
+                                    collect_ema_periods(s)
+                            else:
+                                collect_ema_periods(strategy)
+                        except Exception:
+                            collect_ema_periods(strategy)
+
+                        # Also inspect scalping-specific attrs
+                        try:
+                            if hasattr(strategy, 'fast_ema'):
+                                required_emas.add(int(getattr(strategy, 'fast_ema')))
+                            if hasattr(strategy, 'slow_ema'):
+                                required_emas.add(int(getattr(strategy, 'slow_ema')))
+                        except Exception:
+                            pass
+
+                        # Compute EMA columns
+                        if required_emas:
+                            for p in sorted(required_emas):
+                                col = f'ema_{p}'
+                                if col not in df.columns:
+                                    df[col] = df['close'].ewm(span=int(p), adjust=False).mean()
+                            logger.debug(f"Computed EMA columns: {[f'ema_{p}' for p in sorted(required_emas)]}")
+                    except Exception:
+                        logger.exception('Failed to compute EMA columns; continuing')
                 
                 # Calculate ATR for stop loss calculation
                 high_low = df['high'] - df['low']
@@ -976,14 +1059,26 @@ def main():
             # 6. Generate strategy signals
             try:
                 current_bar = df.iloc[-1]
-                signal = strategy.on_bar(current_bar)
-                
+                # If dynamic selector, use its generator method
+                try:
+                    from herald.strategy.strategy_selector import StrategySelector
+                    if isinstance(strategy, StrategySelector):
+                        signal = strategy.generate_signal(df, current_bar)
+                    else:
+                        signal = strategy.on_bar(current_bar)
+                except Exception:
+                    # Fallback by duck-typing
+                    if hasattr(strategy, 'generate_signal'):
+                        signal = strategy.generate_signal(df, current_bar)
+                    else:
+                        signal = strategy.on_bar(current_bar)
+
                 if signal:
                     logger.info(
                         f"Signal generated: {signal.side.name} {signal.symbol} "
                         f"(confidence: {signal.confidence:.2f})"
                     )
-                    
+
             except Exception as e:
                 logger.error(f"Strategy signal error: {e}", exc_info=True)
                 signal = None
@@ -1283,6 +1378,14 @@ def main():
             sleep_time = max(0, poll_interval - loop_duration)
             if sleep_time > 0:
                 time.sleep(sleep_time)
+
+            # Debug/testing: exit after max_loops if requested
+            try:
+                if getattr(args, 'max_loops', 0) and loop_count >= int(args.max_loops):
+                    logger.info(f"Reached max_loops={args.max_loops}; exiting main loop for test")
+                    break
+            except Exception:
+                pass
                 
     except KeyboardInterrupt:
         logger.info("Keyboard interrupt received")

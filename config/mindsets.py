@@ -138,6 +138,62 @@ MINDSETS: Dict[str, Dict[str, Any]] = {
 }
 
 
+# Ultra-Aggressive profile: very high-frequency, dynamic strategy mix
+ULTRA_AGGRESSIVE = {
+    "name": "ultra_aggressive",
+    "description": "Ultra-Aggressive: dynamic strategy selector + scalping/day strategies for experienced traders.",
+    "risk": {
+        "max_position_size": 2.0,
+        "default_position_size": 0.1,
+        "position_size_pct": 15.0,
+        "max_daily_loss": 500.0,
+        "max_positions_per_symbol": 3,
+        "max_total_positions": 10,
+        "use_kelly_sizing": True,
+        "emergency_stop_loss_pct": 12.0,
+        "circuit_breaker_enabled": True,
+        "circuit_breaker_threshold_pct": 7.0
+    },
+    # Provide a full strategy replacement for dynamic mode
+    "strategy_full": {
+        "type": "dynamic",
+        "dynamic_selection": {
+            "enabled": True,
+            "regime_check_interval": 180,
+            "min_strategy_signals": 3,
+            "performance_weight": 0.4,
+            "regime_weight": 0.4,
+            "confidence_weight": 0.2
+        },
+        "strategies": [
+            {"type": "ema_crossover", "params": {"fast_period": 8, "slow_period": 21, "atr_period": 14, "atr_multiplier": 1.2, "risk_reward_ratio": 3.0}},
+            {"type": "momentum_breakout", "params": {"lookback_period": 15, "rsi_threshold": 50, "atr_multiplier": 1.3, "risk_reward_ratio": 3.5}},
+            {"type": "scalping", "params": {"fast_ema": 5, "slow_ema": 10, "rsi_period": 7, "rsi_oversold": 20, "rsi_overbought": 80, "atr_multiplier": 0.8, "risk_reward_ratio": 2.5}},
+            {"type": "sma_crossover", "params": {"fast_period": 5, "slow_period": 13, "atr_period": 14, "atr_multiplier": 1.5, "risk_reward_ratio": 2.5}}
+        ]
+    },
+    "trading": {
+        "poll_interval": 15,
+        "lookback_bars": 500,
+        "symbol": "EURUSD",
+        "timeframe": "TIMEFRAME_M15"
+    },
+    "indicators": [
+        {"type": "rsi", "params": {"period": 14}},
+        {"type": "rsi", "params": {"period": 7}},
+        {"type": "macd", "params": {"fast_period": 12, "slow_period": 26, "signal_period": 9}},
+        {"type": "bollinger", "params": {"period": 20, "std_dev": 2.0}},
+        {"type": "adx", "params": {"period": 14}},
+        {"type": "supertrend", "params": {"period": 10, "multiplier": 3.0}},
+        {"type": "vwap", "params": {"std_dev_multiplier": 2.0}}
+    ],
+    "confidence_threshold": 0.25
+}
+
+# expose ultra aliases
+MINDSETS.update({"ultra_aggressive": ULTRA_AGGRESSIVE, "ultra": ULTRA_AGGRESSIVE})
+
+
 def apply_mindset(config: Dict[str, Any], mindset_name: str) -> Dict[str, Any]:
     """
     Apply a mindset preset to a configuration.
@@ -179,12 +235,22 @@ def apply_mindset(config: Dict[str, Any], mindset_name: str) -> Dict[str, Any]:
             if "params" not in result["strategy"]:
                 result["strategy"]["params"] = {}
             result["strategy"]["params"].update(mindset["strategy"][strategy_type])
+
+    # Allow a mindset to supply a full strategy replacement (useful for dynamic selectors)
+    if "strategy_full" in mindset:
+        # Replace the full strategy section with the provided structure
+        result["strategy"] = deepcopy(mindset["strategy_full"])
     
     # Apply trading settings
     if "trading" in mindset:
         if "trading" not in result:
             result["trading"] = {}
         result["trading"].update(mindset["trading"])
+
+    # Apply indicators if provided by the mindset
+    if "indicators" in mindset:
+        # Replace or set indicators list
+        result["indicators"] = deepcopy(mindset["indicators"])
     
     # Store confidence threshold
     if "confidence_threshold" in mindset:
