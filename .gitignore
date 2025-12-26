@@ -93,3 +93,6 @@ site/
 
 # articles
 docs/changelog/mql5_handbook
+
+# Ignore backup config containing credentials
+config.json.bak
