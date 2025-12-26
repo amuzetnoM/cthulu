@@ -3,16 +3,16 @@ Herald Core Module
 
 Contains the refactored core components of Herald:
 - bootstrap: System initialization
-- trading_loop: Main trading logic
+- trading_loop: Main trading logic (coming soon)
 - indicator_loader: Indicator management  
 - strategy_factory: Strategy creation
-- shutdown: Cleanup logic
+- exit_loader: Exit strategy loading
+- shutdown: Cleanup logic (coming soon)
 """
 
 __all__ = [
     'bootstrap',
-    'trading_loop', 
     'indicator_loader',
     'strategy_factory',
-    'shutdown'
+    'exit_loader'
 ]
