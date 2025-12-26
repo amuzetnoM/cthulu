@@ -1821,4 +1821,21 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    import traceback
+    try:
+        sys.exit(main())
+    except Exception as e:
+        # Ensure any unhandled startup exception is captured to disk for post-mortem analysis
+        try:
+            log_dir = Path(__file__).parent / 'logs'
+            log_dir.mkdir(parents=True, exist_ok=True)
+            crash_path = log_dir / 'startup_crash.log'
+            with open(crash_path, 'w', encoding='utf-8') as fh:
+                fh.write('Unhandled exception during startup:\n')
+                fh.write('Exception: ' + repr(e) + '\n\n')
+                fh.write(traceback.format_exc())
+        except Exception:
+            pass
+        # Also print to stderr so calling process can capture it
+        print('Fatal error during Herald startup. See logs/startup_crash.log for details.', file=sys.stderr)
+        raise
