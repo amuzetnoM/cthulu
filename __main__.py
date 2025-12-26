@@ -445,83 +445,8 @@ def main():
         except Exception:
             logger.exception('Failed to persist initial metrics summary')
 
-        # Auto-launch GUI by default unless explicitly disabled in config
+        # GUI autostart handled later in this function (single controlled block to avoid duplicate launches)
         gui_proc = None
-        try:
-            ui_cfg = config.get('ui', {}) if isinstance(config, dict) else {}
-            autostart_gui = True
-            if 'enabled' in ui_cfg:
-                autostart_gui = bool(ui_cfg.get('enabled'))
-            if 'autostart' in ui_cfg:
-                autostart_gui = bool(ui_cfg.get('autostart'))
-
-            if autostart_gui:
-                gui_cmd = [sys.executable, '-m', 'herald.ui.desktop']
-                try:
-                    # Capture GUI stdout/stderr to files to diagnose immediate failures
-                    gui_out = Path(__file__).parent / 'logs' / 'gui_stdout.log'
-                    gui_err = Path(__file__).parent / 'logs' / 'gui_stderr.log'
-                    gui_out.parent.mkdir(parents=True, exist_ok=True)
-                    out_f = open(gui_out, 'a', encoding='utf-8')
-                    err_f = open(gui_err, 'a', encoding='utf-8')
-                    gui_proc = subprocess.Popen(gui_cmd, stdout=out_f, stderr=err_f)
-                    # Wait briefly to detect immediate failures
-                    time.sleep(0.5)
-                    if gui_proc.poll() is not None:
-                        # Process exited quickly — treat as launch failure
-                        logger.error('Desktop GUI process exited immediately (check logs/gui_stderr.log)')
-                        try:
-                            out_f.close(); err_f.close()
-                        except Exception:
-                            pass
-                        gui_proc = None
-                    else:
-                        logger.info('Desktop GUI launched (best-effort). Closing GUI will stop Herald.')
-                        # Hide console window on Windows so terminal goes to background
-                        try:
-                            if os.name == 'nt':
-                                import ctypes
-                                hwnd = ctypes.windll.kernel32.GetConsoleWindow()
-                                if hwnd:
-                                    ctypes.windll.user32.ShowWindow(hwnd, 0)  # SW_HIDE
-                        except Exception:
-                            logger.exception('Failed to hide console window')
-                except Exception:
-                    logger.exception('Failed to launch Desktop GUI; continuing in terminal mode')
-
-            # If GUI started and is still running, monitor it and request shutdown when it exits
-            if gui_proc is not None:
-                import threading
-
-                def _monitor_gui(p):
-                    try:
-                            p.wait()
-                            rc = p.returncode
-                            logger.info('GUI process exited with return code %s', rc)
-                            # If GUI exited cleanly (user closed it), treat as explicit shutdown request.
-                            # If GUI crashed (non-zero), keep Herald running as the primary terminal and restore console.
-                            if rc == 0:
-                                logger.info('GUI closed by user; requesting shutdown of Herald')
-                                global shutdown_requested
-                                shutdown_requested = True
-                            else:
-                                logger.error('GUI crashed (non-zero exit). Continuing in terminal mode.')
-                                try:
-                                    # Attempt to restore console visibility on Windows so operator can see terminal
-                                    if os.name == 'nt':
-                                        import ctypes
-                                        hwnd = ctypes.windll.kernel32.GetConsoleWindow()
-                                        if hwnd:
-                                            ctypes.windll.user32.ShowWindow(hwnd, 5)  # SW_SHOW
-                                except Exception:
-                                    logger.exception('Failed to restore console visibility')
-                    except Exception:
-                        logger.exception('Exception while monitoring GUI process')
-
-                monitor_t = threading.Thread(target=_monitor_gui, args=(gui_proc,), daemon=True, name='gui-monitor')
-                monitor_t.start()
-        except Exception:
-            logger.exception('GUI autostart handling failed; running in terminal mode')
 
         # Attach metrics to execution engine if it exists so PositionManager can report opens
         try:
@@ -689,6 +614,46 @@ def main():
                         # If GUI exited cleanly (user closed it), treat as explicit shutdown request.
                         # If GUI crashed (non-zero), keep Herald running as the primary terminal and restore console.
                         if rc == 0:
+                            # If the GUI process exited cleanly, check whether it was a short-lived
+                            # instance that exited because another GUI instance is already running
+                            lock_file = Path(__file__).parent / 'logs' / '.gui_lock'
+                            another_active = False
+                            if lock_file.exists():
+                                try:
+                                    with open(lock_file, 'r') as f:
+                                        other_pid = int(f.read().strip())
+                                    if other_pid != p.pid:
+                                        # Check whether the other PID is alive
+                                        alive = False
+                                        if os.name == 'nt':
+                                            try:
+                                                import ctypes
+                                                kernel32 = ctypes.windll.kernel32
+                                                PROCESS_QUERY_INFORMATION = 0x0400
+                                                handle = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, other_pid)
+                                                if handle:
+                                                    kernel32.CloseHandle(handle)
+                                                    alive = True
+                                            except Exception:
+                                                alive = False
+                                        else:
+                                            try:
+                                                os.kill(other_pid, 0)
+                                                alive = True
+                                            except Exception:
+                                                alive = False
+
+                                        if alive:
+                                            another_active = True
+                                            logger.info('GUI instance exited because another GUI (pid=%s) is active; continuing Herald', other_pid)
+                                except Exception:
+                                    logger.exception('Error while inspecting GUI lock file')
+
+                            if another_active:
+                                # Expected behaviour (another GUI is the canonical instance); do not request shutdown.
+                                return
+
+                            # Otherwise treat as a user-closed GUI and request shutdown
                             logger.info('GUI closed by user; requesting shutdown of Herald')
                             global shutdown_requested
                             shutdown_requested = True
@@ -733,8 +698,8 @@ def main():
                         break
 
                     if ans not in ('y', 'yes'):
-                        # small delay to avoid tight loop
-                        time.sleep(0.5)
+                        # small delay to avoid tight loop and reduce prompt spam
+                        time.sleep(2.0)
                         continue
 
                     # Gather trade details
@@ -812,17 +777,20 @@ def main():
             except Exception:
                 logger.exception('Manual prompt thread failed')
 
-        # Start interactive prompt if user requested it or if running interactively and stdin is a TTY
+        # Start interactive prompt only if explicitly requested via CLI (--manual-prompt)
         try:
             import sys as _sys
-            if (args.manual_prompt or (_sys.stdin.isatty() and not args.adopt_only)) and _sys.stdin.isatty():
+            if args.manual_prompt:
                 try:
                     import threading as _threading
                     prompt_thread = _threading.Thread(target=_manual_trade_prompt_thread, args=(execution_engine, position_manager, database, config.get('trading', {}).get('symbol', '')), daemon=True, name='manual-prompt')
                     prompt_thread.start()
-                    logger.info('Manual trade prompt enabled (interactive)')
+                    logger.info('Manual trade prompt enabled (CLI flag)')
+                    logger.info('Tip: Use --manual-prompt to enable the terminal prompt interactively')
                 except Exception:
                     logger.exception('Failed to start manual trade prompt thread')
+            else:
+                logger.info('Manual trade prompt not started (use --manual-prompt to enable)')
         except Exception:
             logger.exception('Error initializing manual trade prompt')
 
@@ -970,7 +938,7 @@ def main():
                     time.sleep(poll_interval)
                     continue
                     
-                df = data_layer.normalize_rates(rates)
+                df = data_layer.normalize_rates(rates, symbol=symbol)
                 logger.debug(f"Retrieved {len(df)} bars for {symbol}")
                 
             except Exception as e:
@@ -1266,15 +1234,22 @@ def main():
             try:
                 if not connector.is_connected():
                     logger.warning("Connection lost, attempting reconnect...")
-                    
-                    if connector.reconnect():
+
+                    success = connector.reconnect()
+                    if success:
                         logger.info("Reconnection successful")
                         # Reconcile positions after reconnect
                         reconciled = position_manager.reconcile_positions()
                         logger.info(f"Reconciled {reconciled} positions")
                     else:
-                        logger.error("Reconnection failed")
-                        break
+                        logger.error("Reconnection failed; will keep trying on subsequent cycles")
+                        # Avoid tight-looping on repeated failures; wait a short backoff before next iteration
+                        try:
+                            time.sleep(min(30, poll_interval))
+                        except Exception:
+                            pass
+                        # Continue to next loop and keep attempting reconnection
+                        continue
                         
             except Exception as e:
                 logger.error(f"Health check error: {e}", exc_info=True)

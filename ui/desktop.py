@@ -430,8 +430,19 @@ class HeraldGUI:
 def main():
     # Prevent multiple instances using a lock file
     lock_file = Path(__file__).parent.parent / 'logs' / '.gui_lock'
+    debug_file = Path(__file__).parent.parent / 'logs' / 'gui_debug.log'
     lock_file.parent.mkdir(parents=True, exist_ok=True)
     
+    # Helper to write debug events
+    def dbg(msg: str):
+        try:
+            with open(debug_file, 'a', encoding='utf-8') as fh:
+                fh.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {msg}\n")
+        except Exception:
+            pass
+
+    dbg(f"GUI main() start (pid={os.getpid()})")
+
     # Check if another instance is running
     if lock_file.exists():
         try:
@@ -473,18 +484,33 @@ def main():
         pass
     
     # Ensure lock is removed on exit
-    def cleanup_lock():
+    def cleanup_lock(exit_msg: str = None):
         try:
+            if exit_msg:
+                dbg(f"cleanup_lock: {exit_msg}")
             lock_file.unlink()
-        except Exception:
-            pass
+        except Exception as e:
+            dbg(f"cleanup_lock exception: {e}")
     
     import atexit
     atexit.register(cleanup_lock)
     
+    # Install a global exception hook to log unexpected errors
+    def gui_excepthook(exc_type, exc, tb):
+        try:
+            import traceback
+            dbg("Unhandled exception in GUI: " + ''.join(traceback.format_exception(exc_type, exc, tb)))
+        except Exception:
+            pass
+        # Fall back to default handler
+        sys.__excepthook__(exc_type, exc, tb)
+
+    sys.excepthook = gui_excepthook
+
     root = tk.Tk()
     app = HeraldGUI(root)
     try:
+        dbg("Entering mainloop")
         root.mainloop()
     except KeyboardInterrupt:
         try:
@@ -492,7 +518,8 @@ def main():
         except Exception:
             pass
     finally:
-        cleanup_lock()
+        dbg("Exiting main()")
+        cleanup_lock('normal exit')
 
 
 if __name__ == '__main__':

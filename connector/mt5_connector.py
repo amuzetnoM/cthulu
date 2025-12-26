@@ -33,6 +33,7 @@ from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
+from pathlib import Path
 from herald.market.tick_manager import TickManager
 
 
@@ -47,6 +48,10 @@ class ConnectionConfig:
     path: Optional[str] = None
     max_retries: int = 3
     retry_delay: int = 5
+    # When True, attempt to start the MT5 terminal if it's not running (safe default: False)
+    start_on_missing: bool = False
+    # Seconds to wait after starting terminal for it to become responsive
+    start_wait: int = 5
 
 
 class MT5Connector:
@@ -79,6 +84,33 @@ class MT5Connector:
         except Exception:
             self._tick_manager = None
         
+    def _is_mt5_process_running(self) -> bool:
+        """Return True if a MetaTrader terminal process is running on the host."""
+        try:
+            # Look for likely binary names via tasklist (Windows) or ps (Unix)
+            import subprocess
+            exe = None
+            if self.config.path:
+                exe = os.path.basename(self.config.path).lower()
+            if os.name == 'nt':
+                out = subprocess.check_output(['tasklist', '/NH', '/FO', 'CSV'], universal_newlines=True, stderr=subprocess.DEVNULL)
+                lines = out.splitlines()
+                for l in lines:
+                    if exe and exe in l.lower():
+                        return True
+                    # quick heuristic for terminal if path not provided
+                    if 'terminal64.exe' in l.lower() or 'terminal.exe' in l.lower() or 'metatrader' in l.lower():
+                        return True
+            else:
+                out = subprocess.check_output(['ps', 'ax'], universal_newlines=True, stderr=subprocess.DEVNULL)
+                if exe and exe in out.lower():
+                    return True
+                if 'terminal64' in out.lower() or 'terminal' in out.lower() or 'metatrader' in out.lower():
+                    return True
+        except Exception:
+            pass
+        return False
+
     def connect(self) -> bool:
         """
         Establish connection to MT5 terminal.
@@ -87,32 +119,101 @@ class MT5Connector:
             True if connection successful
         """
         with self._lock:
+            # Extra diagnostics to help operators debug environment issues
+            try:
+                mv = getattr(mt5, '__version__', None) or getattr(mt5, 'version', None)
+                self.logger.debug(f"MT5 python package version: {mv}")
+            except Exception:
+                pass
+            try:
+                tinfo = mt5.terminal_info()
+                self.logger.debug(f"MT5 terminal_info: {tinfo}")
+            except Exception:
+                self.logger.debug("MT5 terminal_info: unavailable")
+
+            # If no explicit credentials set (login==0), attempt to 'attach' to a running terminal first
+            credential_mode = bool(getattr(self.config, 'login', None) and self.config.login != 0)
+
             for attempt in range(1, self.config.max_retries + 1):
                 try:
                     self.logger.info(f"Connecting to MT5 (attempt {attempt}/{self.config.max_retries})...")
-                    
-                    # Initialize MT5 with credentials directly (most reliable method)
-                    self.logger.info("Initializing MT5 with credentials...")
-                    
-                    init_result = mt5.initialize(
-                        login=self.config.login,
-                        password=self.config.password,
-                        server=self.config.server,
-                        timeout=self.config.timeout
-                    )
-                    
+
+                    if credential_mode:
+                        # Initialize MT5 with credentials directly (preferred when provided)
+                        self.logger.info("Initializing MT5 with credentials...")
+                        init_result = mt5.initialize(
+                            login=self.config.login,
+                            password=self.config.password,
+                            server=self.config.server,
+                            timeout=self.config.timeout
+                        )
+                    else:
+                        # No credentials: attempt to attach to an already running terminal
+                        self.logger.info('No account credentials provided (login==0); attempting to attach to running MT5 terminal...')
+                        try:
+                            init_result = mt5.initialize()
+                        except TypeError:
+                            # Some MT5 builds expect 'path' kw; fall back to init without args
+                            init_result = mt5.initialize()
+
                     if not init_result:
-                        error = mt5.last_error()
-                        raise ConnectionError(f"MT5 initialize failed: {error}")
-                    
-                    # Verify connection
+                        # Provide richer diagnostic info
+                        err = mt5.last_error()
+                        self.logger.error(f"MT5 initialize returned False. last_error={err}")
+
+                        # Check configured path presence
+                        if self.config.path:
+                            try:
+                                if not Path(self.config.path).exists():
+                                    self.logger.error(f"Configured MT5 path does not exist: {self.config.path}")
+                                else:
+                                    self.logger.info(f"Configured MT5 path exists: {self.config.path}")
+                            except Exception:
+                                pass
+
+                        # Check whether terminal process appears to be running
+                        if self._is_mt5_process_running():
+                            self.logger.info('Detected a running MT5/terminal process on the host (interactive session required).')
+                        else:
+                            self.logger.info('No MT5 process detected on the host. Ensure MetaTrader 5 is running in an interactive desktop session.')
+
+                        # If configured to auto-start, attempt to start the terminal process
+                        if (not self._is_mt5_process_running()) and self.config.path and getattr(self.config, 'start_on_missing', False):
+                            try:
+                                import subprocess
+                                self.logger.info(f"Starting MT5 terminal from path: {self.config.path}")
+                                subprocess.Popen([self.config.path], cwd=Path(self.config.path).parent)
+                                self.logger.info(f"Waiting up to {self.config.start_wait}s for MT5 to start")
+                                time.sleep(self.config.start_wait)
+                                if self._is_mt5_process_running():
+                                    self.logger.info('MT5 process detected after start request')
+                                else:
+                                    self.logger.warning('MT5 process not detected after start request')
+                            except Exception as e:
+                                self.logger.exception(f"Failed to start MT5 terminal: {e}")
+
+                        # If credential init failed or attach failed, try explicit fallback via configured path
+                        if self.config.path:
+                            try:
+                                self.logger.info(f"Attempting fallback initialize using MT5 path: {self.config.path}")
+                                init_path = mt5.initialize(path=self.config.path)
+                                self.logger.debug(f"Fallback initialize(path) returned: {init_path}")
+                                if init_path:
+                                    self.logger.info('Fallback initialize succeeded using configured path')
+                                else:
+                                    self.logger.error(f"Fallback initialize failed: {mt5.last_error()}")
+                            except Exception as e:
+                                self.logger.exception(f"Exception during fallback initialize(path): {e}")
+
+                        raise ConnectionError(f"MT5 initialize failed: {err}")
+
+                    # Verify connection by reading account_info
                     account_info = mt5.account_info()
                     if not account_info:
                         raise ConnectionError("Connected but cannot retrieve account info")
-                    
-                    if account_info.login != self.config.login:
-                        raise ConnectionError(f"Connected to wrong account: {account_info.login}")
-                    
+
+                    if credential_mode and account_info.login != self.config.login:
+                        raise ConnectionError(f"Connected to wrong account: {account_info.login}")                    
                     self.connected = True
                     # Mask account login in logs to avoid leaking full account numbers
                     acct_display = str(self.config.login)
@@ -126,6 +227,34 @@ class MT5Connector:
                     if attempt < self.config.max_retries:
                         time.sleep(self.config.retry_delay)
                         
+            # Dump a small diagnostic file to aid troubleshooting
+            try:
+                diag_path = Path(__file__).parent.parent / 'logs' / 'mt5_diag.log'
+                diag_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(diag_path, 'w', encoding='utf-8') as fh:
+                    try:
+                        fh.write(f"mt5_package_version: {getattr(mt5, '__version__', getattr(mt5, 'version', 'unknown'))}\n")
+                    except Exception:
+                        pass
+                    try:
+                        fh.write(f"last_error: {mt5.last_error()}\n")
+                    except Exception:
+                        pass
+                    try:
+                        fh.write(f"terminal_info: {mt5.terminal_info()}\n")
+                    except Exception:
+                        pass
+                    try:
+                        fh.write(f"configured_path_exists: {Path(self.config.path).exists() if self.config.path else 'no_path_configured'}\n")
+                    except Exception:
+                        pass
+                    try:
+                        fh.write(f"mt5_process_running: {self._is_mt5_process_running()}\n")
+                    except Exception:
+                        pass
+            except Exception:
+                self.logger.exception('Failed to write MT5 diagnostic file')
+
             self.logger.error("All connection attempts failed")
             return False
             

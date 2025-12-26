@@ -31,23 +31,30 @@ class DataLayer:
         self.logger = logging.getLogger("herald.data.layer")
         self._cache = {}
         
-    def normalize_rates(self, rates, timeframe: str = None) -> pd.DataFrame:
+    def normalize_rates(self, rates, timeframe: str = None, symbol: str = None) -> pd.DataFrame:
         """
         Normalize MT5 rates data to pandas DataFrame.
-        
+
         Args:
             rates: MT5 rates data (numpy array or list of tuples)
             timeframe: Optional timeframe string for metadata
-            
+            symbol: Optional symbol name (for logging/metadata)
+
         Returns:
             DataFrame with OHLCV columns and datetime index
         """
         if rates is None or len(rates) == 0:
             self.logger.warning("Empty rates data received")
             return pd.DataFrame()
-            
+
         # Convert to DataFrame
         df = pd.DataFrame(rates)
+        # Attach symbol metadata when provided
+        if symbol:
+            try:
+                df.attrs['symbol'] = symbol
+            except Exception:
+                pass
         
         # Ensure required columns
         required_cols = ['time', 'open', 'high', 'low', 'close', 'tick_volume']
