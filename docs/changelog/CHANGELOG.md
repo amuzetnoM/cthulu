@@ -89,7 +89,7 @@ This is a transformative release that upgrades Herald from a single-strategy sys
 - **Auto-Summary Persistence**: Strategy info persisted to `logs/strategy_info.txt` for GUI consumption
 
 #### Configuration & Modes
-- **Ultra-Aggressive Config** (`config_ultra_aggressive.json`): Production-ready aggressive trading configuration
+- **Ultra-Aggressive Config** (`config_ultra_aggressive.json`): Deployment-hardened aggressive trading configuration
   - 15% position sizing (vs 10% standard)
   - 10 max concurrent positions (vs 6)
   - 0.25 confidence threshold (vs 0.35)
@@ -211,7 +211,7 @@ Enhances trade management capabilities, adds CLI tooling, improves configuration
 ## **3.0.0 — 2024-12-07**
 
 ### Summary
-Production-ready system release with full MT5 integration, comprehensive testing, and CI automation.
+Stable system release with full MT5 integration, comprehensive testing, and CI automation.
 
 ### Added
 - ATR indicator and enhancements to indicators (RSI, MACD, Bollinger, Stochastic, ADX).
@@ -549,7 +549,7 @@ First public release marking baseline Phase 2 completion with autonomous trading
 - **New Modules**: 17 files created
 - **Updated Modules**: 2 files modified
 - **Data Flow**: Complete end-to-end autonomous trading pipeline
-- **Quality**: Production-ready, no stubs or placeholders
+- **Quality**: Hardened, no stubs or placeholders
 
 
 ---

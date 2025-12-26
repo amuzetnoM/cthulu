@@ -10,6 +10,7 @@ body{background:var(--void);color:var(--text);font-family:'Space Grotesk',sans-s
 nav{height:50px;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;border-bottom:1px solid var(--border)}
 .container{max-width:1100px;margin:6rem auto;padding:0 1rem}
 .panel{display:flex;gap:1rem}
+        @media (max-width:900px){.panel{flex-direction:column;gap:1rem}}
 .card{background:var(--surface);padding:1rem;border:1px solid var(--border);border-radius:6px}
 .small{width:320px}
 .live-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
@@ -21,7 +22,7 @@ footer{padding:2rem;border-top:1px solid var(--border);background:var(--surface)
 <nav><div style="font-family:JetBrains Mono;color:var(--accent)">HERALD</div><div><a href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a></div></nav>
 <div class="container">
 <h1 style="font-size:2rem">Desktop GUI — Live Summary</h1>
-<p style="color:var(--muted)">Compact visual widgets that reflect the GUI's key panels used to monitor trading activity.</p>
+<p style="color:var(--muted)">Compact monitoring widgets that reflect the GUI's key panels for trading oversight.</p>
 
 <div class="panel">
     <div class="card" style="flex:1">

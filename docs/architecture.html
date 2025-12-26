@@ -41,49 +41,31 @@
     <section class="hero">
         <div>
             <h1 class="hero-title">System Architecture</h1>
-            <div class="hero-sub">Visual overview of the 11-step trading pipeline and component responsibilities — quick, scannable, and interactive.</div>
+            <div class="hero-sub">Overview of the 11-step trading pipeline and component responsibilities — concise and interactive.</div>
         </div>
     </section>
 
     <section>
-        <div class="flow-svg" aria-hidden>
-            <!-- Simple SVG flow visualization -->
-            <svg width="90%" height="80%" viewBox="0 0 1000 200" preserveAspectRatio="xMidYMid meet">
-                <defs>
-                    <linearGradient id="g" x1="0" x2="1">
-                        <stop offset="0" stop-color="#00ff88" stop-opacity=".8"/>
-                        <stop offset="1" stop-color="#00aaff" stop-opacity=".6"/>
-                    </linearGradient>
-                </defs>
-                <g font-family="JetBrains Mono, monospace" fill="#e0e0e8" font-size="12">
-                    <!-- nodes -->
-                    <rect x="10" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
-                    <text x="70" y="80" text-anchor="middle">Market Data</text>
-
-                    <rect x="150" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
-                    <text x="210" y="80" text-anchor="middle">Normalization</text>
-
-                    <rect x="290" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
-                    <text x="350" y="80" text-anchor="middle">Indicators</text>
-
-                    <rect x="430" y="40" width="140" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
-                    <text x="500" y="80" text-anchor="middle">Strategy Orchestrator</text>
-
-                    <rect x="580" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
-                    <text x="640" y="80" text-anchor="middle">Execution</text>
-
-                    <rect x="720" y="40" width="120" height="60" rx="8" fill="#091217" stroke="url(#g)"/>
-                    <text x="780" y="80" text-anchor="middle">Persistence</text>
-
-                    <!-- connectors -->
-                    <line x1="130" y1="70" x2="150" y2="70" stroke="url(#g)" stroke-width="2" />
-                    <line x1="270" y1="70" x2="290" y2="70" stroke="url(#g)" stroke-width="2" />
-                    <line x1="410" y1="70" x2="430" y2="70" stroke="url(#g)" stroke-width="2" />
-                    <line x1="570" y1="70" x2="580" y2="70" stroke="url(#g)" stroke-width="2" />
-                    <line x1="700" y1="70" x2="720" y2="70" stroke="url(#g)" stroke-width="2" />
-                </g>
-            </svg>
+        <div class="flow-grid" aria-hidden style="margin-top:1rem">
+            <!-- Responsive step grid -->
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">01</div><div><strong>Market Data Ingestion</strong><div style="color:var(--muted);margin-top:.25rem">Pull OHLCV data from MT5 with configurable timeframes.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">02</div><div><strong>Data Normalization</strong><div style="color:var(--muted);margin-top:.25rem">Transform raw feed into clean pandas DataFrames with timestamps.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">03</div><div><strong>Indicator Calculation</strong><div style="color:var(--muted);margin-top:.25rem">Compute SMA, ATR, RSI, MACD, Bollinger, Supertrend, VWAP efficiently.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">04</div><div><strong>Signal Generation</strong><div style="color:var(--muted);margin-top:.25rem">Strategies evaluate indicators and produce signals with confidence.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">05</div><div><strong>Risk Approval</strong><div style="color:var(--muted);margin-top:.25rem">Position sizing, exposure limits and daily loss checks are enforced.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">06</div><div><strong>Order Execution</strong><div style="color:var(--muted);margin-top:.25rem">Idempotent order placement with MT5 and fill verification.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">07</div><div><strong>Position Tracking</strong><div style="color:var(--muted);margin-top:.25rem">Real-time P&L tracking and age metrics for open positions.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">08</div><div><strong>Exit Detection</strong><div style="color:var(--muted);margin-top:.25rem">Priority-based evaluation of exit strategies (trailing, time, profit).</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">09</div><div><strong>Position Close</strong><div style="color:var(--muted);margin-top:.25rem">Execute closes and persist trade records to the database.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">10</div><div><strong>Strategy Orchestrator</strong><div style="color:var(--muted);margin-top:.25rem">Dynamic strategy selection, arbitration, and safeties for multi-strategy runs.</div></div></div></div>
+            <div class="card"><div style="display:flex;gap:1rem;align-items:flex-start"><div style="font-family:JetBrains Mono;color:var(--accent);font-weight:700">11</div><div><strong>Health Monitoring</strong><div style="color:var(--muted);margin-top:.25rem">Connection recovery, reconciliation, and metrics collection.</div></div></div></div>
         </div>
+
+        <style>
+            .flow-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+            @media (max-width:900px){.flow-grid{grid-template-columns:repeat(2,1fr)}}
+            @media (max-width:600px){.flow-grid{grid-template-columns:1fr}}
+        </style>
 
         <div class="cards">
             <div class="card"><strong>Data Layer</strong><div style="color:var(--muted);margin-top:.5rem">OHLCV normalization, multi-timeframe resampling, caching.</div></div>

@@ -90,7 +90,7 @@ The wizard walks you through:
 4. **Risk Management** — Daily loss limit, position size %, max positions
 5. **Strategy Settings** — SMA periods and other strategy-specific params
 
-**Quickstart / Production checklist**
+**Quickstart / Deployment checklist**
 
 - Ensure MT5 AutoTrading is enabled (Terminal -> AutoTrading); this allows Herald to apply SL/TP settings to adopted trades automatically.
 - For headless runs, use `--skip-setup` and `--no-prompt` to avoid interactive prompts.
@@ -1056,7 +1056,7 @@ See [CHANGELOG.md](docs/CHANGELOG.md) for detailed release notes.
 - Structured logging and observability
 
 ### ✅ Phase 2 - Autonomous Trading Execution (Complete) 🚀
-Includes core trading system AND production hardening:
+Includes core trading system AND deployment hardening:
 
 **Core Features:**
 - 6 Technical indicators with full coverage
@@ -1093,4 +1093,4 @@ Includes core trading system AND production hardening:
 
 **Built with focus on safety, testability, and production readiness.**
 
-*Herald v3.0.0 - Phase 2 Complete. Production-ready autonomous trading with zero-error test suite, verified MT5 integration, and enterprise-grade architecture.*
+*Herald v3.0.0 - Phase 2 Complete. Deployment-tested autonomous trading with zero-error test suite, verified MT5 integration, and enterprise architecture.*
