@@ -32,6 +32,8 @@ class RiskConfig(BaseModel):
     max_position_size_pct: float = 0.02
     max_total_exposure_pct: float = 0.10
     max_daily_loss_pct: float = 0.05
+    # Allow a legacy absolute dollar daily loss value to be stored by the wizard
+    max_daily_loss: float = 0.0
     max_positions_per_symbol: int = 1
     max_total_positions: int = 3
     min_risk_reward_ratio: float = 1.0
@@ -58,6 +60,10 @@ class TradingConfig(BaseModel):
 class StrategyConfig(BaseModel):
     type: str = "sma_crossover"
     params: Dict[str, Any] = Field(default_factory=dict)
+    # Dynamic selection config (if type=='dynamic')
+    dynamic_selection: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    # Child strategies for dynamic selection
+    strategies: Optional[list] = Field(default_factory=list)
 
 
 class OrphanConfig(BaseModel):
@@ -114,9 +120,34 @@ class Config(BaseModel):
         risk = r.get('risk', {})
         if 'max_position_size' in risk:
             risk['max_position_size_pct'] = risk.pop('max_position_size')
+        # Wizard historically used 'position_size_pct' as a percentage (e.g. 2.0 for 2%).
+        # Normalize to the canonical 'max_position_size_pct' as a decimal (0.02).
+        if 'position_size_pct' in risk and 'max_position_size_pct' not in risk:
+            try:
+                val = float(risk.pop('position_size_pct'))
+                # If user provided percent-style value (>1), convert to decimal
+                if val > 1:
+                    val = val / 100.0
+                risk['max_position_size_pct'] = val
+            except Exception:
+                # Fallback: silently ignore conversion errors and leave value as-is
+                risk['max_position_size_pct'] = risk.get('position_size_pct')
         # Map risk keys that could exist in older configs
         if 'max_daily_loss' in risk and 'max_daily_loss_pct' not in risk:
-            risk['max_daily_loss_pct'] = risk.get('max_daily_loss')
+            # The wizard historically stored a dollar-denominated 'max_daily_loss'.
+            # Preserve the original value and do not assume it's a percent; also
+            # keep a pct field if present elsewhere. Store the raw dollar value
+            # under 'max_daily_loss' (new in schema) while leaving pct untouched.
+            try:
+                # If the value seems fractional (<1), treat it as a pct and copy
+                v = float(risk.get('max_daily_loss'))
+                if v <= 1.0:
+                    risk['max_daily_loss_pct'] = v
+                else:
+                    # store raw dollar value for backwards compatibility
+                    risk['max_daily_loss'] = v
+            except Exception:
+                risk['max_daily_loss'] = risk.get('max_daily_loss')
         r['risk'] = risk
 
         # Map strategy param keys

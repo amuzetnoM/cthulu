@@ -25,18 +25,26 @@ class RSI(Indicator):
         RSI = 100 - (100 / (1 + RS))
     """
     
-    def __init__(self, period: int = 14):
+    def __init__(self, period: int = 14, overbought: float = 70.0, oversold: float = 30.0, **kwargs):
         """
         Initialize RSI indicator.
-        
+
         Args:
             period: Lookback period for RSI calculation (default: 14)
+            overbought: Threshold considered overbought (default: 70.0)
+            oversold: Threshold considered oversold (default: 30.0)
+            **kwargs: Accept and ignore legacy/extra kwargs for forward-compatibility
         """
+        params = {'period': period, 'overbought': overbought, 'oversold': oversold}
+        # Preserve any additional params passed for backwards compatibility
+        params.update({k: v for k, v in kwargs.items() if k not in params})
         super().__init__(
             name="RSI",
-            params={'period': period}
+            params=params
         )
         self.period = period
+        self.overbought = float(overbought)
+        self.oversold = float(oversold)
         
     def calculate(self, data: pd.DataFrame) -> pd.Series:
         """

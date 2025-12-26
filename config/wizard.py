@@ -2,7 +2,7 @@
 Herald Interactive Setup Wizard
 
 A friendly, non-overwhelming configuration wizard that helps users configure
-Herald's key trading parameters before starting. 
+Herald's key trading parameters before starting.
 Designed to be:
 - Comprehensive yet concise
 - Smart with defaults
@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, List
 from copy import deepcopy
 
-# Available mindsets from mindsets.py
+# Available mindsets as a small local fallback (can be overridden elsewhere)
 MINDSETS = {
     "1": ("conservative", "Lower risk, wider stops, capital preservation"),
     "2": ("balanced", "Moderate risk, standard settings (recommended)"),
@@ -89,12 +89,24 @@ def print_warning(msg: str):
     print(f"\033[93m  ⚠ {msg}\033[0m")
 
 
+class WizardCancelled(Exception):
+    """Raised when the wizard is cancelled by the user or input stream closes."""
+
+
 def get_input(prompt: str, default: str = "") -> str:
-    """Get user input with optional default."""
-    if default:
-        result = input(f"  {prompt} [{default}]: ").strip()
-        return result if result else default
-    return input(f"  {prompt}: ").strip()
+    """Get user input with optional default.
+
+    Handles EOF/interrupts gracefully by raising WizardCancelled so callers can
+    abort the interactive wizard without an unhandled traceback.
+    """
+    try:
+        if default:
+            result = input(f"  {prompt} [{default}]: ").strip()
+            return result if result else default
+        return input(f"  {prompt}: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print("\n\nInput stream closed or interrupted. Cancelling setup.")
+        raise WizardCancelled()
 
 
 def get_float(prompt: str, default: float, min_val: float = 0, max_val: float = float('inf')) -> float:
@@ -339,11 +351,13 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
         print_option("4", "Scalping", "Fast scalping with tight stops")
         print()
         
-        strategies_choice = get_input("Select strategies (e.g., 1,2,3)", "1,2,3")
+        strategies_choice = get_input("Select strategies (e.g., 1,2)", "1,2")
         strategies_list = []
         
         for choice in strategies_choice.split(','):
             choice = choice.strip()
+            if not choice:
+                continue
             if choice == "1":
                 strategies_list.append({
                     'type': 'sma_crossover',
@@ -365,6 +379,14 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
                     'params': {'quick_period': 5, 'trend_period': 20}
                 })
         
+        # Ensure at least two strategies are present for dynamic mode (safe defaults)
+        if not strategies_list:
+            strategies_list = [
+                {'type': 'sma_crossover', 'params': {'fast_period': 10, 'slow_period': 30}},
+                {'type': 'ema_crossover', 'params': {'fast_period': 12, 'slow_period': 26}}
+            ]
+            print_warning("No strategies selected. Defaulting to SMA Crossover and EMA Crossover")
+
         strategy['strategies'] = strategies_list
         print_success(f"Dynamic mode with {len(strategies_list)} strategies enabled")
         
@@ -1005,29 +1027,11 @@ def run_nlp_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]
         selected_mindset = get_input("Mindset (aggressive/balanced/conservative)", selected_mindset)
 
     # Confirm and save
-    save_choice = get_input("Save this configuration and optionally save as mindset profile? (y/N)", "N").lower()
+    save_choice = get_input("Save this configuration? (y/N)", "N").lower()
     if save_choice == 'y':
         saved = confirm_and_save(config, config_path)
         if saved:
-            save_profile = get_input("Save as per-mindset profile? (y/N)", "N").lower()
-            if save_profile == 'y':
-                profiles = save_profile_as_mindset(config, selected_mindset, config['trading']['timeframe'])
-                if isinstance(profiles, list):
-                    for p in profiles:
-                        print_success(f"Saved profile: {p}")
-                else:
-                    print_success(f"Saved profile: {profiles}")
-
-                start_choice = get_input("Start these profiles now? (y/N)", "N").lower()
-                if start_choice == 'y':
-                    dry = get_input("Dry run first? (y/N)", "y").lower()
-                    from subprocess import Popen
-                    cfgs = profiles if isinstance(profiles, list) else [profiles]
-                    for cfg in cfgs:
-                        # Start Herald using the fixed launcher command only (no extra flags)
-                        args = ["python", "-m", "herald", "--config", "C:\\workspace\\herald\\config.json"]
-                        Popen(args)
-                        print_info(f"Started Herald for {cfg} using fixed launcher")
+            print_success(f"Configuration saved to {config_path}")
     else:
         print_info("Configuration not saved. You can run the wizard again or edit manually.")
 
@@ -1052,10 +1056,53 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
     print("  \033[90mPress Enter to accept defaults shown in [brackets].\033[0m")
     print("  \033[90mType 'q' at any prompt to quit without saving.\033[0m\n")
     
-    proceed = get_input("Start setup? (y/n)", "y").lower()
-    if proceed != 'y':
+    try:
+        proceed = get_input("Start setup? (y/n/q)", "y").lower()
+    except WizardCancelled:
+        print_info("Setup cancelled (no input).")
+        return None
+
+    # q = explicit quit/exit; n = skip wizard and continue using existing/default config
+    if proceed in ('q', 'quit'):
         print_info("Setup cancelled.")
         return None
+    if proceed == 'n':
+        # Load existing config or fall back to example/defaults and return it so
+        # the caller can continue startup without running the interactive wizard.
+        config_file = Path(config_path)
+        if config_file.exists():
+            with open(config_file) as f:
+                config = json.load(f)
+            print_success(f"Loaded existing configuration from {config_path}")
+        else:
+            example_path = Path(config_path).parent / "config.example.json"
+            if example_path.exists():
+                with open(example_path) as f:
+                    config = json.load(f)
+                print_info("Starting from example configuration")
+            else:
+                print_warning("No existing config found. Using defaults.")
+                config = {
+                    "mt5": {"login": 0, "password": "", "server": ""},
+                    "trading": {"symbol": "EURUSD", "timeframe": "TIMEFRAME_H1", "poll_interval": 60, "lookback_bars": 500},
+                    "risk": {"max_daily_loss": 50.0, "position_size_pct": 2.0, "max_total_positions": 3},
+                    "strategy": {"type": "sma_crossover", "params": {"fast_period": 10, "slow_period": 30}},
+                    "exit_strategies": [],
+                    "indicators": []
+                }
+        # If there is no on-disk config, write the chosen/default config so
+        # the main startup path that calls `Config.load(path)` can find it.
+        try:
+            cfg_path = Path(config_path)
+            if not cfg_path.exists():
+                cfg_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(cfg_path, 'w', encoding='utf-8') as fh:
+                    json.dump(config, fh, indent=2)
+                print_success(f"Wrote default configuration to {config_path}")
+        except Exception:
+            print_warning("Failed to persist default config; continuing with in-memory config")
+
+        return config
     
     # Load existing config if available
     config_file = Path(config_path)
@@ -1081,73 +1128,46 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
                 "indicators": []
             }
     
-    # Step 1: Mindset (applied as overlay later)
-    mindset = choose_mindset()
-    
-    # Step 2: Symbol
-    current_symbol = config.get('trading', {}).get('symbol', 'EURUSD')
-    config['trading']['symbol'] = choose_symbol(current_symbol)
-    
-    # Also update symbol in strategy params if present
-    if 'strategy' in config and 'params' in config['strategy']:
-        config['strategy']['params']['symbol'] = config['trading']['symbol']
-    
-    # Step 3: Timeframe
-    current_tf = config.get('trading', {}).get('timeframe', 'TIMEFRAME_H1')
-    config['trading']['timeframe'] = choose_timeframe(current_tf)
-    
-    # Step 4: Risk Management
-    config['risk'] = configure_risk(config.get('risk', {}))
-    
-    # Step 5: Strategy Settings
-    config['strategy'] = configure_strategy(config.get('strategy', {}))
-    
-    # Step 5.5: Indicators (new)
-    config['indicators'] = configure_indicators(config.get('indicators', []))
-    
-    # Step 6: Confirm and save
-    print()
-    if confirm_and_save(config, config_path):
-        # Offer to save per-mindset profile(s) and optionally start them
-        print()
-        choice = get_input("Save this as a per-mindset profile and optionally start now? (y/N)", "N").lower()
-        if choice == 'y':
-            # Determine mindset and timeframe(s)
-            # Mindset variable was chosen earlier in wizard
-            try:
-                timeframe = config['trading']['timeframe']
-            except Exception:
-                timeframe = 'TIMEFRAME_H1'
-
-            profiles = save_profile_as_mindset(config, mindset, timeframe)
-            if isinstance(profiles, list):
-                for p in profiles:
-                    print_success(f"Saved profile: {p}")
-            else:
-                print_success(f"Saved profile: {profiles}")
-
-            start_now = get_input("Start these profiles now? (y/N)", "N").lower()
-            if start_now == 'y':
-                dry = get_input("Dry run first? (y/N)", "y").lower()
-                from subprocess import Popen
-                procs = []
-                cfgs = profiles if isinstance(profiles, list) else [profiles]
-                for cfg in cfgs:
-                    # Always start Herald with the single fixed command; do not add flags
-                    args = ["python", "-m", "herald", "--config", "C:\\workspace\\herald\\config.json"]
-                    Popen(args)
-                    print_info(f"Started Herald for {cfg} using fixed launcher")
+    try:
+        # Step 1: Mindset (applied as overlay later)
+        mindset = choose_mindset()
         
+        # Step 2: Symbol
+        current_symbol = config.get('trading', {}).get('symbol', 'EURUSD')
+        config['trading']['symbol'] = choose_symbol(current_symbol)
+        
+        # Also update symbol in strategy params if present
+        if 'strategy' in config and 'params' in config['strategy']:
+            config['strategy']['params']['symbol'] = config['trading']['symbol']
+        
+        # Step 3: Timeframe
+        current_tf = config.get('trading', {}).get('timeframe', 'TIMEFRAME_H1')
+        config['trading']['timeframe'] = choose_timeframe(current_tf)
+        
+        # Step 4: Risk Management
+        config['risk'] = configure_risk(config.get('risk', {}))
+        
+        # Step 5: Strategy Settings
+        config['strategy'] = configure_strategy(config.get('strategy', {}))
+        
+        # Step 5.5: Indicators (new)
+        config['indicators'] = configure_indicators(config.get('indicators', []))
+        
+        # Step 6: Confirm and save (simplified)
         print()
-        print(f"  \033[92m{'═' * 48}\033[0m")
-        print(f"  \033[92m  Herald is ready! Run with:\033[0m")
-        # Always instruct to run with the exact, single canonical command
-        print(f"  \033[96m  python -m herald --config C:\\workspace\\herald\\config.json\033[0m")
-        print(f"  \033[92m{'═' * 48}\033[0m")
-        print()
-        return config
-    
-    return None
+        if confirm_and_save(config, config_path):
+            print()
+            print(f"  \033[92m{'═' * 48}\033[0m")
+            print(f"  \033[92m  Herald is ready! Run with:\033[0m")
+            print(f"  \033[96m  python -m herald --config C:\\workspace\\herald\\config.json\033[0m")
+            print(f"  \033[92m{'═' * 48}\033[0m")
+            print()
+            return config
+
+        return None
+    except WizardCancelled:
+        print_info('Setup cancelled (input closed). No changes saved.')
+        return None
 
 
 if __name__ == "__main__":

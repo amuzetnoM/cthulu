@@ -25,15 +25,27 @@ class Stochastic(Indicator):
         %D = SMA(%K, d_period)
     """
     
-    def __init__(self, k_period: int = 14, d_period: int = 3, smooth_k: int = 3):
+    def __init__(self, k_period: int = 14, d_period: int = 3, smooth_k: int = 3, smooth: int = None, **kwargs):
         """
         Initialize Stochastic Oscillator indicator.
+
+        Accepts legacy parameter names for compatibility:
+          - smooth -> smooth_k
+        Extra keyword args are ignored to be resilient to older configs.
         
         Args:
             k_period: Lookback period for %K calculation (default: 14)
             d_period: Smoothing period for %D signal line (default: 3)
             smooth_k: Smoothing period for %K line (default: 3)
+            smooth: Legacy alias for smooth_k (optional)
         """
+        # Backwards compatibility: prefer explicit smooth_k, but allow legacy 'smooth'
+        if smooth is not None:
+            smooth_k = smooth
+        # Also accept camelCase legacy name if present
+        if 'smoothK' in kwargs and kwargs.get('smoothK') is not None:
+            smooth_k = kwargs.get('smoothK')
+
         super().__init__(
             name="Stochastic",
             params={

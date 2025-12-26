@@ -83,15 +83,20 @@ class HeraldGUI:
             style.theme_use('clam')
         except Exception:
             pass
+        # Fonts
+        UI_FONT = ('Segoe UI', 11)
+        HEADER_FONT = ('Segoe UI Semibold', 13)
+        METRIC_FONT = ('Consolas', 11, 'bold')
+        TREE_FONT = ('Segoe UI', 10)
         
         # Configure all ttk widgets for dark mode
         # Frame styling (critical for dark mode)
         style.configure('TFrame', background=THEME_BG)
         
         # Label styles
-        style.configure('TLabel', background=THEME_BG, foreground=THEME_FG, font=('Segoe UI', 10))
-        style.configure('Header.TLabel', font=('Segoe UI', 14, 'bold'), foreground=ACCENT, background=THEME_BG)
-        style.configure('Metric.TLabel', font=('Consolas', 11, 'bold'), foreground=THEME_FG, background=THEME_BG)
+        style.configure('TLabel', background=THEME_BG, foreground=THEME_FG, font=UI_FONT)
+        style.configure('Header.TLabel', font=HEADER_FONT, foreground=ACCENT, background=THEME_BG)
+        style.configure('Metric.TLabel', font=METRIC_FONT, foreground=THEME_FG, background=THEME_BG)
         
         # Entry styling
         style.configure('TEntry', fieldbackground='#0b1220', foreground=THEME_FG, insertcolor=THEME_FG)
@@ -121,9 +126,9 @@ class HeraldGUI:
         
         # Treeview styling
         style.configure('Treeview', background='#07121a', fieldbackground='#07121a', 
-                       foreground=THEME_FG, rowheight=26, borderwidth=0, font=('Segoe UI', 10))
+                   foreground=THEME_FG, rowheight=28, borderwidth=0, font=TREE_FONT)
         style.configure('Treeview.Heading', font=('Segoe UI', 11, 'bold'), 
-                       foreground=THEME_FG, background='#0b1220', borderwidth=1, relief='flat')
+                   foreground=THEME_FG, background='#0b1220', borderwidth=1, relief='flat')
         style.map('Treeview', 
                   background=[('selected', '#1f2937')], 
                   foreground=[('selected', THEME_FG)])
@@ -168,9 +173,11 @@ class HeraldGUI:
         left.pack(side='left', fill='both', expand=True, padx=(0,6))
         ttk.Label(left, text='Live Trades', style='Header.TLabel').pack(anchor='w')
         self.trades_tree = ttk.Treeview(left, columns=('ticket','symbol','side','volume','price','pnl'), show='headings', height=10)
-        for col in ('ticket','symbol','side','volume','price','pnl'):
+        # Define clearer column widths for alignment
+        trades_cols = [('ticket', 120), ('symbol', 90), ('side', 60), ('volume', 80), ('price', 100), ('pnl', 100)]
+        for col, width in trades_cols:
             self.trades_tree.heading(col, text=col.capitalize())
-            self.trades_tree.column(col, width=100, anchor='center')
+            self.trades_tree.column(col, width=width, anchor='center')
         # alternating row tags for better readability
         try:
             self.trades_tree.tag_configure('odd', background='#0f1720')
@@ -184,7 +191,8 @@ class HeraldGUI:
         right.pack(side='left', fill='both', expand=True, padx=(6,0))
         ttk.Label(right, text='Trade History', style='Header.TLabel').pack(anchor='w')
         self.history_tree = ttk.Treeview(right, columns=('time','symbol','side','volume','entry','exit','pnl','status'), show='headings', height=10)
-        for col, width in [('time', 120), ('symbol', 80), ('side', 60), ('volume', 70), ('entry', 80), ('exit', 80), ('pnl', 70), ('status', 80)]:
+        history_cols = [('time', 140), ('symbol', 90), ('side', 60), ('volume', 80), ('entry', 110), ('exit', 110), ('pnl', 90), ('status', 100)]
+        for col, width in history_cols:
             self.history_tree.heading(col, text=col.capitalize())
             self.history_tree.column(col, width=width, anchor='center')
         try:
@@ -221,6 +229,24 @@ class HeraldGUI:
 
         self.place_btn = ttk.Button(bottom, text='Place Trade', style='Accent.TButton', command=self.place_manual_trade)
         self.place_btn.grid(row=2, column=5, sticky='e', padx=(0,4))
+
+        # Live log viewer (shows last N lines of herald.log)
+        log_frame = ttk.Frame(root)
+        # Allow log area to expand and be resizable
+        log_frame.pack(fill='both', expand=True, padx=10, pady=(6,6))
+        ttk.Label(log_frame, text='Live Log', style='Header.TLabel').pack(anchor='w')
+        # Use ScrolledText but also add horizontal scrollbar for long log lines
+        self.log_text = ScrolledText(log_frame, height=12, bg='#07121a', fg=THEME_FG, insertbackground=THEME_FG, wrap='none')
+        try:
+            # Use monospace for logs
+            self.log_text.configure(font=('Consolas', 10))
+        except Exception:
+            pass
+        # Horizontal scrollbar
+        xscroll = tk.Scrollbar(log_frame, orient='horizontal', command=self.log_text.xview)
+        self.log_text.configure(xscrollcommand=xscroll.set)
+        self.log_text.pack(fill='both', expand=True, pady=4)
+        xscroll.pack(fill='x')
 
         # Close behavior
         root.protocol('WM_DELETE_WINDOW', self.on_close)
@@ -292,7 +318,28 @@ class HeraldGUI:
         self._update_trades_from_log(log_text)
 
         # Update history by scanning for finalised trades
+        # Reopen DB briefly to pick up external writes (some processes write to DB)
+        if self.db:
+            try:
+                try:
+                    self.db.close()
+                except Exception:
+                    pass
+                self.db = Database("herald.db")
+            except Exception:
+                # fall back to existing self.db
+                pass
         self._update_history_from_log(log_text)
+
+        # Update live log view in the GUI
+        try:
+            self.log_text.configure(state='normal')
+            self.log_text.delete('1.0', tk.END)
+            self.log_text.insert(tk.END, log_text)
+            self.log_text.see(tk.END)
+            self.log_text.configure(state='disabled')
+        except Exception:
+            pass
 
         # Schedule next update
         self.root.after(REFRESH_INTERVAL, self.update)
@@ -369,8 +416,16 @@ class HeraldGUI:
             self.history_tree.delete(i)
         for idx, h in enumerate(history):
             tag = 'even' if idx % 2 == 0 else 'odd'
-            # put the full line into the 'result' column and a truncated time into time
-            self.history_tree.insert('', 'end', values=(h[:19], '', '', '', h), tags=(tag,))
+            # Provide values for all history columns to avoid ValueError
+            time_str = (h[:19] if len(h) >= 19 else h)
+            symbol = ''
+            side = ''
+            volume = ''
+            entry = (h if len(h) <= 110 else h[:107] + '...')
+            exit_price = '—'
+            pnl = '—'
+            status = 'log'
+            self.history_tree.insert('', 'end', values=(time_str, symbol, side, volume, entry, exit_price, pnl, status), tags=(tag,))
 
     def on_close(self):
         try:

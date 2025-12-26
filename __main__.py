@@ -86,25 +86,56 @@ def load_indicators(indicator_configs: Dict[str, Any]) -> List:
         'anchored_vwap': AnchoredVWAP
     }
     
+    import inspect
+
+    def _prepare_params_for(cls, params: Dict[str, Any]) -> Dict[str, Any]:
+        # Map common legacy aliases to current param names
+        legacy_map = {
+            'smooth': 'smooth_k',
+            'smoothK': 'smooth_k',
+            'overbought': 'overbought',
+            'oversold': 'oversold'
+        }
+
+        # Copy so we don't mutate original
+        params_copy = dict(params or {})
+
+        # Apply legacy mappings
+        for old, new in legacy_map.items():
+            if old in params_copy and new not in params_copy:
+                params_copy[new] = params_copy.pop(old)
+
+        # Inspect constructor to keep only supported params (ignore others)
+        try:
+            sig = inspect.signature(cls.__init__)
+            valid_names = {p.name for p in sig.parameters.values() if p.name != 'self' and p.kind in (p.POSITIONAL_OR_KEYWORD, p.KEYWORD_ONLY)}
+            filtered = {k: v for k, v in params_copy.items() if k in valid_names}
+            return filtered
+        except Exception:
+            # If anything goes wrong, fallback to passing original params and let the caller handle errors
+            return params_copy
+
     # Handle both list and dict formats
     if isinstance(indicator_configs, list):
         # List format: [{"type": "rsi", "params": {...}}, ...]
         for indicator_config in indicator_configs:
             indicator_type = indicator_config.get('type', '').lower()
             params = indicator_config.get('params', {})
-            
+
             if indicator_type in indicator_map:
-                indicator = indicator_map[indicator_type](**params)
+                filtered = _prepare_params_for(indicator_map[indicator_type], params)
+                indicator = indicator_map[indicator_type](**filtered)
                 indicators.append(indicator)
     else:
         # Dict format: {"rsi": {...}, "macd": {...}}
         for indicator_type, params in indicator_configs.items():
             indicator_type_lower = indicator_type.lower()
-            
+
             if indicator_type_lower in indicator_map:
-                indicator = indicator_map[indicator_type_lower](**params)
+                filtered = _prepare_params_for(indicator_map[indicator_type_lower], params)
+                indicator = indicator_map[indicator_type_lower](**filtered)
                 indicators.append(indicator)
-            
+
     return indicators
 
 
@@ -509,13 +540,26 @@ def main():
 
         # 8. Load indicators
         logger.info("Loading indicators...")
-        indicators = load_indicators(config.get('indicators', []))
-        logger.info(f"Loaded {len(indicators)} indicators")
+        try:
+            indicators = load_indicators(config.get('indicators', []))
+            logger.info(f"Loaded {len(indicators)} indicators")
+        except Exception as e:
+            logger.exception('Failed to initialize indicators')
+            logger.error('Configuration contains invalid indicator settings; please review your config and re-run the wizard')
+            print('\nError: Failed to initialize indicators. See logs for details. Aborting startup.')
+            return 1
         
         # 9. Load strategy
         logger.info("Loading trading strategy...")
-        strategy = load_strategy(config['strategy'])
-        logger.info(f"Loaded strategy: {strategy.__class__.__name__}")
+        try:
+            logger.debug("Strategy config: %s", config.get('strategy'))
+            strategy = load_strategy(config['strategy'])
+            logger.info(f"Loaded strategy: {strategy.__class__.__name__}")
+        except Exception as e:
+            logger.exception('Failed to initialize trading strategy')
+            logger.error('Configuration contains invalid strategy settings; please review your config and re-run the wizard')
+            print('\nError: Failed to initialize trading strategy. See logs for details. Aborting startup.')
+            return 1
         
         # 10. Load exit strategies
         logger.info("Loading exit strategies...")
@@ -1399,34 +1443,42 @@ def main():
         try:
             # Ask user what to do with open positions (do NOT force-close by default)
             if not args.dry_run:
-                interactive = sys.stdin.isatty() and not getattr(args, 'no_prompt', False)
-                if interactive:
+                # Prefer to prompt the user, but be resilient if stdin was consumed earlier
+                def _prompt_console(prompt_text: str, default: str = 'n') -> str:
                     try:
-                        print("\nShutdown requested. What should I do with open positions?")
-                        print("  [A] Close ALL positions")
-                        print("  [N] Leave positions OPEN (default)")
-                        print("  [S] Close specific tickets (comma-separated)")
-                        choice = input("Choose (A/n/s): ").strip().lower()
+                        # Try normal input first
+                        if sys.stdin.isatty() and not getattr(args, 'no_prompt', False):
+                            return input(prompt_text).strip().lower()
+                        # Fall back to opening the platform console directly (works when stdin has been redirected)
+                        if os.name == 'nt':
+                            with open('CONIN$', 'r') as con:
+                                print(prompt_text, end='', flush=True)
+                                return con.readline().strip().lower()
+                        else:
+                            with open('/dev/tty', 'r') as tty:
+                                print(prompt_text, end='', flush=True)
+                                return tty.readline().strip().lower()
                     except Exception:
-                        choice = 'n'
+                        return default.lower()
 
-                    if choice in ('a', 'all'):
-                        logger.info("User requested: close ALL positions")
-                        close_results = position_manager.close_all_positions("System shutdown")
-                        logger.info(f"Closed {len(close_results)} positions")
-                    elif choice in ('s', 'select'):
-                        tickets = input("Enter ticket numbers to close (comma-separated): ").strip()
-                        ids = [int(x.strip()) for x in tickets.split(',') if x.strip().isdigit()]
-                        closed = 0
-                        for t in ids:
-                            res = position_manager.close_position(ticket=t, reason="User shutdown request")
-                            if res and getattr(res, 'status', None) == getattr(res, 'status', None):
-                                closed += 1
-                        logger.info(f"Closed {closed} user-selected positions")
-                    else:
-                        logger.info("User chose to leave open positions untouched")
+                # Ask user explicitly what to do with open positions
+                choice = _prompt_console("\nShutdown requested. What should I do with open positions?\n  [A] Close ALL positions\n  [N] Leave positions OPEN (default)\n  [S] Close specific tickets (comma-separated)\nChoose (A/n/s): ", 'n')
+
+                if choice in ('a', 'all'):
+                    logger.info("User requested: close ALL positions")
+                    close_results = position_manager.close_all_positions("System shutdown")
+                    logger.info(f"Closed {len(close_results)} positions")
+                elif choice in ('s', 'select'):
+                    tickets = _prompt_console("Enter ticket numbers to close (comma-separated): ", '')
+                    ids = [int(x.strip()) for x in tickets.split(',') if x.strip().isdigit()]
+                    closed = 0
+                    for t in ids:
+                        res = position_manager.close_position(ticket=t, reason="User shutdown request")
+                        if res and getattr(res, 'status', None) == getattr(res, 'status', None):
+                            closed += 1
+                    logger.info(f"Closed {closed} user-selected positions")
                 else:
-                    logger.info("Non-interactive shutdown: leaving open positions untouched (no prompt)")
+                    logger.info("User chose to leave open positions untouched")
 
             # Print final metrics and persist to summary file
             logger.info("Final performance metrics:")
