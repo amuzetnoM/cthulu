@@ -802,6 +802,9 @@ class TradingLoop:
             df: Market data DataFrame with indicators
         """
         try:
+            if not self.ctx.position_manager:
+                self.ctx.logger.debug("Position manager unavailable; skipping position monitoring")
+                return
             positions = self.ctx.position_manager.monitor_positions()
             if positions:
                 self.ctx.logger.debug(f"Monitoring {len(positions)} open positions")

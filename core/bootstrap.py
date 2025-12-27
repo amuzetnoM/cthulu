@@ -211,9 +211,10 @@ class HeraldBootstrap:
             from herald.position.manager import PositionManager
             self.logger.info("Initializing position manager...")
             pm = PositionManager(connector=connector, execution_engine=execution_engine)
+            self.logger.info('PositionManager initialized')
             return pm
-        except Exception:
-            self.logger.debug('PositionManager unavailable; continuing without it')
+        except Exception as e:
+            self.logger.exception('PositionManager initialization failed; continuing without it')
             return None
 
     def initialize_strategy(self, config: Dict[str, Any]) -> Optional[Any]:
