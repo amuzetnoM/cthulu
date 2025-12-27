@@ -30,9 +30,6 @@ sidebar_position: 1
 </div>
 <br>
 
-> **Adaptive Trading Intelligence**
-<br> A complete autonomous multi-strategy trading system with dynamic strategy selection, next-gen indicators, and enhanced monitoring
-
 Herald is an autonomous and adaptive trading system focused on safe, auditable execution with strong observability and pluggable signal sources. The system is designed to run headless, in a gated live mode, and to produce rich ML-friendly event streams to support downstream model training and analysis.
 
 <br>
