@@ -75,6 +75,7 @@ class TradingLoopContext:
     advisory_manager: Optional[Any] = None
     exporter: Optional[Any] = None  # Prometheus exporter
     ml_collector: Optional[Any] = None
+    position_manager: Optional[Any] = None
     summary_path: Optional[Any] = None
     persist_summary_fn: Optional[Any] = None
     
@@ -160,21 +161,50 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     needs_rsi = False
     rsi_period = 14  # default
     try:
-        if hasattr(strategy, 'rsi_period'):
-            needs_rsi = True
-            rsi_period = int(strategy.rsi_period)
-        elif hasattr(strategy, 'rsi_oversold') or hasattr(strategy, 'rsi_overbought'):
-            needs_rsi = True
+        # If strategy is a selector, check sub-strategies for RSI needs
+        from herald.strategy.strategy_selector import StrategySelector
+        if isinstance(strategy, StrategySelector):
+            for s in strategy.strategies.values():
+                if hasattr(s, 'rsi_period'):
+                    needs_rsi = True
+                    rsi_period = int(getattr(s, 'rsi_period'))
+                    break
+                if hasattr(s, 'rsi_oversold') or hasattr(s, 'rsi_overbought'):
+                    needs_rsi = True
+                    break
+        else:
+            if hasattr(strategy, 'rsi_period'):
+                needs_rsi = True
+                rsi_period = int(strategy.rsi_period)
+            elif hasattr(strategy, 'rsi_oversold') or hasattr(strategy, 'rsi_overbought'):
+                needs_rsi = True
     except Exception:
         pass
     
     # Check if RSI already exists
     if needs_rsi:
+        # Ensure we add the strategy-specific RSI period (and also add default rsi if desired)
         rsi_col = f'rsi_{rsi_period}' if rsi_period != 14 else 'rsi'
-        has_rsi = rsi_col in df.columns or any(getattr(i, 'name', '') == 'rsi' for i in indicators)
+        has_rsi = rsi_col in df.columns or any(getattr(i, 'name', '') == 'rsi' or getattr(i, 'name', '') == f'rsi_{rsi_period}' for i in indicators)
         if not has_rsi:
             extra_indicators.append(RSI(period=rsi_period))
             logger.debug(f"Added runtime RSI indicator (period={rsi_period})")
+    else:
+        # Check config-level dynamic strategies for RSI needs as a fallback
+        try:
+            strat_cfg = config.get('strategy', {}) if isinstance(config, dict) else {}
+            if strat_cfg.get('type') == 'dynamic':
+                for s in strat_cfg.get('strategies', []):
+                    params = s.get('params', {}) if isinstance(s.get('params', {}), dict) else {}
+                    if 'rsi_period' in params and params['rsi_period']:
+                        rp = int(params['rsi_period'])
+                        rsi_col = f'rsi_{rp}' if rp != 14 else 'rsi'
+                        if rsi_col not in df.columns and not any(getattr(i, 'name', '') == rsi_col for i in indicators):
+                            extra_indicators.append(RSI(period=rp))
+                            logger.debug(f"Added runtime RSI indicator from config (period={rp})")
+                            break
+        except Exception:
+            pass
     
     # Check for ATR requirement
     needs_atr = False
@@ -757,8 +787,8 @@ class TradingLoop:
     def _adopt_external_trades(self):
         """Scan and adopt external trades if enabled."""
         try:
-            if self.ctx.trade_adoption_policy.enabled:
-                adopted = self.ctx.trade_manager.scan_and_adopt()
+            if self.ctx.trade_adoption_policy and getattr(self.ctx.trade_adoption_policy, 'enabled', False):
+                adopted = self.ctx.trade_adoption_manager.scan_and_adopt()
                 if adopted > 0:
                     self.ctx.logger.info(f"Adopted {adopted} external trade(s)")
         except Exception as e:

@@ -9,6 +9,9 @@ import pandas as pd
 from typing import Optional
 
 
+from .base import Indicator
+
+
 def calculate_atr(data: pd.DataFrame, period: int = 14) -> pd.Series:
     """Calculate Average True Range (ATR) over the given period.
 
@@ -56,4 +59,23 @@ def calculate_atr(data: pd.DataFrame, period: int = 14) -> pd.Series:
     return atr
 
 
-__all__ = ["calculate_atr"]
+class ATR(Indicator):
+    """Indicator wrapper for ATR compatible with the Indicator base class."""
+    def __init__(self, period: int = 14, **kwargs):
+        params = {'period': period}
+        params.update({k: v for k, v in kwargs.items() if k not in params})
+        super().__init__(name='ATR', params=params)
+        self.period = int(period)
+
+    def calculate(self, data: pd.DataFrame):
+        # Validate required columns using base helper
+        self.validate_data(data, min_periods=self.period + 1)
+        # ATR expects 'high','low','close' which are present when validate_data passes
+        atr_series = calculate_atr(data[['high', 'low', 'close']].copy(), period=self.period)
+        atr_series.name = 'atr'
+        self.update_calculation_time()
+        return atr_series
+
+
+# Exports
+__all__ = ["calculate_atr", "ATR"]

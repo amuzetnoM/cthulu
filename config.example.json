@@ -1,10 +1,10 @@
 {
   "mt5": {
-    "login": 12345678,
-    "password": "your_password",
-    "server": "YourBroker-Demo",
+    "login": "${MT5_LOGIN}",
+    "password": "${MT5_PASSWORD}",
+    "server": "${MT5_SERVER}",
     "timeout": 60000,
-    "path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
+    "path": "${MT5_PATH}"
   },
   "risk": {
     "max_position_size": 1.0,
@@ -101,7 +101,7 @@
     }
   ],
   "database": {
-    "path": "herald.db"
+    "path": "${DATABASE_PATH}"
   },
   "cache_enabled": true
 }

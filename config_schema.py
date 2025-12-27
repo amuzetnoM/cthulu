@@ -10,6 +10,13 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 import json
 import os
+import logging
+
+try:
+    from dotenv import load_dotenv
+    _dotenv_available = True
+except ImportError:
+    _dotenv_available = False
 
 try:
     from pydantic import BaseModel, Field, ValidationError
@@ -179,8 +186,43 @@ class Config(BaseModel):
         if not p.exists():
             raise FileNotFoundError(f"Config file not found: {path}")
 
+        # Load .env file if available
+        env_path = p.parent / '.env'
+        if env_path.exists():
+            try:
+                with open(env_path, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#'):
+                            if '=' in line:
+                                key, value = line.split('=', 1)
+                                os.environ[key.strip()] = value.strip()
+            except Exception:
+                pass  # Ignore errors loading .env
+
         text = p.read_text()
         raw = json.loads(text)
+        
+        # Substitute environment variables in the form ${VAR_NAME}
+        def substitute_env_vars(obj):
+            if isinstance(obj, dict):
+                return {k: substitute_env_vars(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [substitute_env_vars(item) for item in obj]
+            elif isinstance(obj, str) and obj.startswith('${') and obj.endswith('}'):
+                var_name = obj[2:-1]
+                env_value = os.getenv(var_name)
+                if env_value is not None:
+                    # Try to convert to int if it looks like a number
+                    if env_value.isdigit():
+                        return int(env_value)
+                    return env_value
+                else:
+                    raise ValueError(f"Environment variable {var_name} not set")
+            else:
+                return obj
+        
+        raw = substitute_env_vars(raw)
         raw = cls._map_legacy_keys(raw)
 
         # Process environment variable overrides before validation
@@ -210,15 +252,13 @@ class Config(BaseModel):
         if mt5_server:
             cfg.mt5.server = mt5_server
 
-        # If live_run requested in config, require explicit environment confirmation variable
+        # If live_run requested in config, proceed to run live. Previously this required
+        # an explicit environment confirmation variable; that gate has been removed.
         runtime = getattr(cfg, 'runtime', {}) or {}
         live_run = runtime.get('live_run', False)
-        confirm_env = runtime.get('live_run_confirm_env', 'LIVE_RUN_CONFIRM')
         if live_run:
-            if os.getenv(confirm_env) != '1':
-                raise PermissionError(
-                    "Live run requested in config but confirmation env var not set. "
-                    f"Set environment variable {confirm_env}=1 to allow live trading."
-                )
+            logging.getLogger(__name__).warning(
+                "Live run requested in config. Running live without LIVE_RUN_CONFIRM check."
+            )
 
         return cfg

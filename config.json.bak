@@ -1,83 +1,42 @@
 {
-  "_comment": "MT5 credentials are loaded from .env file - see .env.example",
   "mt5": {
-    "login": 0,
-    "password": "",
-    "server": "",
+    "login": "${MT5_LOGIN}",
+    "password": "${MT5_PASSWORD}",
+    "server": "${MT5_SERVER}",
     "timeout": 60000,
-    "path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
+    "path": "${MT5_PATH}"
   },
   "risk": {
-    "max_position_size": 0.5,
-    "default_position_size": 0.01,
-    "max_daily_loss": 5.0,
-    "max_positions_per_symbol": 2,
+    "max_position_size": 1.0,
+    "default_position_size": 0.1,
+    "max_daily_loss": 500.0,
+    "max_positions_per_symbol": 1,
     "max_total_positions": 3,
     "position_size_pct": 2.0,
-    "max_position_size_pct": 0.05,
-    "min_confidence": 0.6,
     "use_kelly_sizing": false,
-    "emergency_stop_loss_pct": 2.5,
+    "emergency_stop_loss_pct": 5.0,
     "circuit_breaker_enabled": true,
     "circuit_breaker_threshold_pct": 3.0
   },
   "trading": {
-    "symbol": "GOLD#",
-    "timeframe": "TIMEFRAME_M1",
-    "poll_interval": 5,
+    "symbol": "BTCUSD#",
+    "timeframe": "TIMEFRAME_H1",
+    "poll_interval": 60,
     "lookback_bars": 500
   },
   "strategy": {
-    "type": "dynamic",
+    "type": "sma_crossover",
     "params": {
       "fast_period": 10,
       "slow_period": 30,
-      "symbol": "GOLD#"
-    },
-    "dynamic_selection": {
-      "regime_detection_enabled": true,
-      "performance_tracking_enabled": true,
-      "min_confidence_threshold": 0.6,
-      "switch_cooldown_bars": 10
-    },
-    "strategies": [
-      {
-        "type": "sma_crossover",
-        "params": {
-          "fast_period": 10,
-          "slow_period": 30
-        }
-      },
-      {
-        "type": "ema_crossover",
-        "params": {
-          "fast_period": 12,
-          "slow_period": 26
-        }
-      },
-      {
-        "type": "momentum_breakout",
-        "params": {
-          "lookback_period": 20,
-          "breakout_threshold": 1.5
-        }
-      },
-      {
-        "type": "scalping",
-        "params": {
-          "quick_period": 5,
-          "trend_period": 20
-        }
-      }
-    ]
+      "symbol": "BTCUSD#"
+    }
   },
   "indicators": [
     {
       "type": "rsi",
       "params": {
-        "period": 14,
-        "overbought": 70,
-        "oversold": 30
+        "period": 14
       }
     },
     {
@@ -96,29 +55,10 @@
       }
     },
     {
-      "type": "stochastic",
-      "params": {
-        "k_period": 14,
-        "d_period": 3,
-        "smooth": 3
-      }
-    },
-    {
       "type": "adx",
       "params": {
         "period": 14
       }
-    },
-    {
-      "type": "supertrend",
-      "params": {
-        "atr_period": 10,
-        "atr_multiplier": 3.0
-      }
-    },
-    {
-      "type": "vwap",
-      "params": {}
     }
   ],
   "exit_strategies": [
@@ -138,7 +78,7 @@
         "max_hold_hours": 24.0,
         "weekend_protection": true,
         "friday_close_time": "16:00",
-        "eod_close": false
+        "day_trading_mode": false
       }
     },
     {
@@ -146,13 +86,8 @@
       "enabled": true,
       "params": {
         "target_pct": 2.0,
-        "target_pips": null,
-        "partial_close_levels": [
-          {
-            "pct": 1.0,
-            "close_pct": 0.5
-          }
-        ]
+        "partial_close_enabled": false,
+        "risk_reward_ratio": 2.0
       }
     },
     {
@@ -161,33 +96,12 @@
       "params": {
         "atr_multiplier": 2.0,
         "activation_profit_pct": 0.5,
-        "min_distance_pips": 50
+        "min_stop_distance_pips": 10.0
       }
     }
   ],
   "database": {
-    "path": "herald.db",
-    "backup_interval_hours": 24
+    "path": "${DATABASE_PATH}"
   },
-  "orphan_trades": {
-    "enabled": true,
-    "adopt_symbols": [
-      "GOLD#m",
-      "BTCUSD#m"
-    ],
-    "ignore_symbols": [],
-    "apply_exit_strategies": true,
-    "max_adoption_age_hours": 0,
-    "log_only": false
-  },
-  "runtime": {
-    "dry_run": false,
-    "live_run": true,
-    "live_run_confirm_env": "LIVE_RUN_CONFIRM"
-  },
-  "logging": {
-    "level": "INFO",
-    "file": "logs/herald.log",
-    "format": "json"
-  }
+  "cache_enabled": true
 }

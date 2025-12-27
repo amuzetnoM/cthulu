@@ -177,6 +177,26 @@ def main():
         
         # Phase 2: Create trading loop context
         logger.info("Phase 2: Initializing trading loop...")
+        # Normalize timeframe: convert TIMEFRAME_* strings to MT5 constants where possible
+        tf_raw = components.config.get('trading', {}).get('timeframe', 'TIMEFRAME_H1')
+        tf_val = tf_raw
+        if isinstance(tf_raw, str) and tf_raw.startswith('TIMEFRAME_'):
+            try:
+                import MetaTrader5 as mt5_pkg
+                tf_val = getattr(mt5_pkg, tf_raw, tf_raw)
+            except Exception:
+                # Fallback mapping for common timeframes
+                _tf_map = {
+                    'TIMEFRAME_M1': 1,
+                    'TIMEFRAME_M5': 5,
+                    'TIMEFRAME_M15': 15,
+                    'TIMEFRAME_M30': 30,
+                    'TIMEFRAME_H1': 60,
+                    'TIMEFRAME_H4': 240,
+                    'TIMEFRAME_D1': 1440
+                }
+                tf_val = _tf_map.get(tf_raw, tf_raw)
+
         trading_context = TradingLoopContext(
             connector=components.connector,
             data_layer=components.data_layer,
@@ -186,18 +206,18 @@ def main():
             position_tracker=components.position_tracker,
             position_lifecycle=components.position_lifecycle,
             trade_adoption_manager=components.trade_adoption_manager,
+            trade_adoption_policy=components.trade_adoption_policy,
             exit_coordinator=components.exit_coordinator,
             database=components.database,
             metrics=components.metrics,
             logger=logger,
-            symbol=components.config.get('symbol', 'EURUSD'),
-            timeframe=components.config.get('timeframe', 1),  # MT5 M1
-            poll_interval=components.config.get('poll_interval', 60),
-            lookback_bars=components.config.get('lookback_bars', 100),
+            symbol=components.config.get('trading', {}).get('symbol', 'EURUSD'),
+            timeframe=tf_val,
+            poll_interval=components.config.get('trading', {}).get('poll_interval', 60),
+            lookback_bars=components.config.get('trading', {}).get('lookback_bars', 100),
             dry_run=args.dry_run,
             indicators=components.indicators or [],
             exit_strategies=components.exit_strategies or [],
-            trade_adoption_policy=components.config.get('trade_adoption', {}),
             config=components.config,
             args=args,
             ml_collector=components.ml_collector,
@@ -231,18 +251,18 @@ def main():
             
             try:
                 shutdown_handler = create_shutdown_handler(
+                    position_manager=components.position_manager,
                     connector=components.connector,
-                    position_lifecycle=components.position_lifecycle,
-                    position_tracker=components.position_tracker,
                     database=components.database,
-                    metrics_collector=components.metrics,
+                    metrics=components.metrics,
+                    logger=logger,
                     ml_collector=components.ml_collector,
                     trade_monitor=components.monitor,
-                    logger=logger
+                    gui_process=getattr(components, 'gui_process', None)
                 )
                 
                 shutdown_handler.shutdown()
-                logger.info("✓ Graceful shutdown complete")
+                logger.info("Graceful shutdown complete")
                 
             except Exception as e:
                 logger.error(f"Error during shutdown: {e}", exc_info=True)

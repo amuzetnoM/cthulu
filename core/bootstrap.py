@@ -39,6 +39,7 @@ class SystemComponents:
     risk_manager: RiskEvaluator
     execution_engine: ExecutionEngine
     position_tracker: PositionTracker
+    position_manager: Optional[Any]
     position_lifecycle: PositionLifecycle
     trade_adoption_manager: TradeAdoptionManager
     exit_coordinator: PositionLifecycle
@@ -49,6 +50,7 @@ class SystemComponents:
     strategy: Any = None
     indicators: list = None
     exit_strategies: list = None
+    trade_adoption_policy: Optional[Any] = None
     
     # Optional components
     ml_collector: Any = None
@@ -198,6 +200,34 @@ class HeraldBootstrap:
         self.logger.info("Initializing position tracker...")
         position_tracker = PositionTracker()
         return position_tracker
+
+    def initialize_position_manager(self, connector: MT5Connector, execution_engine: ExecutionEngine) -> 'PositionManager':
+        """Initialize a lightweight PositionManager for higher-level monitoring.
+        
+        This manager is separate from the low-level PositionTracker and provides
+        additional monitoring and convenience APIs used by the trading loop.
+        """
+        try:
+            from herald.position.manager import PositionManager
+            self.logger.info("Initializing position manager...")
+            pm = PositionManager(connector=connector, execution_engine=execution_engine)
+            return pm
+        except Exception:
+            self.logger.debug('PositionManager unavailable; continuing without it')
+            return None
+
+    def initialize_strategy(self, config: Dict[str, Any]) -> Optional[Any]:
+        """Initialize trading strategy from configuration."""
+        self.logger.info("Initializing strategy...")
+        try:
+            from core.strategy_factory import load_strategy
+            strat_cfg = config.get('strategy', {}) if isinstance(config, dict) else {}
+            strategy = load_strategy(strat_cfg)
+            self.logger.info(f"Strategy initialized: {strategy.__class__.__name__}")
+            return strategy
+        except Exception as e:
+            self.logger.exception(f"Failed to initialize strategy: {e}")
+            return None
     
     def initialize_position_lifecycle(self, connector: MT5Connector,
                                       execution_engine: ExecutionEngine,
@@ -446,12 +476,17 @@ class HeraldBootstrap:
         
         # Initialize position management components
         position_tracker = self.initialize_position_tracker(connector)
+        # Initialize higher-level position manager used by trading loop monitoring
+        position_manager = self.initialize_position_manager(connector, execution_engine)
         # Now we can construct the risk evaluator with the connector and position tracker
         risk_manager = RiskEvaluator(connector, position_tracker, limits=risk_limits)
         self.logger.info('RiskEvaluator initialized with runtime dependencies')
         
         position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, position_tracker, database)
         trade_adoption_manager = self.initialize_trade_adoption_manager(connector, position_tracker, position_lifecycle, config)
+        
+        # Initialize strategy
+        strategy = self.initialize_strategy(config)
         
         # Initialize metrics
         metrics = self.initialize_metrics(database)
@@ -474,6 +509,7 @@ class HeraldBootstrap:
             risk_manager=risk_manager,
             execution_engine=execution_engine,
             position_tracker=position_tracker,
+            position_manager=position_manager,
             position_lifecycle=position_lifecycle,
             trade_adoption_manager=trade_adoption_manager,
             exit_coordinator=position_lifecycle,
@@ -482,8 +518,14 @@ class HeraldBootstrap:
             ml_collector=ml_collector,
             advisory_manager=advisory_manager,
             monitor=monitor,
-            exporter=exporter
+            exporter=exporter,
+            strategy=strategy
         )
+        # Expose trade_adoption_policy for convenience
+        try:
+            components.trade_adoption_policy = trade_adoption_manager.policy
+        except Exception:
+            components.trade_adoption_policy = None
         
         self.components = components
         self.logger.info("System bootstrap complete")

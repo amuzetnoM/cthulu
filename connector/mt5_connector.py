@@ -436,8 +436,10 @@ class MT5Connector:
             List of rate dictionaries or None on error
         """
         if not self.is_connected():
-            self.logger.error("Not connected to MT5")
-            return None
+            # Try to connect first
+            if not self.connect():
+                self.logger.error("Not connected to MT5")
+                return None
             
         self._rate_limit()
         

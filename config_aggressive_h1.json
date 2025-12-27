@@ -1,11 +1,11 @@
 {
   "_comment": "Aggressive profile, H1 timeframe - for multi-timeframe run"
   ,"mt5": {
-    "login": 0,
-    "password": "",
-    "server": "",
+    "login": "${MT5_LOGIN}",
+    "password": "${MT5_PASSWORD}",
+    "server": "${MT5_SERVER}",
     "timeout": 60000,
-    "path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe"
+    "path": "${MT5_PATH}"
   },
   "risk": {
     "max_position_size": 1.0,

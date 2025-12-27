@@ -1,5 +1,5 @@
 """
-Herald - Adaptive Trading Intelligence for MetaTrader 5
+Herald - Adaptive Trading Intelligence
 
 A modular, event-driven trading bot emphasizing safety, testability, and extensibility.
 """
