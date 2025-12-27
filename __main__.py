@@ -116,9 +116,13 @@ def parse_arguments():
     parser.add_argument("--advisory", action="store_true",
                        help="Advisory mode (signals only, no execution)")
     parser.add_argument("--ghost", action="store_true",
-                       help="Ghost mode (test strategy without actual trades)")
-    parser.add_argument("--max-loops", type=int, default=None,
+                       help="Ghost mode (test strategy without actual trades)")    parser.add_argument('--skip-setup', action='store_true',
+                       help="Skip interactive setup wizard (for automation/headless runs)")    parser.add_argument("--max-loops", type=int, default=None,
                        help="Maximum iterations (for testing)")
+    parser.add_argument('--wizard', action='store_true',
+                       help="Open the interactive setup wizard and optionally start profiles")
+    parser.add_argument('--wizard-ai', action='store_true',
+                       help="Run the lightweight NLP-based wizard (describe intent in natural language)")
     return parser.parse_args()
 
 
@@ -147,6 +151,25 @@ def main():
         print("\n" + "=" * 50)
         return 0
         
+    # If user requested the NLP or interactive wizard via CLI, run it now
+    if args.wizard_ai:
+        from config.wizard import run_nlp_wizard
+        result = run_nlp_wizard(args.config)
+        if result is None:
+            print("Setup cancelled. Exiting.")
+            return 0
+        # Continue startup using the configured settings
+        args.skip_setup = True
+
+    if args.wizard:
+        from config.wizard import run_setup_wizard
+        result = run_setup_wizard(args.config)
+        if result is None:
+            print("Setup cancelled. Exiting.")
+            return 0
+        # Continue startup using the configured settings
+        args.skip_setup = True
+
     # Setup logger
     logger = setup_logger(
         name="herald",

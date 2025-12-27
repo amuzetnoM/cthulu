@@ -168,12 +168,12 @@ def choose_mindset() -> str:
     
     print()
     while True:
-        choice = get_input("Select mindset (1-3)", "2")
+        choice = get_input("Select mindset (1-4)", "2")
         if choice in MINDSETS:
             selected = MINDSETS[choice][0]
             print_success(f"Selected: {selected.capitalize()}")
             return selected
-        print("\033[91m  Invalid choice. Enter 1, 2, or 3.\033[0m")
+        print("\033[91m  Invalid choice. Enter 1, 2, 3, or 4.\033[0m")
 
 
 def choose_symbol(current: str = "EURUSD") -> str:
@@ -1076,19 +1076,16 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
     
     print("  Welcome to Herald! This wizard will help you configure")
     print("  the key trading parameters before you start.\n")
-    print("  \033[90mPress Enter to accept defaults shown in [brackets].\033[0m")
-    print("  \033[90mType 'q' at any prompt to quit without saving.\033[0m\n")
+    print("  \033[90mPress Enter to accept defaults shown in [brackets].\033[0m\n")
+    print_info("Answer 'y' to start a new setup (configure new settings). Answer 'n' to use the last saved configuration and start Herald immediately.")
     
     try:
-        proceed = get_input("Start setup? (y/n/q)", "y").lower()
+        proceed = get_input("Start setup? (y/n)", "y").lower()
     except WizardCancelled:
         print_info("Setup cancelled (no input).")
         return None
 
-    # q = explicit quit/exit; n = skip wizard and continue using existing/default config
-    if proceed in ('q', 'quit'):
-        print_info("Setup cancelled.")
-        return None
+    # n = skip wizard and continue using existing/default config
     if proceed == 'n':
         # Load existing config or fall back to example/defaults and return it so
         # the caller can continue startup without running the interactive wizard.
@@ -1125,6 +1122,8 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
         except Exception:
             print_warning("Failed to persist default config; continuing with in-memory config")
 
+        print()
+        print_info("Starting Herald with the existing configuration...")
         return config
     
     # Load existing config if available
@@ -1180,10 +1179,7 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
         print()
         if confirm_and_save(config, config_path):
             print()
-            print(f"  \033[92m{'═' * 48}\033[0m")
-            print(f"  \033[92m  Herald is ready! Run with:\033[0m")
-            print(f"  \033[96m  python -m herald --config C:\\workspace\\herald\\config.json\033[0m")
-            print(f"  \033[92m{'═' * 48}\033[0m")
+            print_success("Configuration saved. Starting Herald now...")
             print()
             return config
 
