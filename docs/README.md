@@ -1,5 +1,5 @@
 ---
-title: Herald Trading System
+title: Herald
 description: Advanced multi-strategy autonomous trading system with MetaTrader 5 integration, dynamic strategy selection, and comprehensive risk management
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 slug: /docs/
@@ -13,8 +13,9 @@ sidebar_position: 1
                                  
 ```
 
-# Herald
-*version 5.0.0 [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
+<a href="https://artifact-virtual.gitbook.io/herald"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a> 
+
+> [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
 
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
   <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
@@ -1057,8 +1058,10 @@ Past performance is not indicative of future results. Use at your own risk.
 
 | Version | Date | Status | Description |
 |---------|------|--------|-------------|
-| **3.0.0** | Dec 2024 | ✅ Current | **Production Ready** - Zero-error test suite, MT5 funded account verified, enterprise-grade architecture |
-| **2.0.0** | Dec 2024 | ✅ Complete | **Autonomous Trading** - Indicators, position management, exit strategies |
+| **5.0.0** | Dec 2025 | ✅ Current | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
+| **4.0.0** | Dec 2024 | ✅ Complete | **Dynamic Strategy Selection** - Multi-strategy framework, exit strategies |
+| **3.0.0** | Dec 2024 | ✅ Complete | **Production Ready** - Zero-error test suite, MT5 funded account verified |
+| **2.0.0** | Dec 2024 | ✅ Complete | **Autonomous Trading** - Indicators, position management |
 | **1.0.0** | Nov 2024 | ✅ Complete | **Foundation** - Core infrastructure, risk management, persistence |
 | **0.1.0** | Oct 2024 | ✅ Complete | **Initial Setup** - Project initialization |
 
