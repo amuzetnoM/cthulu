@@ -68,7 +68,7 @@ docker-compose logs -f herald
 docker build -t herald:latest .
 
 # Or build with specific version
-docker build -t herald:3.3.1 .
+docker build -t herald:5.0.0 .
 ```
 
 #### 2. Environment Configuration
