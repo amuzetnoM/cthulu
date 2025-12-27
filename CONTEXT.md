@@ -11,11 +11,10 @@ Herald is an **autonomous trading system** designed for MetaTrader 5 (MT5) that 
 ### High-Level Design
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────┐
 │                         __main__.py                              │
-│                    (Entry Point - 1,884 lines)                   │
-│                  [Being refactored to ~200 lines]                │
-└────────────┬────────────────────────────────────────────────────┘
+│                         (Entry Point)                            │
+└────────────┬─────────────────────────────────────────────────────┘
              │
              ├──> core/ (NEW - Refactored Modules)
              │    ├── bootstrap.py         - System initialization

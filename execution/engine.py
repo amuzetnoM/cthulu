@@ -492,6 +492,46 @@ class ExecutionEngine:
                     error=f"{result.retcode}: {getattr(result, 'comment', None)}",
                     metadata={'retcode': getattr(result, 'retcode', None), 'comment': getattr(result, 'comment', None)}
                 )
+
+    def execute_order(self, symbol: str, order_type: str, volume: float, sl: Optional[float] = None, tp: Optional[float] = None, comment: str = "", magic_number: Optional[int] = None):
+        """Compatibility helper for legacy callers.
+
+        Accepts simple parameters and places a MARKET order using the existing
+        place_order pathway. Returns the position ticket if filled, else None.
+        """
+        try:
+            # Build a minimal OrderRequest
+            sid = f"exec_{int(datetime.now().timestamp())}"
+            side = 'BUY' if str(order_type).lower() in ('buy', 'long') else 'SELL'
+            order_req = OrderRequest(
+                signal_id=sid,
+                symbol=symbol,
+                side=side,
+                volume=volume,
+                order_type=OrderType.MARKET,
+                sl=sl,
+                tp=tp,
+                client_tag=f"legacy:{sid}",
+                metadata={'comment': comment}
+            )
+
+            # Temporarily override magic number if provided
+            orig_magic = self.magic_number
+            if magic_number is not None:
+                self.magic_number = magic_number
+
+            result = self.place_order(order_req)
+
+            # Restore magic
+            if magic_number is not None:
+                self.magic_number = orig_magic
+
+            if result and result.status == OrderStatus.FILLED:
+                return result.position_ticket or result.order_id
+            return None
+        except Exception as e:
+            self.logger.error(f"Legacy execute_order failed: {e}", exc_info=True)
+            return None
                 
         except Exception as e:
             self.logger.error(f"Order execution error: {e}", exc_info=True)

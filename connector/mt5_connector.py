@@ -27,6 +27,7 @@ except Exception:
             return {'code': 1, 'message': 'MT5 not available'}
 
     mt5 = _Mt5Stub()
+import os
 import time
 import logging
 from typing import Optional, Dict, Any, List
@@ -549,6 +550,51 @@ class MT5Connector:
             }
         except Exception as e:
             self.logger.error(f"Error fetching symbol info: {e}")
+            return None
+
+    def get_position_by_ticket(self, ticket: int) -> Optional[Dict[str, Any]]:
+        """Return position information for a given MT5 position ticket.
+
+        Returns a dict with keys: 'ticket', 'symbol', 'price_open', 'price_current',
+        'profit', 'volume', 'type' or None if not found.
+        """
+        try:
+            # Ensure connected
+            if not self.is_connected():
+                return None
+            self._rate_limit()
+
+            try:
+                positions = mt5.positions_get(ticket=ticket)
+            except Exception:
+                # Some MT5 builds do not accept ticket kw; fall back to all positions
+                positions = mt5.positions_get()
+
+            if not positions:
+                return None
+
+            # If positions_get returned a single object, normalize to list
+            if not isinstance(positions, list) and not hasattr(positions, '__iter__'):
+                positions = [positions]
+
+            for p in positions:
+                try:
+                    if getattr(p, 'ticket', None) == ticket or getattr(p, 'position', None) == ticket:
+                        return {
+                            'ticket': getattr(p, 'ticket', getattr(p, 'position', None)),
+                            'symbol': getattr(p, 'symbol', None),
+                            'price_open': getattr(p, 'price_open', getattr(p, 'price', None)),
+                            'price_current': getattr(p, 'price_current', getattr(p, 'price', None)),
+                            'profit': getattr(p, 'profit', None),
+                            'volume': getattr(p, 'volume', None),
+                            'type': getattr(p, 'type', None),
+                        }
+                except Exception:
+                    continue
+
+            return None
+        except Exception as e:
+            self.logger.error(f"Error fetching position by ticket {ticket}: {e}")
             return None
             
     def health_check(self) -> Dict[str, Any]:

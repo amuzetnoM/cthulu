@@ -141,8 +141,20 @@ class PositionLifecycle:
                 return False
             
             # Close via execution engine
-            success = self.execution_engine.close_position(ticket)
-            
+            result = self.execution_engine.close_position(ticket)
+
+            # Support both legacy boolean return values and ExecutionResult objects
+            success = False
+            try:
+                # If engine returned an ExecutionResult-like object, inspect status
+                if hasattr(result, 'status'):
+                    from herald.execution.engine import OrderStatus
+                    success = (getattr(result, 'status', None) == OrderStatus.FILLED)
+                else:
+                    # Fallback: truthiness for legacy boolean API
+                    success = bool(result)
+            except Exception:
+                success = False
             if success:
                 # Remove from tracker
                 self.tracker.remove_position(ticket)
