@@ -28,9 +28,6 @@ sidebar_position: 1
   <img src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=flat-square" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
 </div>
-<br>
-
-Herald is an autonomous and adaptive trading system focused on safe, auditable execution with strong observability and pluggable signal sources. The system is designed to run headless, in a gated live mode, and to produce rich ML-friendly event streams to support downstream model training and analysis.
 
 <br>
 

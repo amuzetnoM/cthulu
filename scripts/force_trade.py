@@ -1,13 +1,24 @@
 """Force a test trade using Herald's execution engine."""
 
+import sys
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from dotenv import load_dotenv
+load_dotenv()
+
 from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
 from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType
+from config_schema import Config
 import json
 import MetaTrader5 as mt5
+import os
 
 # Load config
-with open('config.json') as f:
-    config = json.load(f)
+config_obj = Config.load('config.json')
+config = config_obj.model_dump() if hasattr(config_obj, 'model_dump') else config_obj.dict()
 
 # Connect to MT5
 print("Connecting to MT5...")
