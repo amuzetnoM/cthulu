@@ -619,6 +619,45 @@ class MT5Connector:
         except Exception as e:
             self.logger.error(f"Error fetching position by ticket {ticket}: {e}")
             return None
+
+    def get_open_positions(self) -> List[Dict[str, Any]]:
+        """Get all open positions from MT5.
+        
+        Returns:
+            List of position dictionaries
+        """
+        try:
+            positions = mt5.positions_get()
+            if not positions:
+                return []
+            
+            # If positions_get returned a single object, normalize to list
+            if not isinstance(positions, list) and not hasattr(positions, '__iter__'):
+                positions = [positions]
+            
+            result = []
+            for p in positions:
+                try:
+                    result.append({
+                        'ticket': getattr(p, 'ticket', getattr(p, 'position', None)),
+                        'symbol': getattr(p, 'symbol', None),
+                        'price_open': getattr(p, 'price_open', getattr(p, 'price', None)),
+                        'price_current': getattr(p, 'price_current', getattr(p, 'price', None)),
+                        'profit': getattr(p, 'profit', None),
+                        'volume': getattr(p, 'volume', None),
+                        'type': getattr(p, 'type', None),
+                        'magic': getattr(p, 'magic', None),
+                        'time': getattr(p, 'time', None),
+                        'sl': getattr(p, 'sl', None),
+                        'tp': getattr(p, 'tp', None),
+                    })
+                except Exception:
+                    continue
+            
+            return result
+        except Exception as e:
+            self.logger.error(f"Error fetching open positions: {e}")
+            return []
             
     def health_check(self) -> Dict[str, Any]:
         """

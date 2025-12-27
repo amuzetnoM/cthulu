@@ -54,6 +54,9 @@ class TradeAdoptionPolicy:
     apply_emergency_tp: bool = False  # Add TP if none exists
     emergency_tp_points: float = 100  # Emergency TP distance
     
+    # Logging
+    log_only: bool = False  # If True, only log orphans without adopting
+    
     def __post_init__(self):
         """Initialize default values for mutable fields."""
         if self.blocked_symbols is None:
@@ -171,6 +174,8 @@ class TradeAdoptionManager:
             volume = trade.get('volume', 0.0)
             magic = trade.get('magic', 0)
             open_time = trade.get('time', datetime.now())
+            if isinstance(open_time, (int, float)):
+                open_time = datetime.fromtimestamp(open_time)
             
             # Check symbol whitelist
             if self.policy.allowed_symbols and symbol not in self.policy.allowed_symbols:

@@ -275,7 +275,8 @@ class HeraldBootstrap:
             apply_emergency_sl=trade_adoption_config.get('apply_emergency_sl', True),
             emergency_sl_points=trade_adoption_config.get('emergency_sl_points', 100),
             apply_emergency_tp=trade_adoption_config.get('apply_emergency_tp', False),
-            emergency_tp_points=trade_adoption_config.get('emergency_tp_points', 100)
+            emergency_tp_points=trade_adoption_config.get('emergency_tp_points', 100),
+            log_only=trade_adoption_config.get('log_only', False)
         )
         
         trade_adoption_manager = TradeAdoptionManager(
