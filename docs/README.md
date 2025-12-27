@@ -29,6 +29,7 @@ sidebar_position: 1
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
 </div>
 <br>
+
 > **Adaptive Trading Intelligence**
 <br> A complete autonomous multi-strategy trading system with dynamic strategy selection, next-gen indicators, and enhanced monitoring
 
