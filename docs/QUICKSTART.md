@@ -6,7 +6,7 @@ slug: /docs/quickstart
 sidebar_position: 4
 ---
 
-# Quick Start Guide - Herald v4.0.0 Upgraded
+# Quick Start Guide - Herald v5.0.0 Complete
 
 ## 🚀 Getting Started
 

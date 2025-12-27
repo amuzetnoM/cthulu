@@ -16,18 +16,17 @@ sidebar_position: 1
 <a href="https://artifact-virtual.gitbook.io/herald"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a> 
 
 > [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
-
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
-  <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
-  <img alt="MetaTrader5" src="https://img.shields.io/badge/Integration-MT5-lightgrey?style=flat-square" />
-  <img alt="SQLite" src="https://img.shields.io/badge/Persistenece-Persistence-003B57?style=flat-square" />
-  <img alt="pandas" src="https://img.shields.io/badge/pandas-DataFrames-150458?style=flat-square" />
-  <img alt="Prometheus" src="https://img.shields.io/badge/Prometheus-Metrics-00A5E3?style=flat-square" />
-  <img alt="Tkinter" src="https://img.shields.io/badge/Tkinter-GUI-6AA84F?style=flat-square" />
-  <img alt="tests" src="https://img.shields.io/badge/tests-153%20passing-brightgreen?logo=pytest&style=flat-square" />
-  <img alt="CI" src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat-square" />
-  <img alt="Coverage" src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=flat-square" />
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
+  <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
+  <img src="https://img.shields.io/badge/Integration-MT5-lightgrey?style=flat-square" />
+  <img src="https://img.shields.io/badge/Persistenece-Persistence-003B57?style=flat-square" />
+  <img src="https://img.shields.io/badge/pandas-DataFrames-150458?style=flat-square" />
+  <img src="https://img.shields.io/badge/Prometheus-Metrics-00A5E3?style=flat-square" />
+  <img src="https://img.shields.io/badge/Tkinter-GUI-6AA84F?style=flat-square" />
+  <img src="https://img.shields.io/badge/tests-153%20passing-brightgreen?logo=pytest&style=flat-square" />
+  <img src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat-square" />
+  <img src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=flat-square" />
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
 </div>
 <br>
 > **Adaptive Trading Intelligence**
@@ -1041,7 +1040,7 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v3.0.0
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.0.0
 - **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
