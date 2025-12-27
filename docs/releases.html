@@ -1,25 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HERALD — Releases</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-:root{--void:#000;--text:#e0e0e8;--accent:#00ff88;--surface:#0a0a0f;--border:#1a1a25;--muted:#4a4a5a}
-body{background:var(--void);color:var(--text);font-family:'Space Grotesk',sans-serif;margin:0}
-nav{height:50px;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;border-bottom:1px solid var(--border)}
-.container{max-width:900px;margin:6rem auto;padding:0 1rem}
-.note{background:var(--surface);padding:1rem;border:1px solid var(--border);border-radius:6px;margin-bottom:1rem}
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>HERALD — Releases</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --void: #000;
+            --text: #e0e0e8;
+            --accent: #00ff88;
+            --surface: #0a0a0f;
+            --border: #1a1a25;
+            --muted: #4a4a5a
+        }
+
+        body {
+            background: var(--void);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0
+        }
+
+        nav {
+            height: 50px;
+            background: rgba(0, 0, 0, .9);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 6rem auto;
+            padding: 0 1rem
+        }
+
+        .note {
+            background: var(--surface);
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 1rem
+        }
+    </style>
 </head>
+
 <body>
-<nav><div style="font-family:JetBrains Mono;color:var(--accent)">HERALD</div><div><a href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a></div></nav>
-<div class="container">
-<h1>Release Notes</h1>
-<div class="note"><a href="releases/4.0.0.md">v4.0.0 — 2025-12-26 — Multi-Strategy Release</a><div style="color:var(--muted);margin-top:.4rem">Multi-strategy orchestration, GUI, Supertrend & VWAP, stability fixes.</div></div>
-<div class="note"><a href="releases/3.3.1.md">v3.3.1 — 2025-12-24</a><div style="color:var(--muted);margin-top:.4rem">Maintenance & documentation updates.</div></div>
-<div class="note"><a href="releases/3.2.0.md">v3.2.0 — 2025-12-17</a><div style="color:var(--muted);margin-top:.4rem">Trade adoption & SL/TP reliability.</div></div>
-</div>
-<footer style="padding:2rem;border-top:1px solid var(--border);background:var(--surface)"><div style="max-width:900px;margin:0 auto;display:flex;justify-content:space-between"><div style="font-family:JetBrains Mono;color:var(--muted)"><strong>HERALD</strong></div><a href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a></div></footer>
+    <nav>
+        <div style="font-family:JetBrains Mono;color:var(--accent)">HERALD</div>
+        <div><a href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Release Notes</h1>
+        <div class="note"><a href="changelog/release_notes/v5.0.0.md">v5.0.0 — 2025-12-28 — Major Architecture
+                Upgrade</a>
+            <div style="color:var(--muted);margin-top:.4rem">Runtime indicator hardening, architecture overhaul, CI &
+                Windows coverage, release v5.0.0.</div>
+        </div>
+        <div class="note"><a href="releases/4.0.0.md">v4.0.0 — 2025-12-26 — Multi-Strategy Release</a>
+            <div style="color:var(--muted);margin-top:.4rem">Multi-strategy orchestration, GUI, Supertrend & VWAP,
+                stability fixes.</div>
+        </div>
+        <div class="note"><a href="releases/3.3.1.md">v3.3.1 — 2025-12-24</a>
+            <div style="color:var(--muted);margin-top:.4rem">Maintenance & documentation updates.</div>
+        </div>
+        <div class="note"><a href="releases/3.2.0.md">v3.2.0 — 2025-12-17</a>
+            <div style="color:var(--muted);margin-top:.4rem">Trade adoption & SL/TP reliability.</div>
+        </div>
+    </div>
+    <footer style="padding:2rem;border-top:1px solid var(--border);background:var(--surface)">
+        <div style="max-width:900px;margin:0 auto;display:flex;justify-content:space-between">
+            <div style="font-family:JetBrains Mono;color:var(--muted)"><strong>HERALD</strong></div><a
+                href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a>
+        </div>
+    </footer>
 </body>
+
 </html>

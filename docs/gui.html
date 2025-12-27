@@ -1,49 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HERALD — GUI Demo</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-:root{--void:#000;--text:#e0e0e8;--accent:#00ff88;--surface:#0a0a0f;--border:#1a1a25;--muted:#4a4a5a}
-body{background:var(--void);color:var(--text);font-family:'Space Grotesk',sans-serif;margin:0}
-nav{height:50px;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;border-bottom:1px solid var(--border)}
-.container{max-width:1100px;margin:6rem auto;padding:0 1rem}
-.panel{display:flex;gap:1rem}
-        @media (max-width:900px){.panel{flex-direction:column;gap:1rem}}
-.card{background:var(--surface);padding:1rem;border:1px solid var(--border);border-radius:6px}
-.small{width:320px}
-.live-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
-.chart{height:120px;background:linear-gradient(90deg,rgba(0,255,136,.03),transparent);border-radius:4px}
-footer{padding:2rem;border-top:1px solid var(--border);background:var(--surface)}
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>HERALD — GUI Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --void: #000;
+            --text: #e0e0e8;
+            --accent: #00ff88;
+            --surface: #0a0a0f;
+            --border: #1a1a25;
+            --muted: #4a4a5a
+        }
+
+        body {
+            background: var(--void);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0
+        }
+
+        nav {
+            height: 50px;
+            background: rgba(0, 0, 0, .9);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 6rem auto;
+            padding: 0 1rem
+        }
+
+        .panel {
+            display: flex;
+            gap: 1rem
+        }
+
+        @media (max-width:900px) {
+            .panel {
+                flex-direction: column;
+                gap: 1rem
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px
+        }
+
+        .small {
+            width: 320px
+        }
+
+        .realtime-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: .5rem
+        }
+
+        .chart {
+            height: 120px;
+            background: linear-gradient(90deg, rgba(0, 255, 136, .03), transparent);
+            border-radius: 4px
+        }
+
+        footer {
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface)
+        }
+    </style>
 </head>
+
 <body>
-<nav><div style="font-family:JetBrains Mono;color:var(--accent)">HERALD</div><div><a href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a></div></nav>
-<div class="container">
-<h1 style="font-size:2rem">Desktop GUI — Live Summary</h1>
-<p style="color:var(--muted)">Compact monitoring widgets that reflect the GUI's key panels for trading oversight.</p>
-
-<div class="panel">
-    <div class="card" style="flex:1">
-        <strong>Active Strategy</strong>
-        <div style="margin-top:.6rem;font-family:JetBrains Mono;color:var(--accent);font-size:1.2rem">EMA Crossover</div>
-        <div style="margin-top:1rem" class="chart" aria-hidden></div>
-        <div style="margin-top:1rem;color:var(--muted)">Net P&L <span style="float:right;font-family:JetBrains Mono;color:var(--accent)">+1,243.50</span></div>
-        <div style="margin-top:.4rem;color:var(--muted)">Open Positions <span style="float:right;font-family:JetBrains Mono;color:var(--muted)">2</span></div>
-    </div>
-    <div class="card small">
-        <strong>Metrics</strong>
-        <div class="live-metrics" style="margin-top:.6rem">
-            <div style="padding:.5rem;border:1px solid var(--border);border-radius:4px"><div style="font-family:JetBrains Mono;color:var(--accent)">Win Rate</div><div style="margin-top:.4rem">62%</div></div>
-            <div style="padding:.5rem;border:1px solid var(--border);border-radius:4px"><div style="font-family:JetBrains Mono;color:var(--accent)">Profit</div><div style="margin-top:.4rem">$12.4k</div></div>
-            <div style="padding:.5rem;border:1px solid var(--border);border-radius:4px"><div style="font-family:JetBrains Mono;color:var(--accent)">Sharpe</div><div style="margin-top:.4rem">1.15</div></div>
-            <div style="padding:.5rem;border:1px solid var(--border);border-radius:4px"><div style="font-family:JetBrains Mono;color:var(--accent)">Drawdown</div><div style="margin-top:.4rem">3.2%</div></div>
+    <nav>
+        <div style="font-family:JetBrains Mono;color:var(--accent)">HERALD</div>
+        <div><a href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a>
         </div>
-    </div>
-</div>
+    </nav>
+    <div class="container">
+        <h1 style="font-size:2rem">Desktop GUI — Real-time Summary</h1>
+        <p style="color:var(--muted)">Compact monitoring widgets that reflect the GUI's key panels for trading
+            oversight.</p>
 
-</div>
-<footer><div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between"><div style="font-family:JetBrains Mono;color:var(--muted)"><strong>HERALD</strong></div><a href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a></div></footer>
+        <div class="panel">
+            <div class="card" style="flex:1">
+                <strong>Active Strategy</strong>
+                <div style="margin-top:.6rem;font-family:JetBrains Mono;color:var(--accent);font-size:1.2rem">EMA
+                    Crossover</div>
+                <div style="margin-top:1rem" class="chart" aria-hidden></div>
+                <div style="margin-top:1rem;color:var(--muted)">Net P&L <span
+                        style="float:right;font-family:JetBrains Mono;color:var(--accent)">+1,243.50</span></div>
+                <div style="margin-top:.4rem;color:var(--muted)">Open Positions <span
+                        style="float:right;font-family:JetBrains Mono;color:var(--muted)">2</span></div>
+            </div>
+            <div class="card small">
+                <strong>Metrics</strong>
+                <div class="realtime-metrics" style="margin-top:.6rem">
+                    <div style="padding:.5rem;border:1px solid var(--border);border-radius:4px">
+                        <div style="font-family:JetBrains Mono;color:var(--accent)">Win Rate</div>
+                        <div style="margin-top:.4rem">62%</div>
+                    </div>
+                    <div style="padding:.5rem;border:1px solid var(--border);border-radius:4px">
+                        <div style="font-family:JetBrains Mono;color:var(--accent)">Profit</div>
+                        <div style="margin-top:.4rem">$12.4k</div>
+                    </div>
+                    <div style="padding:.5rem;border:1px solid var(--border);border-radius:4px">
+                        <div style="font-family:JetBrains Mono;color:var(--accent)">Sharpe</div>
+                        <div style="margin-top:.4rem">1.15</div>
+                    </div>
+                    <div style="padding:.5rem;border:1px solid var(--border);border-radius:4px">
+                        <div style="font-family:JetBrains Mono;color:var(--accent)">Drawdown</div>
+                        <div style="margin-top:.4rem">3.2%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <footer>
+        <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between">
+            <div style="font-family:JetBrains Mono;color:var(--muted)"><strong>HERALD</strong></div><a
+                href="https://github.com/amuzetnoM/herald" style="color:var(--muted);text-decoration:none">GitHub</a>
+        </div>
+    </footer>
 </body>
+
 </html>

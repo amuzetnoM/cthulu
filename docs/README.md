@@ -9,22 +9,46 @@
 # Herald
 *version 5.0.0 [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
 
-> tech badges 
- <Python 3.8+ | MT5 Integration | SQLite Persistence | Pandas DataFrames | Prometheus Metrics | Tkinter GUI 
-Tests | CI/CD | NLP Setup Wizard
-Coverage: 95% | License: MIT>
+<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
+  <img alt="MetaTrader5" src="https://img.shields.io/badge/Integration-MT5-lightgrey?style=flat-square" />
+  <img alt="SQLite" src="https://img.shields.io/badge/Persistenece-Persistence-003B57?style=flat-square" />
+  <img alt="pandas" src="https://img.shields.io/badge/pandas-DataFrames-150458?style=flat-square" />
+  <img alt="Prometheus" src="https://img.shields.io/badge/Prometheus-Metrics-00A5E3?style=flat-square" />
+  <img alt="Tkinter" src="https://img.shields.io/badge/Tkinter-GUI-6AA84F?style=flat-square" />
+  <img alt="tests" src="https://img.shields.io/badge/tests-150%20passing-brightgreen?logo=pytest&style=flat-square" />
+  <img alt="CI" src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat-square" />
+  <img alt="Coverage" src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=flat-square" />
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
+</div>
 
+<br>
 
 > **Adaptive Trading Intelligence**
 <br> A complete autonomous multi-strategy trading system with dynamic strategy selection, next-gen indicators, and enhanced monitoring
 
 Herald is an autonomous and adaptive trading system focused on safe, auditable execution with strong observability and pluggable signal sources. The system is designed to run headless, in a gated live mode, and to produce rich ML-friendly event streams to support downstream model training and analysis.
 
-**NEW in v4.0.0**: Multi-strategy trading system with dynamic strategy selection! Features 4 advanced strategies (EMA Crossover, Momentum Breakout, Scalping, SMA Crossover), autonomous market regime detection (5 regimes), next-generation indicators (Supertrend, VWAP), enhanced GUI with strategy monitoring, and ultra-aggressive trading mode. System now adapts strategies in real-time based on performance and market conditions. See `UPGRADE_GUIDE.md` and `IMPLEMENTATION_SUMMARY.md` for full details.
+<br>
+
+ **NEW in v4.0.0**  
+> Herald now features a **multi-strategy trading system** with dynamic, real-time strategy selection!  
+>
+> - **4 advanced strategies**: EMA Crossover, Momentum Breakout, Scalping, and SMA Crossover  
+> - **Autonomous market regime detection**: 5 regimes (trending up/down, volatile, ranging, sideways)  
+> - **Next-generation indicators**: Supertrend, VWAP  
+> - **Enhanced GUI**: Live strategy monitoring and trade history  
+> - **Ultra-aggressive trading mode**: High-frequency, dynamic position sizing  
+>
+> The system adapts strategies automatically based on live performance and market conditions.  
+>  
+> See [UPGRADE_GUIDE.md](UPGRADE_GUIDE.md) and [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for full details.
 
 > Note: News ingest is opt-in — enable via `NEWS_INGEST_ENABLED=1` or set `config['news']['enabled']=true`. Integration tests that call external APIs are gated; set `RUN_NEWS_INTEGRATION=1` to run them.
 
 ---
+
+<br>
 
 ## Table of Contents
 

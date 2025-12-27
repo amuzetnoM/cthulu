@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Herald v4.0.0 - Multi-strategy Autonomous Trading System for MetaTrader 5">
-    <title>HERALD v4.0.0 | Autonomous Trading System</title>
+    <meta name="description" content="Herald v5.0.0 - Multi-strategy Autonomous Trading System for MetaTrader 5">
+    <title>HERALD v5.0.0 | Autonomous Trading System</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-        
+
         :root {
             --void: #000000;
             --deep: #050508;
@@ -52,13 +53,11 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 255, 136, 0.01) 2px,
-                rgba(0, 255, 136, 0.01) 4px
-            );
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 136, 0.01) 2px,
+                    rgba(0, 255, 136, 0.01) 4px);
             z-index: 9999;
         }
 
@@ -69,7 +68,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
+            background-image:
                 linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
@@ -98,10 +97,23 @@
         }
 
         @keyframes float {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.3; }
-            90% { opacity: 0.3; }
-            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.3;
+            }
+
+            90% {
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
         }
 
         /* Navigation - Minimal top bar */
@@ -204,9 +216,17 @@
             border-radius: 50%;
         }
 
-        .terminal-dot.red { background: #ff5f56; }
-        .terminal-dot.yellow { background: #ffbd2e; }
-        .terminal-dot.green { background: #27ca40; }
+        .terminal-dot.red {
+            background: #ff5f56;
+        }
+
+        .terminal-dot.yellow {
+            background: #ffbd2e;
+        }
+
+        .terminal-dot.green {
+            background: #27ca40;
+        }
 
         .terminal-title {
             font-family: 'JetBrains Mono', monospace;
@@ -229,28 +249,55 @@
         }
 
         .summary-card {
-            background: rgba(0,0,0,0.25);
+            background: rgba(0, 0, 0, 0.25);
             padding: 0.75rem;
             border-radius: 6px;
             border: 1px solid var(--border);
         }
 
-        .summary-label { font-size: 0.75rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-        .summary-value { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; color: var(--accent); font-weight:600 }
+        .summary-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
 
-        .summary-sparkline { margin-top: 1rem; height: 48px; border-radius: 6px; background: linear-gradient(90deg, rgba(0,255,136,0.06), transparent); border:1px solid var(--border)}
+        .summary-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.15rem;
+            color: var(--accent);
+            font-weight: 600
+        }
 
-        @media (max-width: 900px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 500px) { .summary-grid { grid-template-columns: 1fr; } }
+        .summary-sparkline {
+            margin-top: 1rem;
+            height: 48px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, rgba(0, 255, 136, 0.06), transparent);
+            border: 1px solid var(--border)
+        }
+
+        @media (max-width: 900px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
         .terminal-line {
             margin-bottom: 0.5rem;
             opacity: 0;
-            animation: typeIn 0.3s ease forwards;
+            animation: typeIn 0.45s ease forwards;
         }
 
         @keyframes typeIn {
-            to { opacity: 1; }
+            to {
+                opacity: 1;
+            }
         }
 
         .prompt {
@@ -266,9 +313,17 @@
             padding-left: 1rem;
         }
 
-        .output.success { color: var(--accent); }
-        .output.warning { color: var(--warning); }
-        .output.info { color: var(--info); }
+        .output.success {
+            color: var(--accent);
+        }
+
+        .output.warning {
+            color: var(--warning);
+        }
+
+        .output.info {
+            color: var(--info);
+        }
 
         .hero-title {
             font-size: 4rem;
@@ -297,11 +352,15 @@
         }
 
         @media (max-width: 900px) {
-            .status-grid { grid-template-columns: repeat(2, 1fr); }
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 500px) {
-            .status-grid { grid-template-columns: 1fr; }
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .status-card {
@@ -338,8 +397,13 @@
             color: var(--accent);
         }
 
-        .status-value.warning { color: var(--warning); }
-        .status-value.info { color: var(--info); }
+        .status-value.warning {
+            color: var(--warning);
+        }
+
+        .status-value.info {
+            color: var(--info);
+        }
 
         /* Section styling */
         section {
@@ -458,11 +522,15 @@
         }
 
         @media (max-width: 900px) {
-            .modules-grid { grid-template-columns: repeat(2, 1fr); }
+            .modules-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 600px) {
-            .modules-grid { grid-template-columns: 1fr; }
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .module-card {
@@ -588,7 +656,9 @@
         }
 
         @media (max-width: 900px) {
-            .code-section { grid-template-columns: 1fr; }
+            .code-section {
+                grid-template-columns: 1fr;
+            }
         }
 
         .code-block {
@@ -628,10 +698,21 @@
             overflow-x: auto;
         }
 
-        .code-body .comment { color: var(--muted); }
-        .code-body .keyword { color: var(--info); }
-        .code-body .string { color: var(--warning); }
-        .code-body .function { color: var(--accent); }
+        .code-body .comment {
+            color: var(--muted);
+        }
+
+        .code-body .keyword {
+            color: var(--info);
+        }
+
+        .code-body .string {
+            color: var(--warning);
+        }
+
+        .code-body .function {
+            color: var(--accent);
+        }
 
         /* Roadmap - Vertical timeline */
         .roadmap-container {
@@ -771,6 +852,7 @@
                 opacity: 0;
                 margin-top: 0;
             }
+
             to {
                 opacity: 1;
                 margin-top: 1.5rem;
@@ -921,19 +1003,41 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .hero-title { font-size: 2.5rem; }
-            .section-title { font-size: 1.8rem; }
-            .nav-links { display: none; }
-            .terminal-body { padding: 1rem; font-size: 0.8rem; }
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .terminal-body {
+                padding: 1rem;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="grid-bg"></div>
     <div class="particles" id="particles"></div>
@@ -942,10 +1046,10 @@
     <nav>
         <div class="nav-left">
             <span class="logo">HERALD</span>
-            <span class="version-tag">v4.0.0</span>
+            <span class="version-tag">v5.0.0</span>
             <div class="live-indicator">
                 <span class="live-dot"></span>
-                <span>LIVE</span>
+                <span></span>
             </div>
         </div>
         <ul class="nav-links">
@@ -969,33 +1073,42 @@
                     <span class="terminal-title">herald@trading:~</span>
                 </div>
                 <div class="terminal-body">
-                    <div class="terminal-line" style="animation-delay: 0.1s">
-                        <span class="prompt">$</span> <span class="command">python -m herald --status</span>
-                    </div>
                     <div class="terminal-line" style="animation-delay: 0.3s">
-                        <span class="output info">[INFO] Herald Autonomous Trading System v4.0.0 — Multi-strategy</span>
+                        <span class="prompt">$</span> <span class="command">python -m herald </span>
                     </div>
-                    <div class="terminal-line" style="animation-delay: 0.5s">
-                        <span class="output success">[OK] MT5 Connection: Connected</span>
-                    </div>
-                    <div class="terminal-line" style="animation-delay: 0.7s">
-                        <span class="output success">[OK] Indicators: RSI, MACD, Bollinger, Stochastic, ADX, Supertrend, VWAP</span>
+                    <div class="terminal-line" style="animation-delay: 0.6s">
+                        <span class="output info">[INFO] Herald Autonomous Trading System v5.0.0</span>
                     </div>
                     <div class="terminal-line" style="animation-delay: 0.9s">
-                        <span class="output success">[OK] Exit Strategies: Trailing, Time, Profit, Adverse</span>
+                        <span class="output">[INFO] Phase 1: Bootstrapping system...</span>
                     </div>
-                    <div class="terminal-line" style="animation-delay: 1.1s">
-                        <span class="output success">[OK] Risk Manager: Active</span>
+                    <div class="terminal-line" style="animation-delay: 1.2s">
+                        <span class="output">[INFO] Configuration loaded: config.json</span>
                     </div>
-                    <div class="terminal-line" style="animation-delay: 1.3s">
-                        <span class="output">[STATUS] Autonomous loop running...</span>
+                    <div class="terminal-line" style="animation-delay: 1.5s">
+                        <span class="output">[INFO] Initializing: MT5 connector, data layer, risk evaluator...</span>
+                    </div>
+                    <div class="terminal-line" style="animation-delay: 1.8s">
+                        <span class="output success">[OK] MT5 Connected — Account: ****0069 (Balance: $1029.27)</span>
+                    </div>
+                    <div class="terminal-line" style="animation-delay: 2.1s">
+                        <span class="output">[INFO] Added runtime indicators: ['RSI', 'ADX']</span>
+                    </div>
+                    <div class="terminal-line" style="animation-delay: 2.4s">
+                        <span class="output">[INFO] StrategySelector: detected regime=ranging → selected=scalping</span>
+                    </div>
+                    <div class="terminal-line" style="animation-delay: 2.7s">
+                        <span class="output success">[OK] System bootstrap complete — trading loop initialized</span>
+                    </div>
+                    <div class="terminal-line" style="animation-delay: 3.0s">
+                        <span class="output">[STATUS] Starting autonomous trading loop... (Press Ctrl+C to stop)</span>
                     </div>
                 </div>
             </div>
 
             <h1 class="hero-title">Adaptive <span>Trading</span> Intelligence</h1>
             <p class="hero-subtitle">
-                Production-ready MT5 trading system with modular architecture, 
+                Production-ready MT5 trading system with modular architecture,
                 comprehensive risk management, and intelligent exit strategies.
             </p>
 
@@ -1014,7 +1127,7 @@
                 </div>
                 <div class="status-card">
                     <div class="status-label">Status</div>
-                    <div class="status-value">LIVE</div>
+                    <div class="status-value">PRODUCTION</div>
                 </div>
             </div>
         </div>
@@ -1115,7 +1228,8 @@
                     <div class="flow-icon">✦</div>
                     <div class="flow-content">
                         <div class="flow-title">Strategy Orchestrator</div>
-                        <div class="flow-desc">Dynamic strategy selection, multi-strategy arbitration, and live tuning with safeties.</div>
+                        <div class="flow-desc">Dynamic strategy selection, multi-strategy arbitration, and live tuning
+                            with safeties.</div>
                     </div>
                     <div class="flow-connector"></div>
                 </div>
@@ -1144,55 +1258,64 @@
                 <div class="module-icon">⬡</div>
                 <div class="module-name">connector/</div>
                 <div class="module-title">MT5 Connector</div>
-                <div class="module-desc">Thread-safe MT5 session management with automatic reconnection, rate limiting, and health monitoring.</div>
+                <div class="module-desc">Thread-safe MT5 session management with automatic reconnection, rate limiting,
+                    and health monitoring.</div>
             </div>
             <div class="module-card">
                 <div class="module-icon">◈</div>
                 <div class="module-name">data/</div>
                 <div class="module-title">Data Layer</div>
-                <div class="module-desc">OHLCV normalization pipeline with pandas DataFrame output and multi-timeframe support.</div>
+                <div class="module-desc">OHLCV normalization pipeline with pandas DataFrame output and multi-timeframe
+                    support.</div>
             </div>
             <div class="module-card">
                 <div class="module-icon">△</div>
                 <div class="module-name">indicators/</div>
                 <div class="module-title">Technical Indicators</div>
-                <div class="module-desc">RSI, MACD, Bollinger Bands, Stochastic Oscillator, ADX with validation and state management.</div>
+                <div class="module-desc">RSI, MACD, Bollinger Bands, Stochastic Oscillator, ADX with validation and
+                    state management.</div>
             </div>
             <div class="module-card">
                 <div class="module-icon">▽</div>
                 <div class="module-name">strategy/</div>
                 <div class="module-title">Strategy Engine</div>
-                <div class="module-desc">Pluggable strategy architecture with SMA crossover implementation and signal dataclass.</div>
+                <div class="module-desc">Pluggable strategy architecture with SMA crossover implementation and signal
+                    dataclass.</div>
             </div>
             <div class="module-card">
                 <div class="module-icon">◎</div>
                 <div class="module-name">risk/</div>
                 <div class="module-title">Risk Manager</div>
-                <div class="module-desc">Position sizing, exposure limits, daily loss thresholds, and emergency shutdown capability.</div>
+                <div class="module-desc">Position sizing, exposure limits, daily loss thresholds, and emergency shutdown
+                    capability.</div>
             </div>
             <div class="module-card">
                 <div class="module-icon">⬢</div>
                 <div class="module-name">execution/</div>
                 <div class="module-title">Execution Engine</div>
-                <div class="module-desc">Idempotent order submission with client tag tracking and partial fill handling.</div>
+                <div class="module-desc">Idempotent order submission with client tag tracking and partial fill handling.
+                </div>
             </div>
             <div class="module-card">
                 <div class="module-icon">◇</div>
                 <div class="module-name">position/</div>
                 <div class="module-title">Position Manager</div>
-                <div class="module-desc">Real-time position tracking with P&L monitoring, age tracking, and MT5 reconciliation.</div>
+                <div class="module-desc">Real-time position tracking with P&L monitoring, age tracking, and MT5
+                    reconciliation.</div>
             </div>
             <div class="module-card">
                 <div class="module-icon">○</div>
                 <div class="module-name">exit/</div>
                 <div class="module-title">Exit Strategies</div>
-                <div class="module-desc">Trailing stop, time-based, profit target, and adverse movement protection with priority system.</div>
+                <div class="module-desc">Trailing stop, time-based, profit target, and adverse movement protection with
+                    priority system.</div>
             </div>
             <div class="module-card">
                 <div class="module-icon">□</div>
                 <div class="module-name">persistence/</div>
                 <div class="module-title">Database Layer</div>
-                <div class="module-desc">SQLite persistence for trades, signals, and performance metrics with indexed queries.</div>
+                <div class="module-desc">SQLite persistence for trades, signals, and performance metrics with indexed
+                    queries.</div>
             </div>
         </div>
     </section>
@@ -1211,7 +1334,7 @@
                     <span class="code-lang">PowerShell</span>
                 </div>
                 <div class="code-body">
-<pre><span class="comment"># Clone and setup</span>
+                    <pre><span class="comment"># Clone and setup</span>
 <span class="keyword">cd</span> C:\workspace\herald
 
 <span class="comment"># Create virtual environment</span>
@@ -1229,7 +1352,7 @@
                     <span class="code-lang">Environment</span>
                 </div>
                 <div class="code-body">
-<pre><span class="comment"># MT5 Credentials</span>
+                    <pre><span class="comment"># MT5 Credentials</span>
 MT5_LOGIN=<span class="string">your_account_number</span>
 MT5_PASSWORD=<span class="string">your_password</span>
 MT5_SERVER=<span class="string">YourBroker-MT5</span>
@@ -1246,7 +1369,7 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                     <span class="code-lang">Shell</span>
                 </div>
                 <div class="code-body">
-<pre><span class="comment"># Start autonomous trading</span>
+                    <pre><span class="comment"># Start autonomous trading</span>
 <span class="function">python</span> __main__.py \
   --config config.example.json
 
@@ -1263,7 +1386,7 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                     <span class="code-lang">Required</span>
                 </div>
                 <div class="code-body">
-<pre><span class="comment"># Enable algo trading in MT5:</span>
+                    <pre><span class="comment"># Enable algo trading in MT5:</span>
 <span class="string">1.</span> Open MetaTrader 5
 <span class="string">2.</span> Tools → Options → Expert Advisors
 <span class="string">3.</span> Check "Allow automated trading"
@@ -1289,7 +1412,8 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                     <span class="roadmap-status complete">Complete</span>
                     <span class="roadmap-toggle">▼</span>
                 </div>
-                <div class="roadmap-desc">MT5 connector, data layer, technical indicators, risk management, execution engine, database persistence, structured logging.</div>
+                <div class="roadmap-desc">MT5 connector, data layer, technical indicators, risk management, execution
+                    engine, database persistence, structured logging.</div>
                 <div class="roadmap-details">
                     <div class="detail-item">✓ MT5 Connector with live data streaming</div>
                     <div class="detail-item">✓ Technical Indicators: RSI, MACD, Bollinger Bands, Stochastic, ADX</div>
@@ -1307,10 +1431,12 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                     <span class="roadmap-status complete">Complete</span>
                     <span class="roadmap-toggle">▼</span>
                 </div>
-                <div class="roadmap-desc">6 technical indicators, position manager, 4 exit strategies, autonomous orchestrator loop, environment configuration, deployment hardening.</div>
+                <div class="roadmap-desc">6 technical indicators, position manager, 4 exit strategies, autonomous
+                    orchestrator loop, environment configuration, deployment hardening.</div>
                 <div class="roadmap-details">
                     <div class="detail-item">✓ 6 Technical Indicators (includes ATR for volatility)</div>
-                    <div class="detail-item">✓ 4 Exit Strategies (Stop Loss, Take Profit, Trailing Stop, Time-Based)</div>
+                    <div class="detail-item">✓ 4 Exit Strategies (Stop Loss, Take Profit, Trailing Stop, Time-Based)
+                    </div>
                     <div class="detail-item">✓ Real-Time Position Management with P&L Tracking</div>
                     <div class="detail-item">✓ Adaptive 10-Step Trading Loop</div>
                     <div class="detail-item">✓ Zero-Error Test Suite (55/55 passing)</div>
@@ -1349,7 +1475,8 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                     <span class="roadmap-toggle">▼</span>
                 </div>
                 <div class="roadmap-desc">
-                    Runtime multi-strategy orchestration, dynamic strategy selection, desktop GUI with trade history and monitoring, and next-gen indicators.
+                    Runtime multi-strategy orchestration, dynamic strategy selection, desktop GUI with trade history and
+                    monitoring, and next-gen indicators.
                 </div>
                 <div class="roadmap-details">
                     <div class="detail-item">Strategy orchestration & arbitration</div>
@@ -1381,11 +1508,13 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
         <div class="release-container">
             <div class="release-note">
                 <a href="releases/4.0.0.md">v4.0.0 — 2025-12-26 — Multi-Strategy Release</a>
-                <p>Introduces multi-strategy orchestration, desktop GUI with persistent trade history, Supertrend & VWAP indicators, env routing improvements, and stability fixes.</p>
+                <p>Introduces multi-strategy orchestration, desktop GUI with persistent trade history, Supertrend & VWAP
+                    indicators, env routing improvements, and stability fixes.</p>
             </div>
             <div class="release-note">
                 <a href="releases/3.1.0.md">v3.1.0 — 2025-12-07 — Trade Management</a>
-                <p>External trade adoption, manual trade CLI (`herald-trade`), config validation, observability, and security hardening.</p>
+                <p>External trade adoption, manual trade CLI (`herald-trade`), config validation, observability, and
+                    security hardening.</p>
             </div>
             <div class="release-note">
                 <a href="releases/3.0.0.md">v3.0.0 — 2024-12-07 — Stable Release</a>
@@ -1405,7 +1534,7 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
     <!-- CTA Section -->
     <section class="cta-section">
         <h2 class="cta-title">Start Trading</h2>
-            <p class="cta-subtitle">
+        <p class="cta-subtitle">
             Adaptive trading system for MT5. Configure, deploy, and monitor strategies.
         </p>
         <div class="cta-buttons">
@@ -1417,11 +1546,11 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
     <!-- Footer -->
     <footer>
         <div class="footer-content">
-                <div class="footer-left">
+            <div class="footer-left">
                 <strong>HERALD</strong> v4.0.0 | Adaptive Trading Intelligence<br>
                 MIT License | Educational purposes only | Trade at your own risk
             </div>
-                <div class="footer-links">
+            <div class="footer-links">
                 <a href="quickstart.html">Docs</a>
                 <a href="architecture.html">Architecture</a>
                 <a href="changelog.html">Changelog</a>
@@ -1462,7 +1591,7 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
 
         // Summary widget data fetch (attempt logs/summary.json or logs/strategy_info.txt)
         async function loadSummary() {
-            const sample = {strategy: 'EMA Crossover', pnl: '+1,243.50', open: 2, win: '62%'};
+            const sample = { strategy: 'EMA Crossover', pnl: '+1,243.50', open: 2, win: '62%' };
             try {
                 // Try JSON summary first
                 let res = await fetch('logs/summary.json');
@@ -1480,7 +1609,7 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                     const txt = await res.text();
                     const lines = txt.split('\n');
                     lines.forEach(line => {
-                        const [k,v] = line.split(':').map(s => s && s.trim());
+                        const [k, v] = line.split(':').map(s => s && s.trim());
                         if (!k || !v) return;
                         if (/strategy/i.test(k)) document.getElementById('summary-strategy').textContent = v;
                         if (/pnl/i.test(k)) document.getElementById('summary-pnl').textContent = v;
@@ -1524,10 +1653,11 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
 
         // Expandable roadmap items
         document.querySelectorAll('.roadmap-item.expandable').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function () {
                 this.classList.toggle('expanded');
             });
         });
     </script>
 </body>
+
 </html>
