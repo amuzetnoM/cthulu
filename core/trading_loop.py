@@ -405,6 +405,37 @@ class TradingLoop:
             # Compute required EMA columns for strategies
             df = self._compute_ema_columns(df)
             
+            # Add price levels for momentum breakout strategy
+            try:
+                needs_price_levels = False
+                lookback_period = 20  # default
+                
+                # Check if current strategy is momentum breakout
+                if hasattr(self.ctx.strategy, 'lookback_period') or \
+                   (hasattr(self.ctx.strategy, '__class__') and 'momentum_breakout' in str(self.ctx.strategy.__class__).lower()):
+                    needs_price_levels = True
+                    lookback_period = getattr(self.ctx.strategy, 'lookback_period', 20)
+                
+                # Check if strategy selector contains momentum breakout
+                elif hasattr(self.ctx.strategy, 'strategies'):
+                    for strategy_name, strategy in self.ctx.strategy.strategies.items():
+                        if 'momentum_breakout' in str(strategy.__class__).lower():
+                            needs_price_levels = True
+                            lookback_period = getattr(strategy, 'lookback_period', 20)
+                            break
+                
+                if needs_price_levels:
+                    # Add price levels
+                    df[f'high_{lookback_period}'] = df['high'].rolling(window=lookback_period).max()
+                    df[f'low_{lookback_period}'] = df['low'].rolling(window=lookback_period).min()
+                    
+                    # Add volume analysis
+                    df[f'volume_avg_{lookback_period}'] = df['volume'].rolling(window=lookback_period).mean()
+                    
+                    self.ctx.logger.debug(f"Added price levels and volume analysis for lookback period {lookback_period}")
+            except Exception as e:
+                self.ctx.logger.debug(f"Could not add price levels: {e}")
+            
             # Ensure runtime indicators (RSI/ATR/MACD/etc.) are added if the strategy needs them
             try:
                 extra_indicators = ensure_runtime_indicators(
