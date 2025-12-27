@@ -26,9 +26,10 @@ import pandas as pd
 
 from herald.strategy.base import Strategy, SignalType
 from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
-from herald.risk.manager import RiskManager
-from herald.position.manager import PositionManager
-from herald.position.trade_manager import TradeManager, TradeAdoptionPolicy
+from herald.risk.evaluator import RiskEvaluator
+from herald.position.tracker import PositionTracker
+from herald.position.lifecycle import PositionLifecycle
+from herald.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
 from herald.persistence.database import Database, TradeRecord, SignalRecord
 from herald.observability.metrics import MetricsCollector
 from herald.connector.mt5_connector import MT5Connector
@@ -48,9 +49,10 @@ class TradingLoopContext:
     data_layer: DataLayer
     strategy: Strategy
     execution_engine: ExecutionEngine
-    risk_manager: RiskManager
-    position_manager: PositionManager
-    trade_manager: TradeManager
+    risk_manager: RiskEvaluator
+    position_tracker: PositionTracker
+    position_lifecycle: PositionLifecycle
+    trade_adoption_manager: TradeAdoptionManager
     database: Database
     metrics: MetricsCollector
     logger: logging.Logger

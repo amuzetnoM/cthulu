@@ -17,10 +17,11 @@ from dataclasses import dataclass
 
 from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
 from herald.data.layer import DataLayer
-from herald.risk.manager import RiskManager, RiskLimits
+from herald.risk.evaluator import RiskEvaluator, RiskLimits
 from herald.execution.engine import ExecutionEngine
-from herald.position.manager import PositionManager
-from herald.position.trade_manager import TradeManager, TradeAdoptionPolicy
+from herald.position.tracker import PositionTracker
+from herald.position.lifecycle import PositionLifecycle
+from herald.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
 from herald.persistence.database import Database
 from herald.observability.metrics import MetricsCollector
 from config_schema import Config
@@ -35,10 +36,11 @@ class SystemComponents:
     config: Dict[str, Any]
     connector: MT5Connector
     data_layer: DataLayer
-    risk_manager: RiskManager
+    risk_manager: RiskEvaluator
     execution_engine: ExecutionEngine
-    position_manager: PositionManager
-    trade_manager: TradeManager
+    position_tracker: PositionTracker
+    position_lifecycle: PositionLifecycle
+    trade_adoption_manager: TradeAdoptionManager
     database: Database
     metrics: MetricsCollector
     
@@ -136,16 +138,16 @@ class HeraldBootstrap:
         data_layer = DataLayer(cache_enabled=cache_enabled)
         return data_layer
     
-    def initialize_risk_manager(self, config: Dict[str, Any]) -> RiskManager:
-        """Initialize risk manager.
+    def initialize_risk_manager(self, config: Dict[str, Any]) -> RiskEvaluator:
+        """Initialize risk evaluator.
         
         Args:
             config: System configuration
             
         Returns:
-            Initialized RiskManager instance
+            Initialized RiskEvaluator instance
         """
-        self.logger.info("Initializing risk manager...")
+        self.logger.info("Initializing risk evaluator...")
         risk_config = config.get('risk', {})
         
         # Build RiskLimits with defaults
@@ -158,8 +160,8 @@ class HeraldBootstrap:
             min_risk_reward_ratio=risk_config.get('min_risk_reward_ratio', 1.0),
         )
         
-        risk_manager = RiskManager(risk_limits)
-        return risk_manager
+        risk_evaluator = RiskEvaluator(risk_limits)
+        return risk_evaluator
     
     def initialize_execution_engine(self, connector: MT5Connector, config: Dict[str, Any],
                                    ml_collector: Any = None) -> ExecutionEngine:
@@ -182,31 +184,48 @@ class HeraldBootstrap:
         )
         return execution_engine
     
-    def initialize_position_manager(self, connector: MT5Connector,
-                                    execution_engine: ExecutionEngine) -> PositionManager:
-        """Initialize position manager.
+    def initialize_position_tracker(self, connector: MT5Connector) -> PositionTracker:
+        """Initialize position tracker.
+        
+        Args:
+            connector: MT5 connector instance
+            
+        Returns:
+            Initialized PositionTracker instance
+        """
+        self.logger.info("Initializing position tracker...")
+        position_tracker = PositionTracker()
+        return position_tracker
+    
+    def initialize_position_lifecycle(self, connector: MT5Connector,
+                                      execution_engine: ExecutionEngine,
+                                      database: Database) -> PositionLifecycle:
+        """Initialize position lifecycle manager.
         
         Args:
             connector: MT5 connector instance
             execution_engine: Execution engine instance
+            database: Database instance
             
         Returns:
-            Initialized PositionManager instance
+            Initialized PositionLifecycle instance
         """
-        self.logger.info("Initializing position manager...")
-        position_manager = PositionManager(connector, execution_engine)
-        return position_manager
+        self.logger.info("Initializing position lifecycle...")
+        position_lifecycle = PositionLifecycle(connector, execution_engine, database)
+        return position_lifecycle
     
-    def initialize_trade_manager(self, position_manager: PositionManager,
-                                 config: Dict[str, Any]) -> TradeManager:
-        """Initialize trade manager for external trade adoption.
+    def initialize_trade_adoption_manager(self, position_tracker: PositionTracker,
+                                          position_lifecycle: PositionLifecycle,
+                                          config: Dict[str, Any]) -> TradeAdoptionManager:
+        """Initialize trade adoption manager for external trade adoption.
         
         Args:
-            position_manager: Position manager instance
+            position_tracker: Position tracker instance
+            position_lifecycle: Position lifecycle instance
             config: System configuration
             
         Returns:
-            Initialized TradeManager instance
+            Initialized TradeAdoptionManager instance
         """
         trade_adoption_config = config.get('orphan_trades', {})
         trade_adoption_policy = TradeAdoptionPolicy(
@@ -223,8 +242,9 @@ class HeraldBootstrap:
         default_stop_pct = risk_config.get('emergency_stop_loss_pct', 8.0)
         default_rr = config.get('strategy', {}).get('params', {}).get('risk_reward_ratio', 2.0)
         
-        trade_manager = TradeManager(
-            position_manager,
+        trade_adoption_manager = TradeAdoptionManager(
+            position_tracker,
+            position_lifecycle,
             trade_adoption_policy,
             default_stop_pct=default_stop_pct,
             default_rr=default_rr,
@@ -238,7 +258,7 @@ class HeraldBootstrap:
         else:
             self.logger.info("External trade adoption disabled")
         
-        return trade_manager
+        return trade_adoption_manager
     
     def initialize_database(self, config: Dict[str, Any]) -> Database:
         """Initialize database.
@@ -344,14 +364,17 @@ class HeraldBootstrap:
         
         return exporter
     
-    def initialize_trade_monitor(self, position_manager: PositionManager,
-                                 trade_manager: TradeManager, config: Dict[str, Any],
+    def initialize_trade_monitor(self, position_tracker: PositionTracker,
+                                 position_lifecycle: PositionLifecycle,
+                                 trade_adoption_manager: TradeAdoptionManager,
+                                 config: Dict[str, Any],
                                  ml_collector: Any) -> Optional[Any]:
         """Initialize trade monitor (optional).
         
         Args:
-            position_manager: Position manager instance
-            trade_manager: Trade manager instance
+            position_tracker: Position tracker instance
+            position_lifecycle: Position lifecycle instance
+            trade_adoption_manager: Trade adoption manager instance
             config: System configuration
             ml_collector: ML data collector instance
             
@@ -363,8 +386,9 @@ class HeraldBootstrap:
             from herald.monitoring.trade_monitor import TradeMonitor
             poll_interval = config.get('monitor_poll_interval', 5.0)
             monitor = TradeMonitor(
-                position_manager,
-                trade_manager=trade_manager,
+                position_tracker,
+                position_lifecycle,
+                trade_adoption_manager=trade_adoption_manager,
                 poll_interval=poll_interval,
                 ml_collector=ml_collector
             )
@@ -405,11 +429,16 @@ class HeraldBootstrap:
         
         # Initialize execution components
         execution_engine = self.initialize_execution_engine(connector, config, ml_collector)
-        position_manager = self.initialize_position_manager(connector, execution_engine)
-        trade_manager = self.initialize_trade_manager(position_manager, config)
         
-        # Initialize persistence and metrics
+        # Initialize persistence first (needed by lifecycle)
         database = self.initialize_database(config)
+        
+        # Initialize position management components
+        position_tracker = self.initialize_position_tracker(connector)
+        position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, database)
+        trade_adoption_manager = self.initialize_trade_adoption_manager(position_tracker, position_lifecycle, config)
+        
+        # Initialize metrics
         metrics = self.initialize_metrics(database)
         
         # Attach metrics to execution engine
@@ -421,7 +450,7 @@ class HeraldBootstrap:
         # Initialize optional components
         advisory_manager = self.initialize_advisory_manager(config, execution_engine, ml_collector)
         exporter = self.initialize_prometheus_exporter(config)
-        monitor = self.initialize_trade_monitor(position_manager, trade_manager, config, ml_collector)
+        monitor = self.initialize_trade_monitor(position_tracker, position_lifecycle, trade_adoption_manager, config, ml_collector)
         
         # Create components container
         components = SystemComponents(
@@ -430,8 +459,9 @@ class HeraldBootstrap:
             data_layer=data_layer,
             risk_manager=risk_manager,
             execution_engine=execution_engine,
-            position_manager=position_manager,
-            trade_manager=trade_manager,
+            position_tracker=position_tracker,
+            position_lifecycle=position_lifecycle,
+            trade_adoption_manager=trade_adoption_manager,
             database=database,
             metrics=metrics,
             ml_collector=ml_collector,
