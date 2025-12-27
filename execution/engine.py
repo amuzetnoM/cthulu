@@ -165,7 +165,7 @@ class ExecutionEngine:
         # If client_tag not provided, generate a deterministic tag based on order content
         if not order_req.client_tag:
             try:
-                import hashlib, json
+                import hashlib
                 canonical = json.dumps({
                     'signal_id': order_req.signal_id,
                     'symbol': order_req.symbol,

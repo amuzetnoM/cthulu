@@ -239,23 +239,16 @@ class Database:
         """Delete provenance rows older than `days` and return deleted count."""
         try:
             cursor = self.conn.cursor()
-            cursor.execute("DELETE FROM order_provenance WHERE datetime(timestamp) < datetime('now','-? days')", (days,))
+            # Use a parameterized interval string for sqlite datetime comparison
+            interval = f"-{int(days)} days"
+            cursor.execute("DELETE FROM order_provenance WHERE timestamp < datetime('now', ?)", (interval,))
             deleted = cursor.rowcount
             self.conn.commit()
             self.logger.info(f"Purged {deleted} order_provenance rows older than {days} days")
             return deleted
         except Exception:
-            # Fallback to manual calculation if the paramized approach fails (sqlite specifics)
-            try:
-                cursor = self.conn.cursor()
-                cursor.execute("DELETE FROM order_provenance WHERE timestamp < datetime('now', ?)", (f"-{days} days",))
-                deleted = cursor.rowcount
-                self.conn.commit()
-                self.logger.info(f"Purged {deleted} order_provenance rows older than {days} days")
-                return deleted
-            except Exception:
-                self.logger.exception('Failed to purge provenance rows')
-                return 0
+            self.logger.exception('Failed to purge provenance rows')
+            return 0
 
     def _normalize_timestamp(self, ts) -> Optional[str]:
         """Normalize various timestamp inputs to SQLite-friendly TEXT format:
