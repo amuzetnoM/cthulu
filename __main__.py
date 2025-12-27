@@ -204,6 +204,7 @@ def main():
             execution_engine=components.execution_engine,
             risk_manager=components.risk_manager,
             position_tracker=components.position_tracker,
+            position_manager=components.position_manager,
             position_lifecycle=components.position_lifecycle,
             trade_adoption_manager=components.trade_adoption_manager,
             trade_adoption_policy=components.trade_adoption_policy,

@@ -9,7 +9,10 @@
 # Herald
 *version 5.0.0 [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
 
-> **Note:** Top-of-readme status and tech badges have been removed by request. Refer to the documentation pages for CI and coverage links.
+> tech badges 
+ <Python 3.8+ | MT5 Integration | SQLite Persistence | Pandas DataFrames | Prometheus Metrics | Tkinter GUI 
+Tests | CI/CD | NLP Setup Wizard
+Coverage: 95% | License: MIT>
 
 
 > **Adaptive Trading Intelligence**
