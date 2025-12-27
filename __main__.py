@@ -116,8 +116,10 @@ def parse_arguments():
     parser.add_argument("--advisory", action="store_true",
                        help="Advisory mode (signals only, no execution)")
     parser.add_argument("--ghost", action="store_true",
-                       help="Ghost mode (test strategy without actual trades)")    parser.add_argument('--skip-setup', action='store_true',
-                       help="Skip interactive setup wizard (for automation/headless runs)")    parser.add_argument("--max-loops", type=int, default=None,
+                       help="Ghost mode (test strategy without actual trades)")
+    parser.add_argument('--skip-setup', action='store_true',
+                       help="Skip interactive setup wizard (for automation/headless runs)")
+    parser.add_argument("--max-loops", type=int, default=None,
                        help="Maximum iterations (for testing)")
     parser.add_argument('--wizard', action='store_true',
                        help="Open the interactive setup wizard and optionally start profiles")

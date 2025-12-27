@@ -132,6 +132,29 @@ class MT5Connector:
             except Exception:
                 self.logger.debug("MT5 terminal_info: unavailable")
 
+            # Environment variable overrides (runtime routing): allow operators to
+            # provide credentials via environment to avoid accidental config edits.
+            try:
+                env_login = os.getenv('MT5_LOGIN')
+                env_pass = os.getenv('MT5_PASSWORD')
+                env_server = os.getenv('MT5_SERVER')
+                if env_login:
+                    try:
+                        self.config.login = int(env_login)
+                    except Exception:
+                        # keep as string if not integer
+                        self.config.login = env_login
+                    self.logger.info('Using MT5 login from environment')
+                if env_pass:
+                    self.config.password = env_pass
+                    self.logger.info('Using MT5 password from environment')
+                if env_server:
+                    self.config.server = env_server
+                    self.logger.info('Using MT5 server from environment')
+            except Exception:
+                # non-fatal: continue with existing config
+                pass
+
             # If no explicit credentials set (login==0), attempt to 'attach' to a running terminal first
             credential_mode = bool(getattr(self.config, 'login', None) and self.config.login != 0)
 
