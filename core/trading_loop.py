@@ -47,12 +47,12 @@ class TradingLoopContext:
     # Core trading components
     connector: MT5Connector
     data_layer: DataLayer
-    strategy: Strategy
     execution_engine: ExecutionEngine
     risk_manager: RiskEvaluator
     position_tracker: PositionTracker
     position_lifecycle: PositionLifecycle
     trade_adoption_manager: TradeAdoptionManager
+    exit_coordinator: PositionLifecycle
     database: Database
     metrics: MetricsCollector
     logger: logging.Logger
@@ -71,6 +71,7 @@ class TradingLoopContext:
     config: Dict[str, Any]
     
     # Optional components
+    strategy: Optional[Strategy] = None
     advisory_manager: Optional[Any] = None
     exporter: Optional[Any] = None  # Prometheus exporter
     ml_collector: Optional[Any] = None

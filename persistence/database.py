@@ -150,20 +150,228 @@ class Database:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+
+            # Provenance table for order telemetry / auditing
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS order_provenance (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TIMESTAMP NOT NULL,
+                    signal_id TEXT,
+                    client_tag TEXT,
+                    symbol TEXT,
+                    side TEXT,
+                    volume REAL,
+                    caller_module TEXT,
+                    caller_function TEXT,
+                    stack_snippet TEXT,
+                    metadata TEXT,
+                    pid INTEGER,
+                    thread_id INTEGER,
+                    hostname TEXT,
+                    python_version TEXT,
+                    env_snapshot TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
             
             # Create indexes
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_trades_symbol ON trades(symbol)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(status)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_signals_symbol ON signals(symbol)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_signals_timestamp ON signals(timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_prov_timestamp ON order_provenance(timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_prov_client_tag ON order_provenance(client_tag)")
             
             self.conn.commit()
             self.logger.info(f"Database initialized: {self.db_path}")
+            # Run migrations if any
+            try:
+                self._run_migrations()
+            except Exception:
+                self.logger.exception('Failed to run DB migrations')
             
         except Exception as e:
             self.logger.error(f"Database initialization failed: {e}", exc_info=True)
             raise
             
+    def _run_migrations(self):
+        """Run lightweight migrations and create meta/version table."""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS meta (
+                    key TEXT PRIMARY KEY,
+                    value TEXT
+                )
+            """)
+            # Example migration: ensure order_provenance exists (older DBs may lack it)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS order_provenance (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TIMESTAMP NOT NULL,
+                    signal_id TEXT,
+                    client_tag TEXT,
+                    symbol TEXT,
+                    side TEXT,
+                    volume REAL,
+                    caller_module TEXT,
+                    caller_function TEXT,
+                    stack_snippet TEXT,
+                    metadata TEXT,
+                    pid INTEGER,
+                    thread_id INTEGER,
+                    hostname TEXT,
+                    python_version TEXT,
+                    env_snapshot TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            # Set a schema_version if not present
+            cursor.execute("SELECT value FROM meta WHERE key = 'schema_version'")
+            row = cursor.fetchone()
+            if not row:
+                cursor.execute("INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', '1')")
+            self.conn.commit()
+        except Exception:
+            self.logger.exception('Migration step failed')
+
+    def purge_provenance_older_than(self, days: int) -> int:
+        """Delete provenance rows older than `days` and return deleted count."""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("DELETE FROM order_provenance WHERE datetime(timestamp) < datetime('now','-? days')", (days,))
+            deleted = cursor.rowcount
+            self.conn.commit()
+            self.logger.info(f"Purged {deleted} order_provenance rows older than {days} days")
+            return deleted
+        except Exception:
+            # Fallback to manual calculation if the paramized approach fails (sqlite specifics)
+            try:
+                cursor = self.conn.cursor()
+                cursor.execute("DELETE FROM order_provenance WHERE timestamp < datetime('now', ?)", (f"-{days} days",))
+                deleted = cursor.rowcount
+                self.conn.commit()
+                self.logger.info(f"Purged {deleted} order_provenance rows older than {days} days")
+                return deleted
+            except Exception:
+                self.logger.exception('Failed to purge provenance rows')
+                return 0
+
+    def _normalize_timestamp(self, ts) -> Optional[str]:
+        """Normalize various timestamp inputs to SQLite-friendly TEXT format:
+        - Accepts datetime objects or ISO strings like 'YYYY-MM-DDTHH:MM:SS(.micro)[Z]'
+        - Returns string in 'YYYY-MM-DD HH:MM:SS(.micro)' or None
+        """
+        if ts is None:
+            return None
+        # datetime -> ISO then normalize
+        try:
+            if hasattr(ts, 'isoformat'):
+                s = ts.isoformat()
+            else:
+                s = str(ts)
+            # Handle trailing Z (UTC marker)
+            if s.endswith('Z'):
+                s = s[:-1]
+            # Replace 'T' separator with space to satisfy sqlite's parser
+            s = s.replace('T', ' ')
+            return s
+        except Exception:
+            # As a last resort, return the input coerced to string
+            try:
+                return str(ts)
+            except Exception:
+                return None
+
+    def record_provenance(self, provenance: Dict[str, Any]) -> int:
+        """
+        Record an order provenance entry into the DB and return its row id.
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                # Ensure metadata and stack_snippet serialization is safe
+                stack_json = json.dumps(provenance.get('stack_snippet', []), default=str)
+                try:
+                    meta_json = json.dumps(provenance.get('metadata', {}))
+                except Exception:
+                    # Fallback: serialize a safe stringified dict
+                    try:
+                        meta_json = json.dumps({k: str(v) for k, v in (provenance.get('metadata') or {}).items()})
+                    except Exception:
+                        meta_json = '{}'
+
+                env_json = json.dumps(provenance.get('env_snapshot', {}))
+
+                ts = self._normalize_timestamp(provenance.get('timestamp'))
+                cursor.execute("""
+                    INSERT INTO order_provenance (
+                        timestamp, signal_id, client_tag, symbol, side, volume,
+                        caller_module, caller_function, stack_snippet, metadata,
+                        pid, thread_id, hostname, python_version, env_snapshot
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    ts,
+                    provenance.get('signal_id'),
+                    provenance.get('client_tag'),
+                    provenance.get('symbol'),
+                    provenance.get('side'),
+                    provenance.get('volume'),
+                    provenance.get('caller', {}).get('module'),
+                    provenance.get('caller', {}).get('function'),
+                    stack_json,
+                    meta_json,
+                    provenance.get('pid'),
+                    provenance.get('thread_id'),
+                    provenance.get('hostname'),
+                    provenance.get('python_version'),
+                    env_json
+                ))
+                conn.commit()
+                return cursor.lastrowid
+        except Exception as e:
+            self.logger.exception('Failed to record provenance')
+            return -1
+
+    def get_recent_provenance(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """
+        Retrieve recent provenance entries as dicts.
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                SELECT id, CAST(timestamp AS TEXT) AS timestamp_text, signal_id, client_tag, symbol, side, volume,
+                       caller_module, caller_function, stack_snippet, metadata,
+                       pid, thread_id, hostname, python_version, env_snapshot
+                FROM order_provenance
+                ORDER BY timestamp DESC
+                LIMIT ?
+            """, (limit,))
+            rows = cursor.fetchall()
+            out = []
+            for r in rows:
+                out.append({
+                    'id': r['id'],
+                    'timestamp': r['timestamp_text'],
+                    'signal_id': r['signal_id'],
+                    'client_tag': r['client_tag'],
+                    'symbol': r['symbol'],
+                    'side': r['side'],
+                    'volume': r['volume'],
+                    'caller_module': r['caller_module'],
+                    'caller_function': r['caller_function'],
+                    'stack_snippet': json.loads(r['stack_snippet']) if r['stack_snippet'] else None,
+                    'metadata': json.loads(r['metadata']) if r['metadata'] else None,
+                    'pid': r['pid'],
+                    'thread_id': r['thread_id'],
+                    'hostname': r['hostname'],
+                    'python_version': r['python_version'],
+                    'env_snapshot': json.loads(r['env_snapshot']) if r['env_snapshot'] else None
+                })
+            return out
+        except Exception:
+            self.logger.exception('Failed to fetch provenance entries')
+            return []
     def record_signal(self, signal_record: SignalRecord) -> int:
         """
         Record a trading signal.
@@ -184,7 +392,7 @@ class Database:
             """, (
                 signal_record.signal_id,
                 # Store timestamps as ISO strings for portability
-                signal_record.timestamp.isoformat() if hasattr(signal_record.timestamp, 'isoformat') else signal_record.timestamp,
+                self._normalize_timestamp(signal_record.timestamp),
                 signal_record.symbol,
                 signal_record.timeframe,
                 signal_record.side,
@@ -236,7 +444,7 @@ class Database:
                     trade_record.entry_price,
                     trade_record.stop_loss,
                     trade_record.take_profit,
-                    trade_record.entry_time.isoformat() if hasattr(trade_record.entry_time, 'isoformat') and trade_record.entry_time is not None else trade_record.entry_time,
+                    self._normalize_timestamp(trade_record.entry_time),
                     trade_record.status,
                     json.dumps(trade_record.metadata) if not isinstance(trade_record.metadata, str) else trade_record.metadata
                 ))
@@ -272,6 +480,7 @@ class Database:
         """
         try:
             cursor = self.conn.cursor()
+            exit_ts = self._normalize_timestamp(exit_time)
             cursor.execute("""
                 UPDATE trades
                 SET exit_price = ?,
@@ -280,7 +489,7 @@ class Database:
                     status = 'CLOSED',
                     exit_reason = ?
                 WHERE order_id = ?
-            """, (exit_price, exit_time, profit, exit_reason, order_id))
+            """, (exit_price, exit_ts, profit, exit_reason, order_id))
             self.conn.commit()
             
             if cursor.rowcount > 0:
@@ -304,7 +513,10 @@ class Database:
         try:
             cursor = self.conn.cursor()
             cursor.execute("""
-                SELECT * FROM trades
+                SELECT id, signal_id, order_id, symbol, side, volume, entry_price,
+                       exit_price, stop_loss, take_profit, CAST(entry_time AS TEXT) AS entry_time,
+                       CAST(exit_time AS TEXT) AS exit_time, profit, status, exit_reason, metadata
+                FROM trades
                 WHERE status = 'OPEN'
                 ORDER BY entry_time DESC
             """)
@@ -349,7 +561,10 @@ class Database:
         try:
             cursor = self.conn.cursor()
             cursor.execute("""
-                SELECT * FROM trades
+                SELECT id, signal_id, order_id, symbol, side, volume, entry_price,
+                       exit_price, stop_loss, take_profit, CAST(entry_time AS TEXT) AS entry_time,
+                       CAST(exit_time AS TEXT) AS exit_time, profit, status, exit_reason, metadata
+                FROM trades
                 ORDER BY entry_time DESC
                 LIMIT ?
             """, (limit,))
@@ -398,7 +613,7 @@ class Database:
             cursor.execute("""
                 INSERT INTO metrics (timestamp, metric_name, metric_value, metadata)
                 VALUES (?, ?, ?, ?)
-            """, (datetime.now(), name, value, metadata))
+            """, (self._normalize_timestamp(datetime.now()), name, value, metadata))
             self.conn.commit()
             return True
             

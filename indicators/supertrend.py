@@ -78,17 +78,25 @@ class Supertrend(Indicator):
         
         # Vectorized calculation with shift
         for i in range(1, len(df)):
-            # Upper band: if current basic < previous final OR close crossed above
-            if basic_upper.iloc[i] < final_upper.iloc[i-1] or df['close'].iloc[i-1] > final_upper.iloc[i-1]:
+            # Upper band: if previous final is NaN, default to current basic
+            if pd.isna(final_upper.iloc[i-1]):
                 final_upper.iloc[i] = basic_upper.iloc[i]
             else:
-                final_upper.iloc[i] = final_upper.iloc[i-1]
+                # Upper band: if current basic < previous final OR close crossed above
+                if basic_upper.iloc[i] < final_upper.iloc[i-1] or df['close'].iloc[i-1] > final_upper.iloc[i-1]:
+                    final_upper.iloc[i] = basic_upper.iloc[i]
+                else:
+                    final_upper.iloc[i] = final_upper.iloc[i-1]
                 
-            # Lower band: if current basic > previous final OR close crossed below
-            if basic_lower.iloc[i] > final_lower.iloc[i-1] or df['close'].iloc[i-1] < final_lower.iloc[i-1]:
+            # Lower band: if previous final is NaN, default to current basic
+            if pd.isna(final_lower.iloc[i-1]):
                 final_lower.iloc[i] = basic_lower.iloc[i]
             else:
-                final_lower.iloc[i] = final_lower.iloc[i-1]
+                # Lower band: if current basic > previous final OR close crossed below
+                if basic_lower.iloc[i] > final_lower.iloc[i-1] or df['close'].iloc[i-1] < final_lower.iloc[i-1]:
+                    final_lower.iloc[i] = basic_lower.iloc[i]
+                else:
+                    final_lower.iloc[i] = final_lower.iloc[i-1]
         
         # Determine trend direction
         supertrend = pd.Series(index=df.index, dtype=float)
@@ -99,15 +107,18 @@ class Supertrend(Indicator):
         direction.iloc[0] = -1
         
         for i in range(1, len(df)):
-            # Direction logic
-            if df['close'].iloc[i] <= final_upper.iloc[i]:
-                direction.iloc[i] = -1
-            elif df['close'].iloc[i] >= final_lower.iloc[i]:
+            # Direction logic (compare to previous final bands)
+            prev_upper = final_upper.iloc[i-1]
+            prev_lower = final_lower.iloc[i-1]
+
+            if df['close'].iloc[i] > prev_upper:
                 direction.iloc[i] = 1
+            elif df['close'].iloc[i] < prev_lower:
+                direction.iloc[i] = -1
             else:
                 direction.iloc[i] = direction.iloc[i-1]
-                
-            # Supertrend value
+
+            # Supertrend value based on current direction
             if direction.iloc[i] == 1:
                 supertrend.iloc[i] = final_lower.iloc[i]
             else:

@@ -189,4 +189,5 @@ class AnchoredVWAP(Indicator):
         result.loc[df.index, 'anchored_vwap_upper'] = upper_band
         result.loc[df.index, 'anchored_vwap_lower'] = lower_band
         
+
         return result

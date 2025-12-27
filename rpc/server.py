@@ -99,6 +99,16 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
             sl=sl,
             tp=tp,
         )
+        # Mark source for provenance
+        try:
+            order_req.metadata['source'] = 'rpc'
+            order_req.metadata['client_ip'] = self.client_address[0]
+            # Include any auth token hint (do not store full token)
+            auth = self.headers.get('Authorization')
+            if auth and auth.startswith('Bearer '):
+                order_req.metadata['auth_hint'] = f"bearer:{auth.split(' ',1)[1][:6]}"
+        except Exception:
+            pass
 
         # Risk approval (fetch account state if available)
         try:
@@ -191,6 +201,46 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
         }
 
         self._send_json(200, resp)
+
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        if parsed.path != '/provenance':
+            self.send_response(404)
+            self.end_headers()
+            return
+
+        # Authenticate with same token as POST
+        auth = self.headers.get('Authorization')
+        api_key = self.headers.get('X-Api-Key')
+        if self.token:
+            if auth and auth.startswith('Bearer '):
+                token = auth.split(' ', 1)[1].strip()
+            else:
+                token = api_key
+            if not token or token != self.token:
+                self._unauthorized('Invalid or missing API token')
+                return
+
+        # Parse query params for limit
+        try:
+            q = dict([p.split('=') for p in parsed.query.split('&') if p])
+            limit = int(q.get('limit', 50))
+        except Exception:
+            limit = 50
+
+        try:
+            results = []
+            if self.database:
+                results = self.database.get_recent_provenance(limit=limit)
+            body = json.dumps({'limit': limit, 'results': results}, default=str).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception:
+            logger.exception('Failed to serve provenance')
+            self._send_json(500, {'error': 'Internal server error'})
 
     def log_message(self, format, *args):
         # Redirect logging through our logger rather than default stderr

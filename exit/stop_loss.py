@@ -76,3 +76,7 @@ class StopLossExit(ExitStrategy):
                     )
 
         return None  # No exit signal
+
+
+# Backwards-compatibility alias
+StopLoss = StopLossExit

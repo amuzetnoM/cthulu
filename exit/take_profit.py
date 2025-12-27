@@ -70,3 +70,6 @@ class TakeProfitExit(ExitStrategy):
                 )
 
         return None  # No exit signal
+
+# Backwards-compatible alias
+TakeProfit = TakeProfitExit

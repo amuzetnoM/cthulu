@@ -16,16 +16,8 @@ slug: /docs/changelog
 
 ## UNRELEASED
 
-### Fixed
-- **Env Routing Cleanup**: Removed redundant FROM_ENV placeholder logic in config schema, streamlined env overrides to apply per-field individually for better flexibility and security
-- **Wizard Path Resolution**: Fixed config file path resolution issues in setup wizard when running from different directories
-- **UI Trade History**: Enhanced desktop GUI to display complete trade history from database with detailed entry/exit prices, P&L, timestamps, and status
-- **UI Font Readability**: Improved font sizes and contrast in desktop interface for better readability
-- **Data Layer API**: Fixed incorrect symbol parameter in data normalization calls
-- **Import Error**: Removed obsolete BarData import causing startup crashes
-
-### Security
-- **Config Security**: Environment variables now override config values individually, preventing credential exposure in config files
+> This section is for upcoming changes that are not yet released.
+---
 
 ---
 

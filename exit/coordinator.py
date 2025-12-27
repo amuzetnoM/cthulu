@@ -17,13 +17,14 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from exit.base import ExitStrategy, ExitDecision
-from exit.stop_loss import StopLoss
-from exit.take_profit import TakeProfit
-from exit.trailing_stop import TrailingStop
-from exit.time_based import TimeBasedExit
-from exit.profit_target import ProfitTargetExit
-from exit.adverse_movement import AdverseMovementExit
+from .base import ExitStrategy
+from .exit_manager import ExitDecision
+from .stop_loss import StopLoss
+from .take_profit import TakeProfit
+from .trailing_stop import TrailingStop
+from .time_based import TimeBasedExit
+from .profit_target import ProfitTargetExit
+from .adverse_movement import AdverseMovementExit
 
 
 logger = logging.getLogger(__name__)

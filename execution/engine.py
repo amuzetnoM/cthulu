@@ -7,6 +7,10 @@ Supports market/limit orders with idempotent submission and external reconciliat
 
 from herald.connector.mt5_connector import mt5
 import logging
+import traceback
+import inspect
+import json
+import os
 from typing import Optional, Dict, Any
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -116,7 +120,7 @@ class ExecutionEngine:
     - Order modification and cancellation
     """
     
-    def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None, metrics=None, ml_collector=None):
+    def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None, metrics=None, ml_collector=None, telemetry=None):
         """
         Initialize execution engine.
         
@@ -136,6 +140,8 @@ class ExecutionEngine:
         self.metrics = metrics
         # Optional ML instrumentation collector
         self.ml_collector = ml_collector
+        # Optional telemetry persistence helper
+        self.telemetry = telemetry
         
         # Order tracking for idempotency
         self._submitted_orders: Dict[str, int] = {}
@@ -175,6 +181,111 @@ class ExecutionEngine:
             except Exception as _:
                 from datetime import datetime as _dt
                 order_req.client_tag = f"autogen:{int(_dt.now().timestamp())}"
+
+        # Record provenance for tracing unexpected orders
+        try:
+            # Find caller frame outside this module
+            caller_info = {'module': None, 'function': None, 'filename': None}
+            for frame_info in inspect.stack()[1:10]:
+                fname = os.path.basename(frame_info.filename or '')
+                if fname != os.path.basename(__file__):
+                    caller_info['module'] = frame_info.frame.f_globals.get('__name__', None)
+                    caller_info['function'] = frame_info.function
+                    caller_info['filename'] = frame_info.filename
+                    break
+            stack_snippet = traceback.format_stack(limit=6)
+            # Build enriched environment snapshot with safe redaction
+            try:
+                import socket, platform, threading
+                pid = os.getpid()
+                tid = threading.get_ident()
+                hostname = socket.gethostname()
+                python_version = platform.platform()
+                # Redact env vars that look sensitive
+                env_snapshot = {}
+                secret_patterns = ('KEY','TOKEN','SECRET','PASSWORD','PASS','AWS','API')
+                for k, v in os.environ.items():
+                    up = k.upper()
+                    if any(p in up for p in secret_patterns):
+                        env_snapshot[k] = 'REDACTED'
+                    else:
+                        # Limit long values
+                        sval = str(v)
+                        env_snapshot[k] = sval if len(sval) < 200 else sval[:200] + '...'
+            except Exception:
+                pid = None
+                tid = None
+                hostname = None
+                python_version = None
+                env_snapshot = {}
+
+            # Sanitize metadata to avoid circular refs and non-serializable objects
+            try:
+                raw_meta = order_req.metadata if isinstance(order_req.metadata, dict) else {}
+                meta_copy = {}
+                for k, v in raw_meta.items():
+                    if k == 'provenance':
+                        continue
+                    try:
+                        json.dumps(v)
+                        meta_copy[k] = v
+                    except Exception:
+                        try:
+                            meta_copy[k] = str(v)
+                        except Exception:
+                            meta_copy[k] = None
+            except Exception:
+                meta_copy = {}
+
+            provenance = {
+                'timestamp': datetime.utcnow().isoformat() + 'Z',
+                'signal_id': order_req.signal_id,
+                'client_tag': order_req.client_tag,
+                'symbol': order_req.symbol,
+                'side': order_req.side,
+                'volume': order_req.volume,
+                'caller': caller_info,
+                'stack_snippet': stack_snippet,
+                'metadata': meta_copy,
+                'pid': pid,
+                'thread_id': tid,
+                'hostname': hostname,
+                'python_version': python_version,
+                'env_snapshot': env_snapshot
+            }
+            # Attach provenance into order metadata for downstream tracing
+            try:
+                order_req.metadata['provenance'] = provenance
+                order_req.metadata['provenance_logged'] = True
+            except Exception:
+                pass
+
+            # Persist to telemetry DB if available
+            try:
+                if hasattr(self, 'telemetry') and self.telemetry is not None:
+                    prov_id = self.telemetry.record_provenance(provenance)
+                    provenance['id'] = prov_id
+                    try:
+                        order_req.metadata['provenance_db_id'] = prov_id
+                    except Exception:
+                        pass
+            except Exception:
+                self.logger.exception('Failed to record provenance into telemetry DB')
+
+            # Log summary line
+            self.logger.info(f"Order provenance: signal_id={order_req.signal_id} client_tag={order_req.client_tag} caller={caller_info.get('module')}#{caller_info.get('function')} pid={pid} tid={tid} host={hostname}")
+            # Append to provenance log file
+            try:
+                logs_dir = os.path.join(os.path.dirname(__file__), '..', 'logs')
+                logs_dir = os.path.abspath(logs_dir)
+                os.makedirs(logs_dir, exist_ok=True)
+                prov_path = os.path.join(logs_dir, 'order_provenance.log')
+                with open(prov_path, 'a', encoding='utf-8') as f:
+                    f.write(json.dumps(provenance, default=str) + '\n')
+            except Exception:
+                self.logger.exception('Failed to write order provenance file')
+        except Exception:
+            self.logger.exception('Failed to record order provenance')
 
         # Check if already submitted (idempotency)
         if order_req.client_tag in self._submitted_orders:
@@ -300,7 +411,7 @@ class ExecutionEngine:
                 except Exception:
                     position_ticket = None
 
-                # Instrumentation: record order and execution events for ML
+                # Instrumentation: record order and execution events for ML and telemetry
                 try:
                     if self.ml_collector:
                         order_payload = {
@@ -314,8 +425,22 @@ class ExecutionEngine:
                             'sl': order_req.sl,
                             'tp': order_req.tp,
                             'client_tag': order_req.client_tag,
-                            'metadata': order_req.metadata
+                            'metadata': order_req.metadata,
+                            'provenance_id': order_req.metadata.get('provenance_db_id') if isinstance(order_req.metadata, dict) else None
                         }
+                        # Best-effort include a small provenance snapshot into ML payload
+                        try:
+                            prov = order_req.metadata.get('provenance') if isinstance(order_req.metadata, dict) else None
+                            if prov:
+                                order_payload['provenance_snippet'] = {
+                                    'caller': prov.get('caller'),
+                                    'pid': prov.get('pid'),
+                                    'thread_id': prov.get('thread_id'),
+                                    'hostname': prov.get('hostname')
+                                }
+                        except Exception:
+                            pass
+
                         self.ml_collector.record_order(order_payload)
 
                         exec_payload = {
@@ -326,7 +451,8 @@ class ExecutionEngine:
                             'price': getattr(result, 'price', None),
                             'volume': getattr(result, 'volume', None),
                             'timestamp': datetime.utcnow().isoformat() + 'Z',
-                            'metadata': md
+                            'metadata': md,
+                            'provenance_id': order_req.metadata.get('provenance_db_id') if isinstance(order_req.metadata, dict) else None
                         }
                         self.ml_collector.record_execution(exec_payload)
                 except Exception:

@@ -1,0 +1,182 @@
+"""Position manager and PositionInfo dataclass.
+
+Provides a lightweight in-memory position manager used for tracking open positions,
+calculating unrealized P&L, and simple reconciliation helpers. Designed to be
+thread-safe for basic operations.
+"""
+from __future__ import annotations
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Dict, List, Optional
+import threading
+
+
+@dataclass
+class PositionInfo:
+    ticket: int
+    symbol: str
+    volume: float
+    open_price: float = 0.0
+    current_price: float = 0.0
+    open_time: Optional[datetime] = None
+    side: str = "BUY"
+    metadata: dict = field(default_factory=dict)
+
+    def __init__(self, ticket: int, symbol: str, volume: float, open_price: Optional[float] = None,
+                 current_price: Optional[float] = None, open_time: Optional[datetime] = None,
+                 side: Optional[str] = None, _legacy_entry_price: Optional[float] = None,
+                 _legacy_position_type: Optional[str] = None, stop_loss: Optional[float] = None,
+                 take_profit: Optional[float] = None, **kwargs):
+        # Backwards-compatible legacy mapping
+        if _legacy_entry_price is not None and open_price is None:
+            open_price = _legacy_entry_price
+        if _legacy_position_type is not None and side is None:
+            side = _legacy_position_type
+
+        self.ticket = ticket
+        self.symbol = symbol
+        self.volume = float(volume)
+        self.open_price = float(open_price) if open_price is not None else 0.0
+        self.current_price = float(current_price) if current_price is not None else (self.open_price or 0.0)
+        self.open_time = open_time or datetime.utcnow()
+        self.side = (side or 'BUY').upper()
+        self.metadata = kwargs.get('metadata', {}) or {}
+        # Optional exit fields
+        self.stop_loss = stop_loss if 'stop_loss' in kwargs or stop_loss is not None else kwargs.get('stop_loss')
+        self.take_profit = take_profit if 'take_profit' in kwargs or take_profit is not None else kwargs.get('take_profit')
+
+    def get_age_hours(self) -> float:
+        try:
+            dt = self.open_time
+            if dt is None:
+                return 0.0
+            from datetime import datetime, timezone
+            now_utc = datetime.now(tz=timezone.utc)
+            # Handle naive datetimes consistently with system local time
+            if dt.tzinfo is None:
+                now = datetime.now()
+                return (now - dt).total_seconds() / 3600.0
+            else:
+                return (now_utc - dt).total_seconds() / 3600.0
+        except Exception:
+            return 0.0
+
+    @property
+    def unrealized_pnl(self) -> float:
+        return self.calculate_unrealized_pnl()
+
+    @property
+    def entry_price(self) -> float:
+        return self.open_price
+
+    @property
+    def position_type(self) -> str:
+        return self.side
+
+    def calculate_unrealized_pnl(self) -> float:
+        try:
+            # Simplified P&L: (current - entry) * volume for BUY, reversed for SELL
+            if self.side == 'BUY':
+                return (self.current_price - self.open_price) * self.volume
+            else:
+                return (self.open_price - self.current_price) * self.volume
+        except Exception:
+            return 0.0
+
+
+class PositionManager:
+    """In-memory position manager used by trading logic and tests."""
+
+    def __init__(self, connector=None, execution_engine=None):
+        self._positions: Dict[int, PositionInfo] = {}
+        self._lock = threading.RLock()
+        # Optional integration references
+        self.connector = connector
+        self.execution_engine = execution_engine
+
+    def add_position(self, pos: PositionInfo) -> None:
+        with self._lock:
+            self._positions[pos.ticket] = pos
+
+    def remove_position(self, ticket: int) -> None:
+        with self._lock:
+            if ticket in self._positions:
+                del self._positions[ticket]
+
+    def update_position(self, ticket: int, **kwargs) -> Optional[PositionInfo]:
+        with self._lock:
+            p = self._positions.get(ticket)
+            if not p:
+                return None
+            for k, v in kwargs.items():
+                if hasattr(p, k):
+                    setattr(p, k, v)
+                else:
+                    p.metadata[k] = v
+            return p
+
+    def get_position(self, ticket: int) -> Optional[PositionInfo]:
+        with self._lock:
+            return self._positions.get(ticket)
+
+    def get_all_positions(self) -> Dict[int, PositionInfo]:
+        with self._lock:
+            return dict(self._positions)
+
+    def get_positions_by_symbol(self, symbol: str) -> List[PositionInfo]:
+        with self._lock:
+            return [p for p in self._positions.values() if p.symbol == symbol]
+
+    # Compatibility alias used elsewhere
+    def get_positions(self, symbol: Optional[str] = None) -> List[PositionInfo]:
+        if symbol:
+            return self.get_positions_by_symbol(symbol)
+        return list(self.get_all_positions().values())
+
+    def calculate_total_pnl(self) -> float:
+        with self._lock:
+            total = 0.0
+            for p in self._positions.values():
+                total += p.calculate_unrealized_pnl()
+            return total
+
+    # Additional helpers that the trading loop expects
+    def track_position(self, execution_result, signal_metadata: dict = None) -> None:
+        """Create a PositionInfo from an execution result (best-effort)."""
+        try:
+            ticket = getattr(execution_result, 'order_id', None) or getattr(execution_result, 'position_ticket', None)
+            symbol = signal_metadata.get('symbol') if signal_metadata and 'symbol' in signal_metadata else getattr(execution_result, 'metadata', {}).get('symbol') if getattr(execution_result, 'metadata', None) else None
+            # Fallback: if symbol missing, leave unknown
+            pos = PositionInfo(
+                ticket=int(ticket or 0),
+                symbol=symbol or 'UNKNOWN',
+                volume=getattr(execution_result, 'executed_volume', getattr(execution_result, 'volume', 0.0)) or 0.0,
+                open_price=getattr(execution_result, 'executed_price', None) or 0.0,
+                current_price=getattr(execution_result, 'executed_price', None) or 0.0,
+                side=signal_metadata.get('side') if signal_metadata and 'side' in signal_metadata else 'BUY'
+            )
+            self.add_position(pos)
+        except Exception:
+            pass
+
+    def monitor_positions(self) -> List[PositionInfo]:
+        """Return currently tracked positions for monitoring."""
+        with self._lock:
+            return list(self._positions.values())
+
+    def reconcile_positions(self) -> int:
+        """Placeholder reconcile - in full system this would query MT5; here we return count."""
+        with self._lock:
+            return len(self._positions)
+
+    def get_statistics(self) -> dict:
+        return {'open_positions': len(self._positions), 'total_unrealized_pnl': self.calculate_total_pnl()}
+
+    def get_position_summary_by_symbol(self) -> dict:
+        out = {}
+        with self._lock:
+            for p in self._positions.values():
+                out.setdefault(p.symbol, {'count': 0, 'volume': 0.0})
+                out[p.symbol]['count'] += 1
+                out[p.symbol]['volume'] += p.volume
+        return out

@@ -98,8 +98,12 @@ class Indicator(ABC):
         }
         
     def update_calculation_time(self):
-        """Update last calculation timestamp."""
-        self._last_calculation = datetime.now()
+        """Update last calculation timestamp (ensure monotonic uniqueness)."""
+        from datetime import timedelta
+        new_ts = datetime.now()
+        if self._last_calculation is not None and new_ts == self._last_calculation:
+            new_ts = new_ts + timedelta(microseconds=1)
+        self._last_calculation = new_ts
         
     def get_metadata(self) -> Dict[str, Any]:
         """

@@ -122,11 +122,11 @@ class StrategySelector:
         self.regime_history = deque(maxlen=20)
         
         # Configuration
-        self.regime_check_interval = config.get('regime_check_interval', 300)  # 5 minutes
-        self.min_strategy_signals = config.get('min_strategy_signals', 5)
-        self.performance_weight = config.get('performance_weight', 0.4)
-        self.regime_weight = config.get('regime_weight', 0.4)
-        self.confidence_weight = config.get('confidence_weight', 0.2)
+        self.regime_check_interval = self.config.get('regime_check_interval', 300)  # 5 minutes
+        self.min_strategy_signals = self.config.get('min_strategy_signals', 5)
+        self.performance_weight = self.config.get('performance_weight', 0.4)
+        self.regime_weight = self.config.get('regime_weight', 0.4)
+        self.confidence_weight = self.config.get('confidence_weight', 0.2)
         
         # Strategy-regime affinity (which strategies work best in which regimes)
         self.strategy_affinity = {
@@ -204,15 +204,21 @@ class StrategySelector:
         # Regime detection logic
         regime = MarketRegime.RANGING  # Default
         
-        # High volatility regime
-        if volatility_ratio > 1.5 or bb_width_ratio > 1.5:
+        # High volatility regime (loosened thresholds + additional check)
+        returns_std = 0.0
+        try:
+            returns_std = data['close'].pct_change().rolling(20).std().iloc[-1]
+        except Exception:
+            returns_std = 0.0
+
+        if volatility_ratio > 1.1 or bb_width_ratio > 1.1 or returns_std > 0.01:
             regime = MarketRegime.VOLATILE
-            
+
         # Trending regimes
         elif adx and adx > adx_threshold_strong:
-            if returns > 0.02:
+            if returns > 0.005:
                 regime = MarketRegime.TRENDING_UP
-            elif returns < -0.02:
+            elif returns < -0.005:
                 regime = MarketRegime.TRENDING_DOWN
             else:
                 regime = MarketRegime.RANGING

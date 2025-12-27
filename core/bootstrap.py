@@ -41,6 +41,7 @@ class SystemComponents:
     position_tracker: PositionTracker
     position_lifecycle: PositionLifecycle
     trade_adoption_manager: TradeAdoptionManager
+    exit_coordinator: PositionLifecycle
     database: Database
     metrics: MetricsCollector
     
@@ -152,16 +153,17 @@ class HeraldBootstrap:
         
         # Build RiskLimits with defaults
         risk_limits = RiskLimits(
-            max_position_size_pct=risk_config.get('max_position_size_pct', 0.02),
-            max_total_exposure_pct=risk_config.get('max_total_exposure_pct', 0.10),
-            max_daily_loss_pct=risk_config.get('max_daily_loss_pct', 0.05),
-            max_positions_per_symbol=risk_config.get('max_positions_per_symbol', 1),
-            max_total_positions=risk_config.get('max_total_positions', 3),
-            min_risk_reward_ratio=risk_config.get('min_risk_reward_ratio', 1.0),
+            max_position_size_percent=risk_config.get('max_position_size_percent', 2.0),
+            max_total_exposure_percent=risk_config.get('max_total_exposure_percent', 10.0),
+            max_daily_loss=risk_config.get('max_daily_loss', 500.0),
+            max_positions_per_symbol=risk_config.get('max_positions_per_symbol', 3),
+            min_risk_reward_ratio=risk_config.get('min_risk_reward_ratio', 1.5),
+            max_spread_points=risk_config.get('max_spread_points', 10.0),
+            min_confidence=risk_config.get('min_confidence', 0.0),
+            emergency_shutdown_enabled=risk_config.get('emergency_shutdown_enabled', True)
         )
         
-        risk_evaluator = RiskEvaluator(risk_limits)
-        return risk_evaluator
+        return risk_limits
     
     def initialize_execution_engine(self, connector: MT5Connector, config: Dict[str, Any],
                                    ml_collector: Any = None) -> ExecutionEngine:
@@ -199,22 +201,24 @@ class HeraldBootstrap:
     
     def initialize_position_lifecycle(self, connector: MT5Connector,
                                       execution_engine: ExecutionEngine,
+                                      position_tracker: PositionTracker,
                                       database: Database) -> PositionLifecycle:
         """Initialize position lifecycle manager.
         
         Args:
             connector: MT5 connector instance
             execution_engine: Execution engine instance
+            position_tracker: PositionTracker instance
             database: Database instance
             
         Returns:
             Initialized PositionLifecycle instance
         """
         self.logger.info("Initializing position lifecycle...")
-        position_lifecycle = PositionLifecycle(connector, execution_engine, database)
+        position_lifecycle = PositionLifecycle(connector, execution_engine, position_tracker, database)
         return position_lifecycle
     
-    def initialize_trade_adoption_manager(self, position_tracker: PositionTracker,
+    def initialize_trade_adoption_manager(self, connector: MT5Connector, position_tracker: PositionTracker,
                                           position_lifecycle: PositionLifecycle,
                                           config: Dict[str, Any]) -> TradeAdoptionManager:
         """Initialize trade adoption manager for external trade adoption.
@@ -230,25 +234,24 @@ class HeraldBootstrap:
         trade_adoption_config = config.get('orphan_trades', {})
         trade_adoption_policy = TradeAdoptionPolicy(
             enabled=trade_adoption_config.get('enabled', False),
-            adopt_symbols=trade_adoption_config.get('adopt_symbols', []),
-            ignore_symbols=trade_adoption_config.get('ignore_symbols', []),
-            apply_exit_strategies=trade_adoption_config.get('apply_exit_strategies', True),
-            max_adoption_age_hours=trade_adoption_config.get('max_adoption_age_hours', 0.0),
-            log_only=trade_adoption_config.get('log_only', False)
+            allowed_symbols=trade_adoption_config.get('adopt_symbols') or None,
+            blocked_symbols=trade_adoption_config.get('ignore_symbols', []),
+            max_age_hours=trade_adoption_config.get('max_adoption_age_hours'),
+            min_age_seconds=trade_adoption_config.get('min_age_seconds', 60),
+            min_volume=trade_adoption_config.get('min_volume'),
+            max_volume=trade_adoption_config.get('max_volume'),
+            excluded_magic_numbers=set(trade_adoption_config.get('excluded_magic_numbers', [])),
+            apply_emergency_sl=trade_adoption_config.get('apply_emergency_sl', True),
+            emergency_sl_points=trade_adoption_config.get('emergency_sl_points', 100),
+            apply_emergency_tp=trade_adoption_config.get('apply_emergency_tp', False),
+            emergency_tp_points=trade_adoption_config.get('emergency_tp_points', 100)
         )
         
-        # Get defaults from risk config
-        risk_config = config.get('risk', {})
-        default_stop_pct = risk_config.get('emergency_stop_loss_pct', 8.0)
-        default_rr = config.get('strategy', {}).get('params', {}).get('risk_reward_ratio', 2.0)
-        
         trade_adoption_manager = TradeAdoptionManager(
+            connector,
             position_tracker,
             position_lifecycle,
-            trade_adoption_policy,
-            default_stop_pct=default_stop_pct,
-            default_rr=default_rr,
-            config=config
+            trade_adoption_policy
         )
         
         if trade_adoption_policy.enabled:
@@ -388,7 +391,6 @@ class HeraldBootstrap:
             monitor = TradeMonitor(
                 position_tracker,
                 position_lifecycle,
-                trade_adoption_manager=trade_adoption_manager,
                 poll_interval=poll_interval,
                 ml_collector=ml_collector
             )
@@ -422,7 +424,8 @@ class HeraldBootstrap:
         # Initialize core components
         connector = self.initialize_connector(config)
         data_layer = self.initialize_data_layer(config)
-        risk_manager = self.initialize_risk_manager(config)
+        # Compute risk limits configuration (create RiskEvaluator later when position tracker is available)
+        risk_limits = self.initialize_risk_manager(config)
         
         # Initialize ML collector before execution engine
         ml_collector = self.initialize_ml_collector(config, args)
@@ -432,11 +435,23 @@ class HeraldBootstrap:
         
         # Initialize persistence first (needed by lifecycle)
         database = self.initialize_database(config)
+        # Wire telemetry helper to execution engine so provenance is persisted
+        try:
+            from herald.observability.telemetry import Telemetry
+            telemetry = Telemetry(database)
+            execution_engine.telemetry = telemetry
+        except Exception:
+            telemetry = None
+            self.logger.debug('Telemetry helper unavailable; provenance will still be logged to file')
         
         # Initialize position management components
         position_tracker = self.initialize_position_tracker(connector)
-        position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, database)
-        trade_adoption_manager = self.initialize_trade_adoption_manager(position_tracker, position_lifecycle, config)
+        # Now we can construct the risk evaluator with the connector and position tracker
+        risk_manager = RiskEvaluator(connector, position_tracker, limits=risk_limits)
+        self.logger.info('RiskEvaluator initialized with runtime dependencies')
+        
+        position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, position_tracker, database)
+        trade_adoption_manager = self.initialize_trade_adoption_manager(connector, position_tracker, position_lifecycle, config)
         
         # Initialize metrics
         metrics = self.initialize_metrics(database)
@@ -445,8 +460,7 @@ class HeraldBootstrap:
         try:
             execution_engine.metrics = metrics
         except Exception:
-            self.logger.debug('Failed to attach metrics to execution engine')
-        
+            self.logger.debug('Failed to attach metrics to execution engine')        
         # Initialize optional components
         advisory_manager = self.initialize_advisory_manager(config, execution_engine, ml_collector)
         exporter = self.initialize_prometheus_exporter(config)
@@ -462,6 +476,7 @@ class HeraldBootstrap:
             position_tracker=position_tracker,
             position_lifecycle=position_lifecycle,
             trade_adoption_manager=trade_adoption_manager,
+            exit_coordinator=position_lifecycle,
             database=database,
             metrics=metrics,
             ml_collector=ml_collector,

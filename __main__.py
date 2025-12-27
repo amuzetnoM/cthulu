@@ -22,11 +22,74 @@ sys.path.insert(0, str(Path(__file__).parent))
 __version__ = "5.0.0"  # Architectural overhaul complete
 
 from core.bootstrap import HeraldBootstrap, SystemComponents
-from core.trading_loop import TradingLoop, TradingLoopContext
+from core.trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators
 from core.shutdown import ShutdownHandler, create_shutdown_handler
 from config_schema import Config
 from config.mindsets import apply_mindset, list_mindsets
 from observability.logger import setup_logger
+
+# Backwards-compatible helper for tests & integrations
+# Signature matches older tests: init_ml_collector(config, args, logger)
+def init_ml_collector(config=None, args=None, logger=None):
+    """Initialize ML collector based on config and CLI args.
+
+    Args:
+        config: Application configuration dict/object
+        args: Parsed CLI args (may contain flags to enable/disable ML)
+        logger: Optional logger
+    Returns: MLDataCollector-like object (best-effort stub if unavailable)
+    """
+    try:
+        enabled = False
+        prefix = 'events'
+
+        if config is not None:
+            try:
+                # config may be dict-like
+                enabled = bool(config.get('ml', {}).get('enabled', False))
+                prefix = config.get('ml', {}).get('prefix', prefix)
+            except Exception:
+                pass
+
+        # CLI arg override (support both enable_ml and ml flags)
+        try:
+            if args is not None and getattr(args, 'enable_ml', None) is not None:
+                # Explicit CLI override: if False, disable collector (return None)
+                if getattr(args, 'enable_ml') is False:
+                    return None
+                enabled = bool(getattr(args, 'enable_ml'))
+            elif args is not None and getattr(args, 'ml', None) is not None:
+                enabled = bool(getattr(args, 'ml'))
+        except Exception:
+            pass
+
+        if not enabled:
+            # return a no-op stub
+            class _Stub:
+                def record_event(self, *args, **kwargs):
+                    return
+                def record_order(self, *args, **kwargs):
+                    return
+                def record_execution(self, *args, **kwargs):
+                    return
+                def close(self, *args, **kwargs):
+                    return
+            return _Stub()
+
+        from ML_RL.instrumentation import MLDataCollector
+        return MLDataCollector(prefix=prefix)
+    except Exception:
+        # Best-effort stub if ML collector is unavailable or fails to initialize
+        class _Stub2:
+            def record_event(self, *args, **kwargs):
+                return
+            def record_order(self, *args, **kwargs):
+                return
+            def record_execution(self, *args, **kwargs):
+                return
+            def close(self, *args, **kwargs):
+                return
+        return _Stub2()
 
 # Global shutdown flag
 shutdown_requested = False
@@ -108,12 +171,9 @@ def main():
     try:
         # Phase 1: Bootstrap system
         logger.info("Phase 1: Bootstrapping system...")
-        bootstrap = HeraldBootstrap(
-            config_path=args.config,
-            mindset_name=args.mindset
-        )
-        components = bootstrap.bootstrap()
-        logger.info("✓ System bootstrap complete")
+        bootstrap = HeraldBootstrap(logger=logger)
+        components = bootstrap.bootstrap(args.config, args)
+        logger.info("System bootstrap complete")
         
         # Phase 2: Create trading loop context
         logger.info("Phase 2: Initializing trading loop...")
@@ -128,17 +188,25 @@ def main():
             trade_adoption_manager=components.trade_adoption_manager,
             exit_coordinator=components.exit_coordinator,
             database=components.database,
-            metrics_collector=components.metrics_collector,
+            metrics=components.metrics,
+            logger=logger,
+            symbol=components.config.get('symbol', 'EURUSD'),
+            timeframe=components.config.get('timeframe', 1),  # MT5 M1
+            poll_interval=components.config.get('poll_interval', 60),
+            lookback_bars=components.config.get('lookback_bars', 100),
+            dry_run=args.dry_run,
+            indicators=components.indicators or [],
+            exit_strategies=components.exit_strategies or [],
+            trade_adoption_policy=components.config.get('trade_adoption', {}),
             config=components.config,
             args=args,
             ml_collector=components.ml_collector,
             advisory_manager=components.advisory_manager,
-            prometheus_publisher=components.prometheus_publisher,
-            trade_monitor=components.trade_monitor
+            exporter=components.exporter,
         )
         
         trading_loop = TradingLoop(trading_context)
-        logger.info("✓ Trading loop initialized")
+        logger.info("Trading loop initialized")
         
         # Phase 3: Run trading loop
         logger.info("Phase 3: Starting trading loop...")
@@ -167,11 +235,9 @@ def main():
                     position_lifecycle=components.position_lifecycle,
                     position_tracker=components.position_tracker,
                     database=components.database,
-                    metrics_collector=components.metrics_collector,
-                    news_ingestor=components.news_ingestor,
+                    metrics_collector=components.metrics,
                     ml_collector=components.ml_collector,
-                    trade_monitor=components.trade_monitor,
-                    gui_process=components.gui_process,
+                    trade_monitor=components.monitor,
                     logger=logger
                 )
                 

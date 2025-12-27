@@ -7,13 +7,16 @@
 ```
 
 # Herald
-*version 4.0.0*  [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
+*version 4.0.0 [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
 
 ![Status](https://img.shields.io/badge/status-hardened-success?style=for-the-badge)
 [![Python](https://img.shields.io/badge/python-3.10--3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![MT5](https://img.shields.io/badge/MetaTrader-5-0066CC?style=for-the-badge)](https://www.metatrader5.com/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![Phase 4](https://img.shields.io/badge/phase%204-%20multi--strategy-brightgreen?style=for-the-badge)](docs/CHANGELOG.md)
+
+[![CI](https://img.shields.io/github/actions/workflow/status/amuzetnoM/herald/ci.yml?branch=main&style=for-the-badge)](https://github.com/amuzetnoM/herald/actions)
+[![Coverage](https://img.shields.io/badge/coverage-unknown-lightgrey?style=for-the-badge)](https://codecov.io/gh/amuzetnoM/herald)
 
 > **Adaptive Trading Intelligence**
 <br> A complete autonomous multi-strategy trading system with dynamic strategy selection, next-gen indicators, and enhanced monitoring
@@ -224,6 +227,7 @@ Trades placed via `herald-trade` use Herald's magic number, so they are automati
 | **Database-Driven History** | Complete trade records with entry/exit details, P&L, timestamps |
 | **Prometheus Metrics** | Performance snapshots, rolling Sharpe ratio, drawdown tracking |
 | **Structured Logging** | JSON-formatted logs with correlation IDs |
+| **DB-backed Provenance** | `order_provenance` table, JSONL audit log, CLI (`query_provenance.py`, `purge_provenance.py`) and RPC `GET /provenance` endpoint for long-term order provenance and telemetry |
 | **Health Monitoring** | Connection status, position reconciliation, emergency shutdown |
 | **RPC Interface** | Local HTTP API for external integrations |
 

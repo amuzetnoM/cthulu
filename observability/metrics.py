@@ -93,6 +93,41 @@ class MetricsCollector:
         self.database = database
         self.trade_results: List[float] = []
         self.equity_curve: List[float] = [0.0]
+        # Ensure base attributes exist even if reset fails
+        self.symbol_aggregates = {}
+        self.total_trades = 0
+        self.winning_trades = 0
+        self.losing_trades = 0
+        self.total_profit = 0.0
+        self.total_loss = 0.0
+        self.positions_opened = 0
+        self.unrealized_by_symbol = {}
+        # Initialize full state
+        self.reset()
+
+    def reset(self):
+        """Reset internal metrics state (useful for unit tests)."""
+        self.trade_results = []
+        self.equity_curve = [0.0]
+        self.peak_equity = 0.0
+        self.peak_time = None
+        self.drawdown_start_time = None
+        self.max_drawdown_duration_seconds = 0.0
+        self.current_drawdown_duration_seconds = 0.0
+        self.max_drawdown = 0.0
+        self.total_trades = 0
+        self.winning_trades = 0
+        self.losing_trades = 0
+        self.total_profit = 0.0
+        self.total_loss = 0.0
+        self.positions_opened = 0
+        self.symbol_aggregates = {}
+        self.unrealized_by_symbol = {}
+        self.rr_list = []
+        self.abs_max_drawdown_amount = 0.0
+        self.rolling_sharpe = None
+        self.rolling_window_size = 50
+        self.rolling_sharpe = None
         self.peak_equity: float = 0.0
         self.peak_time: Optional[datetime] = None
         self.drawdown_start_time: Optional[datetime] = None
@@ -177,7 +212,7 @@ class MetricsCollector:
         except Exception as e:
             self.logger.warning(f"Failed to load open positions: {e}")
 
-    def record_trade(self, profit: float, symbol: str, risk: Optional[float] = None, reward: Optional[float] = None):
+    def record_trade(self, profit: float, symbol: str = 'UNKNOWN', risk: Optional[float] = None, reward: Optional[float] = None):
         """
         Record trade result.
         
@@ -564,15 +599,4 @@ class MetricsCollector:
 
         self.logger.info("============================================================")
         
-    def reset(self):
-        """Reset all metrics."""
-        self.trade_results.clear()
-        self.equity_curve = [0.0]
-        self.peak_equity = 0.0
-        self.max_drawdown = 0.0
-        self.total_trades = 0
-        self.winning_trades = 0
-        self.losing_trades = 0
-        self.total_profit = 0.0
-        self.total_loss = 0.0
-        self.logger.info("Metrics reset")
+

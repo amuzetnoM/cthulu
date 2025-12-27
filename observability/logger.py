@@ -13,7 +13,7 @@ from pathlib import Path
 
 def setup_logger(
     name: str = "herald",
-    level: str = "INFO",
+    level: "str|int" = "INFO",
     log_file: Optional[str] = None,
     json_format: bool = False
 ) -> logging.Logger:
@@ -30,14 +30,20 @@ def setup_logger(
         Configured logger
     """
     logger = logging.getLogger(name)
-    logger.setLevel(getattr(logging, level.upper()))
+    # Support both integer and string levels
+    if isinstance(level, int):
+        level_value = level
+    else:
+        level_value = getattr(logging, str(level).upper(), logging.INFO)
+
+    logger.setLevel(level_value)
     
     # Clear existing handlers
     logger.handlers.clear()
     
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(getattr(logging, level.upper()))
+    console_handler.setLevel(level_value)
     
     if json_format:
         # JSON format for production

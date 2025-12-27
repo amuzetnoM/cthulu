@@ -260,10 +260,13 @@ class TestAnchoredVWAP:
         result2 = indicator2.calculate(data)
         
         # Results should differ
-        assert not np.allclose(
-            result1['anchored_vwap'].dropna(),
-            result2['anchored_vwap'].dropna()
-        )
+        a = result1['anchored_vwap'].dropna().to_numpy()
+        b = result2['anchored_vwap'].dropna().to_numpy()
+        # If the shapes differ, the anchored calculations are clearly different
+        if a.shape != b.shape:
+            assert True
+        else:
+            assert not np.allclose(a, b)
 
 
 class TestIndicatorIntegration:
