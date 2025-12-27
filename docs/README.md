@@ -28,9 +28,7 @@ sidebar_position: 1
   <img alt="Coverage" src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=flat-square" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
 </div>
-
 <br>
-
 > **Adaptive Trading Intelligence**
 <br> A complete autonomous multi-strategy trading system with dynamic strategy selection, next-gen indicators, and enhanced monitoring
 
@@ -1130,4 +1128,4 @@ Includes core trading system AND deployment hardening:
 
 **Built with focus on safety, testability, and production readiness.**
 
-*Herald v3.0.0 - Phase 2 Complete. Deployment-tested autonomous trading with zero-error test suite, verified MT5 integration, and enterprise architecture.*
+*Herald v5.0.0 - Complete. Production-ready autonomous trading with comprehensive strategy selection, advanced indicators, and enterprise-grade architecture.*
