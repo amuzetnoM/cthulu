@@ -1,5 +1,13 @@
+---
+title: Architecture Overview
+description: Technical architecture and system design of the Herald multi-strategy autonomous trading platform
+tags: [architecture, system-design, technical-overview]
+slug: /docs/architecture
+sidebar_position: 3
+---
+
 # Herald Architecture Overview
-**Version 4.0.0 - Phase 4: Multi-Strategy Autonomous Trading**
+**Version 5.0.0 - Phase 4: Enhanced Multi-Strategy Autonomous Trading**
 
 ## System Architecture (Phase 4)
 
@@ -44,10 +52,10 @@
 │   Data Layer    │   │  Indicator Library  │
 │   (data/)       │   │  (indicators/)      │
 │                 │   │                     │
-│ - OHLCV norm    │   │ - RSI, MACD, BB     │
-│ - Indicators    │   │ - Stochastic, ADX   │
-│ - Caching       │   │ - Supertrend, VWAP  │
-│ - Resampling    │   │ - Anchored VWAP     │
+│ - OHLCV norm    │   │ - RSI, MACD, BB, Stoch │
+│ - Indicators    │   │ - ADX, Supertrend, VWAP │
+│ - Caching       │   │ - VPT, Vol Osc, PVT, ATR │
+│ - Resampling    │   │ - Williams %R, Anchored VWAP │
 └────────┬────────┘   └─────────┬──────────┘
          │                       │
          └──────────┬────────────┘
@@ -59,8 +67,8 @@
 │ Strategy Engine │   │  Execution Engine   │
 │ (strategy/)     │   │  (execution/)       │
 │                 │   │                     │
-│ - 4 Strategies  │   │ - Idempotent orders │
-│ - Regime Detect │   │ - ML instrumentation│
+│ - 6 Strategies  │   │ - Idempotent orders │
+│ - 10 Regime Detect │   │ - ML instrumentation│
 │ - Performance   │   │ - Reconciliation    │
 │ - Selection     │   │ - Error recovery    │
 └────────┬────────┘   └─────────┬──────────┘

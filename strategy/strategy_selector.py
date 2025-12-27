@@ -17,11 +17,16 @@ from herald.strategy.base import Strategy, Signal
 
 class MarketRegime:
     """Market regime classification."""
-    TRENDING_UP = "trending_up"
-    TRENDING_DOWN = "trending_down"
-    RANGING = "ranging"
-    VOLATILE = "volatile"
+    TRENDING_UP_STRONG = "trending_up_strong"
+    TRENDING_UP_WEAK = "trending_up_weak"
+    TRENDING_DOWN_STRONG = "trending_down_strong"
+    TRENDING_DOWN_WEAK = "trending_down_weak"
+    RANGING_TIGHT = "ranging_tight"
+    RANGING_WIDE = "ranging_wide"
+    VOLATILE_BREAKOUT = "volatile_breakout"
+    VOLATILE_CONSOLIDATION = "volatile_consolidation"
     CONSOLIDATING = "consolidating"
+    REVERSAL = "reversal"
 
 
 class StrategyPerformance:
@@ -117,7 +122,7 @@ class StrategySelector:
         
         # Current state
         self.current_strategy = None
-        self.current_regime = MarketRegime.RANGING
+        self.current_regime = MarketRegime.RANGING_TIGHT
         self.last_regime_check = None
         self.regime_history = deque(maxlen=20)
         
@@ -131,32 +136,76 @@ class StrategySelector:
         # Strategy-regime affinity (which strategies work best in which regimes)
         self.strategy_affinity = {
             'sma_crossover': {
-                MarketRegime.TRENDING_UP: 0.9,
-                MarketRegime.TRENDING_DOWN: 0.9,
-                MarketRegime.RANGING: 0.3,
-                MarketRegime.VOLATILE: 0.5,
-                MarketRegime.CONSOLIDATING: 0.4
+                MarketRegime.TRENDING_UP_STRONG: 0.95,
+                MarketRegime.TRENDING_UP_WEAK: 0.85,
+                MarketRegime.TRENDING_DOWN_STRONG: 0.95,
+                MarketRegime.TRENDING_DOWN_WEAK: 0.85,
+                MarketRegime.RANGING_TIGHT: 0.4,
+                MarketRegime.RANGING_WIDE: 0.6,
+                MarketRegime.VOLATILE_BREAKOUT: 0.7,
+                MarketRegime.VOLATILE_CONSOLIDATION: 0.5,
+                MarketRegime.CONSOLIDATING: 0.5,
+                MarketRegime.REVERSAL: 0.3
             },
             'ema_crossover': {
-                MarketRegime.TRENDING_UP: 0.95,
-                MarketRegime.TRENDING_DOWN: 0.95,
-                MarketRegime.RANGING: 0.4,
-                MarketRegime.VOLATILE: 0.6,
-                MarketRegime.CONSOLIDATING: 0.5
+                MarketRegime.TRENDING_UP_STRONG: 0.98,
+                MarketRegime.TRENDING_UP_WEAK: 0.90,
+                MarketRegime.TRENDING_DOWN_STRONG: 0.98,
+                MarketRegime.TRENDING_DOWN_WEAK: 0.90,
+                MarketRegime.RANGING_TIGHT: 0.5,
+                MarketRegime.RANGING_WIDE: 0.7,
+                MarketRegime.VOLATILE_BREAKOUT: 0.8,
+                MarketRegime.VOLATILE_CONSOLIDATION: 0.6,
+                MarketRegime.CONSOLIDATING: 0.6,
+                MarketRegime.REVERSAL: 0.4
             },
             'momentum_breakout': {
-                MarketRegime.TRENDING_UP: 0.8,
-                MarketRegime.TRENDING_DOWN: 0.8,
-                MarketRegime.RANGING: 0.5,
-                MarketRegime.VOLATILE: 0.9,
-                MarketRegime.CONSOLIDATING: 0.3
+                MarketRegime.TRENDING_UP_STRONG: 0.8,
+                MarketRegime.TRENDING_UP_WEAK: 0.6,
+                MarketRegime.TRENDING_DOWN_STRONG: 0.8,
+                MarketRegime.TRENDING_DOWN_WEAK: 0.6,
+                MarketRegime.RANGING_TIGHT: 0.7,
+                MarketRegime.RANGING_WIDE: 0.8,
+                MarketRegime.VOLATILE_BREAKOUT: 0.95,
+                MarketRegime.VOLATILE_CONSOLIDATION: 0.4,
+                MarketRegime.CONSOLIDATING: 0.3,
+                MarketRegime.REVERSAL: 0.9
             },
             'scalping': {
-                MarketRegime.TRENDING_UP: 0.6,
-                MarketRegime.TRENDING_DOWN: 0.6,
-                MarketRegime.RANGING: 0.9,
-                MarketRegime.VOLATILE: 0.4,
-                MarketRegime.CONSOLIDATING: 0.7
+                MarketRegime.TRENDING_UP_STRONG: 0.7,
+                MarketRegime.TRENDING_UP_WEAK: 0.5,
+                MarketRegime.TRENDING_DOWN_STRONG: 0.7,
+                MarketRegime.TRENDING_DOWN_WEAK: 0.5,
+                MarketRegime.RANGING_TIGHT: 0.95,
+                MarketRegime.RANGING_WIDE: 0.8,
+                MarketRegime.VOLATILE_BREAKOUT: 0.6,
+                MarketRegime.VOLATILE_CONSOLIDATION: 0.9,
+                MarketRegime.CONSOLIDATING: 0.8,
+                MarketRegime.REVERSAL: 0.7
+            },
+            'mean_reversion': {
+                MarketRegime.TRENDING_UP_STRONG: 0.3,
+                MarketRegime.TRENDING_UP_WEAK: 0.4,
+                MarketRegime.TRENDING_DOWN_STRONG: 0.3,
+                MarketRegime.TRENDING_DOWN_WEAK: 0.4,
+                MarketRegime.RANGING_TIGHT: 0.95,
+                MarketRegime.RANGING_WIDE: 0.85,
+                MarketRegime.VOLATILE_BREAKOUT: 0.5,
+                MarketRegime.VOLATILE_CONSOLIDATION: 0.7,
+                MarketRegime.CONSOLIDATING: 0.9,
+                MarketRegime.REVERSAL: 0.8
+            },
+            'trend_following': {
+                MarketRegime.TRENDING_UP_STRONG: 0.98,
+                MarketRegime.TRENDING_UP_WEAK: 0.9,
+                MarketRegime.TRENDING_DOWN_STRONG: 0.98,
+                MarketRegime.TRENDING_DOWN_WEAK: 0.9,
+                MarketRegime.RANGING_TIGHT: 0.2,
+                MarketRegime.RANGING_WIDE: 0.3,
+                MarketRegime.VOLATILE_BREAKOUT: 0.8,
+                MarketRegime.VOLATILE_CONSOLIDATION: 0.4,
+                MarketRegime.CONSOLIDATING: 0.3,
+                MarketRegime.REVERSAL: 0.5
             }
         }
         
@@ -164,7 +213,7 @@ class StrategySelector:
         
     def detect_market_regime(self, data: pd.DataFrame) -> str:
         """
-        Detect current market regime from price data.
+        Detect current market regime from price data using multiple indicators.
         
         Args:
             data: DataFrame with OHLCV and indicators
@@ -173,85 +222,70 @@ class StrategySelector:
             Market regime classification
         """
         if len(data) < 50:
-            return MarketRegime.RANGING
+            return MarketRegime.RANGING_TIGHT
             
-        # Calculate trend indicators
-        if 'adx' in data.columns:
-            adx = data['adx'].iloc[-1]
-            adx_threshold_strong = 25
-            adx_threshold_weak = 20
-        else:
-            adx = None
-            
-        # Calculate price momentum
+        # Get latest values
+        adx = data['adx'].iloc[-1] if 'adx' in data.columns else None
+        rsi = data['rsi'].iloc[-1] if 'rsi' in data.columns else 50
+        macd = data['macd'].iloc[-1] if 'macd' in data.columns else 0
+        macd_signal = data['macd_signal'].iloc[-1] if 'macd_signal' in data.columns else 0
+        bb_upper = data['bb_upper'].iloc[-1] if 'bb_upper' in data.columns else data['high'].iloc[-1]
+        bb_lower = data['bb_lower'].iloc[-1] if 'bb_lower' in data.columns else data['low'].iloc[-1]
+        
+        # Calculate additional metrics
         returns = data['close'].pct_change(20).iloc[-1]
+        volatility = data['close'].pct_change().rolling(20).std().iloc[-1]
+        bb_width = (bb_upper - bb_lower) / data['close'].iloc[-1]  # Normalized BB width
         
-        # Calculate volatility (ATR ratio)
-        if 'atr' in data.columns:
-            atr = data['atr'].iloc[-1]
-            atr_avg = data['atr'].rolling(50).mean().iloc[-1]
-            volatility_ratio = atr / atr_avg if atr_avg > 0 else 1.0
-        else:
-            volatility_ratio = 1.0
-            
-        # Calculate Bollinger Band width (if available)
-        bb_width_ratio = 1.0
-        if 'bb_upper' in data.columns and 'bb_lower' in data.columns:
-            bb_width = data['bb_upper'].iloc[-1] - data['bb_lower'].iloc[-1]
-            bb_width_avg = (data['bb_upper'] - data['bb_lower']).rolling(50).mean().iloc[-1]
-            bb_width_ratio = bb_width / bb_width_avg if bb_width_avg > 0 else 1.0
+        # Trend strength indicators
+        trend_strength = adx if adx else abs(returns) * 100
         
-        # Regime detection logic
-        regime = MarketRegime.RANGING  # Default
+        # MACD momentum
+        macd_histogram = macd - macd_signal
+        macd_trend = 1 if macd_histogram > 0 else -1
         
-        # High volatility regime (loosened thresholds + additional check)
-        returns_std = 0.0
-        try:
-            returns_std = data['close'].pct_change().rolling(20).std().iloc[-1]
-        except Exception:
-            returns_std = 0.0
-
-        if volatility_ratio > 1.1 or bb_width_ratio > 1.1 or returns_std > 0.01:
-            regime = MarketRegime.VOLATILE
-
-        # Trending regimes
-        elif adx and adx > adx_threshold_strong:
-            if returns > 0.005:
-                regime = MarketRegime.TRENDING_UP
-            elif returns < -0.005:
-                regime = MarketRegime.TRENDING_DOWN
-            else:
-                regime = MarketRegime.RANGING
-                
-        # Consolidation
-        elif bb_width_ratio < 0.7 and (not adx or adx < adx_threshold_weak):
+        # Price position in BB
+        price_pos = (data['close'].iloc[-1] - bb_lower) / (bb_upper - bb_lower) if bb_upper != bb_lower else 0.5
+        
+        # Regime classification logic
+        regime = MarketRegime.RANGING_TIGHT  # Default
+        
+        # Strong trending regimes
+        if trend_strength > 30:
+            if returns > 0.005:  # Strong uptrend
+                regime = MarketRegime.TRENDING_UP_STRONG
+            elif returns < -0.005:  # Strong downtrend
+                regime = MarketRegime.TRENDING_DOWN_STRONG
+            elif returns > 0.002:  # Weak uptrend
+                regime = MarketRegime.TRENDING_UP_WEAK
+            elif returns < -0.002:  # Weak downtrend
+                regime = MarketRegime.TRENDING_DOWN_WEAK
+        
+        # Volatile regimes
+        elif volatility > 0.015:  # High volatility
+            if bb_width > 0.03:  # Wide bands = potential breakout
+                regime = MarketRegime.VOLATILE_BREAKOUT
+            else:  # Tight bands = consolidation before move
+                regime = MarketRegime.VOLATILE_CONSOLIDATION
+        
+        # Ranging regimes
+        elif bb_width < 0.015:  # Tight range
+            regime = MarketRegime.RANGING_TIGHT
+        elif bb_width > 0.025:  # Wide range
+            regime = MarketRegime.RANGING_WIDE
+        
+        # Consolidation (low volatility, medium trend)
+        elif trend_strength < 20 and volatility < 0.01:
             regime = MarketRegime.CONSOLIDATING
-            
-        # Ranging (default for weak trends)
-        else:
-            regime = MarketRegime.RANGING
-            
-        self.regime_history.append({
-            'regime': regime,
-            'timestamp': datetime.now(),
-            'adx': adx,
-            'returns': returns,
-            'volatility_ratio': volatility_ratio
-        })
         
-        # Format ADX safely
-        try:
-            adx_str = f"{adx:.1f}" if adx is not None else "N/A"
-        except Exception:
-            adx_str = "N/A"
-
-        try:
-            returns_pct = returns * 100 if returns is not None else 0.0
-        except Exception:
-            returns_pct = 0.0
-
+        # Reversal signals (RSI extreme + MACD divergence)
+        elif ((rsi > 70 and macd_trend < 0) or (rsi < 30 and macd_trend > 0)):
+            regime = MarketRegime.REVERSAL
+        
+        # Log regime with details
         self.logger.info(
-            f"Market regime detected: {regime} (ADX={adx_str}, Returns={returns_pct:.2f}%, Vol={volatility_ratio:.2f})"
+            f"Market regime: {regime} "
+            f"(ADX={adx:.1f}, RSI={rsi:.1f}, Returns={returns:.3f}, Vol={volatility:.3f}, BB={bb_width:.3f})"
         )
         
         return regime

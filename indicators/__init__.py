@@ -12,6 +12,7 @@ from .stochastic import Stochastic
 from .adx import ADX
 from .supertrend import Supertrend
 from .vwap import VWAP, AnchoredVWAP
+from .volume_indicators import VPT, VolumeOscillator, PriceVolumeTrend
 
 __all__ = [
     "Indicator",
@@ -23,4 +24,7 @@ __all__ = [
     "Supertrend",
     "VWAP",
     "AnchoredVWAP",
+    "VPT",
+    "VolumeOscillator",
+    "PriceVolumeTrend",
 ]

@@ -1,3 +1,11 @@
+---
+title: Risk Management
+description: Risk management configuration and stop-loss strategies for Herald trading system
+tags: [risk-management, stop-loss, position-sizing]
+slug: /docs/risk-management
+sidebar_position: 9
+---
+
 ## Risk Management
 
 This document describes the lightweight risk-management knobs added to Herald and how the system adapts stop-loss placement to account size.

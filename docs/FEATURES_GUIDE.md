@@ -1,3 +1,10 @@
+---
+title: Features Guide
+description: Comprehensive guide to Herald's advanced trading strategies, next-generation indicators, and dynamic strategy selection system
+tags: [features, strategies, indicators, dynamic-selection]
+slug: /docs/features
+sidebar_position: 2
+---
 # Herald Trading System 
 > Advanced Features Guide
 
@@ -128,6 +135,85 @@ This document describes the major features of the Herald trading system, and its
 
 ---
 
+### 4. Mean Reversion Strategy
+
+**Purpose**: Profit from price returning to mean in ranging markets
+**Optimal Timeframes**: M15, M30, H1
+**Key Features**:
+- Bollinger Band bounce detection
+- RSI divergence confirmation
+- Tight stops near band edges
+- Conservative risk-reward ratio (2.0x)
+- Medium confidence signals (0.70)
+
+**Configuration Example**:
+```json
+{
+  "type": "mean_reversion",
+  "params": {
+    "bollinger_period": 20,
+    "bollinger_std": 2.0,
+    "rsi_period": 14,
+    "rsi_oversold": 30,
+    "rsi_overbought": 70,
+    "atr_multiplier": 1.0,
+    "risk_reward_ratio": 2.0
+  }
+}
+```
+
+**Entry Conditions**:
+- **Long**: Price touches lower Bollinger Band + RSI oversold (< 30)
+- **Short**: Price touches upper Bollinger Band + RSI overbought (> 70)
+- **Filter**: ADX < 25 (ranging market confirmation)
+
+**When to Use**:
+- Sideways/ranging markets
+- Low volatility periods
+- After strong directional moves (correction trades)
+- When ADX indicates weak trend
+
+---
+
+### 5. Trend Following Strategy
+
+**Purpose**: Ride strong trends with ADX confirmation
+**Optimal Timeframes**: H1, H4, D1
+**Key Features**:
+- ADX trend strength validation
+- Supertrend direction confirmation
+- Wider stops for trend continuation
+- Higher risk-reward ratio (3.0x)
+- High confidence signals (0.80)
+
+**Configuration Example**:
+```json
+{
+  "type": "trend_following",
+  "params": {
+    "adx_period": 14,
+    "adx_threshold": 25,
+    "supertrend_period": 10,
+    "supertrend_multiplier": 3.0,
+    "atr_multiplier": 2.0,
+    "risk_reward_ratio": 3.0
+  }
+}
+```
+
+**Entry Conditions**:
+- **Long**: ADX > 25 + Supertrend bullish + Price above VWAP
+- **Short**: ADX > 25 + Supertrend bearish + Price below VWAP
+- **Filter**: Strong trend confirmation from multiple indicators
+
+**When to Use**:
+- Strong trending markets
+- High ADX readings
+- After trend establishment
+- Longer timeframe trading
+
+---
+
 ## Next-Generation Indicators
 
 ### 1. Supertrend Indicator
@@ -203,6 +289,100 @@ result = indicator.calculate(data)
 
 ---
 
+### 3. VPT (Volume Price Trend)
+
+**Purpose**: Measure volume-weighted price momentum
+**Type**: Volume-momentum hybrid
+
+**How It Works**:
+- Combines price change with volume
+- Cumulative indicator showing buying/selling pressure
+- Positive VPT = buying pressure, Negative VPT = selling pressure
+- Crosses above/below zero signal trend changes
+
+**Usage**:
+```python
+from herald.indicators.volume_indicators import VPT
+
+indicator = VPT()
+result = indicator.calculate(data)
+
+# Access values
+vpt = result['vpt']  # Cumulative VPT value
+vpt_signal = result['vpt_signal']  # 1, 0, -1 signals
+```
+
+**Trading Rules**:
+- **Buy**: VPT crosses above zero + increasing volume
+- **Sell**: VPT crosses below zero + increasing volume
+- **Divergence**: Price up, VPT down = bearish divergence
+- **Confirmation**: VPT confirms price direction with volume
+
+---
+
+### 4. Volume Oscillator
+
+**Purpose**: Identify volume momentum and trend strength
+**Type**: Volume momentum
+
+**How It Works**:
+- Compares short-term vs long-term volume moving averages
+- Positive values = increasing volume (bullish)
+- Negative values = decreasing volume (bearish)
+- Centerline crossovers signal volume trend changes
+
+**Usage**:
+```python
+from herald.indicators.volume_indicators import VolumeOscillator
+
+indicator = VolumeOscillator(short_period=5, long_period=10)
+result = indicator.calculate(data)
+
+# Access values
+oscillator = result['volume_oscillator']
+signal = result['volume_oscillator_signal']  # 1, 0, -1
+histogram = result['volume_histogram']
+```
+
+**Trading Rules**:
+- **Buy**: Oscillator crosses above zero + price confirmation
+- **Sell**: Oscillator crosses below zero + price confirmation
+- **Strength**: High positive values = strong buying interest
+- **Weakness**: High negative values = strong selling interest
+
+---
+
+### 5. Price Volume Trend (PVT)
+
+**Purpose**: Cumulative volume-price relationship analysis
+**Type**: Volume-price accumulation
+
+**How It Works**:
+- Accumulates price changes weighted by volume
+- Shows institutional accumulation/distribution
+- Rising PVT = accumulation, Falling PVT = distribution
+- Similar to On-Balance Volume but uses percentage changes
+
+**Usage**:
+```python
+from herald.indicators.price_volume_trend import PriceVolumeTrend
+
+indicator = PriceVolumeTrend()
+result = indicator.calculate(data)
+
+# Access values
+pvt = result['pvt']  # Cumulative PVT value
+pvt_signal = result['pvt_signal']  # Trend signals
+```
+
+**Trading Rules**:
+- **Buy**: PVT rising + price rising = strong accumulation
+- **Sell**: PVT falling + price falling = strong distribution
+- **Divergence**: Price up, PVT down = potential reversal
+- **Breakouts**: PVT breakouts often precede price breakouts
+
+---
+
 ## Dynamic Strategy Selection
 
 ### Overview
@@ -215,12 +395,17 @@ The **StrategySelector** automatically chooses the best strategy based on:
 
 ### Market Regime Detection
 
-**Regimes Identified**:
-- **TRENDING_UP**: Strong uptrend (ADX > 25, positive returns)
-- **TRENDING_DOWN**: Strong downtrend (ADX > 25, negative returns)
-- **RANGING**: Sideways movement (ADX < 20, low volatility)
-- **VOLATILE**: High volatility (ATR spike, wide BB bands)
-- **CONSOLIDATING**: Low volatility (narrow BB bands, low ADX)
+**Regimes Identified (10 Total)**:
+- **TRENDING_UP_STRONG**: Strong uptrend (ADX > 30, positive returns > 1%)
+- **TRENDING_UP_WEAK**: Weak uptrend (ADX 20-30, positive returns 0.5-1%)
+- **TRENDING_DOWN_STRONG**: Strong downtrend (ADX > 30, negative returns > 1%)
+- **TRENDING_DOWN_WEAK**: Weak downtrend (ADX 20-30, negative returns 0.5-1%)
+- **RANGING_TIGHT**: Tight sideways movement (ADX < 20, BB width < 1%)
+- **RANGING_WIDE**: Wide ranging (ADX < 20, BB width 1-2%)
+- **VOLATILE_BREAKOUT**: High volatility breakout (ATR spike, volume surge)
+- **VOLATILE_CONSOLIDATION**: High volatility consolidation (ATR high, narrow BB)
+- **CONSOLIDATING**: Low volatility (narrow BB bands, low ADX < 15)
+- **REVERSAL**: Trend reversal signals (ADX turning, momentum divergence)
 
 **Detection Logic**:
 ```python
@@ -233,14 +418,16 @@ The **StrategySelector** automatically chooses the best strategy based on:
 
 ### Strategy Affinity Matrix
 
-Each strategy has optimal performance in certain regimes:
+Each strategy has optimal performance in certain regimes (0.0-1.0 scale):
 
-| Strategy | Trending Up | Trending Down | Ranging | Volatile | Consolidating |
-|----------|-------------|---------------|---------|----------|---------------|
-| **EMA Crossover** | 0.95 | 0.95 | 0.40 | 0.60 | 0.50 |
-| **Momentum Breakout** | 0.80 | 0.80 | 0.50 | 0.90 | 0.30 |
-| **Scalping** | 0.60 | 0.60 | 0.90 | 0.40 | 0.70 |
-| **SMA Crossover** | 0.90 | 0.90 | 0.30 | 0.50 | 0.40 |
+| Strategy | Strong Up | Weak Up | Strong Down | Weak Down | Tight Range | Wide Range | Breakout | Consolidation | Consolidating | Reversal |
+|----------|-----------|---------|-------------|-----------|-------------|------------|----------|---------------|---------------|----------|
+| **SMA Crossover** | 0.90 | 0.85 | 0.90 | 0.85 | 0.30 | 0.40 | 0.60 | 0.50 | 0.40 | 0.70 |
+| **EMA Crossover** | 0.95 | 0.90 | 0.95 | 0.90 | 0.40 | 0.50 | 0.70 | 0.60 | 0.50 | 0.75 |
+| **Momentum Breakout** | 0.80 | 0.70 | 0.80 | 0.70 | 0.50 | 0.60 | 0.95 | 0.80 | 0.30 | 0.85 |
+| **Scalping** | 0.60 | 0.65 | 0.60 | 0.65 | 0.90 | 0.85 | 0.40 | 0.50 | 0.70 | 0.55 |
+| **Mean Reversion** | 0.40 | 0.45 | 0.40 | 0.45 | 0.95 | 0.90 | 0.30 | 0.35 | 0.85 | 0.60 |
+| **Trend Following** | 0.95 | 0.80 | 0.95 | 0.80 | 0.20 | 0.25 | 0.80 | 0.70 | 0.30 | 0.90 |
 
 ### Performance Tracking
 

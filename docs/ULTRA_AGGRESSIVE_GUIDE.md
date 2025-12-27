@@ -1,3 +1,11 @@
+---
+title: Ultra-Aggressive Trading Guide
+description: High-frequency scalping strategies and ultra-aggressive trading mindset configuration for experienced traders
+tags: [ultra-aggressive, scalping, high-frequency, advanced-trading]
+slug: /docs/ultra-aggressive-guide
+sidebar_position: 8
+---
+
 # Ultra-Aggressive Trading Mindset Guide
 
 ## Overview

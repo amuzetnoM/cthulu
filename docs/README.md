@@ -1,3 +1,10 @@
+---
+title: Herald Trading System
+description: Advanced multi-strategy autonomous trading system with MetaTrader 5 integration, dynamic strategy selection, and comprehensive risk management
+tags: [trading, mt5, autonomous, multi-strategy, risk-management]
+slug: /docs/
+sidebar_position: 1
+---
 ```
    __ __                 __    __
   / // /__ _______ ___ _/ /___/ /
@@ -31,18 +38,19 @@ Herald is an autonomous and adaptive trading system focused on safe, auditable e
 
 <br>
 
- **NEW in v4.0.0**  
-> Herald now features a **multi-strategy trading system** with dynamic, real-time strategy selection!  
+ **NEW in v5.0.0**  
+> Herald now features an **enhanced multi-strategy trading system** with advanced dynamic strategy selection and 10 market regimes!  
 >
-> - **4 advanced strategies**: EMA Crossover, Momentum Breakout, Scalping, and SMA Crossover  
-> - **Autonomous market regime detection**: 5 regimes (trending up/down, volatile, ranging, sideways)  
-> - **Next-generation indicators**: Supertrend, VWAP  
-> - **Enhanced GUI**: Live strategy monitoring and trade history  
-> - **Ultra-aggressive trading mode**: High-frequency, dynamic position sizing  
+> - **6 advanced strategies**: SMA/EMA Crossover, Momentum Breakout, Scalping, Mean Reversion, and Trend Following  
+> - **10 market regimes**: Strong/weak trends, tight/wide ranging, breakout/consolidation volatility, reversals  
+> - **12 next-generation indicators**: RSI, MACD, Bollinger, ADX, Supertrend, VWAP, Stochastic, ATR, VPT, Volume Oscillator, Price Volume Trend  
+> - **Intelligent strategy selection**: Performance-weighted, regime-aware, confidence-based selection  
+> - **Volume-based indicators**: VPT, Volume Oscillator for enhanced signal confirmation  
+> - **Ultra-aggressive trading mode**: High-frequency, dynamic position sizing with 6-strategy ensemble  
 >
-> The system adapts strategies automatically based on live performance and market conditions.  
+> The system now adapts strategies automatically based on live performance, market conditions, and volume analysis.  
 >  
-> See [UPGRADE_GUIDE.md](UPGRADE_GUIDE.md) and [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for full details.
+> See [FEATURES_GUIDE.md](FEATURES_GUIDE.md) for full strategy and indicator details.
 
 > Note: News ingest is opt-in — enable via `NEWS_INGEST_ENABLED=1` or set `config['news']['enabled']=true`. Integration tests that call external APIs are gated; set `RUN_NEWS_INTEGRATION=1` to run them.
 
@@ -218,7 +226,7 @@ Trades placed via `herald-trade` use Herald's magic number, so they are automati
 
 | Component | Description |
 |-----------|-------------|
-| **Technical Indicators** | 5 indicators: RSI, MACD, Bollinger Bands, Stochastic, ADX |
+| **Technical Indicators** | 12 indicators: RSI, MACD, Bollinger Bands, Stochastic, ADX, Supertrend, VWAP, VPT, Volume Oscillator, Price Volume Trend, ATR, Williams %R |
 | **Position Manager** | Real-time tracking, P&L monitoring, MT5 synchronization |
 | **Exit Strategies** | 4 strategies: Trailing stop, time-based, profit target, adverse movement |
 | **Autonomous Loop** | Complete 10-step trading cycle with health monitoring |
@@ -230,9 +238,9 @@ Trades placed via `herald-trade` use Herald's magic number, so they are automati
 
 | Component | Description |
 |-----------|-------------|
-| **Dynamic Strategy Selection** | Autonomous switching between 4 strategies based on market regime and performance |
-| **Market Regime Detection** | 5 regime types: trending up/down, volatile, ranging, sideways |
-| **Advanced Indicators** | Next-gen indicators: Supertrend, VWAP, Anchored VWAP |
+| **Dynamic Strategy Selection** | Autonomous switching between 6 strategies based on market regime and performance |
+| **Market Regime Detection** | 10 regime types: strong/weak trends, tight/wide ranging, breakout/consolidation volatility, reversals |
+| **Advanced Indicators** | 12 next-gen indicators: RSI, MACD, Bollinger, Stochastic, ADX, Supertrend, VWAP, VPT, Volume Oscillator, Price Volume Trend |
 | **Strategy Performance Tracking** | Real-time affinity matrix and confidence scoring |
 | **Enhanced GUI** | Desktop interface with live trade monitoring, detailed trade history from database |
 | **ML Instrumentation** | Batched JSONL event streams for model training |
@@ -272,13 +280,17 @@ herald/
 │   ├── sma_crossover.py
 │   ├── ema_crossover.py
 │   ├── momentum_breakout.py
-│   └── scalping.py
+│   ├── scalping.py
+│   ├── mean_reversion.py
+│   └── trend_following.py
 ├── indicators/       # Technical indicators
 │   ├── base.py
 │   ├── rsi.py, macd.py, bollinger.py
 │   ├── stochastic.py, adx.py
 │   ├── supertrend.py, vwap.py  # Next-gen
-│   └── anchored_vwap.py
+│   ├── anchored_vwap.py
+│   ├── volume_indicators.py    # VPT, Volume Oscillator
+│   └── price_volume_trend.py
 ├── execution/        # Order execution
 │   └── engine.py
 ├── risk/             # Risk management

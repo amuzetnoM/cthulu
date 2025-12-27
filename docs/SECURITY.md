@@ -1,3 +1,11 @@
+---
+title: Security Best Practices
+description: Security guidelines for Herald including credential management, API security, network protection, and access control
+tags: [security, credentials, api-security, access-control]
+slug: /docs/security
+sidebar_position: 7
+---
+
 # Herald Security Best Practices
 
 ## Table of Contents

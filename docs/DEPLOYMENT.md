@@ -1,3 +1,11 @@
+---
+title: Deployment Guide
+description: Production deployment strategies for Herald including Docker, Linux, Windows service, and monitoring setup
+tags: [deployment, docker, production, monitoring]
+slug: /docs/deployment
+sidebar_position: 5
+---
+
 # Herald Deployment Guide
 
 ## Table of Contents

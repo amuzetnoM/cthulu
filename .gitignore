@@ -34,6 +34,7 @@ config/*.yaml
 # Build Plan (private development roadmap)
 build_plan.md
 **/build_plan.md
+docs/development_log
 
 # Logs
 logs/

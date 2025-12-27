@@ -1,3 +1,11 @@
+---
+title: Quick Start Guide
+description: Get started with Herald trading system - installation, configuration, and first trades
+tags: [quickstart, installation, setup, getting-started]
+slug: /docs/quickstart
+sidebar_position: 4
+---
+
 # Quick Start Guide - Herald v4.0.0 Upgraded
 
 ## 🚀 Getting Started
