@@ -66,7 +66,7 @@ def setup_logger(
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
         
-        file_handler = logging.FileHandler(log_file)
+        file_handler = logging.FileHandler(log_file, encoding='utf-8')
         file_handler.setLevel(logging.DEBUG)  # Log everything to file
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)

@@ -8,7 +8,7 @@ slug: /docs/changelog
 
 • [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
 
-![version-badge](https://img.shields.io/badge/version-4.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
 
@@ -17,6 +17,32 @@ slug: /docs/changelog
 ## UNRELEASED
 
 > This section is for upcoming changes that are not yet released.
+---
+
+## **5.0.0 — 2025-12-27**
+
+### Summary
+**MAJOR RELEASE**: Architecture upgrade and live-run stability fixes.
+
+This release advances Herald from v4.0.0 to v5.0.0 with a major architecture change and several important runtime fixes discovered and validated during live testing (2025-12-27). Notable changes include: removal of the live-run confirmation gate, robust runtime indicator handling (namespace, aliasing, fallbacks), improved trading loop wiring, additional unit tests, and CI/workflow improvements for Windows and coverage.
+
+### Added
+- **Live-run stability fixes & telemetry:** Added aliasing and fallback indicator calculations so strategies have deterministic access to `rsi`, `atr`, and `adx` even when runtime indicators are added dynamically.
+- **Runtime indicator namespacing:** Runtime-produced indicator columns are now namespaced with `runtime_` to avoid DataFrame join collisions.
+- **Indicator fallback calculations:** If indicators are missing at runtime, Herald will compute safe fallbacks for RSI/ATR to avoid transient strategy failures.
+- **Unit tests:** Added `tests/test_runtime_indicators.py` to validate rename/alias/fallback behavior.
+- **CI enhancements:** Windows and coverage support added to CI workflow for cross-platform testing and coverage reporting.
+
+### Changed
+- **Safety gate removal:** `LIVE_RUN_CONFIRM` gate removed; live-run now proceeds and emits a clear warning in logs (was blocking startup). Documented and justified by live testing processes.
+- **Strategy resilience:** Strategies now rely on alias columns and are resilient to transient missing runtime indicators.
+- **Docs & Release Notes:** Added v5.0.0 release notes and updated CHANGELOG to highlight live-test findings.
+
+### Fixed
+- Prevent `pandas.DataFrame.join` ValueError due to overlapping columns by renaming runtime columns and using defensive joins.
+- Replaced Unicode checkmark in shutdown log to avoid console encoding errors on Windows.
+- Added defensive handling to skip missing `PositionManager` implementations and better logging during initialization.
+
 ---
 
 ---

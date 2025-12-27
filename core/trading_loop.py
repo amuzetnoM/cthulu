@@ -425,8 +425,46 @@ class TradingLoop:
                 for indicator in self.ctx.indicators:
                     try:
                         indicator_data = indicator.calculate(df)
-                        if indicator_data is not None:
-                            df = df.join(indicator_data, how='left')
+                        if indicator_data is None:
+                            continue
+
+                        # Normalize Series -> DataFrame
+                        if isinstance(indicator_data, pd.Series):
+                            series_name = indicator_data.name or getattr(indicator, 'name', indicator.__class__.__name__).lower()
+                            indicator_data = indicator_data.to_frame(name=series_name)
+
+                        # Determine a base name for this indicator (use provided 'name' if available)
+                        base = getattr(indicator, 'name', None) or indicator.__class__.__name__
+                        base = str(base).lower()
+
+                        # Build rename map to avoid column overlaps in df
+                        rename_map = {}
+                        for col in list(indicator_data.columns):
+                            # If column already looks namespaced to this indicator (e.g., 'rsi_7' for RSI),
+                            # keep that suffix but prefix with 'runtime_'. If the column equals the base name
+                            # (e.g., 'adx'), use 'runtime_adx'. Otherwise namespace under indicator base.
+                            if col == base or col.startswith(f"{base}_"):
+                                new_col = f"runtime_{col}"
+                            else:
+                                new_col = f"runtime_{base}_{col}"
+
+                            # Ensure deterministic uniqueness if df already has this column
+                            final_col = new_col
+                            i = 1
+                            while final_col in df.columns:
+                                final_col = f"{new_col}_{i}"
+                                i += 1
+
+                            if final_col != col:
+                                rename_map[col] = final_col
+
+                        if rename_map:
+                            indicator_data = indicator_data.rename(columns=rename_map)
+                            self.ctx.logger.debug(f"Renamed indicator columns to avoid overlap: {rename_map}")
+
+                        # Join indicator data safely
+                        df = df.join(indicator_data, how='left')
+
                     except Exception:
                         self.ctx.logger.exception(
                             f"Failed to calculate indicator {getattr(indicator, 'name', indicator.__class__.__name__)}"
@@ -434,7 +472,156 @@ class TradingLoop:
             except Exception:
                 self.ctx.logger.exception('Failed during indicator calculations')
             
+            # Create friendly aliases for commonly-required indicators (so strategies can rely on expected column names)
+            try:
+                # RSI alias
+                rsi_period = getattr(self.ctx.strategy, 'rsi_period', None)
+                try:
+                    rsi_period_int = int(rsi_period) if rsi_period is not None else None
+                except Exception:
+                    rsi_period_int = None
+                rsi_col = f"rsi_{rsi_period_int}" if rsi_period_int and rsi_period_int != 14 else 'rsi'
+                if rsi_col not in df.columns:
+                    # find runtime-produced RSI columns (be permissive in matching)
+                    rsi_candidates = [c for c in df.columns if 'rsi' in c.lower() and c.startswith('runtime_')]
+                    if rsi_candidates:
+                        # Prefer candidate that contains the period string, then exact 'rsi', else fallback to first
+                        chosen = None
+                        if rsi_period_int:
+                            for c in rsi_candidates:
+                                if f"rsi_{rsi_period_int}" in c.lower():
+                                    chosen = c
+                                    break
+                        if not chosen:
+                            for c in rsi_candidates:
+                                if c.lower().endswith('rsi') or c.lower().endswith('rsi_'):
+                                    chosen = c
+                                    break
+                        chosen = chosen or rsi_candidates[0]
+                        df[rsi_col] = df[chosen]
+                        self.ctx.logger.debug(f"Created RSI alias column '{rsi_col}' from '{chosen}'")
+                # ATR alias
+                if 'atr' not in df.columns:
+                    atr_candidates = [c for c in df.columns if c.startswith('runtime_atr')]
+                    if atr_candidates:
+                        df['atr'] = df[atr_candidates[0]]
+                        self.ctx.logger.debug(f"Created ATR alias column 'atr' from '{atr_candidates[0]}'")
+                # ADX alias
+                if 'adx' not in df.columns:
+                    adx_candidates = [c for c in df.columns if 'adx' in c.lower() and c.startswith('runtime_')]
+                    if adx_candidates:
+                        # pick primary adx value if present
+                        chosen = None
+                        for c in adx_candidates:
+                            if c.lower().endswith('adx') or c == 'runtime_adx':
+                                chosen = c
+                                break
+                        chosen = chosen or adx_candidates[0]
+                        df['adx'] = df[chosen]
+                        self.ctx.logger.debug(f"Created ADX alias column 'adx' from '{chosen}'")
+            except Exception:
+                self.ctx.logger.exception('Failed while creating indicator alias columns')
+
+            # Fallback: if required indicators are still missing, compute them directly
+            try:
+                # RSI fallback
+                rsi_col = None
+                try:
+                    rsi_period = getattr(self.ctx.strategy, 'rsi_period', None)
+                    rsi_period_int = int(rsi_period) if rsi_period is not None else None
+                    rsi_col = f"rsi_{rsi_period_int}" if rsi_period_int and rsi_period_int != 14 else 'rsi'
+                except Exception:
+                    rsi_col = 'rsi'
+
+                if rsi_col and rsi_col not in df.columns:
+                    try:
+                        from herald.indicators.rsi import RSI
+                        rsi_ind = RSI(period=rsi_period_int or 14)
+                        rsi_data = rsi_ind.calculate(df)
+                        if isinstance(rsi_data, pd.Series):
+                            rsi_name = rsi_data.name or (f"rsi_{rsi_period_int}" if rsi_period_int else 'rsi')
+                            rsi_data = rsi_data.to_frame(name=rsi_name)
+
+                        # Rename to runtime-safe column names for joining
+                        rename_map = {}
+                        for col in list(rsi_data.columns):
+                            if col == 'rsi' or col.startswith('rsi_'):
+                                new_col = f"runtime_{col}"
+                            else:
+                                new_col = f"runtime_rsi_{col}"
+                            final_col = new_col
+                            i = 1
+                            while final_col in df.columns:
+                                final_col = f"{new_col}_{i}"
+                                i += 1
+                            if final_col != col:
+                                rename_map[col] = final_col
+
+                        if rename_map:
+                            rsi_data = rsi_data.rename(columns=rename_map)
+                            self.ctx.logger.debug(f"Renamed RSI fallback columns: {rename_map}")
+
+                        df = df.join(rsi_data, how='left')
+                        # create alias if needed
+                        if rsi_col not in df.columns:
+                            candidates = [c for c in df.columns if 'rsi' in c.lower() and c.startswith('runtime_')]
+                            if candidates:
+                                chosen = None
+                                if rsi_period_int:
+                                    for c in candidates:
+                                        if f"rsi_{rsi_period_int}" in c.lower():
+                                            chosen = c
+                                            break
+                                chosen = chosen or candidates[0]
+                                df[rsi_col] = df[chosen]
+                                self.ctx.logger.debug(f"Created RSI alias '{rsi_col}' from '{chosen}' in fallback")
+                    except Exception:
+                        self.ctx.logger.exception('RSI fallback calculation failed')
+
+                # ATR fallback
+                if 'atr' not in df.columns:
+                    try:
+                        from herald.indicators.atr import ATR
+                        atr_ind = ATR(period=getattr(self.ctx.strategy, 'atr_period', 14))
+                        atr_data = atr_ind.calculate(df)
+                        if isinstance(atr_data, pd.Series):
+                            atr_name = atr_data.name or 'atr'
+                            atr_data = atr_data.to_frame(name=atr_name)
+
+                        # Rename similarly
+                        rename_map = {}
+                        for col in list(atr_data.columns):
+                            if col == 'atr' or col.startswith('atr_'):
+                                new_col = f"runtime_{col}"
+                            else:
+                                new_col = f"runtime_atr_{col}"
+                            final_col = new_col
+                            i = 1
+                            while final_col in df.columns:
+                                final_col = f"{new_col}_{i}"
+                                i += 1
+                            if final_col != col:
+                                rename_map[col] = final_col
+                        if rename_map:
+                            atr_data = atr_data.rename(columns=rename_map)
+                        df = df.join(atr_data, how='left')
+                        if 'atr' not in df.columns:
+                            candidates = [c for c in df.columns if 'atr' in c.lower() and c.startswith('runtime_')]
+                            if candidates:
+                                df['atr'] = df[candidates[0]]
+                                self.ctx.logger.debug(f"Created ATR alias 'atr' from '{candidates[0]}' in fallback")
+                    except Exception:
+                        self.ctx.logger.exception('ATR fallback calculation failed')
+            except Exception:
+                self.ctx.logger.exception('Failed during indicator fallback calculations')
+
             self.ctx.logger.debug(f"Calculated SMA, ATR, and {len(self.ctx.indicators)} additional indicators")
+            # Debug: log indicator columns for easy troubleshooting
+            try:
+                indicator_cols = [c for c in df.columns if any(k in c.lower() for k in ('rsi', 'atr', 'adx'))]
+                self.ctx.logger.debug(f"Indicator-related columns: {indicator_cols}")
+            except Exception:
+                pass
             return df
         
         except Exception as e:
