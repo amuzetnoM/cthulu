@@ -271,12 +271,24 @@ def configure_indicators(current_indicators: List[Dict[str, Any]] = None) -> Lis
     print_option("5", "ADX", "Average Directional Index - trend strength")
     print_option("6", "Supertrend", "Trend-following indicator")
     print_option("7", "VWAP", "Volume Weighted Average Price")
-    print_option("8", "None", "Skip indicators")
+    print_option("0", "None", "Skip indicators")
     print()
     
-    choice = get_input("Select indicators (comma-separated, e.g., 1,2,6) or 8 for none", "8")
+    choice = get_input("Select indicators (comma-separated, e.g., 1,2,6) or 0 for none, 00 for all", "0")
     
-    if choice != "8":
+    if choice == "00":
+        # Add all indicators
+        indicators = [
+            {'type': 'rsi', 'params': {'period': 14, 'overbought': 70, 'oversold': 30}},
+            {'type': 'macd', 'params': {'fast_period': 12, 'slow_period': 26, 'signal_period': 9}},
+            {'type': 'bollinger', 'params': {'period': 20, 'std_dev': 2.0}},
+            {'type': 'stochastic', 'params': {'k_period': 14, 'd_period': 3, 'smooth': 3}},
+            {'type': 'adx', 'params': {'period': 14}},
+            {'type': 'supertrend', 'params': {'atr_period': 10, 'atr_multiplier': 3.0}},
+            {'type': 'vwap', 'params': {}}
+        ]
+        print_success("Added all indicators")
+    elif choice != "0":
         for ind_choice in choice.split(','):
             ind_choice = ind_choice.strip()
             
@@ -374,7 +386,7 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
         print_option("4", "Scalping", "Fast scalping with tight stops")
         print()
         
-        strategies_choice = get_input("Select strategies (e.g., 1,2)", "1,2")
+        strategies_choice = get_input("Select strategies (1-4, e.g., 1,2)", "1,2")
         strategies_list = []
         
         for choice in strategies_choice.split(','):
