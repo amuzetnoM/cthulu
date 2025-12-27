@@ -1,0 +1,491 @@
+"""
+Bootstrap Module
+
+Handles system initialization including:
+- Configuration loading and validation
+- Component initialization (connectors, managers, databases)
+- Dependency injection setup
+- Logging and monitoring setup
+
+Extracted from __main__.py for better modularity and testability.
+"""
+
+import logging
+from pathlib import Path
+from typing import Dict, Any, Optional, Tuple
+from dataclasses import dataclass
+
+from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
+from herald.data.layer import DataLayer
+from herald.risk.evaluator import RiskEvaluator, RiskLimits
+from herald.execution.engine import ExecutionEngine
+from herald.position.tracker import PositionTracker
+from herald.position.lifecycle import PositionLifecycle
+from herald.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
+from herald.persistence.database import Database
+from herald.observability.metrics import MetricsCollector
+from config_schema import Config
+from config.mindsets import apply_mindset
+
+
+@dataclass
+class SystemComponents:
+    """Container for all initialized system components."""
+    
+    # Core components
+    config: Dict[str, Any]
+    connector: MT5Connector
+    data_layer: DataLayer
+    risk_manager: RiskEvaluator
+    execution_engine: ExecutionEngine
+    position_tracker: PositionTracker
+    position_lifecycle: PositionLifecycle
+    trade_adoption_manager: TradeAdoptionManager
+    database: Database
+    metrics: MetricsCollector
+    
+    # Strategy and indicators (loaded separately)
+    strategy: Any = None
+    indicators: list = None
+    exit_strategies: list = None
+    
+    # Optional components
+    ml_collector: Any = None
+    advisory_manager: Any = None
+    monitor: Any = None
+    exporter: Any = None
+
+
+class HeraldBootstrap:
+    """Handles Herald system initialization."""
+    
+    def __init__(self, logger: Optional[logging.Logger] = None):
+        """Initialize bootstrap handler.
+        
+        Args:
+            logger: Logger instance (will be created if not provided)
+        """
+        self.logger = logger or logging.getLogger(__name__)
+        self.components = None
+    
+    def load_configuration(self, config_path: str, mindset: Optional[str] = None,
+                          symbol_override: Optional[str] = None) -> Dict[str, Any]:
+        """Load and validate configuration.
+        
+        Args:
+            config_path: Path to configuration file
+            mindset: Optional mindset to apply (aggressive, balanced, conservative, ultra_aggressive)
+            symbol_override: Optional symbol to override configuration
+            
+        Returns:
+            Validated configuration dictionary
+            
+        Raises:
+            Exception: If configuration loading or validation fails
+        """
+        try:
+            cfg = Config.load(config_path)
+            self.logger.info(f"Configuration loaded from {config_path}")
+            
+            # Convert to dict (Pydantic v2 compatibility)
+            config = cfg.model_dump() if hasattr(cfg, 'model_dump') else cfg.dict()
+            
+            # Apply mindset if specified
+            if mindset:
+                config = apply_mindset(config, mindset)
+                self.logger.info(f"Applied '{mindset}' trading mindset")
+                self.logger.info(
+                    f"  Risk: position_size_pct={config['risk'].get('position_size_pct', 2.0)}%, "
+                    f"max_daily_loss=${config['risk'].get('max_daily_loss', 50)}"
+                )
+            
+            # Symbol override from CLI
+            if symbol_override:
+                config['trading']['symbol'] = symbol_override
+                self.logger.info(f"Overriding trading symbol: {symbol_override}")
+            
+            return config
+            
+        except Exception as e:
+            self.logger.error(f"Failed to load configuration: {e}")
+            raise
+    
+    def initialize_connector(self, config: Dict[str, Any]) -> MT5Connector:
+        """Initialize MT5 connector.
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            Initialized MT5Connector instance
+        """
+        self.logger.info("Initializing MT5 connector...")
+        connection_config = ConnectionConfig(**config['mt5'])
+        connector = MT5Connector(connection_config)
+        return connector
+    
+    def initialize_data_layer(self, config: Dict[str, Any]) -> DataLayer:
+        """Initialize data layer.
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            Initialized DataLayer instance
+        """
+        self.logger.info("Initializing data layer...")
+        cache_enabled = config.get('cache_enabled', True)
+        data_layer = DataLayer(cache_enabled=cache_enabled)
+        return data_layer
+    
+    def initialize_risk_manager(self, config: Dict[str, Any]) -> RiskEvaluator:
+        """Initialize risk evaluator.
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            Initialized RiskEvaluator instance
+        """
+        self.logger.info("Initializing risk evaluator...")
+        risk_config = config.get('risk', {})
+        
+        # Build RiskLimits with defaults
+        risk_limits = RiskLimits(
+            max_position_size_pct=risk_config.get('max_position_size_pct', 0.02),
+            max_total_exposure_pct=risk_config.get('max_total_exposure_pct', 0.10),
+            max_daily_loss_pct=risk_config.get('max_daily_loss_pct', 0.05),
+            max_positions_per_symbol=risk_config.get('max_positions_per_symbol', 1),
+            max_total_positions=risk_config.get('max_total_positions', 3),
+            min_risk_reward_ratio=risk_config.get('min_risk_reward_ratio', 1.0),
+        )
+        
+        risk_evaluator = RiskEvaluator(risk_limits)
+        return risk_evaluator
+    
+    def initialize_execution_engine(self, connector: MT5Connector, config: Dict[str, Any],
+                                   ml_collector: Any = None) -> ExecutionEngine:
+        """Initialize execution engine.
+        
+        Args:
+            connector: MT5 connector instance
+            config: System configuration
+            ml_collector: Optional ML data collector
+            
+        Returns:
+            Initialized ExecutionEngine instance
+        """
+        self.logger.info("Initializing execution engine...")
+        risk_config = config.get('risk', {})
+        execution_engine = ExecutionEngine(
+            connector,
+            risk_config=risk_config,
+            ml_collector=ml_collector
+        )
+        return execution_engine
+    
+    def initialize_position_tracker(self, connector: MT5Connector) -> PositionTracker:
+        """Initialize position tracker.
+        
+        Args:
+            connector: MT5 connector instance
+            
+        Returns:
+            Initialized PositionTracker instance
+        """
+        self.logger.info("Initializing position tracker...")
+        position_tracker = PositionTracker()
+        return position_tracker
+    
+    def initialize_position_lifecycle(self, connector: MT5Connector,
+                                      execution_engine: ExecutionEngine,
+                                      database: Database) -> PositionLifecycle:
+        """Initialize position lifecycle manager.
+        
+        Args:
+            connector: MT5 connector instance
+            execution_engine: Execution engine instance
+            database: Database instance
+            
+        Returns:
+            Initialized PositionLifecycle instance
+        """
+        self.logger.info("Initializing position lifecycle...")
+        position_lifecycle = PositionLifecycle(connector, execution_engine, database)
+        return position_lifecycle
+    
+    def initialize_trade_adoption_manager(self, position_tracker: PositionTracker,
+                                          position_lifecycle: PositionLifecycle,
+                                          config: Dict[str, Any]) -> TradeAdoptionManager:
+        """Initialize trade adoption manager for external trade adoption.
+        
+        Args:
+            position_tracker: Position tracker instance
+            position_lifecycle: Position lifecycle instance
+            config: System configuration
+            
+        Returns:
+            Initialized TradeAdoptionManager instance
+        """
+        trade_adoption_config = config.get('orphan_trades', {})
+        trade_adoption_policy = TradeAdoptionPolicy(
+            enabled=trade_adoption_config.get('enabled', False),
+            adopt_symbols=trade_adoption_config.get('adopt_symbols', []),
+            ignore_symbols=trade_adoption_config.get('ignore_symbols', []),
+            apply_exit_strategies=trade_adoption_config.get('apply_exit_strategies', True),
+            max_adoption_age_hours=trade_adoption_config.get('max_adoption_age_hours', 0.0),
+            log_only=trade_adoption_config.get('log_only', False)
+        )
+        
+        # Get defaults from risk config
+        risk_config = config.get('risk', {})
+        default_stop_pct = risk_config.get('emergency_stop_loss_pct', 8.0)
+        default_rr = config.get('strategy', {}).get('params', {}).get('risk_reward_ratio', 2.0)
+        
+        trade_adoption_manager = TradeAdoptionManager(
+            position_tracker,
+            position_lifecycle,
+            trade_adoption_policy,
+            default_stop_pct=default_stop_pct,
+            default_rr=default_rr,
+            config=config
+        )
+        
+        if trade_adoption_policy.enabled:
+            self.logger.info(
+                f"External trade adoption ENABLED (log_only: {trade_adoption_policy.log_only})"
+            )
+        else:
+            self.logger.info("External trade adoption disabled")
+        
+        return trade_adoption_manager
+    
+    def initialize_database(self, config: Dict[str, Any]) -> Database:
+        """Initialize database.
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            Initialized Database instance
+        """
+        self.logger.info("Initializing database...")
+        db_path = config.get('database', {}).get('path', 'herald.db')
+        database = Database(db_path)
+        return database
+    
+    def initialize_metrics(self, database: Database) -> MetricsCollector:
+        """Initialize metrics collector.
+        
+        Args:
+            database: Database instance
+            
+        Returns:
+            Initialized MetricsCollector instance
+        """
+        self.logger.info("Initializing metrics collector...")
+        metrics = MetricsCollector(database=database)
+        return metrics
+    
+    def initialize_ml_collector(self, config: Dict[str, Any], args: Any) -> Optional[Any]:
+        """Initialize ML data collector (optional).
+        
+        Args:
+            config: System configuration
+            args: Command-line arguments
+            
+        Returns:
+            MLDataCollector instance or None if disabled
+        """
+        ml_collector = None
+        try:
+            ml_config = config.get('ml', {}) if isinstance(config, dict) else {}
+            ml_enabled = ml_config.get('enabled', True)
+            
+            # CLI overrides config when provided
+            if hasattr(args, 'enable_ml') and args.enable_ml is not None:
+                ml_enabled = args.enable_ml
+            
+            if ml_enabled:
+                from herald.ML_RL.instrumentation import MLDataCollector
+                ml_prefix = ml_config.get('prefix', 'events')
+                ml_collector = MLDataCollector(prefix=ml_prefix)
+                self.logger.info('MLDataCollector initialized')
+            else:
+                self.logger.info('ML instrumentation disabled via config/CLI')
+        except Exception:
+            self.logger.exception('Failed to initialize MLDataCollector; continuing without it')
+        
+        return ml_collector
+    
+    def initialize_advisory_manager(self, config: Dict[str, Any],
+                                    execution_engine: ExecutionEngine,
+                                    ml_collector: Any) -> Optional[Any]:
+        """Initialize advisory manager (optional).
+        
+        Args:
+            config: System configuration
+            execution_engine: Execution engine instance
+            ml_collector: ML data collector instance
+            
+        Returns:
+            AdvisoryManager instance or None if disabled
+        """
+        advisory_manager = None
+        try:
+            from herald.advisory.manager import AdvisoryManager
+            advisory_cfg = config.get('advisory', {}) if isinstance(config, dict) else {}
+            advisory_manager = AdvisoryManager(advisory_cfg, execution_engine, ml_collector)
+            if advisory_manager.enabled:
+                self.logger.info(f"AdvisoryManager enabled (mode={advisory_manager.mode})")
+        except Exception:
+            self.logger.exception('Failed to initialize AdvisoryManager; continuing without it')
+        
+        return advisory_manager
+    
+    def initialize_prometheus_exporter(self, config: Dict[str, Any]) -> Optional[Any]:
+        """Initialize Prometheus exporter (optional).
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            PrometheusExporter instance or None if disabled
+        """
+        exporter = None
+        try:
+            prom_cfg = config.get('observability', {}).get('prometheus', {})
+            if prom_cfg.get('enabled', False):
+                from herald.observability.prometheus import PrometheusExporter
+                exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'herald'))
+                self.logger.info('Prometheus exporter initialized')
+        except Exception:
+            self.logger.exception('Failed to initialize Prometheus exporter; continuing without it')
+        
+        return exporter
+    
+    def initialize_trade_monitor(self, position_tracker: PositionTracker,
+                                 position_lifecycle: PositionLifecycle,
+                                 trade_adoption_manager: TradeAdoptionManager,
+                                 config: Dict[str, Any],
+                                 ml_collector: Any) -> Optional[Any]:
+        """Initialize trade monitor (optional).
+        
+        Args:
+            position_tracker: Position tracker instance
+            position_lifecycle: Position lifecycle instance
+            trade_adoption_manager: Trade adoption manager instance
+            config: System configuration
+            ml_collector: ML data collector instance
+            
+        Returns:
+            TradeMonitor instance or None if initialization fails
+        """
+        monitor = None
+        try:
+            from herald.monitoring.trade_monitor import TradeMonitor
+            poll_interval = config.get('monitor_poll_interval', 5.0)
+            monitor = TradeMonitor(
+                position_tracker,
+                position_lifecycle,
+                trade_adoption_manager=trade_adoption_manager,
+                poll_interval=poll_interval,
+                ml_collector=ml_collector
+            )
+            monitor.start()
+            self.logger.info(f"TradeMonitor started (poll_interval={poll_interval}s)")
+        except Exception:
+            self.logger.exception('Failed to start TradeMonitor; continuing without it')
+        
+        return monitor
+    
+    def bootstrap(self, config_path: str, args: Any) -> SystemComponents:
+        """Bootstrap the entire Herald system.
+        
+        Args:
+            config_path: Path to configuration file
+            args: Command-line arguments
+            
+        Returns:
+            SystemComponents with all initialized components
+            
+        Raises:
+            Exception: If critical initialization fails
+        """
+        # Load configuration
+        config = self.load_configuration(
+            config_path,
+            mindset=getattr(args, 'mindset', None),
+            symbol_override=getattr(args, 'symbol', None)
+        )
+        
+        # Initialize core components
+        connector = self.initialize_connector(config)
+        data_layer = self.initialize_data_layer(config)
+        risk_manager = self.initialize_risk_manager(config)
+        
+        # Initialize ML collector before execution engine
+        ml_collector = self.initialize_ml_collector(config, args)
+        
+        # Initialize execution components
+        execution_engine = self.initialize_execution_engine(connector, config, ml_collector)
+        
+        # Initialize persistence first (needed by lifecycle)
+        database = self.initialize_database(config)
+        
+        # Initialize position management components
+        position_tracker = self.initialize_position_tracker(connector)
+        position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, database)
+        trade_adoption_manager = self.initialize_trade_adoption_manager(position_tracker, position_lifecycle, config)
+        
+        # Initialize metrics
+        metrics = self.initialize_metrics(database)
+        
+        # Attach metrics to execution engine
+        try:
+            execution_engine.metrics = metrics
+        except Exception:
+            self.logger.debug('Failed to attach metrics to execution engine')
+        
+        # Initialize optional components
+        advisory_manager = self.initialize_advisory_manager(config, execution_engine, ml_collector)
+        exporter = self.initialize_prometheus_exporter(config)
+        monitor = self.initialize_trade_monitor(position_tracker, position_lifecycle, trade_adoption_manager, config, ml_collector)
+        
+        # Create components container
+        components = SystemComponents(
+            config=config,
+            connector=connector,
+            data_layer=data_layer,
+            risk_manager=risk_manager,
+            execution_engine=execution_engine,
+            position_tracker=position_tracker,
+            position_lifecycle=position_lifecycle,
+            trade_adoption_manager=trade_adoption_manager,
+            database=database,
+            metrics=metrics,
+            ml_collector=ml_collector,
+            advisory_manager=advisory_manager,
+            monitor=monitor,
+            exporter=exporter
+        )
+        
+        self.components = components
+        self.logger.info("System bootstrap complete")
+        
+        return components
+
+
+def bootstrap_system(config_path: str, args: Any, logger: logging.Logger) -> SystemComponents:
+    """Convenience function for bootstrapping the system.
+    
+    Args:
+        config_path: Path to configuration file
+        args: Command-line arguments
+        logger: Logger instance
+        
+    Returns:
+        SystemComponents with all initialized components
+    """
+    bootstrapper = HeraldBootstrap(logger=logger)
+    return bootstrapper.bootstrap(config_path, args)

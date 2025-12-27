@@ -2,6 +2,8 @@
 Exit Strategy Module
 
 Exit strategy implementations for position management.
+
+Includes context-aware exit coordination for intelligent exit decision-making.
 """
 
 from .base import ExitStrategy, ExitSignal
@@ -12,6 +14,7 @@ from .adverse_movement import AdverseMovementExit
 from .stop_loss import StopLossExit
 from .take_profit import TakeProfitExit
 from .exit_manager import ExitDecision, ExitStrategyManager
+from .coordinator import ExitCoordinator, MarketContext, PositionContext, create_exit_coordinator
 
 __all__ = [
     "ExitStrategy",
@@ -24,4 +27,8 @@ __all__ = [
     "TakeProfitExit",
     "ExitDecision",
     "ExitStrategyManager",
+    "ExitCoordinator",
+    "MarketContext",
+    "PositionContext",
+    "create_exit_coordinator",
 ]

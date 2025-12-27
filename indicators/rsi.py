@@ -12,6 +12,9 @@ import numpy as np
 from typing import Dict, Any
 from .base import Indicator
 
+# Small epsilon to avoid division by zero in RSI calculation
+EPSILON = 1e-10
+
 
 class RSI(Indicator):
     """
@@ -67,25 +70,30 @@ class RSI(Indicator):
         loss = -delta.where(delta < 0, 0.0)
         
         # Calculate average gain and loss using exponential moving average
-        avg_gain = gain.ewm(span=self.period, adjust=False).mean()
-        avg_loss = loss.ewm(span=self.period, adjust=False).mean()
+        avg_gain = gain.ewm(span=self.period, adjust=False, min_periods=self.period).mean()
+        avg_loss = loss.ewm(span=self.period, adjust=False, min_periods=self.period).mean()
         
         # Calculate RS and RSI
-        rs = avg_gain / avg_loss
+        # Handle division by zero: when avg_loss is 0, RSI = 100
+        rs = avg_gain / avg_loss.replace(0, EPSILON)  # Avoid division by zero
         rsi = 100.0 - (100.0 / (1.0 + rs))
         
-        # Handle division by zero (when avg_loss is 0, RSI = 100)
-        rsi = rsi.copy()
-        rsi.loc[avg_loss == 0] = 100.0
-        # Ensure numeric bounds
+        # Clip to ensure values stay within bounds
         rsi = rsi.clip(lower=0.0, upper=100.0)
-        # Keep initial (period-1) values as NaN to match legacy behavior
-        rsi.iloc[: self.period - 1] = np.nan
+        
+        # Handle special cases
+        # When there are no losses, RSI should be 100
+        rsi.loc[avg_loss == 0] = 100.0
+        # When there are no gains, RSI should be 0
+        rsi.loc[avg_gain == 0] = 0.0
+        
+        # Set initial values to NaN (insufficient data for calculation)
+        rsi.iloc[: max(0, self.period - 1)] = float('nan')
         
         # Update state
-        self._state['latest_rsi'] = rsi.iloc[-1] if len(rsi) > 0 else None
-        self._state['is_overbought'] = rsi.iloc[-1] > 70 if len(rsi) > 0 else False
-        self._state['is_oversold'] = rsi.iloc[-1] < 30 if len(rsi) > 0 else False
+        self._state['latest_rsi'] = rsi.iloc[-1] if len(rsi) > 0 and not pd.isna(rsi.iloc[-1]) else None
+        self._state['is_overbought'] = rsi.iloc[-1] > self.overbought if len(rsi) > 0 and not pd.isna(rsi.iloc[-1]) else False
+        self._state['is_oversold'] = rsi.iloc[-1] < self.oversold if len(rsi) > 0 and not pd.isna(rsi.iloc[-1]) else False
         self.update_calculation_time()
         
         # Name the series with period to avoid conflicts

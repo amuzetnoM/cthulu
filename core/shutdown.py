@@ -1,0 +1,321 @@
+"""
+Herald Shutdown Module
+
+This module handles graceful shutdown of the Herald trading system,
+extracted from __main__.py for better modularity and testability.
+
+The shutdown process includes:
+- Interactive position closure prompts
+- Selective position closing (all/none/specific tickets)
+- Final metrics persistence
+- MT5 disconnection
+- Optional component cleanup (News, ML, Monitoring)
+- Resource teardown with error isolation
+"""
+
+import sys
+import os
+import logging
+from pathlib import Path
+from typing import Optional, Callable, Any
+
+
+class ShutdownHandler:
+    """
+    Handles graceful shutdown of the Herald trading system.
+    
+    This class manages the complete shutdown sequence, including:
+    - User interaction for position closure decisions
+    - Position closing operations
+    - Metrics persistence
+    - Component cleanup
+    - Resource teardown
+    
+    All error handling is preserved to ensure robust shutdown even
+    when individual components fail.
+    """
+    
+    def __init__(
+        self,
+        position_manager,
+        connector,
+        database,
+        metrics,
+        logger: logging.Logger,
+        args: Optional[Any] = None,
+        persist_summary_fn: Optional[Callable] = None,
+        summary_path: Optional[Path] = None,
+        news_ingestor: Optional[Any] = None,
+        ml_collector: Optional[Any] = None,
+        trade_monitor: Optional[Any] = None,
+        gui_process: Optional[Any] = None
+    ):
+        """
+        Initialize the shutdown handler.
+        
+        Args:
+            position_manager: Position manager instance
+            connector: MT5 connector instance
+            database: Database instance
+            metrics: Metrics collector instance
+            logger: Logger instance
+            args: Command-line arguments (optional)
+            persist_summary_fn: Function to persist metrics summary (optional)
+            summary_path: Path to summary file (optional)
+            news_ingestor: News ingestor instance (optional)
+            ml_collector: ML data collector instance (optional)
+            trade_monitor: Trade monitor instance (optional)
+            gui_process: GUI subprocess (optional)
+        """
+        self.position_manager = position_manager
+        self.connector = connector
+        self.database = database
+        self.metrics = metrics
+        self.logger = logger
+        self.args = args
+        self.persist_summary_fn = persist_summary_fn
+        self.summary_path = summary_path
+        self.news_ingestor = news_ingestor
+        self.ml_collector = ml_collector
+        self.trade_monitor = trade_monitor
+        self.gui_process = gui_process
+    
+    def shutdown(self):
+        """
+        Execute graceful shutdown sequence.
+        
+        This method coordinates the entire shutdown process, ensuring that
+        all resources are properly cleaned up even if individual steps fail.
+        """
+        self.logger.info("Initiating graceful shutdown...")
+        
+        try:
+            # 1. Handle open positions
+            self._handle_open_positions()
+            
+            # 2. Persist final metrics
+            self._persist_final_metrics()
+            
+            # 3. Disconnect from MT5
+            self._disconnect_mt5()
+            
+            # 4. Stop optional components
+            self._stop_optional_components()
+            
+            # 5. Final logging
+            self._log_shutdown_complete()
+        
+        except Exception as e:
+            self.logger.error(f"Error during shutdown: {e}", exc_info=True)
+    
+    def _handle_open_positions(self):
+        """
+        Handle open positions during shutdown.
+        
+        Prompts the user (if not in dry-run mode) for what to do with
+        open positions: close all, leave open, or close specific tickets.
+        """
+        if not self.args or self.args.dry_run:
+            # In dry-run mode, nothing to do
+            return
+        
+        try:
+            choice = self._prompt_user_for_position_action()
+            
+            if choice in ('a', 'all'):
+                self._close_all_positions()
+            elif choice in ('s', 'select'):
+                self._close_selected_positions()
+            else:
+                self.logger.info("User chose to leave open positions untouched")
+        
+        except Exception as e:
+            self.logger.error(f"Error handling open positions: {e}", exc_info=True)
+    
+    def _prompt_user_for_position_action(self) -> str:
+        """
+        Prompt user for what to do with open positions.
+        
+        Returns:
+            User's choice as a string ('a', 'n', 's', etc.)
+        """
+        prompt_text = (
+            "\nShutdown requested. What should I do with open positions?\n"
+            "  [A] Close ALL positions\n"
+            "  [N] Leave positions OPEN (default)\n"
+            "  [S] Close specific tickets (comma-separated)\n"
+            "Choose (A/n/s): "
+        )
+        
+        return self._prompt_console(prompt_text, default='n')
+    
+    def _prompt_console(self, prompt_text: str, default: str = 'n') -> str:
+        """
+        Prompt user for input, with fallback mechanisms.
+        
+        This function tries multiple approaches to get user input:
+        1. Standard input if available
+        2. Platform-specific console access (CONIN$ on Windows, /dev/tty on Unix)
+        3. Default value if all else fails
+        
+        Args:
+            prompt_text: Prompt to display to user
+            default: Default value if input fails
+            
+        Returns:
+            User's input as lowercase string
+        """
+        try:
+            # Try normal input first
+            if sys.stdin.isatty() and not getattr(self.args, 'no_prompt', False):
+                return input(prompt_text).strip().lower()
+            
+            # Fall back to opening the platform console directly
+            if os.name == 'nt':
+                # Windows: use CONIN$
+                with open('CONIN$', 'r') as con:
+                    print(prompt_text, end='', flush=True)
+                    return con.readline().strip().lower()
+            else:
+                # Unix: use /dev/tty
+                with open('/dev/tty', 'r') as tty:
+                    print(prompt_text, end='', flush=True)
+                    return tty.readline().strip().lower()
+        except Exception:
+            # If all else fails, return default
+            return default.lower()
+    
+    def _close_all_positions(self):
+        """Close all open positions."""
+        self.logger.info("User requested: close ALL positions")
+        close_results = self.position_manager.close_all_positions("System shutdown")
+        self.logger.info(f"Closed {len(close_results)} positions")
+    
+    def _close_selected_positions(self):
+        """Close specific positions selected by user."""
+        tickets_input = self._prompt_console("Enter ticket numbers to close (comma-separated): ", '')
+        ids = [int(x.strip()) for x in tickets_input.split(',') if x.strip().isdigit()]
+        
+        closed = 0
+        for ticket in ids:
+            try:
+                res = self.position_manager.close_position(
+                    ticket=ticket,
+                    reason="User shutdown request"
+                )
+                if res and hasattr(res, 'status'):
+                    closed += 1
+            except Exception as e:
+                self.logger.error(f"Failed to close ticket {ticket}: {e}")
+        
+        self.logger.info(f"Closed {closed} user-selected positions")
+    
+    def _persist_final_metrics(self):
+        """Persist final metrics to summary file."""
+        self.logger.info("Final performance metrics:")
+        
+        try:
+            if self.persist_summary_fn and self.summary_path:
+                self.persist_summary_fn(self.metrics, self.logger, self.summary_path)
+        except Exception:
+            self.logger.exception('Failed to persist final metrics summary')
+    
+    def _disconnect_mt5(self):
+        """Disconnect from MT5."""
+        try:
+            self.connector.disconnect()
+            self.logger.info("Disconnected from MT5")
+        except Exception as e:
+            self.logger.error(f"Error disconnecting from MT5: {e}", exc_info=True)
+    
+    def _stop_optional_components(self):
+        """Stop optional components (News, ML, Monitor, GUI)."""
+        # Stop NewsIngestor if it was started
+        if self.news_ingestor:
+            try:
+                self.news_ingestor.stop()
+                self.logger.info('NewsIngestor stopped')
+            except Exception:
+                self.logger.exception('Failed to stop NewsIngestor cleanly')
+        
+        # Close ML collector if present
+        if self.ml_collector:
+            try:
+                self.ml_collector.close()
+                self.logger.info('MLDataCollector closed')
+            except Exception:
+                self.logger.exception('Failed to close MLDataCollector')
+        
+        # Stop trade monitor if running
+        if self.trade_monitor:
+            try:
+                if hasattr(self.trade_monitor, 'stop'):
+                    self.trade_monitor.stop()
+                    self.logger.info('TradeMonitor stopped')
+            except Exception:
+                self.logger.exception('Failed to stop TradeMonitor')
+        
+        # Terminate GUI process if running
+        if self.gui_process:
+            try:
+                if hasattr(self.gui_process, 'terminate'):
+                    self.gui_process.terminate()
+                    # Give it a moment to terminate gracefully
+                    import time
+                    time.sleep(1)
+                    # Force kill if still running
+                    if self.gui_process.poll() is None:
+                        self.gui_process.kill()
+                    self.logger.info('GUI process terminated')
+            except Exception:
+                self.logger.exception('Failed to terminate GUI process')
+    
+    def _log_shutdown_complete(self):
+        """Log shutdown completion banner."""
+        self.logger.info("=" * 70)
+        self.logger.info("Herald Autonomous Trading System - Stopped")
+        self.logger.info("=" * 70)
+
+
+def create_shutdown_handler(
+    position_manager,
+    connector,
+    database,
+    metrics,
+    logger: logging.Logger,
+    args: Optional[Any] = None,
+    persist_summary_fn: Optional[Callable] = None,
+    summary_path: Optional[Path] = None,
+    **optional_components
+) -> ShutdownHandler:
+    """
+    Factory function to create a ShutdownHandler with all dependencies.
+    
+    Args:
+        position_manager: Position manager instance
+        connector: MT5 connector instance
+        database: Database instance
+        metrics: Metrics collector instance
+        logger: Logger instance
+        args: Command-line arguments (optional)
+        persist_summary_fn: Function to persist metrics summary (optional)
+        summary_path: Path to summary file (optional)
+        **optional_components: Additional optional components (news_ingestor, ml_collector, etc.)
+        
+    Returns:
+        Configured ShutdownHandler instance
+    """
+    return ShutdownHandler(
+        position_manager=position_manager,
+        connector=connector,
+        database=database,
+        metrics=metrics,
+        logger=logger,
+        args=args,
+        persist_summary_fn=persist_summary_fn,
+        summary_path=summary_path,
+        news_ingestor=optional_components.get('news_ingestor'),
+        ml_collector=optional_components.get('ml_collector'),
+        trade_monitor=optional_components.get('trade_monitor'),
+        gui_process=optional_components.get('gui_process')
+    )

@@ -37,12 +37,21 @@ def calculate_atr(data: pd.DataFrame, period: int = 14) -> pd.Series:
     low = data['low']
     close = data['close']
 
+    # Calculate True Range components
     tr1 = high - low
     tr2 = (high - close.shift(1)).abs()
     tr3 = (low - close.shift(1)).abs()
 
+    # True Range is the maximum of the three components
     tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-    atr = tr.rolling(window=period, min_periods=1).mean()
+    
+    # Use exponential moving average for smoother ATR (more responsive)
+    # This is especially important for scalping strategies
+    atr = tr.ewm(span=period, adjust=False, min_periods=1).mean()
+    
+    # Fill any NaN values at the start with the first valid value
+    atr = atr.bfill()
+    
     atr.name = 'atr'
     return atr
 

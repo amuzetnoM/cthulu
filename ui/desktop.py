@@ -139,43 +139,49 @@ class HeraldGUI:
 
         # Top: Metrics grid (no scroll)
         metrics_frame = ttk.Frame(root)
-        metrics_frame.pack(fill='x', padx=10, pady=(10, 6))
+        metrics_frame.pack(fill='x', padx=15, pady=(12, 8))
 
-        ttk.Label(metrics_frame, text='Performance Summary', style='Header.TLabel').grid(row=0, column=0, columnspan=4, sticky='w', pady=(0,6))
+        ttk.Label(metrics_frame, text='Performance Summary', style='Header.TLabel').grid(
+            row=0, column=0, columnspan=8, sticky='w', pady=(0, 10)
+        )
         self.metrics_labels = {}
         metric_keys = ['Total Trades', 'Win Rate', 'Net Profit', 'Profit Factor', 'Max Drawdown', 'Active Positions', 'Sharpe Ratio', 'Expectancy']
         for i, key in enumerate(metric_keys):
             r = 1 + (i // 4)
-            c = i % 4
+            c = (i % 4) * 2
             k_lbl = ttk.Label(metrics_frame, text=f"{key}:", style='Metric.TLabel')
             v_lbl = ttk.Label(metrics_frame, text='—', style='Metric.TLabel')
-            k_lbl.grid(row=r*2-1, column=c*2, sticky='w', padx=6, pady=2)
-            v_lbl.grid(row=r*2, column=c*2, sticky='w', padx=6, pady=2)
+            k_lbl.grid(row=r*2-1, column=c, sticky='e', padx=(8, 4), pady=3)
+            v_lbl.grid(row=r*2-1, column=c+1, sticky='w', padx=(0, 16), pady=3)
             self.metrics_labels[key] = v_lbl
 
-        # Strategy Info Section (new)
+        # Strategy Info Section
         strategy_frame = ttk.Frame(root)
-        strategy_frame.pack(fill='x', padx=10, pady=(6, 6))
+        strategy_frame.pack(fill='x', padx=15, pady=(8, 8))
         
-        ttk.Label(strategy_frame, text='Active Strategy', style='Header.TLabel').grid(row=0, column=0, sticky='w', pady=(0,4))
+        ttk.Label(strategy_frame, text='Active Strategy', style='Header.TLabel').grid(
+            row=0, column=0, sticky='w', pady=(0, 6)
+        )
         self.strategy_label = ttk.Label(strategy_frame, text='—', style='Metric.TLabel')
-        self.strategy_label.grid(row=1, column=0, sticky='w', padx=6)
+        self.strategy_label.grid(row=1, column=0, sticky='w', padx=8)
         
-        ttk.Label(strategy_frame, text='Market Regime', style='Header.TLabel').grid(row=0, column=1, sticky='w', pady=(0,4), padx=(20,0))
+        ttk.Label(strategy_frame, text='Market Regime', style='Header.TLabel').grid(
+            row=0, column=1, sticky='w', pady=(0, 6), padx=(30, 0)
+        )
         self.regime_label = ttk.Label(strategy_frame, text='—', style='Metric.TLabel')
-        self.regime_label.grid(row=1, column=1, sticky='w', padx=6)
+        self.regime_label.grid(row=1, column=1, sticky='w', padx=8)
 
         # Middle: Trades and history
         middle_frame = ttk.Frame(root)
-        middle_frame.pack(fill='both', expand=True, padx=10, pady=6)
+        middle_frame.pack(fill='both', expand=True, padx=15, pady=(8, 8))
 
         # Live trades panel
         left = ttk.Frame(middle_frame)
-        left.pack(side='left', fill='both', expand=True, padx=(0,6))
-        ttk.Label(left, text='Live Trades', style='Header.TLabel').pack(anchor='w')
+        left.pack(side='left', fill='both', expand=True, padx=(0, 8))
+        ttk.Label(left, text='Live Trades', style='Header.TLabel').pack(anchor='w', pady=(0, 6))
         self.trades_tree = ttk.Treeview(left, columns=('ticket','symbol','side','volume','price','pnl'), show='headings', height=10)
         # Define clearer column widths for alignment
-        trades_cols = [('ticket', 120), ('symbol', 90), ('side', 60), ('volume', 80), ('price', 100), ('pnl', 100)]
+        trades_cols = [('ticket', 120), ('symbol', 90), ('side', 70), ('volume', 80), ('price', 110), ('pnl', 110)]
         for col, width in trades_cols:
             self.trades_tree.heading(col, text=col.capitalize())
             self.trades_tree.column(col, width=width, anchor='center')
@@ -185,14 +191,14 @@ class HeraldGUI:
             self.trades_tree.tag_configure('even', background='#1a2332')
         except Exception:
             pass
-        self.trades_tree.pack(fill='both', expand=True, pady=4)
+        self.trades_tree.pack(fill='both', expand=True, pady=(0, 4))
 
         # Trade history panel
         right = ttk.Frame(middle_frame)
-        right.pack(side='left', fill='both', expand=True, padx=(6,0))
-        ttk.Label(right, text='Trade History', style='Header.TLabel').pack(anchor='w')
+        right.pack(side='left', fill='both', expand=True, padx=(8, 0))
+        ttk.Label(right, text='Trade History', style='Header.TLabel').pack(anchor='w', pady=(0, 6))
         self.history_tree = ttk.Treeview(right, columns=('time','symbol','side','volume','entry','exit','pnl','status'), show='headings', height=10)
-        history_cols = [('time', 140), ('symbol', 90), ('side', 60), ('volume', 80), ('entry', 110), ('exit', 110), ('pnl', 90), ('status', 100)]
+        history_cols = [('time', 140), ('symbol', 90), ('side', 60), ('volume', 75), ('entry', 105), ('exit', 105), ('pnl', 90), ('status', 100)]
         for col, width in history_cols:
             self.history_tree.heading(col, text=col.capitalize())
             self.history_tree.column(col, width=width, anchor='center')
@@ -201,41 +207,43 @@ class HeraldGUI:
             self.history_tree.tag_configure('even', background='#1a2332')
         except Exception:
             pass
-        self.history_tree.pack(fill='both', expand=True, pady=4)
+        self.history_tree.pack(fill='both', expand=True, pady=(0, 4))
 
         # Bottom: Manual trade panel
         bottom = ttk.Frame(root)
-        bottom.pack(fill='x', padx=10, pady=(6,10))
-        ttk.Label(bottom, text='Manual Trade', style='Header.TLabel').grid(row=0, column=0, columnspan=6, sticky='w')
+        bottom.pack(fill='x', padx=15, pady=(8, 12))
+        ttk.Label(bottom, text='Manual Trade', style='Header.TLabel').grid(
+            row=0, column=0, columnspan=6, sticky='w', pady=(0, 8)
+        )
 
-        ttk.Label(bottom, text='Symbol:', style='TLabel').grid(row=1, column=0, sticky='e', padx=(4,2))
+        ttk.Label(bottom, text='Symbol:', style='TLabel').grid(row=1, column=0, sticky='e', padx=(8, 4), pady=4)
         self.symbol_var = tk.StringVar()
-        ttk.Entry(bottom, textvariable=self.symbol_var, width=12).grid(row=1, column=1, sticky='w', padx=(0,8))
+        ttk.Entry(bottom, textvariable=self.symbol_var, width=12).grid(row=1, column=1, sticky='w', padx=(0, 12), pady=4)
 
-        ttk.Label(bottom, text='Side:', style='TLabel').grid(row=1, column=2, sticky='e')
+        ttk.Label(bottom, text='Side:', style='TLabel').grid(row=1, column=2, sticky='e', padx=(8, 4), pady=4)
         self.side_var = tk.StringVar(value='BUY')
-        ttk.Combobox(bottom, textvariable=self.side_var, values=['BUY','SELL'], width=6).grid(row=1, column=3, sticky='w', padx=(0,8))
+        ttk.Combobox(bottom, textvariable=self.side_var, values=['BUY','SELL'], width=7).grid(row=1, column=3, sticky='w', padx=(0, 12), pady=4)
 
-        ttk.Label(bottom, text='Volume:', style='TLabel').grid(row=1, column=4, sticky='e')
+        ttk.Label(bottom, text='Volume:', style='TLabel').grid(row=1, column=4, sticky='e', padx=(8, 4), pady=4)
         self.volume_var = tk.StringVar(value='0.01')
-        ttk.Entry(bottom, textvariable=self.volume_var, width=8).grid(row=1, column=5, sticky='w', padx=(0,8))
+        ttk.Entry(bottom, textvariable=self.volume_var, width=8).grid(row=1, column=5, sticky='w', padx=(0, 12), pady=4)
 
-        ttk.Label(bottom, text='SL:', style='TLabel').grid(row=2, column=0, sticky='e')
+        ttk.Label(bottom, text='SL:', style='TLabel').grid(row=2, column=0, sticky='e', padx=(8, 4), pady=4)
         self.sl_var = tk.StringVar()
-        ttk.Entry(bottom, textvariable=self.sl_var, width=12).grid(row=2, column=1, sticky='w', padx=(0,8))
+        ttk.Entry(bottom, textvariable=self.sl_var, width=12).grid(row=2, column=1, sticky='w', padx=(0, 12), pady=4)
 
-        ttk.Label(bottom, text='TP:', style='TLabel').grid(row=2, column=2, sticky='e')
+        ttk.Label(bottom, text='TP:', style='TLabel').grid(row=2, column=2, sticky='e', padx=(8, 4), pady=4)
         self.tp_var = tk.StringVar()
-        ttk.Entry(bottom, textvariable=self.tp_var, width=12).grid(row=2, column=3, sticky='w', padx=(0,8))
+        ttk.Entry(bottom, textvariable=self.tp_var, width=12).grid(row=2, column=3, sticky='w', padx=(0, 12), pady=4)
 
         self.place_btn = ttk.Button(bottom, text='Place Trade', style='Accent.TButton', command=self.place_manual_trade)
-        self.place_btn.grid(row=2, column=5, sticky='e', padx=(0,4))
+        self.place_btn.grid(row=2, column=5, sticky='e', padx=(8, 4), pady=4)
 
         # Live log viewer (shows last N lines of herald.log)
         log_frame = ttk.Frame(root)
         # Allow log area to expand and be resizable
-        log_frame.pack(fill='both', expand=True, padx=10, pady=(6,6))
-        ttk.Label(log_frame, text='Live Log', style='Header.TLabel').pack(anchor='w')
+        log_frame.pack(fill='both', expand=True, padx=15, pady=(8, 12))
+        ttk.Label(log_frame, text='Live Log', style='Header.TLabel').pack(anchor='w', pady=(0, 6))
         # Use ScrolledText but also add horizontal scrollbar for long log lines
         self.log_text = ScrolledText(log_frame, height=12, bg='#07121a', fg=THEME_FG, insertbackground=THEME_FG, wrap='none')
         try:
@@ -246,7 +254,7 @@ class HeraldGUI:
         # Horizontal scrollbar
         xscroll = tk.Scrollbar(log_frame, orient='horizontal', command=self.log_text.xview)
         self.log_text.configure(xscrollcommand=xscroll.set)
-        self.log_text.pack(fill='both', expand=True, pady=4)
+        self.log_text.pack(fill='both', expand=True, pady=(0, 4))
         xscroll.pack(fill='x')
 
         # Close behavior
