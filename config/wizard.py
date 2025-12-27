@@ -57,29 +57,42 @@ def print_banner():
     ╠═╣║╣ ╠╦╝╠═╣║   ║║
     ╩ ╩╚═╝╩╚═╩ ╩╩═╝═╩╝
     ─────────────────────────────
+           HERALD v5.0.0
     Interactive Setup Wizard
     """
     try:
         safe_print("\033[96m" + banner + "\033[0m")
     except Exception:
         # Fallback to a plain ASCII banner
-        safe_print("*** Herald Interactive Setup Wizard ***")
+        safe_print("*** HERALD v5.0.0 - Interactive Setup Wizard ***")
 
 
-def print_section(title: str):
-    """Print a section header."""
-    safe_print(f"\n\033[93m{'─' * 50}\033[0m")
-    safe_print(f"\033[93m  {title}\033[0m")
-    safe_print(f"\033[93m{'─' * 50}\033[0m\n")
+def print_section(title: str, step: int = None, total_steps: int = None):
+    """Print a section header with optional progress indicator."""
+    if step is not None and total_steps is not None:
+        progress = f" [{step}/{total_steps}]"
+        title_with_progress = f"{title}{progress}"
+    else:
+        title_with_progress = title
+
+    safe_print(f"\n\033[93m{'═' * 60}\033[0m")
+    safe_print(f"\033[93m  {title_with_progress}\033[0m")
+    safe_print(f"\033[93m{'═' * 60}\033[0m\n")
 
 
 def print_option(key: str, label: str, description: str = "", selected: bool = False):
-    """Print a menu option."""
-    marker = "●" if selected else "○"
-    if description:
-        safe_print(f"  [{key}] {marker} {label} - \033[90m{description}\033[0m")
+    """Print a menu option with enhanced visual styling."""
+    if selected:
+        marker = "\033[92m●\033[0m"  # Green filled circle for selected
+        key_color = "\033[92m"  # Green key for selected
     else:
-        safe_print(f"  [{key}] {marker} {label}")
+        marker = "\033[90m○\033[0m"  # Gray empty circle for unselected
+        key_color = "\033[96m"  # Cyan key for unselected
+
+    if description:
+        safe_print(f"  {key_color}[{key}]\033[0m {marker} \033[97m{label}\033[0m - \033[90m{description}\033[0m")
+    else:
+        safe_print(f"  {key_color}[{key}]\033[0m {marker} \033[97m{label}\033[0m")
 
 
 import sys
@@ -101,15 +114,23 @@ def safe_print(text: str):
 
 
 def print_success(msg: str):
+    """Print a success message with green checkmark."""
     safe_print(f"\033[92m  ✓ {msg}\033[0m")
 
 
 def print_info(msg: str):
+    """Print an info message with blue info icon."""
     safe_print(f"\033[94m  ℹ {msg}\033[0m")
 
 
 def print_warning(msg: str):
+    """Print a warning message with yellow warning icon."""
     safe_print(f"\033[93m  ⚠ {msg}\033[0m")
+
+
+def print_error(msg: str):
+    """Print an error message with red X icon."""
+    safe_print(f"\033[91m  ✗ {msg}\033[0m")
 
 
 class WizardCancelled(Exception):
@@ -160,7 +181,7 @@ def get_int(prompt: str, default: int, min_val: int = 0, max_val: int = 100) -> 
 
 def choose_mindset() -> str:
     """Let user choose a trading mindset."""
-    print_section("STEP 1: Trading Mindset")
+    print_section("STEP 1: Trading Mindset", 1, 7)
     print("  Choose your risk tolerance and trading style:\n")
     
     for key, (name, desc) in MINDSETS.items():
@@ -178,7 +199,7 @@ def choose_mindset() -> str:
 
 def choose_symbol(current: str = "EURUSD") -> str:
     """Let user choose or enter a trading symbol."""
-    print_section("STEP 2: Trading Symbol")
+    print_section("STEP 2: Trading Symbol", 2, 7)
     print("  Enter the symbol you want to trade.\n")
     print(f"  \033[90mCommon symbols: {', '.join(COMMON_SYMBOLS[:5])}\033[0m")
     print(f"  \033[90mNote: Some brokers use suffixes like # or .m\033[0m\n")
@@ -190,7 +211,7 @@ def choose_symbol(current: str = "EURUSD") -> str:
 
 def choose_timeframe(current: str = "TIMEFRAME_H1") -> str:
     """Let user choose a timeframe."""
-    print_section("STEP 3: Timeframe")
+    print_section("STEP 3: Timeframe", 3, 7)
     print("  Select your trading timeframe:\n")
     
     for key, (tf, desc) in TIMEFRAMES.items():
@@ -218,7 +239,7 @@ def choose_timeframe(current: str = "TIMEFRAME_H1") -> str:
 
 def configure_risk(current_risk: Dict[str, Any]) -> Dict[str, Any]:
     """Configure risk management settings."""
-    print_section("STEP 4: Risk Management")
+    print_section("STEP 4: Risk Management", 4, 7)
     print("  Set your risk limits to protect your capital.\n")
     
     risk = deepcopy(current_risk)
@@ -259,7 +280,7 @@ def configure_risk(current_risk: Dict[str, Any]) -> Dict[str, Any]:
 
 def configure_indicators(current_indicators: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
     """Configure technical indicators."""
-    print_section("STEP 5.5: Technical Indicators (Optional)")
+    print_section("STEP 6: Technical Indicators (Optional)", 6, 7)
     print("  Add technical indicators to enhance your strategy:\n")
     
     indicators = []
@@ -271,10 +292,15 @@ def configure_indicators(current_indicators: List[Dict[str, Any]] = None) -> Lis
     print_option("5", "ADX", "Average Directional Index - trend strength")
     print_option("6", "Supertrend", "Trend-following indicator")
     print_option("7", "VWAP", "Volume Weighted Average Price")
+    print_option("8", "VPT", "Volume Price Trend - volume-weighted momentum")
+    print_option("9", "Volume Oscillator", "Volume momentum indicator")
+    print_option("10", "Price Volume Trend", "Cumulative volume-price relationship")
+    print_option("11", "ATR", "Average True Range - volatility measure")
+    print_option("12", "Williams %R", "Momentum indicator for overbought/oversold")
     print_option("0", "None", "Skip indicators")
     print()
     
-    choice = get_input("Select indicators (comma-separated, e.g., 1,2,6) or 0 for none, 00 for all", "0")
+    choice = get_input("Select indicators (comma-separated, e.g., 1,2,6) or 0 for none, 00 for all 12", "0")
     
     if choice == "00":
         # Add all indicators
@@ -285,9 +311,14 @@ def configure_indicators(current_indicators: List[Dict[str, Any]] = None) -> Lis
             {'type': 'stochastic', 'params': {'k_period': 14, 'd_period': 3, 'smooth': 3}},
             {'type': 'adx', 'params': {'period': 14}},
             {'type': 'supertrend', 'params': {'atr_period': 10, 'atr_multiplier': 3.0}},
-            {'type': 'vwap', 'params': {}}
+            {'type': 'vwap', 'params': {}},
+            {'type': 'vpt', 'params': {}},
+            {'type': 'volume_oscillator', 'params': {'short_period': 5, 'long_period': 10}},
+            {'type': 'price_volume_trend', 'params': {}},
+            {'type': 'atr', 'params': {'period': 14}},
+            {'type': 'williams_r', 'params': {'period': 14}}
         ]
-        print_success("Added all indicators")
+        print_success("Added all 12 indicators")
     elif choice != "0":
         for ind_choice in choice.split(','):
             ind_choice = ind_choice.strip()
@@ -346,13 +377,52 @@ def configure_indicators(current_indicators: List[Dict[str, Any]] = None) -> Lis
                     'params': {}
                 })
                 print_success("Added VWAP")
+                
+            elif ind_choice == "8":
+                indicators.append({
+                    'type': 'vpt',
+                    'params': {}
+                })
+                print_success("Added Volume Price Trend (VPT)")
+                
+            elif ind_choice == "9":
+                short_period = get_int("Volume Oscillator short period", 5, min_val=3, max_val=20)
+                long_period = get_int("Volume Oscillator long period", 10, min_val=5, max_val=50)
+                indicators.append({
+                    'type': 'volume_oscillator',
+                    'params': {'short_period': short_period, 'long_period': long_period}
+                })
+                print_success(f"Added Volume Oscillator ({short_period}, {long_period})")
+                
+            elif ind_choice == "10":
+                indicators.append({
+                    'type': 'price_volume_trend',
+                    'params': {}
+                })
+                print_success("Added Price Volume Trend")
+                
+            elif ind_choice == "11":
+                period = get_int("ATR period", 14, min_val=5, max_val=30)
+                indicators.append({
+                    'type': 'atr',
+                    'params': {'period': period}
+                })
+                print_success(f"Added ATR with period {period}")
+                
+            elif ind_choice == "12":
+                period = get_int("Williams %R period", 14, min_val=5, max_val=30)
+                indicators.append({
+                    'type': 'williams_r',
+                    'params': {'period': period}
+                })
+                print_success(f"Added Williams %R with period {period}")
     
     return indicators
 
 
 def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
     """Configure strategy-specific settings."""
-    print_section("STEP 5: Strategy Settings")
+    print_section("STEP 5: Strategy Settings", 5, 7)
     
     strategy = deepcopy(current_strategy)
     params = strategy.get('params', {})
@@ -384,9 +454,11 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
         print_option("2", "EMA Crossover", "Exponential Moving Average crossover")
         print_option("3", "Momentum Breakout", "Price momentum and breakout detection")
         print_option("4", "Scalping", "Fast scalping with tight stops")
+        print_option("5", "Mean Reversion", "Bollinger Band bounce strategy")
+        print_option("6", "Trend Following", "ADX-confirmed trend following")
         print()
         
-        strategies_choice = get_input("Select strategies (1-4, e.g., 1,2)", "1,2")
+        strategies_choice = get_input("Select strategies (1-6, e.g., 1,2)", "1,2")
         strategies_list = []
         
         for choice in strategies_choice.split(','):
@@ -413,6 +485,16 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
                     'type': 'scalping',
                     'params': {'quick_period': 5, 'trend_period': 20}
                 })
+            elif choice == "5":
+                strategies_list.append({
+                    'type': 'mean_reversion',
+                    'params': {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}
+                })
+            elif choice == "6":
+                strategies_list.append({
+                    'type': 'trend_following',
+                    'params': {'adx_period': 14, 'adx_threshold': 25, 'supertrend_period': 10}
+                })
         
         # Ensure at least two strategies are present for dynamic mode (safe defaults)
         if not strategies_list:
@@ -433,9 +515,11 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
         print_option("2", "EMA Crossover", "Exponential Moving Average crossover")
         print_option("3", "Momentum Breakout", "Price momentum and breakout detection")
         print_option("4", "Scalping", "Fast scalping with tight stops")
+        print_option("5", "Mean Reversion", "Bollinger Band bounce strategy")
+        print_option("6", "Trend Following", "ADX-confirmed trend following")
         print()
         
-        strat_choice = get_input("Select strategy (1-4)", "1")
+        strat_choice = get_input("Select strategy (1-6)", "1")
         
         if strat_choice == "1":
             strategy['type'] = 'sma_crossover'
@@ -491,6 +575,26 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
             params['trend_period'] = get_int("Trend period", 20, min_val=10, max_val=50)
             
             print_success(f"Quick: {params['quick_period']}, Trend: {params['trend_period']}")
+            
+        elif strat_choice == "5":
+            strategy['type'] = 'mean_reversion'
+            print_info("Mean Reversion uses Bollinger Bands for bounce trades")
+            
+            params['bollinger_period'] = get_int("Bollinger Bands period", 20, min_val=10, max_val=50)
+            params['bollinger_std'] = get_float("Standard deviations", 2.0, min_val=1.5, max_val=3.0)
+            params['rsi_period'] = get_int("RSI period", 14, min_val=5, max_val=30)
+            
+            print_success(f"Bollinger: {params['bollinger_period']} ({params['bollinger_std']}σ), RSI: {params['rsi_period']}")
+            
+        elif strat_choice == "6":
+            strategy['type'] = 'trend_following'
+            print_info("Trend Following uses ADX for trend confirmation")
+            
+            params['adx_period'] = get_int("ADX period", 14, min_val=10, max_val=30)
+            params['adx_threshold'] = get_int("ADX threshold", 25, min_val=15, max_val=35)
+            params['supertrend_period'] = get_int("Supertrend ATR period", 10, min_val=5, max_val=20)
+            
+            print_success(f"ADX: {params['adx_period']} ({params['adx_threshold']}), Supertrend: {params['supertrend_period']}")
     
     strategy['params'] = params
     return strategy
@@ -498,19 +602,36 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
 
 def confirm_and_save(config: Dict[str, Any], config_path: str) -> bool:
     """Show summary and confirm save."""
-    print_section("CONFIGURATION SUMMARY")
-    
-    print(f"  Symbol:           \033[96m{config['trading']['symbol']}\033[0m")
-    print(f"  Timeframe:        \033[96m{config['trading']['timeframe']}\033[0m")
-    print(f"  Strategy:         \033[96m{config['strategy']['type']}\033[0m")
-    print()
-    print(f"  Max Daily Loss:   \033[93m${config['risk']['max_daily_loss']}\033[0m")
-    print(f"  Position Size:    \033[93m{config['risk']['position_size_pct']}%\033[0m")
-    print(f"  Max Positions:    \033[93m{config['risk']['max_total_positions']}\033[0m")
-    
+    print_section("STEP 7: Configuration Summary", 7, 7)
+
+    # Trading Configuration
+    print("  \033[97m📊 Trading Configuration:\033[0m")
+    print(f"    Symbol:           \033[96m{config['trading']['symbol']}\033[0m")
+    print(f"    Timeframe:        \033[96m{config['trading']['timeframe']}\033[0m")
+
+    # Strategy Configuration
+    print("\n  \033[97m🎯 Strategy Configuration:\033[0m")
+    strategy = config['strategy']
+    if strategy.get('type') == 'dynamic':
+        strategies_count = len(strategy.get('strategies', []))
+        print(f"    Strategy:         \033[96mDynamic ({strategies_count} strategies)\033[0m")
+    else:
+        print(f"    Strategy:         \033[96m{strategy['type']}\033[0m")
+
+    # Indicators
+    indicators_count = len(config.get('indicators', []))
+    if indicators_count > 0:
+        print(f"    Indicators:       \033[96m{indicators_count} configured\033[0m")
+
+    # Risk Management
+    print("\n  \033[97m⚠️  Risk Management:\033[0m")
+    print(f"    Max Daily Loss:   \033[93m${config['risk']['max_daily_loss']}\033[0m")
+    print(f"    Position Size:    \033[93m{config['risk']['position_size_pct']}%\033[0m")
+    print(f"    Max Positions:    \033[93m{config['risk']['max_total_positions']}\033[0m")
+
     print()
     confirm = get_input("Save this configuration? (y/n)", "y").lower()
-    
+
     if confirm == 'y':
         # Backup existing config
         config_file = Path(config_path)
@@ -518,11 +639,11 @@ def confirm_and_save(config: Dict[str, Any], config_path: str) -> bool:
             backup_path = config_file.with_suffix('.json.bak')
             backup_path.write_text(config_file.read_text())
             print_info(f"Backed up existing config to {backup_path.name}")
-        
+
         # Save new config
         with open(config_path, 'w') as f:
             json.dump(config, f, indent=2)
-        
+
         print_success(f"Configuration saved to {config_path}")
         return True
     else:
@@ -1194,8 +1315,11 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
             print_success("Configuration saved. Starting Herald now...")
             print()
             return config
-
-        return None
+        else:
+            print()
+            print_info("Configuration not saved. Starting Herald with in-memory configuration...")
+            print()
+            return config
     except WizardCancelled:
         print_info('Setup cancelled (input closed). No changes saved.')
         return None

@@ -185,7 +185,7 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     if needs_rsi:
         # Ensure we add the strategy-specific RSI period (and also add default rsi if desired)
         rsi_col = f'rsi_{rsi_period}' if rsi_period != 14 else 'rsi'
-        has_rsi = rsi_col in df.columns or any(getattr(i, 'name', '') == 'rsi' or getattr(i, 'name', '') == f'rsi_{rsi_period}' for i in indicators)
+        has_rsi = rsi_col in df.columns or any(getattr(i, 'name', '').upper() == 'RSI' for i in indicators)
         if not has_rsi:
             extra_indicators.append(RSI(period=rsi_period))
             logger.debug(f"Added runtime RSI indicator (period={rsi_period})")
@@ -199,7 +199,7 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
                     if 'rsi_period' in params and params['rsi_period']:
                         rp = int(params['rsi_period'])
                         rsi_col = f'rsi_{rp}' if rp != 14 else 'rsi'
-                        if rsi_col not in df.columns and not any(getattr(i, 'name', '') == rsi_col for i in indicators):
+                        if rsi_col not in df.columns and not any(getattr(i, 'name', '').upper() == 'RSI' for i in indicators):
                             extra_indicators.append(RSI(period=rp))
                             logger.debug(f"Added runtime RSI indicator from config (period={rp})")
                             break
@@ -219,7 +219,7 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
         pass
     
     if needs_atr:
-        has_atr = 'atr' in df.columns or any(getattr(i, 'name', '') == 'atr' for i in indicators)
+        has_atr = 'atr' in df.columns or any(getattr(i, 'name', '').upper() == 'ATR' for i in indicators)
         if not has_atr:
             extra_indicators.append(ATR(period=atr_period))
             logger.debug(f"Added runtime ATR indicator (period={atr_period})")
@@ -234,7 +234,7 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
         pass
     
     if needs_adx:
-        has_adx = 'adx' in df.columns or any(getattr(i, 'name', '') == 'adx' for i in indicators)
+        has_adx = 'adx' in df.columns or any(getattr(i, 'name', '').upper() == 'ADX' for i in indicators)
         if not has_adx:
             extra_indicators.append(ADX(period=14))
             logger.debug("Added runtime ADX indicator for regime detection")
