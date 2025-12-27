@@ -87,7 +87,11 @@ class PositionLifecycle:
                 position_info = self.connector.get_position_by_ticket(ticket)
                 if position_info:
                     # Import PositionInfo here to avoid circular import
-                    from position.tracker import PositionInfo
+                    try:
+                        from position.tracker import PositionInfo
+                    except Exception:
+                        # Fallback to package import for test / runtime environments
+                        from herald.position.tracker import PositionInfo
                     
                     # Create tracked position
                     tracked_pos = PositionInfo(
