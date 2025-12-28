@@ -6,10 +6,9 @@ slug: /docs/architecture
 sidebar_position: 3
 ---
 
-# Herald Architecture Overview
-**Version 5.0.0 - Complete: Production-Ready Multi-Strategy Autonomous Trading**
+## System Architecture
 
-## System Architecture (Complete)
+<a href="https://artifact-virtual.gitbook.io/herald"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a>
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐

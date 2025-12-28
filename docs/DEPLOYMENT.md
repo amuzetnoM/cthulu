@@ -6,8 +6,6 @@ slug: /docs/deployment
 sidebar_position: 5
 ---
 
-# Herald Deployment Guide
-
 ## Table of Contents
 - [Quick Start](#quick-start)
 - [Docker Deployment](#docker-deployment)
