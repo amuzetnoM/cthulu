@@ -6,6 +6,14 @@ sidebar_position: 10
 slug: /docs/changelog
 ---
 
+_________   __  .__          .__         
+\_   ___ \_/  |_|  |__  __ __|  |  __ __ 
+/    \  \/\   __\  |  \|  |  \  | |  |  \
+\     \____|  | |   Y  \  |  /  |_|  |  /
+ \______  /|__| |___|  /____/|____/____/ 
+        \/           \/                  
+        
+
 • [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
 ![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
