@@ -892,7 +892,7 @@ WantedBy=multi-user.target
 ### RPC Server
 
 - Binds to `127.0.0.1` by default (localhost only)
-- Use `HERALD_API_TOKEN` for authentication
+- Use `CTHULHU_API_TOKEN` for authentication
 - Consider firewall rules if exposing externally
 - Enable HTTPS for production
 

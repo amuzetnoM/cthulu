@@ -442,7 +442,7 @@ class CthulhuGUI:
                 self.db.close()
             self.root.destroy()
         finally:
-            # Exit cleanly with 0 so herald treats this as user-closed GUI
+            # Exit cleanly with 0 so cthulhu treats this as user-closed GUI
             sys.exit(0)
 
     def place_manual_trade(self):

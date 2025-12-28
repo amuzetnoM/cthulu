@@ -1,6 +1,6 @@
 ---
 title: Deployment Guide
-description: Production deployment strategies for Herald including Docker, Linux, Windows service, and monitoring setup
+description: Production deployment strategies for Cthulhu including Docker, Linux, Windows service, and monitoring setup
 tags: [deployment, docker, production, monitoring]
 slug: /docs/deployment
 sidebar_position: 5
@@ -23,7 +23,7 @@ sidebar_position: 5
 
 ### Using Docker (Recommended)
 
-The fastest way to deploy Herald is using Docker:
+The fastest way to deploy Cthulhu is using Docker:
 
 ```bash
 # 1. Clone repository
@@ -130,7 +130,7 @@ docker-compose up -d
 # Stop services
 docker-compose down
 
-# Restart Herald only
+# Restart Cthulhu only
 docker-compose restart cthulhu
 
 # View logs
@@ -208,7 +208,7 @@ Create `/etc/systemd/system/cthulhu.service`:
 
 ```ini
 [Unit]
-Description=Herald Trading System
+Description=Cthulhu Trading System
 After=network.target
 Wants=network-online.target
 
@@ -329,7 +329,7 @@ $env:Path += ";C:\tools\nssm-2.24\win64"
 #### 2. Install Service
 
 ```powershell
-# Navigate to Herald directory
+# Navigate to Cthulhu directory
 cd C:\workspace\Herald
 
 # Install service
@@ -582,7 +582,7 @@ tar -xzf /opt/cthulhu/backups/config_YYYYMMDD_HHMMSS.tar.gz -C /
 # 4. Verify permissions
 sudo chown -R cthulhu:cthulhu /opt/cthulhu
 
-# 5. Restart Herald
+# 5. Restart Cthulhu
 sudo systemctl start cthulhu
 
 # 6. Verify
