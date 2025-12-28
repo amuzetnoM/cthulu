@@ -1,8 +1,8 @@
 """
-Herald Interactive Setup Wizard
+Cthulhu Interactive Setup Wizard
 
 A friendly, non-overwhelming configuration wizard that helps users configure
-Herald's key trading parameters before starting.
+Cthulhu's key trading parameters before starting.
 Designed to be:
 - Comprehensive yet concise
 - Smart with defaults
@@ -52,10 +52,14 @@ def clear_screen():
 
 def print_banner():
     """Print Cthulhu setup banner."""
-    banner = """
-    ╦ ╦╔═╗╦═╗╔═╗╦  ╔╦╗
-    ╠═╣║╣ ╠╦╝╠═╣║   ║║
-    ╩ ╩╚═╝╩╚═╩ ╩╩═╝═╩╝
+    banner = r"""
+_________   __  .__          .__         
+\_   ___ \_/  |_|  |__  __ __|  |  __ __ 
+/    \  \/\   __\  |  \|  |  \  | |  |  \
+\     \____|  | |   Y  \  |  /  |_|  |  /
+ \______  /|__| |___|  /____/|____/____/ 
+        \/           \/                  
+                                         
     ─────────────────────────────
            CTHULHU v5.0.1
     Interactive Setup Wizard
