@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """CLI to purge old provenance rows from DB."""
 import argparse
-from herald.persistence.database import Database
+from cthulhu.persistence.database import Database
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--db', default='herald.db', help='Path to DB file')
+    p.add_argument('--db', default='cthulhu.db', help='Path to DB file')
     p.add_argument('--days', type=int, required=True, help='Delete rows older than DAYS days')
     args = p.parse_args()
 

@@ -11,8 +11,8 @@ from datetime import datetime
 import time
 from dataclasses import dataclass, field
 
-from herald.connector.mt5_connector import mt5
-from herald.position.manager import PositionInfo, PositionManager
+from cthulhu.connector.mt5_connector import mt5
+from cthulhu.position.manager import PositionInfo, PositionManager
 from herald import constants
 
 
@@ -100,7 +100,7 @@ class TradeManager:
         self.magic_number = magic_number
         self.default_stop_pct = default_stop_pct
         self.default_rr = default_rr
-        self.logger = logging.getLogger("herald.trade_manager")
+        self.logger = logging.getLogger("cthulhu.trade_manager")
         
         # Track adopted trades
         self._adopted_tickets: Set[int] = set()

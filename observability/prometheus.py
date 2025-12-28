@@ -52,14 +52,14 @@ class PrometheusExporter:
     - System health (MT5 connected, uptime)
     """
     
-    def __init__(self, prefix: str = "herald"):
+    def __init__(self, prefix: str = "cthulhu"):
         """
         Initialize Prometheus exporter.
         
         Args:
             prefix: Metric name prefix
         """
-        self.logger = logging.getLogger("herald.prometheus")
+        self.logger = logging.getLogger("cthulhu.prometheus")
         self.prefix = prefix
         self._start_time = time.time()
         self._metrics_cache: Dict[str, PrometheusMetric] = {}

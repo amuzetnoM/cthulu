@@ -8,10 +8,10 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
 import logging
 
-from herald.position.manager import PositionInfo, PositionManager
-from herald.connector.mt5_connector import mt5
+from cthulhu.position.manager import PositionInfo, PositionManager
+from cthulhu.connector.mt5_connector import mt5
 
-logger = logging.getLogger('herald.trade_manager')
+logger = logging.getLogger('cthulhu.trade_manager')
 
 
 @dataclass

@@ -3,13 +3,13 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "herald"
+name = "cthulhu"
 version = "5.0.0"
 description = "Adaptive Trading Intelligence for MetaTrader 5"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Herald Project"}
+    {name = "Cthulhu Project"}
 ]
 keywords = ["trading", "metatrader5", "mt5", "algorithmic-trading", "forex", "crypto"]
 classifiers = [
@@ -46,8 +46,8 @@ dev = [
 ]
 
 [project.scripts]
-herald = "herald.__main__:main"
-herald-trade = "herald.scripts.trade_cli:main"
+cthulhu = "cthulhu.__main__:main"
+cthulhu-trade = "cthulhu.scripts.trade_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/amuzetnoM/herald"
@@ -56,11 +56,11 @@ Repository = "https://github.com/amuzetnoM/herald.git"
 Issues = "https://github.com/amuzetnoM/herald/issues"
 
 [tool.setuptools]
-packages = ["herald"]
-package-dir = {"herald" = "."}
+packages = ["cthulhu"]
+package-dir = {"cthulhu" = "."}
 
 [tool.setuptools.package-data]
-herald = ["config/*.json", "config/*.yaml"]
+cthulhu = ["config/*.json", "config/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 
-from herald.persistence.database import Database
+from cthulhu.persistence.database import Database
 
 
 def test_purge_provenance_older_than(tmp_path):

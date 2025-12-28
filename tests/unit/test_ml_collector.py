@@ -1,7 +1,7 @@
 import os
 import time
 import glob
-from herald.ML_RL.instrumentation import MLDataCollector
+from cthulhu.ML_RL.instrumentation import MLDataCollector
 
 
 def test_ml_collector_non_blocking(tmp_path):

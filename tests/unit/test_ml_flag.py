@@ -1,6 +1,6 @@
 import argparse
 
-from herald.__main__ import init_ml_collector
+from cthulhu.__main__ import init_ml_collector
 
 
 class FakeLogger:

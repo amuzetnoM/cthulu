@@ -19,7 +19,7 @@ except Exception:
 import urllib.request
 import urllib.parse
 
-logger = logging.getLogger("herald.providers")
+logger = logging.getLogger("cthulhu.providers")
 
 
 def _http_get(url: str, timeout: float = 5.0, retries: int = 3, backoff: float = 0.5) -> Optional[Dict[str, Any]]:

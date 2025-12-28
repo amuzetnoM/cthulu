@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 import logging
 
-from herald.__main__ import ensure_runtime_indicators
-from herald.strategy.sma_crossover import SmaCrossover
-from herald.indicators.supertrend import Supertrend
-from herald.indicators.vwap import VWAP
+from cthulhu.__main__ import ensure_runtime_indicators
+from cthulhu.strategy.sma_crossover import SmaCrossover
+from cthulhu.indicators.supertrend import Supertrend
+from cthulhu.indicators.vwap import VWAP
 
-logger = logging.getLogger('herald.tests')
+logger = logging.getLogger('cthulhu.tests')
 
 
 def _make_ohlcv(n=300):

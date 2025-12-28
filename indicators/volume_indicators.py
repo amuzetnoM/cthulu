@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any, Optional
 
-from herald.indicators.base import Indicator
+from cthulhu.indicators.base import Indicator
 
 
 class VPT(Indicator):

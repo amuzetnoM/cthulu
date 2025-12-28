@@ -20,7 +20,7 @@ load_dotenv()
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
 import pytest
 
 

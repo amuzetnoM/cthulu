@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from herald.config.wizard import run_setup_wizard
+from cthulhu.config.wizard import run_setup_wizard
 
 
 def test_run_setup_wizard_skips_setup_and_returns_existing_config(tmp_path, monkeypatch, capsys):
@@ -24,7 +24,7 @@ def test_run_setup_wizard_skips_setup_and_returns_existing_config(tmp_path, monk
 
 
 def test_choose_mindset_accepts_four_choices(monkeypatch, capsys):
-    from herald.config.wizard import choose_mindset
+    from cthulhu.config.wizard import choose_mindset
 
     # Simulate selecting option 3 (Aggressive)
     monkeypatch.setattr('herald.config.wizard.get_input', lambda prompt, default="": "3")

@@ -1,8 +1,8 @@
 from dotenv import load_dotenv
 import os, json, time
-from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
-from herald.ML_RL.instrumentation import MLDataCollector
-from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
+from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulhu.ML_RL.instrumentation import MLDataCollector
+from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
 
 load_dotenv()
 

@@ -5,7 +5,7 @@ import logging
 from .base import NewsAdapter, NewsEvent
 import time
 
-logger = logging.getLogger('herald.news.tradingeconomics')
+logger = logging.getLogger('cthulhu.news.tradingeconomics')
 
 
 class TradingEconomicsAdapter(NewsAdapter):

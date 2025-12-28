@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from collections import deque
 
 from .base import ExitStrategy, ExitSignal
-from herald.position.manager import PositionInfo
+from cthulhu.position.manager import PositionInfo
 
 
 class AdverseMovementExit(ExitStrategy):

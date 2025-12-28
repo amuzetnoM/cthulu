@@ -5,9 +5,9 @@ order provenance entries and expose simple query helpers.
 """
 from typing import Dict, Any, List, Optional
 import logging
-from herald.persistence.database import Database
+from cthulhu.persistence.database import Database
 
-logger = logging.getLogger('herald.telemetry')
+logger = logging.getLogger('cthulhu.telemetry')
 
 class Telemetry:
     def __init__(self, db: Database):

@@ -2,9 +2,9 @@ from __future__ import annotations
 import time
 import logging
 from typing import Dict, Any, Optional
-from herald.execution.engine import OrderRequest, ExecutionResult, ExecutionEngine, OrderType
+from cthulhu.execution.engine import OrderRequest, ExecutionResult, ExecutionEngine, OrderType
 
-logger = logging.getLogger('herald.advisory')
+logger = logging.getLogger('cthulhu.advisory')
 
 
 class AdvisoryManager:

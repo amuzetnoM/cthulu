@@ -1,5 +1,5 @@
-from herald.news.manager import NewsManager
-from herald.news.fred_adapter import FREDAdapter
+from cthulhu.news.manager import NewsManager
+from cthulhu.news.fred_adapter import FREDAdapter
 
 
 def test_manager_with_fred_no_key():

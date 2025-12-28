@@ -8,12 +8,12 @@ Replaces scattered strategy loading logic with a clean factory pattern.
 import logging
 from typing import Dict, Any, Optional
 
-from herald.strategy.base import Strategy
-from herald.strategy.sma_crossover import SmaCrossover
-from herald.strategy.ema_crossover import EmaCrossover
-from herald.strategy.momentum_breakout import MomentumBreakout
-from herald.strategy.scalping import ScalpingStrategy
-from herald.strategy.strategy_selector import StrategySelector
+from cthulhu.strategy.base import Strategy
+from cthulhu.strategy.sma_crossover import SmaCrossover
+from cthulhu.strategy.ema_crossover import EmaCrossover
+from cthulhu.strategy.momentum_breakout import MomentumBreakout
+from cthulhu.strategy.scalping import ScalpingStrategy
+from cthulhu.strategy.strategy_selector import StrategySelector
 
 
 # Strategy registry mapping type names to classes

@@ -18,9 +18,9 @@ except Exception:
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from herald.persistence.database import Database, TradeRecord
+from cthulhu.persistence.database import Database, TradeRecord
 
-LOG_PATH = Path(__file__).parents[1] / 'herald.log'
+LOG_PATH = Path(__file__).parents[1] / 'cthulhu.log'
 SUMMARY_PATH = Path(__file__).parents[1] / 'logs' / 'latest_summary.txt'
 STRATEGY_INFO_PATH = Path(__file__).parents[1] / 'logs' / 'strategy_info.txt'
 
@@ -265,7 +265,7 @@ class HeraldGUI:
 
         # Database connection for trade history
         try:
-            self.db = Database("herald.db")
+            self.db = Database("cthulhu.db")
         except Exception as e:
             print(f"Warning: Could not connect to database: {e}")
             self.db = None
@@ -334,7 +334,7 @@ class HeraldGUI:
                     self.db.close()
                 except Exception:
                     pass
-                self.db = Database("herald.db")
+                self.db = Database("cthulhu.db")
             except Exception:
                 # fall back to existing self.db
                 pass

@@ -9,8 +9,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from dotenv import load_dotenv
 load_dotenv()
 
-from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
-from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType
+from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType
 from config_schema import Config
 import json
 import MetaTrader5 as mt5

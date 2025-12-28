@@ -1,5 +1,5 @@
 import unittest
-from herald.config.wizard import parse_natural_language_intent
+from cthulhu.config.wizard import parse_natural_language_intent
 
 
 class TestNLPWizardParser(unittest.TestCase):

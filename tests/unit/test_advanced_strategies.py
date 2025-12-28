@@ -7,11 +7,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-from herald.strategy.ema_crossover import EmaCrossover
-from herald.strategy.momentum_breakout import MomentumBreakout
-from herald.strategy.scalping import ScalpingStrategy
-from herald.strategy.strategy_selector import StrategySelector, MarketRegime
-from herald.strategy.base import SignalType
+from cthulhu.strategy.ema_crossover import EmaCrossover
+from cthulhu.strategy.momentum_breakout import MomentumBreakout
+from cthulhu.strategy.scalping import ScalpingStrategy
+from cthulhu.strategy.strategy_selector import StrategySelector, MarketRegime
+from cthulhu.strategy.base import SignalType
 
 
 class TestEMACrossover:
@@ -329,7 +329,7 @@ class TestStrategySelector:
         
     def test_performance_tracking(self):
         """Test strategy performance tracking."""
-        from herald.strategy.base import Signal
+        from cthulhu.strategy.base import Signal
         
         # Record signal
         signal = Signal(

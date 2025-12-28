@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 
 from .base import ExitStrategy, ExitSignal
-from herald.position.manager import PositionInfo
+from cthulhu.position.manager import PositionInfo
 
 
 class ProfitTargetExit(ExitStrategy):

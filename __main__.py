@@ -1,5 +1,5 @@
 """
-Herald Autonomous Trading System
+Cthulhu Autonomous Trading System
 
 Main entry point - orchestrates system startup, trading loop, and shutdown.
 
@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 __version__ = "5.0.0"  # Architectural overhaul complete
 
-from core.bootstrap import HeraldBootstrap, SystemComponents
+from core.bootstrap import CthulhuBootstrap, SystemComponents
 from core.trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators
 from core.shutdown import ShutdownHandler, create_shutdown_handler
 from config_schema import Config
@@ -107,7 +107,7 @@ def signal_handler(signum, frame):
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Herald Autonomous Trading System v5.0")
+    parser = argparse.ArgumentParser(description="Cthulhu Autonomous Trading System v5.0")
     parser.add_argument("--config", type=str, default="config.json",
                        help="Path to configuration file")
     parser.add_argument("--mindset", type=str, default=None,
@@ -133,7 +133,7 @@ def parse_arguments():
 
 def main():
     """
-    Main entry point for Herald trading system.
+    Main entry point for Cthulhu trading system.
     
     Flow:
         1. Parse arguments
@@ -177,13 +177,13 @@ def main():
 
     # Setup logger
     logger = setup_logger(
-        name="herald",
-        log_file="logs/herald.log",
+        name="cthulhu",
+        log_file="logs/cthulhu.log",
         level=logging.INFO
     )
     
     logger.info("=" * 80)
-    logger.info(f"Herald Autonomous Trading System v{__version__}")
+    logger.info(f"Cthulhu Autonomous Trading System v{__version__}")
     logger.info("=" * 80)
     logger.info(f"Configuration: {args.config}")
     logger.info(f"Mindset: {args.mindset or 'default'}")
@@ -199,7 +199,7 @@ def main():
     try:
         # Phase 1: Bootstrap system
         logger.info("Phase 1: Bootstrapping system...")
-        bootstrap = HeraldBootstrap(logger=logger)
+        bootstrap = CthulhuBootstrap(logger=logger)
         components = bootstrap.bootstrap(args.config, args)
         logger.info("System bootstrap complete")
         
@@ -299,7 +299,7 @@ def main():
                 logger.error(f"Error during shutdown: {e}", exc_info=True)
                 
         logger.info("=" * 80)
-        logger.info("Herald shutdown complete")
+        logger.info("Cthulhu shutdown complete")
         logger.info("=" * 80)
         
     return 0

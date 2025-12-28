@@ -6,8 +6,8 @@ import unittest
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
-from herald.position.manager import PositionInfo, PositionManager
-from herald.position.trade_manager import TradeManager, TradeAdoptionPolicy
+from cthulhu.position.manager import PositionInfo, PositionManager
+from cthulhu.position.trade_manager import TradeManager, TradeAdoptionPolicy
 
 
 class TestTradeAdoptionPolicy(unittest.TestCase):

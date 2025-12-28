@@ -2,9 +2,9 @@ import unittest
 from unittest.mock import MagicMock, patch
 from datetime import datetime
 
-from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
-from herald.persistence.database import Database
-from herald.observability.telemetry import Telemetry
+from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
+from cthulhu.persistence.database import Database
+from cthulhu.observability.telemetry import Telemetry
 from herald import constants
 import os
 import json
@@ -44,7 +44,7 @@ class TestExecutionEngine(unittest.TestCase):
         tmp = tempfile.NamedTemporaryFile(delete=False)
         tmp.close()
         db = Database(tmp.name)
-        from herald.observability.telemetry import Telemetry
+        from cthulhu.observability.telemetry import Telemetry
         telemetry = Telemetry(db)
 
         engine = ExecutionEngine(connector=connector, telemetry=telemetry)

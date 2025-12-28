@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from threading import Thread
 from typing import Optional
 
-logger = logging.getLogger('herald.rpc')
+logger = logging.getLogger('cthulhu.rpc')
 
 
 class RPCRequestHandler(BaseHTTPRequestHandler):
@@ -83,7 +83,7 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
 
         # Build OrderRequest lazily to avoid importing heavy modules at module import time
         try:
-            from herald.execution.engine import OrderRequest, OrderType, OrderStatus, ExecutionResult
+            from cthulhu.execution.engine import OrderRequest, OrderType, OrderStatus, ExecutionResult
         except Exception:
             self._send_json(500, {'error': 'Server misconfiguration: cannot import Execution engine'})
             return
@@ -173,7 +173,7 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 tracked = self.position_manager.track_position(result, signal_metadata={})
                 # record in DB via TradeRecord
                 try:
-                    from herald.persistence.database import TradeRecord
+                    from cthulhu.persistence.database import TradeRecord
                     from datetime import datetime as _dt
                     tr = TradeRecord(
                         signal_id='rpc_manual',

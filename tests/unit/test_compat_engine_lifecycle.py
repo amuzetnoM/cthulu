@@ -1,8 +1,8 @@
 import pytest
 from datetime import datetime
 
-from herald.execution.engine import ExecutionEngine, ExecutionResult, OrderStatus, OrderRequest, OrderType
-from herald.position.lifecycle import PositionLifecycle
+from cthulhu.execution.engine import ExecutionEngine, ExecutionResult, OrderStatus, OrderRequest, OrderType
+from cthulhu.position.lifecycle import PositionLifecycle
 
 
 class DummyConnector:

@@ -10,9 +10,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from dotenv import load_dotenv
 load_dotenv()
 
-from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
-from herald.position.trade_manager import TradeManager
-from herald.position.manager import PositionManager
+from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulhu.position.trade_manager import TradeManager
+from cthulhu.position.manager import PositionManager
 
 def main(cfg_path):
     cfg = json.loads(Path(cfg_path).read_text())

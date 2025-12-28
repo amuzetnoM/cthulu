@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 from datetime import datetime
-from herald.exit.base import ExitStrategy, ExitSignal
-from herald.position.manager import PositionInfo
+from cthulhu.exit.base import ExitStrategy, ExitSignal
+from cthulhu.position.manager import PositionInfo
 
 
 class StopLossExit(ExitStrategy):

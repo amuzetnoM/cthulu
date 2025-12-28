@@ -5,7 +5,7 @@ Handles order placement, modification, and reconciliation.
 Supports market/limit orders with idempotent submission and external reconciliation.
 """
 
-from herald.connector.mt5_connector import mt5
+from cthulhu.connector.mt5_connector import mt5
 import logging
 import traceback
 import inspect
@@ -16,8 +16,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-from herald.strategy.base import Signal, SignalType
-from herald.position import risk_manager
+from cthulhu.strategy.base import Signal, SignalType
+from cthulhu.position import risk_manager
 from herald import constants
 
 
@@ -135,7 +135,7 @@ class ExecutionEngine:
         self.slippage = slippage
         # Optional risk configuration overrides (from app config)
         self.risk_config = risk_config or {}
-        self.logger = logging.getLogger("herald.execution")
+        self.logger = logging.getLogger("cthulhu.execution")
         # Optional metrics collector (MetricsCollector)
         self.metrics = metrics
         # Optional ML instrumentation collector
@@ -415,7 +415,7 @@ class ExecutionEngine:
                 try:
                     if self.ml_collector:
                         order_payload = {
-                            'source': 'herald',
+                            'source': 'cthulhu',
                             'signal_id': order_req.signal_id,
                             'symbol': order_req.symbol,
                             'side': order_req.side,
@@ -444,7 +444,7 @@ class ExecutionEngine:
                         self.ml_collector.record_order(order_payload)
 
                         exec_payload = {
-                            'source': 'herald',
+                            'source': 'cthulhu',
                             'order_id': getattr(result, 'order', None),
                             'position_ticket': position_ticket,
                             'status': 'FILLED',
@@ -754,8 +754,8 @@ class ExecutionEngine:
                     dist = self.limits = None
                     try:
                         # Try to use risk manager helper located in herald.position.risk_manager
-                        from herald.position.risk_manager import suggest_sl_adjustment as _sugg_fn
-                        from herald.position.risk_manager import _threshold_from_config as _thr_fn
+                        from cthulhu.position.risk_manager import suggest_sl_adjustment as _sugg_fn
+                        from cthulhu.position.risk_manager import _threshold_from_config as _thr_fn
                         # Compute a naive proposed SL by using a relative threshold
                         threshold = _threshold_from_config(balance, self.risk_config.get('sl_balance_thresholds') if isinstance(self.risk_config, dict) else None, self.risk_config.get('sl_balance_breakpoints') if isinstance(self.risk_config, dict) else None)
                         if order_req.side.upper() == 'BUY':

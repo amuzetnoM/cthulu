@@ -7,7 +7,7 @@ Provides preset configurations for different trading styles:
 - CONSERVATIVE: Lower risk, wider stops, stricter filters
 
 Usage:
-    from herald.config.mindsets import MINDSETS, apply_mindset
+    from cthulhu.config.mindsets import MINDSETS, apply_mindset
     
     # Apply a mindset to your config
     config = apply_mindset(base_config, "balanced")

@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional
 from datetime import datetime, timedelta, time as dt_time
 
 from .base import ExitStrategy, ExitSignal
-from herald.position.manager import PositionInfo
+from cthulhu.position.manager import PositionInfo
 
 
 class TimeBasedExit(ExitStrategy):

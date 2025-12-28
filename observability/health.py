@@ -60,7 +60,7 @@ class HealthChecker:
             connector: MT5Connector instance (optional)
             database: Database instance (optional)
         """
-        self.logger = logging.getLogger("herald.health")
+        self.logger = logging.getLogger("cthulhu.health")
         self.connector = connector
         self.database = database
         self._last_check: Optional[Dict[str, HealthCheckResult]] = None
@@ -255,7 +255,7 @@ class HealthChecker:
         return {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
-            "service": "herald"
+            "service": "cthulhu"
         }
     
     def readiness(self) -> Dict[str, Any]:
@@ -270,12 +270,12 @@ class HealthChecker:
             return {
                 "status": "ready",
                 "timestamp": datetime.now().isoformat(),
-                "service": "herald"
+                "service": "cthulhu"
             }
         else:
             return {
                 "status": "not_ready",
                 "timestamp": datetime.now().isoformat(),
-                "service": "herald",
+                "service": "cthulhu",
                 "reason": mt5_check.message if mt5_check.status != HealthStatus.HEALTHY else account_check.message
             }

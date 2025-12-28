@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import logging
 
-from herald.__main__ import ensure_runtime_indicators
-from herald.strategy.scalping import ScalpingStrategy
+from cthulhu.__main__ import ensure_runtime_indicators
+from cthulhu.strategy.scalping import ScalpingStrategy
 from types import SimpleNamespace
 
 

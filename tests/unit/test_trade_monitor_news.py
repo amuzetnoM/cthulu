@@ -1,6 +1,6 @@
 import time
-from herald.monitoring.trade_monitor import TradeMonitor
-from herald.news.base import NewsEvent
+from cthulhu.monitoring.trade_monitor import TradeMonitor
+from cthulhu.news.base import NewsEvent
 
 
 class DummyTradeManager:

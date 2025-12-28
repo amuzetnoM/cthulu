@@ -1,7 +1,7 @@
 import time
 import os
-from herald.monitoring.trade_monitor import TradeMonitor
-from herald.ML_RL.instrumentation import MLDataCollector
+from cthulhu.monitoring.trade_monitor import TradeMonitor
+from cthulhu.ML_RL.instrumentation import MLDataCollector
 from unittest.mock import MagicMock
 
 

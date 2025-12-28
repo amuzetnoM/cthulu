@@ -1,6 +1,6 @@
-from herald.news.newsapi_adapter import NewsApiAdapter
-from herald.news.rss_adapter import RssAdapter
-from herald.news.manager import NewsManager
+from cthulhu.news.newsapi_adapter import NewsApiAdapter
+from cthulhu.news.rss_adapter import RssAdapter
+from cthulhu.news.manager import NewsManager
 
 
 def test_news_manager_fallback(tmp_path, monkeypatch):
