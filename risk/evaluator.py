@@ -137,16 +137,11 @@ class RiskEvaluator:
             tuple: (approved: bool, reason: str, position_size: float)
         """
         try:
-<<<<<<< Updated upstream
-            # Support both connector account_info dicts and object return types
+            # Handle both dict and object formats for account_info
             if isinstance(account_info, dict):
                 balance = account_info.get('balance') or account_info.get('Balance') or 0.0
             else:
                 balance = getattr(account_info, 'balance', getattr(account_info, 'Balance', 0.0))
-=======
-            # Handle both dict and object formats for account_info
-            balance = account_info.get('balance') if isinstance(account_info, dict) else account_info.balance
->>>>>>> Stashed changes
             symbol = signal.symbol
             
             # Calculate position size
