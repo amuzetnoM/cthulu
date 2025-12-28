@@ -1,3 +1,7 @@
+# Signal Stress Test Checklist — Directive
+
+Directive (quick-read): Purpose: authoritative runbook for automated signal stress-testing, monitoring, observability and corrective actions. Current state: Live demo account ****0069, symbol=BTCUSD#, mindset=ultra_aggressive, Prometheus HTTP at http://127.0.0.1:8181/metrics. 
+
 # Cthulu Signal Checklist — Exhaustive Test Matrix
 
 Purpose: provide a surgical, exhaustive list of signals and edge-cases to exercise the full signal→risk→execution lifecycle, including observability and grading hooks.
