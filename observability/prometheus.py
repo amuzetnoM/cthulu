@@ -298,19 +298,30 @@ class PrometheusExporter:
         
         return "\n".join(lines)
     
-    def write_to_file(self, path: str = "/tmp/Cthulu_metrics.prom"):
+    def write_to_file(self, path: Optional[str] = None):
         """
         Write metrics to a file for node_exporter textfile collector.
-        
+        If path is None, use the configured exporter._file_path if present, otherwise
+        choose a sensible default (Windows-friendly path under the workspace or /tmp on Unix).
         Args:
             path: Output file path
         """
         try:
+            if path is None:
+                # prefer instance configured path
+                path = getattr(self, '_file_path', None)
+            if path is None:
+                if os.name == 'nt':
+                    path = r"C:\workspace\cthulu\metrics\Cthulu_metrics.prom"
+                else:
+                    path = "/tmp/Cthulu_metrics.prom"
+            # Ensure parent dir exists
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
             content = self.export_text()
             # Write atomically
             temp_path = Path(path).with_suffix(".tmp")
             temp_path.write_text(content)
-            temp_path.rename(path)
+            temp_path.replace(path)
             self.logger.debug(f"Metrics written to {path}")
         except Exception as e:
             self.logger.error(f"Failed to write metrics: {e}")

@@ -1,102 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Privacy Policy | Cthulu v5.0.1</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-:root{--void:#000;--surface:#0a0a0f;--border:#1a1a25;--muted:#4a4a5a;--text:#e0e0e8;--bright:#fff;--accent:#00ff88}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Space Grotesk',sans-serif;background:var(--void);color:var(--text);line-height:1.6}
-nav{height:60px;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:space-between;padding:0 3rem;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000}
-.nav-links{display:flex;gap:2rem}
-.nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;transition:color .2s}
-.nav-links a:hover{color:var(--accent)}
-.container{max-width:900px;margin:0 auto;padding:4rem 2rem}
-h1{font-size:2.5rem;margin-bottom:1rem;color:var(--bright)}
-.updated{color:var(--muted);font-size:.9rem;margin-bottom:3rem}
-h2{font-size:1.5rem;color:var(--accent);margin-top:2rem;margin-bottom:1rem}
-p{margin-bottom:1rem;color:var(--text)}
-ul{margin:1rem 0 1rem 2rem}
-li{margin-bottom:.5rem;color:var(--text)}
-footer{padding:3rem 0;border-top:1px solid var(--border);background:var(--surface);margin-top:4rem}
-.footer-content{max-width:900px;margin:0 auto;padding:0 2rem;display:flex;justify-content:space-between;align-items:center}
-.footer-links{display:flex;gap:2rem}
-.footer-links a{color:var(--muted);text-decoration:none;font-size:.9rem;transition:color .2s}
-.footer-links a:hover{color:var(--accent)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Privacy Policy | Cthulu v5.0.1</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --void: #000;
+            --surface: #0a0a0f;
+            --border: #1a1a25;
+            --muted: #4a4a5a;
+            --text: #e0e0e8;
+            --bright: #fff;
+            --accent: #00ff88
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--void);
+            color: var(--text);
+            line-height: 1.6
+        }
+
+        nav {
+            height: 60px;
+            background: rgba(0, 0, 0, .95);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 3rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: .9rem;
+            transition: color .2s
+        }
+
+        .nav-links a:hover {
+            color: var(--accent)
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--bright)
+        }
+
+        .updated {
+            color: var(--muted);
+            font-size: .9rem;
+            margin-bottom: 3rem
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-top: 2rem;
+            margin-bottom: 1rem
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text)
+        }
+
+        ul {
+            margin: 1rem 0 1rem 2rem
+        }
+
+        li {
+            margin-bottom: .5rem;
+            color: var(--text)
+        }
+
+        footer {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+            margin-top: 4rem
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem
+        }
+
+        .footer-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: .9rem;
+            transition: color .2s
+        }
+
+        .footer-links a:hover {
+            color: var(--accent)
+        }
+    </style>
 </head>
+
 <body>
-<nav>
-<div style="font-family:JetBrains Mono;color:var(--accent);font-weight:600;font-size:1.1rem">Cthulu</div>
-<div class="nav-links">
-<a href="index.html">Home</a>
-<a href="features.html">Features</a>
-<a href="https://github.com/amuzetnoM/herald">GitHub</a>
-</div>
-</nav>
-<div class="container">
-<h1>Privacy Policy</h1>
-<p class="updated">Last updated: December 28, 2025</p>
+    <nav>
+        <div style="font-family:JetBrains Mono;color:var(--accent);font-weight:600;font-size:1.1rem">Cthulu</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="features.html">Features</a>
+            <a href="https://github.com/amuzetnoM/herald">GitHub</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        <p class="updated">Last updated: December 28, 2025</p>
 
-<h2>Overview</h2>
-<p>Cthulu is an open-source autonomous trading system that runs locally on your machine. We are committed to protecting your privacy and being transparent about data handling.</p>
+        <h2>Overview</h2>
+        <p>Cthulu is an open-source autonomous trading system that runs locally on your machine. We are committed to
+            protecting your privacy and being transparent about data handling.</p>
 
-<h2>Data Collection</h2>
-<p>Cthulu does not collect, transmit, or store any personal data on external servers. All data remains on your local machine:</p>
-<ul>
-<li><strong>Trading Data:</strong> All trading activity, positions, and performance metrics are stored in your local SQLite database (Cthulu.db)</li>
-<li><strong>Log Files:</strong> System logs are stored locally in the logs/ directory</li>
-<li><strong>Configuration:</strong> Your trading configuration, API keys, and credentials are stored locally and never transmitted</li>
-<li><strong>Market Data:</strong> Market data is fetched from your broker (MetaTrader 5) and stored in local cache</li>
-</ul>
+        <h2>Data Collection</h2>
+        <p>Cthulu does not collect, transmit, or store any personal data on external servers. All data remains on your
+            local machine:</p>
+        <ul>
+            <li><strong>Trading Data:</strong> All trading activity, positions, and performance metrics are stored in
+                your local SQLite database (Cthulu.db)</li>
+            <li><strong>Log Files:</strong> System logs are stored locally in the logs/ directory</li>
+            <li><strong>Configuration:</strong> Your trading configuration, API keys, and credentials are stored locally
+                and never transmitted</li>
+            <li><strong>Market Data:</strong> Market data is fetched from your broker (MetaTrader 5) and stored in local
+                cache</li>
+        </ul>
 
-<h2>Third-Party Services</h2>
-<p>Cthulu may interact with the following third-party services:</p>
-<ul>
-<li><strong>MetaTrader 5:</strong> Direct connection to your MT5 terminal for order execution and market data</li>
-<li><strong>News Providers:</strong> Optional integration with FRED and Trading Economics APIs for economic news (requires your API keys)</li>
-<li><strong>Prometheus/Grafana:</strong> Optional local monitoring stack (all data stays on your network)</li>
-</ul>
+        <h2>Third-Party Services</h2>
+        <p>Cthulu may interact with the following third-party services:</p>
+        <ul>
+            <li><strong>MetaTrader 5:</strong> Direct connection to your MT5 terminal for order execution and market
+                data</li>
+            <li><strong>News Providers:</strong> Optional integration with FRED and Trading Economics APIs for economic
+                news (requires your API keys)</li>
+            <li><strong>Prometheus/Grafana:</strong> Optional local monitoring stack (all data stays on your network)
+            </li>
+        </ul>
 
-<h2>Data Security</h2>
-<p>Security best practices:</p>
-<ul>
-<li>Use environment variables or .env files for sensitive credentials</li>
-<li>Never commit API keys or passwords to version control</li>
-<li>Restrict file permissions on config files and databases</li>
-<li>Use encrypted connections when available</li>
-<li>Regularly review your MT5 account access logs</li>
-</ul>
+        <h2>Data Security</h2>
+        <p>Security best practices:</p>
+        <ul>
+            <li>Use environment variables or .env files for sensitive credentials</li>
+            <li>Never commit API keys or passwords to version control</li>
+            <li>Restrict file permissions on config files and databases</li>
+            <li>Use encrypted connections when available</li>
+            <li>Regularly review your MT5 account access logs</li>
+        </ul>
 
-<h2>Open Source</h2>
-<p>Cthulu is open-source software. You can review the entire codebase to verify how data is handled. The source code is available at: <a href="https://github.com/amuzetnoM/herald" style="color:var(--accent)">github.com/amuzetnoM/herald</a></p>
+        <h2>Open Source</h2>
+        <p>Cthulu is open-source software. You can review the entire codebase to verify how data is handled. The source
+            code is available at: <a href="https://github.com/amuzetnoM/herald"
+                style="color:var(--accent)">github.com/amuzetnoM/herald</a></p>
 
-<h2>Your Rights</h2>
-<p>Since all data is stored locally on your machine, you have complete control:</p>
-<ul>
-<li>Delete any or all data at any time by removing database files or log files</li>
-<li>Modify the source code to customize data handling</li>
-<li>Export your data in any format you choose</li>
-<li>Control what data is collected through configuration</li>
-</ul>
+        <h2>Your Rights</h2>
+        <p>Since all data is stored locally on your machine, you have complete control:</p>
+        <ul>
+            <li>Delete any or all data at any time by removing database files or log files</li>
+            <li>Modify the source code to customize data handling</li>
+            <li>Export your data in any format you choose</li>
+            <li>Control what data is collected through configuration</li>
+        </ul>
 
-<h2>Contact</h2>
-<p>For questions or concerns about privacy, please open an issue on GitHub or contact the project maintainers.</p>
-</div>
-<footer>
-<div class="footer-content">
-<div style="font-family:JetBrains Mono;color:var(--muted)"><strong>Cthulu</strong> v5.0.1</div>
-<div class="footer-links">
-<a href="index.html">Home</a>
-<a href="https://github.com/amuzetnoM/herald">GitHub</a>
-<a href="terms.html">Terms</a>
-</div>
-</div>
-</footer>
+        <h2>Contact</h2>
+        <p>For questions or concerns about privacy, please open an issue on GitHub or contact the project maintainers.
+        </p>
+    </div>
+    <footer>
+        <div class="footer-content">
+            <div style="font-family:JetBrains Mono;color:var(--muted)"><strong>Cthulu</strong> v5.0.1</div>
+            <div class="footer-links">
+                <a href="https://artifact-virtual.gitbook.io/cthulu/" target="_blank" rel="noopener">Documentation</a>
+                <a href="roadmap.html">Roadmap</a>
+                <a href="https://github.com/amuzetnoM/cthulu" target="_blank" rel="noopener">GitHub</a>
+                <a href="terms.html">Terms</a>
+            </div>
+        </div>
+    </footer>
 </body>
+
 </html>
-
-
-

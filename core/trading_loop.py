@@ -1250,7 +1250,8 @@ class TradingLoop:
     
     def _report_performance_metrics(self):
         """Report performance metrics periodically."""
-        if self.loop_count % 100 == 0:
+        # Publish periodic performance metrics every 10 loops for near-real-time observability
+        if self.loop_count % 10 == 0:
             self.ctx.logger.info(f"Performance metrics after {self.loop_count} loops:")
             
             # Sync latest position stats into metrics
@@ -1270,6 +1271,11 @@ class TradingLoop:
                 if self.ctx.exporter is not None:
                     try:
                         self.ctx.metrics.publish_to_prometheus(self.ctx.exporter)
+                        try:
+                            fp = getattr(self.ctx.exporter, '_file_path', None)
+                            self.ctx.exporter.write_to_file(fp)
+                        except Exception:
+                            self.ctx.logger.debug('Failed to write Prometheus metrics to file')
                     except Exception:
                         self.ctx.logger.debug('Failed to publish metrics to Prometheus exporter')
             except Exception:

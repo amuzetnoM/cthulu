@@ -12,6 +12,7 @@ Extracted from __main__.py for better modularity and testability.
 
 import logging
 from pathlib import Path
+import os
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 
@@ -393,6 +394,49 @@ class CthuluBootstrap:
             if prom_cfg.get('enabled', False):
                 from cthulu.observability.prometheus import PrometheusExporter
                 exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'Cthulu'))
+                # configure textfile path if provided
+                textfile_path = prom_cfg.get('textfile_path')
+                if textfile_path:
+                    exporter._file_path = textfile_path
+                else:
+                    # default to workspace metrics path on Windows
+                    if os.name == 'nt':
+                        exporter._file_path = r"C:\workspace\cthulu\metrics\Cthulu_metrics.prom"
+                    else:
+                        exporter._file_path = "/tmp/Cthulu_metrics.prom"
+                # Optionally start a simple HTTP metrics server
+                http_port = prom_cfg.get('http_port')
+                if http_port:
+                    try:
+                        import threading
+                        from http.server import BaseHTTPRequestHandler, HTTPServer
+                        class _MetricsHandler(BaseHTTPRequestHandler):
+                            def do_GET(self):
+                                if self.path != '/metrics':
+                                    self.send_response(404)
+                                    self.end_headers()
+                                    return
+                                try:
+                                    body = exporter.export_text().encode('utf-8')
+                                    self.send_response(200)
+                                    self.send_header('Content-Type', 'text/plain; version=0.0.4')
+                                    self.send_header('Content-Length', str(len(body)))
+                                    self.end_headers()
+                                    self.wfile.write(body)
+                                except Exception:
+                                    self.send_response(500)
+                                    self.end_headers()
+                        def _serve():
+                            server = HTTPServer(('0.0.0.0', int(http_port)), _MetricsHandler)
+                            exporter.logger.info(f"Starting metrics HTTP server on port {http_port}")
+                            try:
+                                server.serve_forever()
+                            except Exception:
+                                exporter.logger.exception('Metrics HTTP server stopped')
+                        t = threading.Thread(target=_serve, daemon=True)
+                        t.start()
+                    except Exception:
+                        self.logger.exception('Failed to start HTTP metrics server')
                 self.logger.info('Prometheus exporter initialized')
         except Exception:
             self.logger.exception('Failed to initialize Prometheus exporter; continuing without it')
