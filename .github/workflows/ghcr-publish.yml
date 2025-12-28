@@ -37,8 +37,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/cthulu:5
-            ghcr.io/${{ github.repository_owner }}/cthulu:5.0.1
+            ghcr.io/${{ toLower(github.repository_owner) }}/cthulu:5
+            ghcr.io/${{ toLower(github.repository_owner) }}/cthulu:5.0.1
           platforms: linux/amd64,linux/arm64
 
       - name: Write status
