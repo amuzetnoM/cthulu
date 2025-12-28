@@ -6,7 +6,10 @@ slug: /docs/risk-management
 sidebar_position: 9
 ---
 
-## Risk Management
+![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+
+
+## Overview
 
 This document describes the lightweight risk-management knobs added to Herald and how the system adapts stop-loss placement to account size.
 

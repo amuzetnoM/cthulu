@@ -1,12 +1,12 @@
 ---
-title: Features Guide
+title: Advanced Features
 description: Comprehensive guide to Herald's advanced trading strategies, next-generation indicators, and dynamic strategy selection system
 tags: [features, strategies, indicators, dynamic-selection]
 slug: /docs/features
 sidebar_position: 2
 ---
-# Herald Trading System 
-> Advanced Features Guide
+
+![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
 
 ## Overview
 

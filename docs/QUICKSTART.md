@@ -1,14 +1,12 @@
 ---
-title: Quick Start Guide
+title: Quick Start
 description: Get started with Herald trading system - installation, configuration, and first trades
 tags: [quickstart, installation, setup, getting-started]
 slug: /docs/quickstart
 sidebar_position: 4
 ---
 
-# Quick Start Guide - Herald v5.0.0 Complete
-
-## 🚀 Getting Started
+![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
 
 ### 1. Initial Setup
 

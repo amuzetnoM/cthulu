@@ -1,12 +1,12 @@
 ---
-title: Performance Tuning Guide
+title: Performance Tuning
 description: Optimize Herald's performance with database tuning, memory management, CPU optimization, and benchmarking strategies
 tags: [performance, optimization, tuning, benchmarking]
 slug: /docs/performance-tuning
 sidebar_position: 6
 ---
 
-# Herald Performance Tuning Guide
+![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
 
 ## Table of Contents
 - [Overview](#overview)

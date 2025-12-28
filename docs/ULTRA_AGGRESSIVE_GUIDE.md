@@ -6,7 +6,7 @@ slug: /docs/ultra-aggressive-guide
 sidebar_position: 8
 ---
 
-# Ultra-Aggressive Trading Mindset Guide
+![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
 
 ## Overview
 
