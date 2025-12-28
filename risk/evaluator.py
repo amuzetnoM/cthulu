@@ -157,7 +157,7 @@ class RiskEvaluator:
                 return False, f"Maximum positions per symbol reached ({self.limits.max_positions_per_symbol})", 0.0
             
             # Check total exposure
-            total_exposure = sum(p.volume for p in self.tracker.get_positions())
+            total_exposure = sum(p.volume for p in self.tracker.get_all_positions())
             max_total = balance * self.limits.max_total_exposure_percent / 100
             if total_exposure + position_size > max_total:
                 return False, f"Total exposure limit exceeded ({self.limits.max_total_exposure_percent}%)", 0.0
