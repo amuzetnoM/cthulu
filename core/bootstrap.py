@@ -162,6 +162,7 @@ class CthuluBootstrap:
             max_positions_per_symbol=risk_config.get('max_positions_per_symbol', 3),
             min_risk_reward_ratio=risk_config.get('min_risk_reward_ratio', 1.5),
             max_spread_points=risk_config.get('max_spread_points', 10.0),
+            max_spread_pct=risk_config.get('max_spread_pct', 0.01),
             min_confidence=risk_config.get('min_confidence', 0.0),
             emergency_shutdown_enabled=risk_config.get('emergency_shutdown_enabled', True)
         )
