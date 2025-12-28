@@ -40,7 +40,14 @@ def _http_get(url: str, timeout: float = 5.0, retries: int = 3, backoff: float =
             last_exc = e
             time.sleep(backoff * (2 ** attempt))
             continue
-    logger.debug(f"_http_get failed for {url}: {last_exc}")
+    # Avoid logging full URL (may contain sensitive query params like API keys)
+    try:
+        from urllib.parse import urlparse, urlunparse
+        p = urlparse(url)
+        safe_url = urlunparse((p.scheme, p.netloc, p.path, '', '<redacted>', ''))
+    except Exception:
+        safe_url = '<unparseable-url>'
+    logger.debug("_http_get failed for %s: %s", safe_url, last_exc)
     return None
 
 
