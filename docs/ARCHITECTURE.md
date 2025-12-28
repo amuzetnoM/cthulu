@@ -8,7 +8,7 @@ sidebar_position: 3
 
 ## System Architecture
 
-<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a>
+<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a>
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐

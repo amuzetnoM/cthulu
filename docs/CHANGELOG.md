@@ -8,7 +8,7 @@ slug: /docs/changelog
 
 • [View releases on GitHub](https://github.com/amuzetnoM/cthulhu/releases)
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
 
@@ -19,12 +19,12 @@ slug: /docs/changelog
 > This section is for upcoming changes that are not yet released.
 ---
 
-## **5.0.0 — 2025-12-27**
+## **5.0.1 — 2025-12-27**
 
 ### Summary
 **MAJOR RELEASE**: Architecture upgrade and live-run stability fixes.
 
-This release advances Cthulhu from v4.0.0 to v5.0.0 with a major architecture change and several important runtime fixes discovered and validated during live testing (2025-12-27). Notable changes include: removal of the live-run confirmation gate, robust runtime indicator handling (namespace, aliasing, fallbacks), improved trading loop wiring, additional unit tests, and CI/workflow improvements for Windows and coverage.
+This release advances Cthulhu from v4.0.0 to v5.0.1 with a major architecture change and several important runtime fixes discovered and validated during live testing (2025-12-27). Notable changes include: removal of the live-run confirmation gate, robust runtime indicator handling (namespace, aliasing, fallbacks), improved trading loop wiring, additional unit tests, and CI/workflow improvements for Windows and coverage.
 
 ### Added
 - **Live-run stability fixes & telemetry:** Added aliasing and fallback indicator calculations so strategies have deterministic access to `rsi`, `atr`, and `adx` even when runtime indicators are added dynamically.
@@ -36,7 +36,7 @@ This release advances Cthulhu from v4.0.0 to v5.0.0 with a major architecture ch
 ### Changed
 - **Safety gate removal:** `LIVE_RUN_CONFIRM` gate removed; live-run now proceeds and emits a clear warning in logs (was blocking startup). Documented and justified by live testing processes.
 - **Strategy resilience:** Strategies now rely on alias columns and are resilient to transient missing runtime indicators.
-- **Docs & Release Notes:** Added v5.0.0 release notes and updated CHANGELOG to highlight live-test findings.
+- **Docs & Release Notes:** Added v5.0.1 release notes and updated CHANGELOG to highlight live-test findings.
 
 ### Fixed
 - Prevent `pandas.DataFrame.join` ValueError due to overlapping columns by renaming runtime columns and using defensive joins.

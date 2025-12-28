@@ -6,7 +6,7 @@ slug: /docs/security
 sidebar_position: 7
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 ## Table of Contents
 - [Credential Management](#credential-management)

@@ -6,7 +6,7 @@ slug: /docs/deployment
 sidebar_position: 5
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 ## Table of Contents
 - [Quick Start](#quick-start)
@@ -68,7 +68,7 @@ docker-compose logs -f cthulhu
 docker build -t cthulhu:latest .
 
 # Or build with specific version
-docker build -t cthulhu:5.0.0 .
+docker build -t cthulhu:5.0.1 .
 ```
 
 #### 2. Environment Configuration

@@ -6,7 +6,7 @@ slug: /docs/quickstart
 sidebar_position: 4
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 ### 1. Initial Setup
 

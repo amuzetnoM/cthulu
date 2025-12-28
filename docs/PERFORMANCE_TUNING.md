@@ -6,7 +6,7 @@ slug: /docs/performance-tuning
 sidebar_position: 6
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 ## Table of Contents
 - [Overview](#overview)

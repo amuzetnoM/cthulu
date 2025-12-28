@@ -6,7 +6,7 @@ slug: /docs/features
 sidebar_position: 2
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 ## Overview
 

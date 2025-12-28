@@ -937,7 +937,7 @@ Track system updates and releases in `/docs/changelog/`
 
 ## Version History
 
-- **v5.0.0** - Current (Architectural overhaul complete, 6 strategies, 12 indicators)
+- **v5.0.1** - Current (Architectural overhaul complete, 6 strategies, 12 indicators)
 - **v4.x** - Dynamic strategy selection, exit strategies
 - **v3.x** - Multi-strategy support, ML integration
 - **v2.x** - Initial release

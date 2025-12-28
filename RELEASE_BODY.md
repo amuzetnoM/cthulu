@@ -101,6 +101,6 @@ pip install -e .  # or pip install cthulhu==5.0.1
 
 ---
 
-**Full Changelog**: v5.0.0...v5.0.1
+**Full Changelog**: v5.0.1...v5.0.1
 
 For detailed upgrade instructions and release notes, see [docs/release_notes/v5.0.1.md](https://github.com/amuzetnoM/herald/blob/main/docs/release_notes/v5.0.1.md)

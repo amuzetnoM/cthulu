@@ -13,7 +13,7 @@ sidebar_position: 1
                                  
 ```
 
-<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a> 
+<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a> 
 
 > [CHANGELOG](https://artifact-virtual.gitbook.io/cthulhu)
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
@@ -31,7 +31,7 @@ sidebar_position: 1
 
 <br>
 
- **NEW in v5.0.0**  
+ **NEW in v5.0.1**  
 > Cthulhu now features an **enhanced multi-strategy trading system** with advanced dynamic strategy selection and 10 market regimes!  
 >
 > - **6 advanced strategies**: SMA/EMA Crossover, Momentum Breakout, Scalping, Mean Reversion, and Trend Following  
@@ -1035,7 +1035,7 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.0.0
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.0.1
 - **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
@@ -1052,7 +1052,7 @@ Past performance is not indicative of future results. Use at your own risk.
 
 | Version | Date | Status | Description |
 |---------|------|--------|-------------|
-| **5.0.0** | Dec 2025 | ✅ Current | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
+| **5.0.1** | Dec 2025 | ✅ Current | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
 | **4.0.0** | Dec 2024 | ✅ Complete | **Dynamic Strategy Selection** - Multi-strategy framework, exit strategies |
 | **3.0.0** | Dec 2024 | ✅ Complete | **Production Ready** - Zero-error test suite, MT5 funded account verified |
 | **2.0.0** | Dec 2024 | ✅ Complete | **Autonomous Trading** - Indicators, position management |
@@ -1125,4 +1125,4 @@ Includes core trading system AND deployment hardening:
 
 **Built with focus on safety, testability, and production readiness.**
 
-*Cthulhu v5.0.0 - Complete. Production-ready autonomous trading with comprehensive strategy selection, advanced indicators, and enterprise-grade architecture.*
+*Cthulhu v5.0.1 - Complete. Production-ready autonomous trading with comprehensive strategy selection, advanced indicators, and enterprise-grade architecture.*
