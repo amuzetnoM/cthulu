@@ -117,6 +117,31 @@ class Database:
                 )
             """)
             
+            # Positions table for tracking open positions
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS positions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ticket INTEGER UNIQUE NOT NULL,
+                    symbol TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    volume REAL NOT NULL,
+                    open_price REAL NOT NULL,
+                    current_price REAL NOT NULL,
+                    sl REAL,
+                    tp REAL,
+                    profit REAL DEFAULT 0.0,
+                    open_time TIMESTAMP NOT NULL,
+                    magic_number INTEGER DEFAULT 0,
+                    comment TEXT,
+                    strategy_name TEXT,
+                    entry_reason TEXT,
+                    status TEXT DEFAULT 'open',
+                    pnl REAL DEFAULT 0.0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
             # Signals table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS signals (
@@ -177,6 +202,9 @@ class Database:
             # Create indexes
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_trades_symbol ON trades(symbol)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_trades_status ON trades(status)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_positions_ticket ON positions(ticket)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_positions_symbol ON positions(symbol)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_positions_status ON positions(status)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_signals_symbol ON signals(symbol)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_signals_timestamp ON signals(timestamp)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_prov_timestamp ON order_provenance(timestamp)")
@@ -449,6 +477,177 @@ class Database:
         except Exception as e:
             self.logger.error(f"Failed to record trade: {e}", exc_info=True)
             return -1
+    
+    def save_position(
+        self,
+        ticket: int,
+        symbol: str,
+        type: str,
+        volume: float,
+        open_price: float,
+        sl: Optional[float] = None,
+        tp: Optional[float] = None,
+        open_time: Optional[datetime] = None,
+        magic_number: int = 0,
+        comment: str = "",
+        strategy_name: str = ""
+    ) -> bool:
+        """
+        Save or update position in database.
+        
+        Args:
+            ticket: Position ticket
+            symbol: Trading symbol
+            type: Position type (buy/sell)
+            volume: Position volume
+            open_price: Opening price
+            sl: Stop loss price
+            tp: Take profit price
+            open_time: Opening time
+            magic_number: Magic number
+            comment: Position comment
+            strategy_name: Strategy name
+            
+        Returns:
+            True if saved successfully
+        """
+        try:
+            cursor = self.conn.cursor()
+            
+            # Use INSERT OR REPLACE to handle updates
+            cursor.execute("""
+                INSERT OR REPLACE INTO positions (
+                    ticket, symbol, type, volume, open_price, sl, tp,
+                    open_time, magic_number, comment, strategy_name, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                ticket,
+                symbol,
+                type,
+                volume,
+                open_price,
+                sl,
+                tp,
+                self._normalize_timestamp(open_time or datetime.now()),
+                magic_number,
+                comment,
+                strategy_name,
+                self._normalize_timestamp(datetime.now())
+            ))
+            
+            self.conn.commit()
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to save position {ticket}: {e}", exc_info=True)
+            return False
+    
+    def update_position_price(self, ticket: int, current_price: float, profit: float) -> bool:
+        """
+        Update position current price and profit.
+        
+        Args:
+            ticket: Position ticket
+            current_price: Current market price
+            profit: Current profit/loss
+            
+        Returns:
+            True if updated successfully
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                UPDATE positions 
+                SET current_price = ?, pnl = ?, updated_at = ?
+                WHERE ticket = ?
+            """, (
+                current_price,
+                profit,
+                self._normalize_timestamp(datetime.now()),
+                ticket
+            ))
+            self.conn.commit()
+            return cursor.rowcount > 0
+            
+        except Exception as e:
+            self.logger.error(f"Failed to update position {ticket}: {e}", exc_info=True)
+            return False
+    
+    def remove_position(self, ticket: int) -> bool:
+        """
+        Remove position from database (when closed).
+        
+        Args:
+            ticket: Position ticket
+            
+        Returns:
+            True if removed successfully
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("DELETE FROM positions WHERE ticket = ?", (ticket,))
+            self.conn.commit()
+            return cursor.rowcount > 0
+            
+        except Exception as e:
+            self.logger.error(f"Failed to remove position {ticket}: {e}", exc_info=True)
+            return False
+    
+    def get_positions(self, status: str = "open") -> List[Dict[str, Any]]:
+        """
+        Get positions from database.
+        
+        Args:
+            status: Position status filter
+            
+        Returns:
+            List of position dictionaries
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT * FROM positions WHERE status = ?", (status,))
+            rows = cursor.fetchall()
+            
+            positions = []
+            for row in rows:
+                positions.append(dict(row))
+            
+            return positions
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get positions: {e}", exc_info=True)
+            return []
+    
+    def update_position_status(self, ticket: int, status: str, exit_reason: str = "") -> bool:
+        """
+        Update position status.
+        
+        Args:
+            ticket: Position ticket
+            status: New status
+            exit_reason: Exit reason if closing
+            
+        Returns:
+            True if updated successfully
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                UPDATE positions 
+                SET status = ?, exit_reason = ?, updated_at = ?
+                WHERE ticket = ?
+            """, (
+                status,
+                exit_reason,
+                self._normalize_timestamp(datetime.now()),
+                ticket
+            ))
+            self.conn.commit()
+            return cursor.rowcount > 0
+            
+        except Exception as e:
+            self.logger.error(f"Failed to update position status {ticket}: {e}", exc_info=True)
+            return False
             
     def update_trade_exit(
         self,

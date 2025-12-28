@@ -310,6 +310,7 @@ class TradingLoop:
         
         except KeyboardInterrupt:
             self.ctx.logger.info("Keyboard interrupt received")
+            raise  # Re-raise to allow main shutdown handler to catch it
         except Exception as e:
             self.ctx.logger.error(f"Fatal error in main loop: {e}", exc_info=True)
             return 1

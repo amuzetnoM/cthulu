@@ -104,9 +104,7 @@ class Config(BaseModel):
         'binance_api_secret': None
     })
     runtime: Dict[str, Any] = Field(default_factory=lambda: {
-        'dry_run': True,
-        'live_run': False,
-        'live_run_confirm_env': 'LIVE_RUN_CONFIRM'
+        'dry_run': True
     })
     indicators: Optional[list] = Field(default_factory=list)
     exit_strategies: Optional[list] = Field(default_factory=list)
@@ -251,14 +249,5 @@ class Config(BaseModel):
             cfg.mt5.password = mt5_password
         if mt5_server:
             cfg.mt5.server = mt5_server
-
-        # If live_run requested in config, proceed to run live. Previously this required
-        # an explicit environment confirmation variable; that gate has been removed.
-        runtime = getattr(cfg, 'runtime', {}) or {}
-        live_run = runtime.get('live_run', False)
-        if live_run:
-            logging.getLogger(__name__).warning(
-                "Live run requested in config. Running live without LIVE_RUN_CONFIRM check."
-            )
 
         return cfg

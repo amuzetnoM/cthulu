@@ -163,8 +163,8 @@ class PositionLifecycle:
                 # Remove from tracker
                 self.tracker.remove_position(ticket)
                 
-                # Update database
-                self.db.update_position_status(ticket, 'closed', reason)
+                # Remove from database (closed positions don't need to persist)
+                self.db.remove_position(ticket)
                 
                 logger.info(f"Closed position {ticket}: {reason}")
                 return True
