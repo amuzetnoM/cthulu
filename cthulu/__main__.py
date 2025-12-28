@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 __version__ = "5.0.1"  # Rebranding to Cthulu
 
-from core.bootstrap import cthuluBootstrap, SystemComponents
+from core.bootstrap import CthuluBootstrap, SystemComponents
 from core.trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators
 from core.shutdown import ShutdownHandler, create_shutdown_handler
 from config_schema import Config

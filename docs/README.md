@@ -641,18 +641,18 @@ python -c "from connector.mt5_connector import MT5Connector, ConnectionConfig; \
    - Monitors open positions
    - Checks exit conditions (priority-based)
    - Closes positions when exit triggered
-6. Logs all activity to console and `Cthulu.log`
-7. Stores trades in `Cthulu.db` database
+6. Logs all activity to console and `cthulu.log`
+7. Stores trades in `cthulu.db` database
 
 **Monitor Live Trading:**
 ```bash
 # Watch log file
-tail -f Cthulu.log  # Linux/macOS
-Get-Content Cthulu.log -Wait -Tail 50  # Windows PowerShell
+tail -f cthulu.log  # Linux/macOS
+Get-Content cthulu.log -Wait -Tail 50  # Windows PowerShell
 
 # Query database for open positions
 python -c "from persistence.database import Database; \
-           db = Database('Cthulu.db'); \
+           db = Database('cthulu.db'); \
            trades = db.get_open_trades(); \
            print(f'Open trades: {len(trades)}')"
 ```
@@ -1018,13 +1018,13 @@ ERROR: MT5 initialize failed: (code, message)
 
 ```powershell
 # View recent errors
-Select-String -Path logs\Cthulu.log -Pattern "ERROR" | Select-Object -Last 20
+Select-String -Path logs\cthulu.log -Pattern "ERROR" | Select-Object -Last 20
 
 # Monitor live
-Get-Content logs\Cthulu.log -Wait -Tail 50
+Get-Content logs\cthulu.log -Wait -Tail 50
 
 # Search for specific pattern
-Select-String -Path logs\Cthulu.log -Pattern "signal generated"
+Select-String -Path logs\cthulu.log -Pattern "signal generated"
 ```
 
 ---
@@ -1072,8 +1072,8 @@ See [CHANGELOG.md](docs/CHANGELOG.md) for detailed release notes.
 - **Documentation**: `docs/` directory
 - **Phase 2 Guide**: [PHASE2_README.md](PHASE2_README.md)
 - **Examples**: `config.example.json`, `.env.example`
-- **Database**: Query `Cthulu.db` for trade history
-- **Logs**: Review `Cthulu.log` for execution details
+- **Database**: Query `cthulu.db` for trade history
+- **Logs**: Review `cthulu.log` for execution details
 - **Issues**: Create issue in repository
 
 ## Roadmap
