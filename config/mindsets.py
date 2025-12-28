@@ -177,7 +177,7 @@ ULTRA_AGGRESSIVE = {
     "trading": {
         "poll_interval": 15,
         "lookback_bars": 500,
-        "symbol": "EURUSD",
+        "symbol": "BTCUSD#",
         "timeframe": "TIMEFRAME_M15"
     },
     "indicators": [
