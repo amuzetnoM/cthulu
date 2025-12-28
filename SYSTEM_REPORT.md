@@ -736,7 +736,7 @@ class SecureConfig:
     
     def __init__(self):
         # Generate or load encryption key
-        key = os.getenv('HERALD_ENCRYPTION_KEY')
+        key = os.getenv('CTHULHU_ENCRYPTION_KEY')
         if not key:
             key = Fernet.generate_key()
             print(f"Store this key securely: {key.decode()}")

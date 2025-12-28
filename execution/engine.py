@@ -18,7 +18,7 @@ from enum import Enum
 
 from cthulhu.strategy.base import Signal, SignalType
 from cthulhu.position import risk_manager
-from herald import constants
+from cthulhu import constants
 
 
 class OrderType(Enum):
@@ -753,7 +753,7 @@ class ExecutionEngine:
                     # suggest_scaled_sl returns an absolute price distance to use as SL
                     dist = self.limits = None
                     try:
-                        # Try to use risk manager helper located in herald.position.risk_manager
+                        # Try to use risk manager helper located in cthulhu.position.risk_manager
                         from cthulhu.position.risk_manager import suggest_sl_adjustment as _sugg_fn
                         from cthulhu.position.risk_manager import _threshold_from_config as _thr_fn
                         # Compute a naive proposed SL by using a relative threshold

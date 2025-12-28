@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 import MetaTrader5 as mt5
-from herald import constants
+from cthulhu import constants
 
 
 def main():
@@ -19,11 +19,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  herald-trade --symbol BTCUSD# --side BUY --volume 0.01
-  herald-trade --symbol EURUSD --side SELL --volume 0.1 --sl 1.0850 --tp 1.0750
-  herald-trade --symbol XAUUSD --side BUY --volume 0.05 --comment "Gold scalp"
-  herald-trade --close 485496556  # Close position by ticket
-  herald-trade --list  # List all open positions
+  cthulhu-trade --symbol BTCUSD# --side BUY --volume 0.01
+  cthulhu-trade --symbol EURUSD --side SELL --volume 0.1 --sl 1.0850 --tp 1.0750
+  cthulhu-trade --symbol XAUUSD --side BUY --volume 0.05 --comment "Gold scalp"
+  cthulhu-trade --close 485496556  # Close position by ticket
+  cthulhu-trade --list  # List all open positions
         """
     )
     

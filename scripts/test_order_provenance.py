@@ -31,7 +31,7 @@ connector.get_symbol_info.return_value = {'ask': 1.2346, 'bid': 1.2344}
 connector.get_account_info.return_value = {'trade_allowed': True}
 
 # Monkeypatch mt5.order_send
-import herald.execution.engine as eng_mod
+import cthulhu.execution.engine as eng_mod
 mock_result = MagicMock()
 # Simulate MT5 success
 mock_result.retcode = getattr(eng_mod.mt5, 'TRADE_RETCODE_DONE', 10009)

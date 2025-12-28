@@ -5,7 +5,7 @@ from datetime import datetime
 from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
 from cthulhu.persistence.database import Database
 from cthulhu.observability.telemetry import Telemetry
-from herald import constants
+from cthulhu import constants
 import os
 import json
 

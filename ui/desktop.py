@@ -239,7 +239,7 @@ class CthulhuGUI:
         self.place_btn = ttk.Button(bottom, text='Place Trade', style='Accent.TButton', command=self.place_manual_trade)
         self.place_btn.grid(row=2, column=5, sticky='e', padx=(8, 4), pady=4)
 
-        # Live log viewer (shows last N lines of herald.log)
+        # Live log viewer (shows last N lines of cthulhu.log)
         log_frame = ttk.Frame(root)
         # Allow log area to expand and be resizable
         log_frame.pack(fill='both', expand=True, padx=15, pady=(8, 12))

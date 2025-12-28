@@ -11,7 +11,7 @@ from pathlib import Path
 from datetime import datetime
 
 
-def init_database(db_path: str = "data/herald.db"):
+def init_database(db_path: str = "data/cthulhu.db"):
     """
     Initialize Cthulhu database with required tables.
     

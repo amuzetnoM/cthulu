@@ -2,7 +2,7 @@ import os, json, sys
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-# Load herald modules
+# Load cthulhu modules
 from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
 from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType
 

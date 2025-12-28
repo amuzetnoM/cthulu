@@ -6,7 +6,7 @@ sidebar_position: 10
 slug: /docs/changelog
 ---
 
-• [View releases on GitHub](https://github.com/amuzetnoM/herald/releases)
+• [View releases on GitHub](https://github.com/amuzetnoM/cthulhu/releases)
 
 ![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
 
@@ -172,7 +172,7 @@ Small maintenance release to tidy documentation and operational defaults. Highli
 - Documentation clarified for Linux MT5 integration (recommend `mt5linux` or Docker bridge).
 
 ### Changed
-- Documentation: updated `docs/rpc.md`, `herald/.env`, and README to reflect default RPC behavior and Linux MT5 options.
+- Documentation: updated `docs/rpc.md`, `cthulhu/.env`, and README to reflect default RPC behavior and Linux MT5 options.
 
 ### Fixed
 - Changelog and release notes tidied for consistency.
@@ -184,13 +184,13 @@ Small maintenance release to tidy documentation and operational defaults. Highli
 Release focused on robust trade adoption, SL/TP reliability, and operational hygiene. Also includes scripting utilities for testing and improved observability.
 
 ### Added
-- **SL/TP verification & retry queue**: After applying SL/TP Cthulhu verifies broker acceptance and queues failed updates for scheduled retries; emits Prometheus metric `herald_sl_tp_failure_total` on failures.
+- **SL/TP verification & retry queue**: After applying SL/TP Cthulhu verifies broker acceptance and queues failed updates for scheduled retries; emits Prometheus metric `cthulhu_sl_tp_failure_total` on failures.
 - **Exponential backoff retry scheduling**: SL/TP and other retriable operations now use capped exponential backoff scheduling to reduce retry storms.
 - **Close flow improvements**: Use IOC filling for closes, sanitize comments to avoid broker rejections, and retry fallback without comments when needed.
 - **Metrics on close and SL/TP events**: Instrumented execution flows to record metrics for closed trades and SL/TP events for performance summaries.
-- **Test & diagnostic tools archived**: Moved ad-hoc diagnostic scripts into `herald/.archive/` and added `.archive/README.md` for provenance.
+- **Test & diagnostic tools archived**: Moved ad-hoc diagnostic scripts into `cthulhu/.archive/` and added `.archive/README.md` for provenance.
 - **Backup snapshot**: Created a full repository snapshot at `C:\workspace\_dev\_backup\herald` for recoverability and audits.
-- **System mapping docs**: Updated `herald/docs/system_mapping.md` to reflect archive, backup, and component mapping.
+- **System mapping docs**: Updated `cthulhu/docs/system_mapping.md` to reflect archive, backup, and component mapping.
 
 ### Changed
 - **Adoption & retry behavior**: improved adoption flow to aggressively apply SL/TP then fallback to scheduled retries; pending operations persist in memory until successful.

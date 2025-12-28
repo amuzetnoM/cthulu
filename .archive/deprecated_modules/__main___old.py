@@ -1117,11 +1117,11 @@ def main():
         # Start RPC server by default (no CLI flag required) - local-only by design
         try:
             import os as _os
-            token = _os.getenv('HERALD_API_TOKEN')
+            token = _os.getenv('CTHULHU_API_TOKEN')
             from cthulhu.rpc.server import run_rpc_server
             try:
                 if not token:
-                    logger.warning('HERALD_API_TOKEN not set; RPC server running locally unauthenticated')
+                    logger.warning('CTHULHU_API_TOKEN not set; RPC server running locally unauthenticated')
                 rpc_thread, rpc_server = run_rpc_server(args.rpc_host, args.rpc_port, token, execution_engine, risk_manager, position_manager, database)
                 logger.info('RPC server started (default enabled)')
             except Exception:

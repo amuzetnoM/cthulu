@@ -1,1 +1,1 @@
-# herald.ui package
+# cthulhu.ui package

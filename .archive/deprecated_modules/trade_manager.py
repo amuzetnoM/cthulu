@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 
 from cthulhu.connector.mt5_connector import mt5
 from cthulhu.position.manager import PositionInfo, PositionManager
-from herald import constants
+from cthulhu import constants
 
 
 @dataclass
