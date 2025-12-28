@@ -26,7 +26,7 @@ _________   __  .__          .__
   <img src="https://img.shields.io/badge/pandas-DataFrames-150458?style=flat-square" />
   <img src="https://img.shields.io/badge/Prometheus-Metrics-00A5E3?style=flat-square" />
   <img src="https://img.shields.io/badge/Tkinter-GUI-6AA84F?style=flat-square" />
-  <img src="https://img.shields.io/badge/tests-153%20passing-brightgreen?logo=pytest&style=flat-square" />
+  <img src="https://img.shields.io/badge/tests-185%20passing-brightgreen?logo=pytest&style=flat-square" />
   <img src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat-square" />
   <img src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=flat-square" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
