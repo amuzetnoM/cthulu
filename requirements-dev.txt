@@ -1,4 +1,4 @@
-# Herald - Development Dependencies
+# Cthulhu - Development Dependencies
 
 # Testing
 pytest>=7.4.0

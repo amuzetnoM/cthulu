@@ -1,6 +1,6 @@
 ---
 title: Architecture Overview
-description: Technical architecture and system design of the Herald multi-strategy autonomous trading platform
+description: Technical architecture and system design of the Cthulhu multi-strategy autonomous trading platform
 tags: [architecture, system-design, technical-overview]
 slug: /docs/architecture
 sidebar_position: 3
@@ -8,7 +8,7 @@ sidebar_position: 3
 
 ## System Architecture
 
-<a href="https://artifact-virtual.gitbook.io/herald"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a>
+<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a>
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -274,13 +274,13 @@ Strategy.get_candles()
 ## Monitoring & Deployment Recommendations
 
 **Short-term (30-60 min validation)**
-- Run Herald locally in a terminal using the aggressive mindset config and `--log-level DEBUG`:
+- Run Cthulhu locally in a terminal using the aggressive mindset config and `--log-level DEBUG`:
 
 ```bash
-python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt --log-level DEBUG
+python -m cthulhu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt --log-level DEBUG
 ```
 
-- Tail logs (e.g., `tail -f herald.log`) and watch for these messages:
+- Tail logs (e.g., `tail -f cthulhu.log`) and watch for these messages:
   - `Adopted trade:` — adoption events
   - `Set SL/TP for #` — confirmed SL/TP set on broker
   - `SL/TP verification failed` — broker refused modification (investigate immediately)
@@ -290,15 +290,15 @@ python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json 
 - Containerize with Docker and expose Prometheus metrics via simple endpoint (use `observability/prometheus.py` and a tiny metrics HTTP server).
 - Use an orchestrator (Docker Compose or Kubernetes) and set restart policies, resource limits, and liveness/readiness probes.
 - Centralized logging + alerting (Prometheus + Alertmanager; PagerDuty/Slack integration for critical alerts):
-  - Alert on any `herald_sl_tp_failure_total > 0` within a 1-minute window
-  - Alert on `herald_mt5_connected == 0` for 2 consecutive checks
+  - Alert on any `cthulhu_sl_tp_failure_total > 0` within a 1-minute window
+  - Alert on `cthulhu_mt5_connected == 0` for 2 consecutive checks
   - Alert on repeated adoption failures or repeated market data absence
 
 **Monitoring approach choice**
 - Terminal monitoring: fast, low-friction for smoke tests and short runs (30–60 min). I can run and monitor logs and report back.
 - Containerized monitoring: recommended for production — reproducible, easier integration with metrics and alerting, and safer for long-term uptime.
 
-Let me know if you want me to: **(A)** run a 30–60 minute live terminal monitoring session now, or **(B)** start containerizing Herald and add Prometheus HTTP exposure + alert rules (I can start with a Dockerfile and a metrics endpoint).
+Let me know if you want me to: **(A)** run a 30–60 minute live terminal monitoring session now, or **(B)** start containerizing Cthulhu and add Prometheus HTTP exposure + alert rules (I can start with a Dockerfile and a metrics endpoint).
     │
     │ (OHLCV DataFrame)
     ▼
@@ -492,7 +492,7 @@ Production Environment (Future)
 
 ### Phase 2: Multi-Strategy
 ```
-Herald Bot
+Cthulhu Bot
 ├── Strategy Manager
 │   ├── MA Crossover
 │   ├── RSI + MACD
@@ -504,7 +504,7 @@ Herald Bot
 
 ### Phase 3: ML Integration
 ```
-Herald Bot
+Cthulhu Bot
 ├── Feature Engine
 ├── ML Model Manager
 │   ├── Random Forest
@@ -515,7 +515,7 @@ Herald Bot
 
 ### Phase 4: Multi-Asset
 ```
-Herald Bot
+Cthulhu Bot
 ├── Asset Manager
 │   ├── XAUUSD (Gold)
 │   ├── EURUSD (Forex)

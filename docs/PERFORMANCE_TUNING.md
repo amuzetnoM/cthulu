@@ -1,6 +1,6 @@
 ---
 title: Performance Tuning
-description: Optimize Herald's performance with database tuning, memory management, CPU optimization, and benchmarking strategies
+description: Optimize Cthulhu's performance with database tuning, memory management, CPU optimization, and benchmarking strategies
 tags: [performance, optimization, tuning, benchmarking]
 slug: /docs/performance-tuning
 sidebar_position: 6
@@ -22,7 +22,7 @@ sidebar_position: 6
 
 ## Overview
 
-This guide provides strategies to optimize Herald's performance for maximum efficiency and throughput.
+This guide provides strategies to optimize Cthulhu's performance for maximum efficiency and throughput.
 
 ### Target Performance Metrics
 
@@ -40,7 +40,7 @@ This guide provides strategies to optimize Herald's performance for maximum effi
 
 ### Built-in Monitoring
 
-Herald includes performance metrics via Prometheus:
+Cthulhu includes performance metrics via Prometheus:
 
 ```python
 from herald.observability.metrics import MetricsCollector
@@ -65,7 +65,7 @@ metrics.record_api_call("get_rates", 0.1)
 curl http://localhost:9090/api/v1/query?query=herald_loop_duration_seconds
 
 # Via Grafana Dashboard
-# Navigate to http://localhost:3000 and select Herald Performance dashboard
+# Navigate to http://localhost:3000 and select Cthulhu Performance dashboard
 ```
 
 ---

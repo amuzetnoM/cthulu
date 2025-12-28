@@ -1,7 +1,7 @@
 This directory contains archived development, diagnostic, and one-off scripts that are not part of the production runtime.
 
 Purpose:
-- Keep ad-hoc helpers for reproducibility and future debugging without cluttering the main `herald/` tree.
+- Keep ad-hoc helpers for reproducibility and future debugging without cluttering the main `cthulhu/` tree.
 - Files moved here were used during recent live testing and debugging.
 
 Contents:
@@ -11,5 +11,5 @@ Contents:
 
 Guidelines:
 - Do not import from files in this directory in production code.
-- If a file becomes useful for long-term maintenance, move it back into `herald/scripts/` or refactor into a well-tested module.
+- If a file becomes useful for long-term maintenance, move it back into `cthulhu/scripts/` or refactor into a well-tested module.
 - This folder is intentionally included in repository commits to preserve history but is not used during normal operation.

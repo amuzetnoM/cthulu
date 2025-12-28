@@ -1,6 +1,6 @@
 ---
 title: Advanced Features
-description: Comprehensive guide to Herald's advanced trading strategies, next-generation indicators, and dynamic strategy selection system
+description: Comprehensive guide to Cthulhu's advanced trading strategies, next-generation indicators, and dynamic strategy selection system
 tags: [features, strategies, indicators, dynamic-selection]
 slug: /docs/features
 sidebar_position: 2
@@ -10,7 +10,7 @@ sidebar_position: 2
 
 ## Overview
 
-This document describes the major features of the Herald trading system, and its transformation from a basic SMA crossover system into a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection and next-generation indicators.
+This document describes the major features of the Cthulhu trading system, and its transformation from a basic SMA crossover system into a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection and next-generation indicators.
 
 ## Table of Contents
 
@@ -768,7 +768,7 @@ Track these metrics:
 ## Desktop GUI Interface
 
 ### Overview
-Herald includes a comprehensive desktop GUI (`python -m herald --gui`) that provides real-time monitoring and manual trading capabilities.
+Cthulhu includes a comprehensive desktop GUI (`python -m herald --gui`) that provides real-time monitoring and manual trading capabilities.
 
 ### Features
 
@@ -803,7 +803,7 @@ python -m herald --config config.json
 ```
 
 ### Configuration
-The GUI automatically connects to the running Herald instance and displays data from:
+The GUI automatically connects to the running Cthulhu instance and displays data from:
 - `herald.db` - Trade database
 - `herald.log` - Live log updates
 - `logs/latest_summary.txt` - Performance metrics
@@ -811,7 +811,7 @@ The GUI automatically connects to the running Herald instance and displays data 
 
 ## Conclusion
 
-These upgrades transform Herald from a basic single-strategy system into a sophisticated multi-strategy platform with:
+These upgrades transform Cthulhu from a basic single-strategy system into a sophisticated multi-strategy platform with:
 
 ✅ **4 Advanced Strategies**: EMA, Momentum, Scalping, SMA
 ✅ **Dynamic Selection**: Auto-adapts to market conditions

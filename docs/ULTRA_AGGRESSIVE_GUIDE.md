@@ -10,7 +10,7 @@ sidebar_position: 8
 
 ## Overview
 
-The **Ultra-Aggressive** mindset is Herald's most aggressive trading configuration, designed for experienced traders who want maximum trading frequency with high-speed scalping strategies. This mode combines dynamic strategy selection with ultra-responsive indicators optimized for M1-M15 timeframes.
+The **Ultra-Aggressive** mindset is Cthulhu's most aggressive trading configuration, designed for experienced traders who want maximum trading frequency with high-speed scalping strategies. This mode combines dynamic strategy selection with ultra-responsive indicators optimized for M1-M15 timeframes.
 
 ⚠️ **WARNING**: This mindset involves significantly higher risk and is only recommended for experienced traders who:
 - Understand high-frequency trading dynamics
@@ -107,7 +107,7 @@ The ultra-aggressive mode generates signals much more frequently:
 - Profit targets hit more frequently
 
 ### Regime Adaptation
-Every 3 minutes (180 seconds), Herald:
+Every 3 minutes (180 seconds), Cthulhu:
 1. Calculates current market regime (trending/ranging)
 2. Evaluates performance of each strategy
 3. Selects the best-performing strategy for current conditions
@@ -168,7 +168,7 @@ If experiencing issues:
 
 #### "Strategy not generating signals"
 - Check indicator calculations in logs
-- Verify RSI/ATR are present: `grep "RSI\|ATR" herald.log`
+- Verify RSI/ATR are present: `grep "RSI\|ATR" cthulhu.log`
 - Ensure EMA columns computed: Look for "Computed EMA columns" in logs
 - Try running with `--log-level DEBUG` for detailed output
 
@@ -258,7 +258,7 @@ Complete ultra-aggressive config excerpt:
 ## Support
 
 If you encounter issues with ultra-aggressive mode:
-1. Check logs: `herald.log` and `logs/latest_summary.txt`
+1. Check logs: `cthulhu.log` and `logs/latest_summary.txt`
 2. Review strategy info: `logs/strategy_info.txt`
 3. Open an issue with log excerpts and configuration used
 4. Join discussions for tips from other ultra-aggressive users

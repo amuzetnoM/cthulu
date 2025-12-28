@@ -24,12 +24,12 @@ slug: /docs/changelog
 ### Summary
 **MAJOR RELEASE**: Architecture upgrade and live-run stability fixes.
 
-This release advances Herald from v4.0.0 to v5.0.0 with a major architecture change and several important runtime fixes discovered and validated during live testing (2025-12-27). Notable changes include: removal of the live-run confirmation gate, robust runtime indicator handling (namespace, aliasing, fallbacks), improved trading loop wiring, additional unit tests, and CI/workflow improvements for Windows and coverage.
+This release advances Cthulhu from v4.0.0 to v5.0.0 with a major architecture change and several important runtime fixes discovered and validated during live testing (2025-12-27). Notable changes include: removal of the live-run confirmation gate, robust runtime indicator handling (namespace, aliasing, fallbacks), improved trading loop wiring, additional unit tests, and CI/workflow improvements for Windows and coverage.
 
 ### Added
 - **Live-run stability fixes & telemetry:** Added aliasing and fallback indicator calculations so strategies have deterministic access to `rsi`, `atr`, and `adx` even when runtime indicators are added dynamically.
 - **Runtime indicator namespacing:** Runtime-produced indicator columns are now namespaced with `runtime_` to avoid DataFrame join collisions.
-- **Indicator fallback calculations:** If indicators are missing at runtime, Herald will compute safe fallbacks for RSI/ATR to avoid transient strategy failures.
+- **Indicator fallback calculations:** If indicators are missing at runtime, Cthulhu will compute safe fallbacks for RSI/ATR to avoid transient strategy failures.
 - **Unit tests:** Added `tests/test_runtime_indicators.py` to validate rename/alias/fallback behavior.
 - **CI enhancements:** Windows and coverage support added to CI workflow for cross-platform testing and coverage reporting.
 
@@ -67,7 +67,7 @@ This release advances Herald from v4.0.0 to v5.0.0 with a major architecture cha
 ### Summary
 **MAJOR RELEASE**: Multi-Strategy Trading System with Dynamic Selection and Next-Generation Indicators
 
-This is a transformative release that upgrades Herald from a single-strategy system to a cutting-edge multi-strategy autonomous trading platform with intelligent strategy selection, institutional-grade indicators, and enhanced GUI monitoring.
+This is a transformative release that upgrades Cthulhu from a single-strategy system to a cutting-edge multi-strategy autonomous trading platform with intelligent strategy selection, institutional-grade indicators, and enhanced GUI monitoring.
 
 ### Added
 
@@ -184,7 +184,7 @@ Small maintenance release to tidy documentation and operational defaults. Highli
 Release focused on robust trade adoption, SL/TP reliability, and operational hygiene. Also includes scripting utilities for testing and improved observability.
 
 ### Added
-- **SL/TP verification & retry queue**: After applying SL/TP Herald verifies broker acceptance and queues failed updates for scheduled retries; emits Prometheus metric `herald_sl_tp_failure_total` on failures.
+- **SL/TP verification & retry queue**: After applying SL/TP Cthulhu verifies broker acceptance and queues failed updates for scheduled retries; emits Prometheus metric `herald_sl_tp_failure_total` on failures.
 - **Exponential backoff retry scheduling**: SL/TP and other retriable operations now use capped exponential backoff scheduling to reduce retry storms.
 - **Close flow improvements**: Use IOC filling for closes, sanitize comments to avoid broker rejections, and retry fallback without comments when needed.
 - **Metrics on close and SL/TP events**: Instrumented execution flows to record metrics for closed trades and SL/TP events for performance summaries.
@@ -544,7 +544,7 @@ First public release marking baseline Phase 2 completion with autonomous trading
 
   ---
 
-  This file is the canonical changelog location for Herald. For past release notes, prefer GitHub releases.
+  This file is the canonical changelog location for Cthulhu. For past release notes, prefer GitHub releases.
 
 - **Configuration Requirements** (`config.example.json`)
   - Complete JSON configuration template
@@ -582,5 +582,5 @@ This project is licensed under the MIT License - see the [LICENSE](../LICENSE) f
 
 ---
 
-**Herald** - Adaptive Trading Intelligence  
+**Cthulhu** - Adaptive Trading Intelligence  
 *The future of algorithmic trading.*

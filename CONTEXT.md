@@ -1,8 +1,8 @@
-# Herald Trading System - Complete Context & Overview
+# Cthulhu Trading System - Complete Context & Overview
 
 ## Executive Summary
 
-Herald is an **autonomous trading system** designed for MetaTrader 5 (MT5) that implements adaptive, algorithmic trading strategies with comprehensive risk management, real-time monitoring, and machine learning instrumentation. The system features multiple trading mindsets (conservative, balanced, aggressive, ultra-aggressive), dynamic strategy selection, and a sophisticated exit management system.
+Cthulhu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that implements adaptive, algorithmic trading strategies with comprehensive risk management, real-time monitoring, and machine learning instrumentation. The system features multiple trading mindsets (conservative, balanced, aggressive, ultra-aggressive), dynamic strategy selection, and a sophisticated exit management system.
 
 **Current Status:** Fully operational with complete architectural overhaul finished.
 
@@ -102,7 +102,7 @@ Herald is an **autonomous trading system** designed for MetaTrader 5 (MT5) that 
 
 ### 1. Trading Mindsets
 
-Herald supports **4 trading mindsets** that adjust risk tolerance and trading frequency:
+Cthulhu supports **4 trading mindsets** that adjust risk tolerance and trading frequency:
 
 | Mindset | Position Size | Daily Loss Limit | Max Positions | Poll Interval | Use Case |
 |---------|--------------|------------------|---------------|---------------|----------|
@@ -126,7 +126,7 @@ Herald supports **4 trading mindsets** that adjust risk tolerance and trading fr
 
 #### Dynamic Strategy Selection
 
-When `strategy.type = "dynamic"`, Herald uses **StrategySelector** that:
+When `strategy.type = "dynamic"`, Cthulhu uses **StrategySelector** that:
 - Monitors multiple strategies simultaneously
 - Evaluates performance metrics (win rate, profit factor, Sharpe ratio)
 - Detects market regime (trending/ranging using ADX)
@@ -157,7 +157,7 @@ When `strategy.type = "dynamic"`, Herald uses **StrategySelector** that:
 
 #### Technical Indicators
 
-Herald calculates **12 next-generation technical indicators**:
+Cthulhu calculates **12 next-generation technical indicators**:
 
 1. **RSI (Relative Strength Index)** - Momentum oscillator (0-100)
    - Overbought: >70, Oversold: <30
@@ -334,10 +334,10 @@ Kelly % = (Win Rate × Average Win) - (Loss Rate × Average Loss) / Average Win
 
 #### External Trade Adoption
 
-**TradeManager** can adopt trades not placed by Herald:
+**TradeManager** can adopt trades not placed by Cthulhu:
 - Manual trades from MT5 terminal
 - Trades from other EAs/bots
-- Applies Herald's exit strategies
+- Applies Cthulhu's exit strategies
 - Configurable adoption policy (symbols, age limit)
 
 **Use Case:** Take over existing positions and manage exits.
@@ -369,7 +369,7 @@ Kelly % = (Win Rate × Average Win) - (Loss Rate × Average Loss) / Average Win
 #### Logging
 
 - **Console**: INFO level, real-time updates
-- **File**: `herald.log` - DEBUG level, rotating
+- **File**: `cthulhu.log` - DEBUG level, rotating
 - **Structured**: JSON format option for parsing
 
 #### Metrics Collection
@@ -594,8 +594,8 @@ python __main__.py --config config.json
 
 ```bash
 # Clone repository
-git clone https://github.com/amuzetnoM/herald.git
-cd herald
+git clone https://github.com/amuzetnoM/cthulhu.git
+cd cthulhu
 
 # Install dependencies
 pip install -r requirements.txt
@@ -614,7 +614,7 @@ python __main__.py --config config.json
 python __main__.py --config config.json --dry-run --mindset balanced
 
 # View logs
-tail -f herald.log
+tail -f cthulhu.log
 ```
 
 ### Configuration Wizard
@@ -636,8 +636,8 @@ python __main__.py --config config.json --wizard-ai
 python __main__.py --config config.json --mindset balanced
 
 # Monitor via GUI (auto-opens)
-# Logs written to herald.log
-# Database: herald.db
+# Logs written to cthulhu.log
+# Database: cthulhu.db
 # Metrics: logs/latest_summary.txt
 ```
 
@@ -707,7 +707,7 @@ python __main__.py --config config.json --headless --no-prompt
 cat logs/latest_summary.txt
 
 # Database queries
-sqlite3 herald.db "SELECT * FROM trades ORDER BY entry_time DESC LIMIT 10;"
+sqlite3 cthulhu.db "SELECT * FROM trades ORDER BY entry_time DESC LIMIT 10;"
 ```
 
 ## Troubleshooting
@@ -745,8 +745,8 @@ sqlite3 herald.db "SELECT * FROM trades ORDER BY entry_time DESC LIMIT 10;"
 python __main__.py --config config.json --log-level DEBUG
 
 # Check specific components
-grep "StrategySelector" herald.log
-grep "RSI\|ATR" herald.log
+grep "StrategySelector" cthulhu.log
+grep "RSI\|ATR" cthulhu.log
 ```
 
 ## Development
@@ -754,7 +754,7 @@ grep "RSI\|ATR" herald.log
 ### Code Structure
 
 ```
-herald/
+cthulhu/
 ├── __main__.py           # Entry point (being refactored)
 ├── core/                 # NEW - Refactored modules
 ├── connector/            # MT5 API wrapper
@@ -844,7 +844,7 @@ INDICATOR_REGISTRY = {
    - Disable "Ask manual confirmation" for trades
    - Configure max slippage
 
-3. **Herald Configuration**
+3. **Cthulhu Configuration**
    - Use `--no-gui --no-prompt` for headless
    - Set appropriate poll interval
    - Configure daily loss limits
@@ -857,21 +857,21 @@ INDICATOR_REGISTRY = {
    - Enable Prometheus/Grafana
 
 5. **Backups**
-   - Database: `herald.db`
+   - Database: `cthulhu.db`
    - Configuration: `config.json`
-   - Logs: `herald.log`, `logs/`
+   - Logs: `cthulhu.log`, `logs/`
 
 ### Systemd Service (Linux)
 
 ```ini
 [Unit]
-Description=Herald Trading System
+Description=Cthulhu Trading System
 After=network.target
 
 [Service]
 Type=simple
-User=herald
-WorkingDirectory=/opt/herald
+User=cthulhu
+WorkingDirectory=/opt/cthulhu
 ExecStart=/usr/bin/python3 __main__.py --config config.json --headless --no-prompt
 Restart=on-failure
 RestartSec=10s
@@ -947,6 +947,6 @@ Track system updates and releases in `/docs/changelog/`
 **Last Updated**: 2025-12-26  
 **Status**: Active Development  
 **License**: See LICENSE file  
-**Author**: Herald Development Team
+**Author**: Cthulhu Development Team
 
 For questions or contributions, please open an issue or pull request on GitHub.
