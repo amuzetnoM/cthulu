@@ -333,48 +333,48 @@ $env:Path += ";C:\tools\nssm-2.24\win64"
 cd C:\workspace\Herald
 
 # Install service
-nssm install Herald "C:\workspace\Herald\venv\Scripts\python.exe" `
+nssm install Cthulhu "C:\workspace\Herald\venv\Scripts\python.exe" `
     "-m" "cthulhu" `
     "--config" "config.json" `
     "--skip-setup" `
     "--no-prompt"
 
 # Set working directory
-nssm set Herald AppDirectory "C:\workspace\Herald"
+nssm set Cthulhu AppDirectory "C:\workspace\Herald"
 
 # Set environment variables
-nssm set Herald AppEnvironmentExtra MT5_LOGIN=12345678 MT5_PASSWORD=your_password
+nssm set Cthulhu AppEnvironmentExtra MT5_LOGIN=12345678 MT5_PASSWORD=your_password
 
 # Configure restart policy
-nssm set Herald AppExit Default Restart
-nssm set Herald AppThrottle 5000
-nssm set Herald AppRestartDelay 10000
+nssm set Cthulhu AppExit Default Restart
+nssm set Cthulhu AppThrottle 5000
+nssm set Cthulhu AppRestartDelay 10000
 
 # Configure logging
-nssm set Herald AppStdout "C:\workspace\Herald\logs\stdout.log"
-nssm set Herald AppStderr "C:\workspace\Herald\logs\stderr.log"
+nssm set Cthulhu AppStdout "C:\workspace\Herald\logs\stdout.log"
+nssm set Cthulhu AppStderr "C:\workspace\Herald\logs\stderr.log"
 
 # Start service
-nssm start Herald
+nssm start Cthulhu
 ```
 
 #### 3. Service Management
 
 ```powershell
 # Start service
-nssm start Herald
+nssm start Cthulhu
 
 # Stop service
-nssm stop Herald
+nssm stop Cthulhu
 
 # Restart service
-nssm restart Herald
+nssm restart Cthulhu
 
 # Check status
-nssm status Herald
+nssm status Cthulhu
 
 # Remove service
-nssm remove Herald confirm
+nssm remove Cthulhu confirm
 ```
 
 ### Using Windows Task Scheduler (Alternative)
@@ -396,7 +396,7 @@ $principal = New-ScheduledTaskPrincipal `
     -RunLevel Highest
 
 Register-ScheduledTask `
-    -TaskName "Herald Trading" `
+    -TaskName "Cthulhu Trading" `
     -Action $action `
     -Trigger $trigger `
     -Principal $principal `
@@ -509,7 +509,7 @@ groups:
         expr: up{job="cthulhu"} == 0
         for: 2m
         annotations:
-          summary: "Herald connection lost"
+          summary: "Cthulhu connection lost"
           
       - alert: HighMemoryUsage
         expr: process_resident_memory_bytes > 1e9
@@ -570,7 +570,7 @@ crontab -e
 ### Recovery Procedure
 
 ```bash
-# 1. Stop Herald
+# 1. Stop Cthulhu
 sudo systemctl stop cthulhu
 
 # 2. Restore database
@@ -634,7 +634,7 @@ cat .env | grep MT5_
 
 ## Support & Updates
 
-### Updating Herald
+### Updating Cthulhu
 
 ```bash
 # Docker

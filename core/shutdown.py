@@ -1,5 +1,5 @@
 """
-Herald Shutdown Module
+Cthulhu Shutdown Module
 
 This module handles graceful shutdown of the Cthulhu trading system,
 extracted from __main__.py for better modularity and testability.

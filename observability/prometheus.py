@@ -298,7 +298,7 @@ class PrometheusExporter:
         
         return "\n".join(lines)
     
-    def write_to_file(self, path: str = "/tmp/herald_metrics.prom"):
+    def write_to_file(self, path: str = "/tmp/cthulhu_metrics.prom"):
         """
         Write metrics to a file for node_exporter textfile collector.
         

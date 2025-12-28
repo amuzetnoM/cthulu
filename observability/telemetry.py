@@ -1,6 +1,6 @@
 """Telemetry helper for provenance and long-term order auditing.
 
-Provides a small wrapper around `herald.persistence.database.Database` to record
+Provides a small wrapper around `cthulhu.persistence.database.Database` to record
 order provenance entries and expose simple query helpers.
 """
 from typing import Dict, Any, List, Optional
