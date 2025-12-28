@@ -88,18 +88,40 @@ Actionable steps (do not change without consent):
 
 How to verify once exporter starts:
 - Metrics file: type C:\workspace\cthulu\metrics\Cthulu_metrics.prom (or Get-Content -Tail 200 in PowerShell).
-- HTTP: curl http://127.0.0.1:8181/metrics or open in browser.
+- HTTP: curl http://127.0.0.1:8181/metrics or open in browser. (Verified: HTTP /metrics is responding and returned Prometheus exposition format; sample HEAD shown below.)
+
+Sample /metrics HEAD (verified):
+```
+# HELP Cthulu_uptime_seconds Cthulu uptime in seconds
+# TYPE Cthulu_uptime_seconds counter
+Cthulu_uptime_seconds 32.4484
+
+# HELP Cthulu_trades_total Total number of trades
+# TYPE Cthulu_trades_total counter
+Cthulu_trades_total 0
+
+# HELP Cthulu_pnl_total Total net profit/loss
+# TYPE Cthulu_pnl_total gauge
+Cthulu_pnl_total 0.0
+```
+
 - Prometheus: add scrape job in prometheus.yml pointing to http://<host>:8181/metrics or to the node_textfile collector directory.
 
 Quick Prometheus scrape job snippet (monitoring/prometheus.yml):
 
 - job_name: 'cthulu'
   static_configs:
-    - targets: ['cthulu:8181']
+    - targets: ['127.0.0.1:8181']
+  metrics_path: /metrics
+  scrape_interval: 15s
 
 Grafana:
-- Import or create a dashboard with panels for: cthulu_pnl_total, cthulu_trades_total, cthulu_win_rate, cthulu_uptime_seconds, cthulu_open_positions
+- Import or create a dashboard with panels for: Cthulu_pnl_total, Cthulu_trades_total, Cthulu_win_rate, Cthulu_uptime_seconds, Cthulu_open_positions
 
+Notes:
+- The exporter now exposes an HTTP /metrics endpoint on port 8181 (started by bootstrap). If you prefer file-based scraping, the exporter supports writing a textfile to C:\workspace\cthulu\metrics\Cthulu_metrics.prom (node_textfile collector). The file will be written on the next metrics publish cycle (every ~10 loops) or when the exporter.write_to_file() is called.
+- To validate quickly from the host: curl http://127.0.0.1:8181/metrics
+- To configure Prometheus in docker-compose or Kubernetes, point the scrape target to the host and port 8181 (or use service discovery).
 ---
 
 ## Spread Rejection Analysis

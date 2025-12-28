@@ -15,7 +15,7 @@ _________   __  .__          .__
 ---
 
 <p align="center">
-  <img src="/docs/assets/cthulu-black.png" alt="Cthulu logo" width="480" />
+  <img src="../assets/cthulu-black.png" alt="Cthulu logo" width="480" />
 </p>
 
 

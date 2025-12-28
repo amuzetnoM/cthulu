@@ -1268,6 +1268,50 @@ class TradingLoop:
                     except Exception:
                         self.ctx.logger.exception('Failed to persist periodic metrics summary')
                 
+                # Ensure a Prometheus exporter exists (fallback) and publish metrics
+                if self.ctx.exporter is None:
+                    try:
+                        # Initialize exporter unconditionally as a fallback to ensure metrics are exposed
+                        from cthulu.observability.prometheus import PrometheusExporter
+                        prom_cfg = self.ctx.config.get('observability', {}).get('prometheus', {}) if getattr(self.ctx, 'config', None) else {}
+                        exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'Cthulu'))
+                        exporter._file_path = prom_cfg.get('textfile_path') or (r"C:\workspace\cthulu\metrics\Cthulu_metrics.prom" if os.name == 'nt' else "/tmp/Cthulu_metrics.prom")
+                        http_port = prom_cfg.get('http_port', 8181)
+                        try:
+                            import threading
+                            from http.server import BaseHTTPRequestHandler, HTTPServer
+                            class _MetricsHandler(BaseHTTPRequestHandler):
+                                def do_GET(self):
+                                    if self.path != '/metrics':
+                                        self.send_response(404)
+                                        self.end_headers()
+                                        return
+                                    try:
+                                        body = exporter.export_text().encode('utf-8')
+                                        self.send_response(200)
+                                        self.send_header('Content-Type', 'text/plain; version=0.0.4')
+                                        self.send_header('Content-Length', str(len(body)))
+                                        self.end_headers()
+                                        self.wfile.write(body)
+                                    except Exception:
+                                        self.send_response(500)
+                                        self.end_headers()
+                            def _serve():
+                                server = HTTPServer(('0.0.0.0', int(http_port)), _MetricsHandler)
+                                exporter.logger.info(f"Starting fallback metrics HTTP server on port {http_port}")
+                                try:
+                                    server.serve_forever()
+                                except Exception:
+                                    exporter.logger.exception('Fallback metrics HTTP server stopped')
+                            t = threading.Thread(target=_serve, daemon=True)
+                            t.start()
+                        except Exception:
+                            self.ctx.logger.exception('Failed to start fallback HTTP metrics server')
+                        self.ctx.exporter = exporter
+                        self.ctx.logger.info('Prometheus exporter (fallback) initialized in trading loop')
+                    except Exception:
+                        self.ctx.logger.exception('Failed to initialize fallback Prometheus exporter')
+
                 # Publish to Prometheus exporter if present
                 if self.ctx.exporter is not None:
                     try:
