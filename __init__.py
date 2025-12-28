@@ -4,7 +4,7 @@ Cthulhu - Adaptive Trading Intelligence
 A modular, event-driven trading bot emphasizing safety, testability, and extensibility.
 """
 
-__version__ = "4.0.0"
+__version__ = "5.0.1"
 __author__ = "Cthulhu Project"
 
 from .connector.mt5_connector import MT5Connector, ConnectionConfig

@@ -19,7 +19,7 @@ from typing import Optional
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-__version__ = "5.0.0"  # Architectural overhaul complete
+__version__ = "5.0.1"  # Rebranding to Cthulhu
 
 from core.bootstrap import CthulhuBootstrap, SystemComponents
 from core.trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cthulhu"
-version = "5.0.0"
+version = "5.0.1"
 description = "Adaptive Trading Intelligence for MetaTrader 5"
 readme = "README.md"
 license = {text = "MIT"}
