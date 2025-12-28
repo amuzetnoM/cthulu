@@ -1864,3 +1864,11 @@ Starting Cthulu instance (auto-restart)
 Started new Cthulu PID: 19728
 \n## 2025-12-29T00:56:13.3940543+05:00 - Action
 Restarted (PID 19728) - monitor will continue
+
+## 2025-12-29T03:51:44Z - Action
+- Enforced trading.symbol = BTCUSD# across config.json and mindsets (ultra_aggressive).
+- Restarted Cthulu to pick up the change; monitoring resumed and tailing active logs.
+- Prometheus exporter initialized (HTTP /metrics on port 8181); Grafana provisioning files created under monitoring/grafana/ (datasource + dashboards).
+- Continuing automated checklist: signal stress tests (demo account, $1000) and observability validation until 60 minutes uninterrupted operation is reached.
+- Logged by: automated-monitor v2
+
