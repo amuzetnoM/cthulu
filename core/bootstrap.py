@@ -574,6 +574,24 @@ class CthuluBootstrap:
         except Exception:
             components.trade_adoption_policy = None
         
+        # Start RPC server if configured (allows runtime manual trades via HTTP)
+        try:
+            rpc_cfg = config.get('rpc', {}) if isinstance(config, dict) else {}
+            if rpc_cfg.get('enabled', False):
+                try:
+                    from cthulu.rpc.server import run_rpc_server
+                    host = rpc_cfg.get('host', '127.0.0.1')
+                    port = int(rpc_cfg.get('port', 8278))
+                    token = rpc_cfg.get('token', None)
+                    t, server = run_rpc_server(host, port, token, execution_engine, risk_manager, position_manager, database)
+                    components.rpc_server = server
+                    components.rpc_thread = t
+                    self.logger.info(f"RPC server started on http://{host}:{port}")
+                except Exception:
+                    self.logger.exception('Failed to start RPC server; continuing without it')
+        except Exception:
+            self.logger.debug('RPC configuration parsing failed; skipping RPC startup')
+
         self.components = components
         self.logger.info("System bootstrap complete")
         

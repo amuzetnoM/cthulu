@@ -127,9 +127,12 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 pass
 
             signal_like = _SignalLike()
+            # Provide fields expected by RiskEvaluator.approve()
+            signal_like.symbol = order_req.symbol
+            signal_like.price = order_req.price
             signal_like.stop_loss = order_req.sl
             signal_like.take_profit = order_req.tp
-            signal_like.price = order_req.price
+            # Normalized attributes
             signal_like.side = order_req.side
             signal_like.confidence = getattr(order_req, 'confidence', 1.0)
             signal_like.action = getattr(order_req, 'order_type', 'manual')
@@ -138,8 +141,8 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
 
             approved, reason, position_size = self.risk_manager.approve(
                 signal_like,
-                account_state=account_info,
-                current_positions=len(self.position_manager.get_positions(symbol=symbol))
+                account_info,
+                len(self.position_manager.get_positions(symbol=symbol))
             )
         except Exception as e:
             logger.exception('Risk manager check failed')

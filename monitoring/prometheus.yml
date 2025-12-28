@@ -1,30 +1,15 @@
-# Prometheus configuration for Cthulu Trading System
-
 global:
   scrape_interval: 15s
-  evaluation_interval: 15s
-  external_labels:
-    monitor: 'Cthulu-monitor'
-rule_files:
-  - "/etc/prometheus/rules/*.yml"
 
 scrape_configs:
-  - job_name: 'Cthulu'
+  - job_name: 'cthulu'
     static_configs:
-      - targets: ['Cthulu:8181']
-        labels:
-          service: 'Cthulu-trading'
-    
-  - job_name: 'node_exporter'
-    static_configs:
-      - targets: ['node_exporter:9100']
-        labels:
-          service: 'node_exporter'
-  
+      - targets: ['host.docker.internal:8181']
+
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
-
-
-
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node_exporter:9100']

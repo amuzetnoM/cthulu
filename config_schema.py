@@ -113,6 +113,8 @@ class Config(BaseModel):
     database: Dict[str, Any] = Field(default_factory=lambda: {"path": "cthulu.db"})
     cache_enabled: bool = True
     logging: Dict[str, Any] = Field(default_factory=dict)
+    # RPC configuration (optional runtime HTTP control)
+    rpc: Dict[str, Any] = Field(default_factory=dict)
 
     @staticmethod
     def _map_legacy_keys(raw: Dict[str, Any]) -> Dict[str, Any]:
