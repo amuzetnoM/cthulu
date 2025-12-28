@@ -1,0 +1,27 @@
+{
+    "annotations": {
+        "list": []
+    },
+    "panels": [
+        {
+            "type": "stat",
+            "title": "Total Trades",
+            "datasource": "Prometheus",
+            "targets": [
+                {
+                    "expr": "cthulu_trades_total",
+                    "refId": "A"
+                }
+            ],
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 0,
+                "y": 0
+            }
+        }
+    ],
+    "title": "Cthulu - Overview",
+    "schemaVersion": 36,
+    "version": 1
+}

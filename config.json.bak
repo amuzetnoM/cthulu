@@ -20,12 +20,12 @@
   },
   "trading": {
     "symbol": "BTCUSD#",
-    "timeframe": "TIMEFRAME_M5",
+    "timeframe": "TIMEFRAME_M1",
     "poll_interval": 30,
     "lookback_bars": 300
   },
   "strategy": {
-    "type": "dynamic",
+    "type": "sma_crossover",
     "dynamic_selection": {
       "regime_detection_enabled": true,
       "performance_tracking_enabled": true,
@@ -105,27 +105,19 @@
           "risk_reward_ratio": 3.0
         }
       }
-    ]
+    ],
+    "params": {
+      "fast_period": 10,
+      "slow_period": 30
+    }
   },
   "indicators": [
     {
       "type": "rsi",
       "params": {
-        "period": 14
-      }
-    },
-    {
-      "type": "rsi",
-      "params": {
-        "period": 7
-      }
-    },
-    {
-      "type": "macd",
-      "params": {
-        "fast_period": 12,
-        "slow_period": 26,
-        "signal_period": 9
+        "period": 14,
+        "overbought": 70,
+        "oversold": 30
       }
     },
     {
@@ -140,48 +132,6 @@
       "params": {
         "period": 14
       }
-    },
-    {
-      "type": "atr",
-      "params": {
-        "period": 10
-      }
-    },
-    {
-      "type": "atr",
-      "params": {
-        "period": 14
-      }
-    },
-    {
-      "type": "stochastic",
-      "params": {
-        "k_period": 14,
-        "d_period": 3,
-        "smooth": 3
-      }
-    },
-    {
-      "type": "supertrend",
-      "params": {
-        "atr_period": 10,
-        "atr_multiplier": 3.0
-      }
-    },
-    {
-      "type": "vpt",
-      "params": {}
-    },
-    {
-      "type": "volume_oscillator",
-      "params": {
-        "fast_period": 5,
-        "slow_period": 10
-      }
-    },
-    {
-      "type": "price_volume_trend",
-      "params": {}
     }
   ],
   "exit_strategies": [
@@ -227,11 +177,19 @@
     "path": "${DATABASE_PATH}"
   },
   "runtime": {
-    "dry_run": false,
-    "live_run": true
+    "dry_run": false
+  },
+  "orphan_trades": {
+    "enabled": true,
+    "adopt_symbols": [],
+    "ignore_symbols": [],
+    "apply_exit_strategies": true,
+    "max_adoption_age_hours": 1.0,
+    "log_only": false
   },
   "cache_enabled": true
 }
+
 
 
 

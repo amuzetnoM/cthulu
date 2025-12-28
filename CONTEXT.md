@@ -938,13 +938,20 @@ Track system updates and releases in `/docs/changelog/`
 ## Version History
 
 - **v5.0.1** - Current (Architectural overhaul complete, 6 strategies, 12 indicators)
+   - Complete rebranding from `herald` → `Cthulu` (package, CLI, logs, DB)
+   - 150+ files modified; ~978 references updated across the repo
+   - CI/CD: GitHub Actions workflow added for multi-OS / multi-Python testing
+   - Tests: 156/156 unit tests passing (reported at release)
+   - Infrastructure renames: Docker services -> `Cthulu-*`, Prometheus jobs -> `Cthulu_*`
+   - Environment variables renamed: `HERALD_*` -> `Cthulu_*`
+
 - **v4.x** - Dynamic strategy selection, exit strategies
 - **v3.x** - Multi-strategy support, ML integration
 - **v2.x** - Initial release
 
 ---
 
-**Last Updated**: 2025-12-26  
+**Last Updated**: 2025-12-29  
 **Status**: Active Development  
 **License**: See LICENSE file  
 **Author**: Cthulu Development Team

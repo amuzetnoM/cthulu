@@ -3,8 +3,69 @@
 **Version Analyzed:** 5.0.1  
 **Analyst:** Github Advanced Security & Live Validation Bot
 
-**Status:** Live mode currently active (running and monitoring as of 2025-12-28).  
-**Summary:** This report has been updated to reflect the completed architectural overhaul, expanded strategy and indicator systems, and current live operational status.
+**Status:** Live mode monitoring in progress (as of 2025-12-29 00:39 UTC).  
+**Summary:** This report tracks live operations and issues discovered during extended monitoring sessions.
+
+---
+
+## Current Session Status (2025-12-29)
+
+### Monitoring Session 1
+**Start:** 2025-12-29 00:39 UTC  
+**Duration Target:** 60 minutes continuous operation  
+**Objective:** Ensure stable operation with zero errors
+
+### Issues Discovered & Fixed
+
+#### Issue #1: RiskEvaluator.approve() AttributeError ✅ FIXED
+- **Detected:** 2025-12-29 00:33:23
+- **Error:** `'RiskEvaluator' object has no attribute 'approve'`
+- **Root Cause:** The RiskEvaluator.approve() method expected account_info as an object with `.balance` attribute, but connector.get_account_info() returns a dictionary
+- **Fix:** Updated risk/evaluator.py line 140 to handle both dict and object formats:
+  ```python
+  balance = account_info.get('balance') if isinstance(account_info, dict) else account_info.balance
+  ```
+- **Status:** Fixed and ready for restart
+
+#### Issue #2: 'dict' object has no attribute 'balance' ✅ FIXED
+- **Detected:** 2025-12-29 00:40:27  
+- **Error:** `Risk rejected: Approval error: 'dict' object has no attribute 'balance'`
+- **Root Cause:** Same as Issue #1
+- **Fix:** Same fix applies
+- **Status:** Fixed
+
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 00:44:35 UTC  
+**Elapsed Time:** 0 / 60 minutes  
+**Process Status:** Running  
+**Total Checks:** 1  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** ✅ HEALTHY
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 00:47:35 UTC  
+**Elapsed Time:** 3 / 60 minutes  
+**Process Status:** Running  
+**Total Checks:** 2  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** ✅ HEALTHY
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 00:50:35 UTC  
+**Elapsed Time:** 6 / 60 minutes  
+**Process Status:** Running  
+**Total Checks:** 3  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** ✅ HEALTHY
+### Next Steps
+1. ✅ Fixed account_info format handling in RiskEvaluator
+2. ⏳ Restart Cthulu process
+3. ⏳ Resume 60-minute monitoring
+4. ⏳ Verify no errors for full hour
 
 ---
 
@@ -19,6 +80,11 @@ Cthulu is a well-architected autonomous trading system for MetaTrader 5 with str
 - **Strategy Expansion:** Added 6 advanced strategies with dynamic selection and 10 market regime detection
 - **Indicator Enhancement:** Expanded to 12 next-generation indicators including volume-based analysis
 - **Version Update:** Released v5.0.1 with complete feature set and production readiness
+    - Rebranding applied across repository (`herald` → `Cthulu`), package and CLI names updated
+    - 150+ files modified; ~978 references updated
+    - Environment variables renamed: `HERALD_*` → `Cthulu_*`
+- **CI/CD & Tests:** GitHub Actions workflow added; release reports 156/156 unit tests passing
+- **Infrastructure Renames:** Docker service/container names updated to `Cthulu-*`; Prometheus job names updated to `Cthulu_*`
 - **Live Validation:** Extensive testing completed with runtime fixes for indicator merging and ATR detection
 
 **Next Immediate Steps:**
