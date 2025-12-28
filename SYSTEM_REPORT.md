@@ -40,9 +40,16 @@ The fix was already present in C:\workspace\cthulu\risk\evaluator.py but the run
 
 ### Monitoring Session 2 - Attempt 2
 **Start:** 2025-12-29 01:24:42 UTC (PID 17512)  
+**End:** 2025-12-29 02:01:13 UTC  
+**Duration:** 36 minutes  
+**Result:** ❌ Error detected - `MT5Connector.get_balance()` method doesn't exist  
+**Fix Applied:** Changed to use `get_account_info()['balance']` in evaluator.py line 337
+
+### Monitoring Session 2 - Attempt 3
+**Start:** 2025-12-29 02:01:44 UTC (PID 19664)  
 **Status:** ✅ RUNNING - Restarted with fix  
 **Target:** 60 minutes continuous error-free operation  
-**Monitoring Interval:** Every 3 minutes
+**Progress:** Best run so far: 36 minutes error-free!
 
 ### Issues Fixed This Session
 1. ✅ Merge conflict in risk/evaluator.py (lines 140-149) - Resolved
@@ -290,6 +297,42 @@ The fix was already present in C:\workspace\cthulu\risk\evaluator.py but the run
 **Elapsed Time:** 27.01 / 60 minutes  
 **Process Status:** Running  
 **Total Checks:** 10  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** ✅ HEALTHY
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 01:55:13 UTC  
+**Elapsed Time:** 30.01 / 60 minutes  
+**Process Status:** Running  
+**Total Checks:** 11  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** ✅ HEALTHY
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 01:58:13 UTC  
+**Elapsed Time:** 33.02 / 60 minutes  
+**Process Status:** Running  
+**Total Checks:** 12  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** ✅ HEALTHY
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 02:01:13 UTC  
+**Elapsed Time:** 36.02 / 60 minutes  
+**Process Status:** Stopped (issues)  
+**Total Checks:** 13  
+**Total Errors:** 2  
+**Total Warnings:** 0  
+**Health:** 🔴 STOPPED
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 02:02:13 UTC  
+**Elapsed Time:** 0 / 60 minutes  
+**Process Status:** Running  
+**Total Checks:** 1  
 **Total Errors:** 0  
 **Total Warnings:** 0  
 **Health:** ✅ HEALTHY

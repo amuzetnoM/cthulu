@@ -334,7 +334,8 @@ class RiskEvaluator:
         try:
             # Check total exposure
             current_exposure = self.tracker.calculate_total_exposure()
-            balance = self.connector.get_balance()
+            account_info = self.connector.get_account_info()
+            balance = account_info.get('balance', 0.0) if account_info else 0.0
             
             if balance > 0:
                 exposure_percent = (current_exposure / balance) * 100
