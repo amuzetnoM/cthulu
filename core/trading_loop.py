@@ -575,8 +575,19 @@ class TradingLoop:
                             indicator_data = indicator_data.rename(columns=rename_map)
                             self.ctx.logger.debug(f"Renamed indicator columns to avoid overlap: {rename_map}")
 
-                        # Join indicator data safely
-                        df = df.join(indicator_data, how='left')
+                        # Join indicator data safely; if any columns overlap pandas will
+                        # append the provided suffix to the joined columns to avoid
+                        # raising ValueError about overlapping columns.
+                        try:
+                            df = df.join(indicator_data, how='left', rsuffix=f"_ind_{base}")
+                        except Exception:
+                            # As a final fallback, explicitly rename overlapping columns
+                            # on the indicator side and then join.
+                            overlaps = set(df.columns).intersection(indicator_data.columns)
+                            if overlaps:
+                                rename_map2 = {c: f"{c}_ind_{base}" for c in overlaps}
+                                indicator_data = indicator_data.rename(columns=rename_map2)
+                            df = df.join(indicator_data, how='left')
 
                     except Exception:
                         self.ctx.logger.exception(
@@ -674,7 +685,15 @@ class TradingLoop:
                             rsi_data = rsi_data.rename(columns=rename_map)
                             self.ctx.logger.debug(f"Renamed RSI fallback columns: {rename_map}")
 
-                        df = df.join(rsi_data, how='left')
+                        # Ensure overlapping columns don't raise merge errors
+                        try:
+                            df = df.join(rsi_data, how='left', rsuffix="_ind_rsi")
+                        except Exception:
+                            overlaps = set(df.columns).intersection(rsi_data.columns)
+                            if overlaps:
+                                rename_map2 = {c: f"{c}_ind_rsi" for c in overlaps}
+                                rsi_data = rsi_data.rename(columns=rename_map2)
+                            df = df.join(rsi_data, how='left')
                         # create alias if needed
                         if rsi_col not in df.columns:
                             candidates = [c for c in df.columns if 'rsi' in c.lower() and c.startswith('runtime_')]
@@ -717,7 +736,14 @@ class TradingLoop:
                                 rename_map[col] = final_col
                         if rename_map:
                             atr_data = atr_data.rename(columns=rename_map)
-                        df = df.join(atr_data, how='left')
+                        try:
+                            df = df.join(atr_data, how='left', rsuffix="_ind_atr")
+                        except Exception:
+                            overlaps = set(df.columns).intersection(atr_data.columns)
+                            if overlaps:
+                                rename_map2 = {c: f"{c}_ind_atr" for c in overlaps}
+                                atr_data = atr_data.rename(columns=rename_map2)
+                            df = df.join(atr_data, how='left')
                         if 'atr' not in df.columns:
                             candidates = [c for c in df.columns if 'atr' in c.lower() and c.startswith('runtime_')]
                             if candidates:
