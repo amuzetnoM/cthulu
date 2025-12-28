@@ -50,7 +50,7 @@ class Indicator(ABC):
         """
         pass
         
-    def validate_data(self, data: pd.DataFrame, min_periods: int = 1):
+    def validate_data(self, data: pd.DataFrame, min_periods: int = 1, required_cols: list | None = None):
         """
         Validate input data format and sufficiency.
         
@@ -64,14 +64,21 @@ class Indicator(ABC):
         if data is None or data.empty:
             raise ValueError(f"{self.name}: Data is empty")
             
-        required_cols = ['open', 'high', 'low', 'close', 'volume']
+        # Default required columns are full OHLCV. Some indicators (e.g., RSI)
+        # only need `close`, while others (ATR) need high/low/close. Allow
+        # callers to specify `required_cols` to relax validation for fallback
+        # calculation paths.
+        if required_cols is None:
+            required_cols = ['open', 'high', 'low', 'close', 'volume']
         missing_cols = [col for col in required_cols if col not in data.columns]
         if missing_cols:
             raise ValueError(f"{self.name}: Missing required columns: {missing_cols}")
             
         if len(data) < min_periods:
-            raise ValueError(
-                f"{self.name}: Insufficient data. Required: {min_periods}, Got: {len(data)}"
+            # Do not raise here; allow indicators to compute and return NaNs for short series.
+            # Fallback paths rely on the presence of columns even when full period data isn't available.
+            self.logger.debug(
+                f"{self.name}: Insufficient data for full calculation. Required: {min_periods}, Got: {len(data)}"
             )
             
         if not isinstance(data.index, pd.DatetimeIndex):

@@ -13,8 +13,14 @@ from collections import deque
 from time import time, sleep
 from typing import Callable, Deque, Dict, Any, List, Tuple, Optional
 
-from cthulhu.market.providers import MT5Provider, AlphaVantageProvider, BinanceProvider
-from cthulhu.observability.prometheus import PrometheusExporter
+try:
+    # Prefer relative imports when running inside the package (pytest collection)
+    from .providers import MT5Provider, AlphaVantageProvider, BinanceProvider
+    from ..observability.prometheus import PrometheusExporter
+except Exception:
+    # Fallback to absolute imports for scripts run outside the package context
+    from cthulhu.market.providers import MT5Provider, AlphaVantageProvider, BinanceProvider
+    from cthulhu.observability.prometheus import PrometheusExporter
 import os
 
 

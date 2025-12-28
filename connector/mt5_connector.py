@@ -35,7 +35,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
 from pathlib import Path
-from cthulhu.market.tick_manager import TickManager
+try:
+    # Prefer a relative import when running inside the package (pytest collection)
+    from ..market.tick_manager import TickManager
+except Exception:
+    # Fallback to absolute import for scripts run outside the package context
+    from cthulhu.market.tick_manager import TickManager
 
 
 @dataclass

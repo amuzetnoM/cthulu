@@ -1,35 +1,52 @@
-"""
-Cthulhu - Adaptive Trading Intelligence
-
-A modular, event-driven trading bot emphasizing safety, testability, and extensibility.
-"""
-
-__version__ = "5.0.1"
-__author__ = "Cthulhu Project"
-
-from .connector.mt5_connector import MT5Connector, ConnectionConfig
-from .strategy.base import Strategy, Signal, SignalType
-from .execution.engine import ExecutionEngine, OrderRequest, ExecutionResult
-from .risk.manager import RiskManager, RiskLimits
-from .data.layer import DataLayer
-from .persistence.database import Database, TradeRecord, SignalRecord
-from .observability.metrics import MetricsCollector, PerformanceMetrics
-
 __all__ = [
-    "MT5Connector",
-    "ConnectionConfig",
-    "Strategy",
-    "Signal",
-    "SignalType",
-    "ExecutionEngine",
-    "OrderRequest",
-    "ExecutionResult",
-    "RiskManager",
-    "RiskLimits",
-    "DataLayer",
-    "Database",
-    "TradeRecord",
-    "SignalRecord",
-    "MetricsCollector",
-    "PerformanceMetrics",
+    "config",
+    "connector",
+    "execution",
+    "indicators",
+    "market",
+    "persistence",
+    "position",
+    "risk",
+    "strategy",
+    "utils",
 ]
+
+# Lazy imports to avoid heavy import-time side-effects
+_LAZY_IMPORTS = {
+    "config": "cthulu.config",
+    "connector": "cthulu.connector",
+    "execution": "cthulu.execution",
+    "indicators": "cthulu.indicators",
+    "market": "cthulu.market",
+    "persistence": "cthulu.persistence",
+    "position": "cthulu.position",
+    "risk": "cthulu.risk",
+    "strategy": "cthulu.strategy",
+    "utils": "cthulu.utils",
+}
+
+def __getattr__(name: str):
+    if name in _LAZY_IMPORTS:
+        module = importlib.import_module(_LAZY_IMPORTS[name])
+        globals()[name] = module
+        return module
+    raise AttributeError(name)
+
+
+# Back-compat shim for legacy package name 'herald'
+def _install_herald_shim():
+    try:
+        import types
+        pkg_name = "herald"
+        if pkg_name in sys.modules:
+            return
+        mod = types.ModuleType(pkg_name)
+        mod.__path__ = __path__
+        sys.modules[pkg_name] = mod
+    except Exception:
+        pass
+
+_install_herald_shim()
+
+def __dir__():
+    return sorted(list(globals().keys()) + list(_LAZY_IMPORTS.keys()))

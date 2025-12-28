@@ -59,8 +59,9 @@ class RSI(Indicator):
         Returns:
             Series with RSI values (0-100)
         """
-        # Validate input
-        self.validate_data(data, min_periods=self.period + 1)
+        # Validate input; RSI only requires 'close' values so allow a relaxed
+        # validation (helps runtime fallback when only close series is present)
+        self.validate_data(data, min_periods=self.period + 1, required_cols=['close'])
         
         # Calculate price changes
         delta = data['close'].diff()

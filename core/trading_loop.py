@@ -107,6 +107,27 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     from cthulhu.indicators.rsi import RSI
     from cthulhu.indicators.adx import ADX
     from cthulhu.indicators.atr import ATR
+    # Optional runtime indicators
+    try:
+        from cthulhu.indicators.macd import MACD
+    except Exception:
+        MACD = None
+    try:
+        from cthulhu.indicators.bollinger import BollingerBands
+    except Exception:
+        BollingerBands = None
+    try:
+        from cthulhu.indicators.stochastic import Stochastic
+    except Exception:
+        Stochastic = None
+    try:
+        from cthulhu.indicators.supertrend import Supertrend
+    except Exception:
+        Supertrend = None
+    try:
+        from cthulhu.indicators.vwap import VWAP
+    except Exception:
+        VWAP = None
     
     required_emas = set()
     extra_indicators = []
@@ -215,6 +236,9 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
             atr_period = int(strategy.atr_period)
         elif hasattr(strategy, 'use_atr') and strategy.use_atr:
             needs_atr = True
+        # Strategy name-based heuristic (scalping strategies often need ATR)
+        elif getattr(strategy, 'name', '').lower().find('scalp') != -1 or strategy.__class__.__name__.lower().find('scalp') != -1:
+            needs_atr = True
     except Exception:
         pass
     
@@ -238,6 +262,63 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
         if not has_adx:
             extra_indicators.append(ADX(period=14))
             logger.debug("Added runtime ADX indicator for regime detection")
+
+    # Check config-specified indicators and add runtime instances when requested
+    try:
+        conf_inds = config.get('indicators', []) if isinstance(config, dict) else []
+        for ind in conf_inds:
+            try:
+                t = (ind.get('type') or '').lower()
+                params = ind.get('params', {}) or {}
+                if t in ('macd',) and MACD is not None:
+                    extra_indicators.append(MACD(**params))
+                elif t in ('bollinger', 'bollingerbands') and BollingerBands is not None:
+                    extra_indicators.append(BollingerBands(**params))
+                elif t in ('stochastic',) and Stochastic is not None:
+                    extra_indicators.append(Stochastic(**params))
+                elif t in ('supertrend',) and Supertrend is not None:
+                    # Accept common alias 'atr_multiplier' -> 'multiplier'
+                    try:
+                        if 'atr_multiplier' in params and 'multiplier' not in params:
+                            params = dict(params)
+                            params['multiplier'] = params.pop('atr_multiplier')
+                    except Exception:
+                        pass
+                    extra_indicators.append(Supertrend(**params))
+                elif t in ('vwap',) and VWAP is not None:
+                    extra_indicators.append(VWAP(**params))
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    # Special-case: for scalping strategies, ensure an ATR column is present immediately
+    try:
+        strat_name = getattr(strategy, 'name', '') or strategy.__class__.__name__
+        if (('scalp' in str(strat_name).lower()) or ('scalp' in strategy.__class__.__name__.lower())) and 'atr' not in df.columns:
+            try:
+                # Compute ATR fallback directly and attach in-place
+                from cthulhu.indicators.atr import ATR
+                atr_ind = ATR(period=getattr(strategy, 'atr_period', 14))
+                atr_series = atr_ind.calculate(df)
+                if atr_series is not None:
+                    if isinstance(atr_series, pd.Series):
+                        df['atr'] = atr_series
+                    else:
+                        # If DataFrame, pick primary 'atr' column if present
+                        if 'atr' in atr_series.columns:
+                            df['atr'] = atr_series['atr']
+                        else:
+                            df['atr'] = atr_series.iloc[:, 0]
+                # Remove any ATR instance from extra_indicators to avoid duplicate joins
+                try:
+                    extra_indicators = [i for i in extra_indicators if i.__class__.__name__.upper() != 'ATR']
+                except Exception:
+                    pass
+            except Exception:
+                logger.exception('Failed to compute inline ATR for scalping strategy')
+    except Exception:
+        pass
     
     return extra_indicators
 

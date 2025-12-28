@@ -52,10 +52,11 @@ def setup_logger(
             datefmt='%Y-%m-%d %H:%M:%S'
         )
     else:
-        # Human-readable format for development
+        # Compact human-readable format for development: short timestamp and no repeated logger name
+        # Example: 2025-12-28T19:07:47 [INFO] Starting up
         formatter = logging.Formatter(
-            '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            '%(asctime)s [%(levelname)s] %(message)s',
+            datefmt='%Y-%m-%dT%H:%M:%S'
         )
     
     console_handler.setFormatter(formatter)
