@@ -1,0 +1,75 @@
+# HELP Cthulu_uptime_seconds Cthulu uptime in seconds
+# TYPE Cthulu_uptime_seconds counter
+Cthulu_uptime_seconds 136.8924765586853
+
+# HELP Cthulu_trades_total Total number of trades
+# TYPE Cthulu_trades_total counter
+Cthulu_trades_total 0
+
+# HELP Cthulu_trades_won Number of winning trades
+# TYPE Cthulu_trades_won counter
+Cthulu_trades_won 0
+
+# HELP Cthulu_trades_lost Number of losing trades
+# TYPE Cthulu_trades_lost counter
+Cthulu_trades_lost 0
+
+# HELP Cthulu_pnl_total Total net profit/loss
+# TYPE Cthulu_pnl_total gauge
+Cthulu_pnl_total 0.0
+
+# HELP Cthulu_profit_total Total gross profit
+# TYPE Cthulu_profit_total counter
+Cthulu_profit_total 0.0
+
+# HELP Cthulu_loss_total Total gross loss
+# TYPE Cthulu_loss_total counter
+Cthulu_loss_total 0.0
+
+# HELP Cthulu_win_rate Win rate (0-1)
+# TYPE Cthulu_win_rate gauge
+Cthulu_win_rate 0
+
+# HELP Cthulu_profit_factor Profit factor (gross profit / gross loss)
+# TYPE Cthulu_profit_factor gauge
+Cthulu_profit_factor 0
+
+# HELP Cthulu_drawdown_percent Max drawdown percent
+# TYPE Cthulu_drawdown_percent gauge
+Cthulu_drawdown_percent 0.0
+
+# HELP Cthulu_drawdown_abs Max drawdown absolute
+# TYPE Cthulu_drawdown_abs gauge
+Cthulu_drawdown_abs 0.0
+
+# HELP Cthulu_drawdown_duration_seconds Max drawdown duration in seconds
+# TYPE Cthulu_drawdown_duration_seconds gauge
+Cthulu_drawdown_duration_seconds 0.0
+
+# HELP Cthulu_current_drawdown_duration_seconds Current drawdown duration in seconds
+# TYPE Cthulu_current_drawdown_duration_seconds gauge
+Cthulu_current_drawdown_duration_seconds 0.0
+
+# HELP Cthulu_avg_rr Average risk:reward
+# TYPE Cthulu_avg_rr gauge
+Cthulu_avg_rr 0.0
+
+# HELP Cthulu_median_rr Median risk:reward
+# TYPE Cthulu_median_rr gauge
+Cthulu_median_rr 0.0
+
+# HELP Cthulu_rr_count Risk:Reward count
+# TYPE Cthulu_rr_count counter
+Cthulu_rr_count 0
+
+# HELP Cthulu_expectancy Expectancy per trade
+# TYPE Cthulu_expectancy gauge
+Cthulu_expectancy 0.0
+
+# HELP Cthulu_sharpe Sharpe ratio
+# TYPE Cthulu_sharpe gauge
+Cthulu_sharpe 0.0
+
+# HELP Cthulu_rolling_sharpe Rolling Sharpe ratio
+# TYPE Cthulu_rolling_sharpe gauge
+Cthulu_rolling_sharpe 0.0
