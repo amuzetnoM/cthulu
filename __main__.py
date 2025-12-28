@@ -98,8 +98,11 @@ shutdown_requested = False
 def signal_handler(signum, frame):
     """Handle shutdown signals gracefully."""
     global shutdown_requested
-    shutdown_requested = True
-    print("\nShutdown signal received, initiating graceful shutdown...")
+    if not shutdown_requested:
+        shutdown_requested = True
+        print("\nShutdown signal received, initiating graceful shutdown...")
+        # Raise KeyboardInterrupt to interrupt the current execution
+        raise KeyboardInterrupt()
 
 
 def parse_arguments():

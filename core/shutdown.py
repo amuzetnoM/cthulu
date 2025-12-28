@@ -149,26 +149,44 @@ class ShutdownHandler:
         
         return self._prompt_console(prompt_text, default='n')
     
-    def _prompt_console(self, prompt_text: str, default: str = 'n') -> str:
+    def _prompt_console(self, prompt_text: str, default: str = 'n', timeout: float = 10.0) -> str:
         """
-        Prompt user for input, with fallback mechanisms.
+        Prompt user for input, with fallback mechanisms and timeout.
         
         This function tries multiple approaches to get user input:
-        1. Standard input if available
+        1. Standard input if available (with timeout)
         2. Platform-specific console access (CONIN$ on Windows, /dev/tty on Unix)
         3. Default value if all else fails
         
         Args:
             prompt_text: Prompt to display to user
             default: Default value if input fails
+            timeout: Timeout in seconds for input
             
         Returns:
             User's input as lowercase string
         """
+        import threading
+        import queue
+        
+        def input_with_timeout():
+            try:
+                result = input(prompt_text).strip().lower()
+                input_queue.put(result)
+            except Exception:
+                input_queue.put(default.lower())
+        
         try:
-            # Try normal input first
+            # Try normal input first with timeout
             if sys.stdin.isatty() and not getattr(self.args, 'no_prompt', False):
-                return input(prompt_text).strip().lower()
+                input_queue = queue.Queue()
+                input_thread = threading.Thread(target=input_with_timeout, daemon=True)
+                input_thread.start()
+                try:
+                    return input_queue.get(timeout=timeout)
+                except queue.Empty:
+                    self.logger.warning(f"Input timeout after {timeout}s, using default: {default}")
+                    return default.lower()
             
             # Fall back to opening the platform console directly
             if os.name == 'nt':
