@@ -124,6 +124,59 @@ class RiskEvaluator:
         
         logger.info("RiskEvaluator initialized")
     
+    def approve(self, signal, account_info, current_positions) -> tuple[bool, str, float]:
+        """
+        Approve a trading signal and calculate position size.
+        
+        Args:
+            signal: Trading signal object
+            account_info: MT5 account info
+            current_positions: Number of current positions for this symbol
+            
+        Returns:
+            tuple: (approved: bool, reason: str, position_size: float)
+        """
+        try:
+            balance = account_info.balance
+            symbol = signal.symbol
+            
+            # Calculate position size
+            position_size = self.calculate_position_size(
+                symbol=symbol,
+                balance=balance,
+                method="percent",
+                risk_percent=self.limits.max_position_size_percent
+            )
+            
+            # Check if we can open more positions
+            if current_positions >= self.limits.max_positions_per_symbol:
+                return False, f"Maximum positions per symbol reached ({self.limits.max_positions_per_symbol})", 0.0
+            
+            # Check total exposure
+            total_exposure = sum(p.volume for p in self.tracker.get_positions())
+            max_total = balance * self.limits.max_total_exposure_percent / 100
+            if total_exposure + position_size > max_total:
+                return False, f"Total exposure limit exceeded ({self.limits.max_total_exposure_percent}%)", 0.0
+            
+            # Approve the trade
+            approved, reason = self.approve_trade(
+                symbol=symbol,
+                volume=position_size,
+                entry_price=signal.price,
+                sl=signal.stop_loss,
+                tp=signal.take_profit,
+                confidence=signal.confidence
+            )
+            
+            if approved:
+                return True, reason, position_size
+            else:
+                return False, reason, 0.0
+                
+        except Exception as e:
+            logger.error(f"Error in signal approval: {e}", exc_info=True)
+            return False, f"Approval error: {str(e)}", 0.0
+    
     def approve_trade(self, symbol: str, volume: float, entry_price: float,
                      sl: Optional[float] = None, tp: Optional[float] = None,
                      confidence: float = 1.0) -> tuple[bool, str]:
