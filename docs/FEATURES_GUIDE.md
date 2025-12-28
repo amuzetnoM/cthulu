@@ -1,16 +1,16 @@
 ---
 title: Advanced Features
-description: Comprehensive guide to Herald's advanced trading strategies, next-generation indicators, and dynamic strategy selection system
+description: Comprehensive guide to Cthulhu's advanced trading strategies, next-generation indicators, and dynamic strategy selection system
 tags: [features, strategies, indicators, dynamic-selection]
 slug: /docs/features
 sidebar_position: 2
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 ## Overview
 
-This document describes the major features of the Herald trading system, and its transformation from a basic SMA crossover system into a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection and next-generation indicators.
+This document describes the major features of the Cthulhu trading system, and its transformation from a basic SMA crossover system into a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection and next-generation indicators.
 
 ## Table of Contents
 
@@ -229,7 +229,7 @@ This document describes the major features of the Herald trading system, and its
 
 **Usage**:
 ```python
-from herald.indicators.supertrend import Supertrend
+from cthulhu.indicators.supertrend import Supertrend
 
 indicator = Supertrend(period=10, multiplier=3.0)
 result = indicator.calculate(data)
@@ -261,7 +261,7 @@ signal = result['supertrend_signal']  # Entry signals
 
 **Usage**:
 ```python
-from herald.indicators.vwap import VWAP
+from cthulhu.indicators.vwap import VWAP
 
 indicator = VWAP(std_dev_multiplier=2.0)
 result = indicator.calculate(data)
@@ -281,7 +281,7 @@ lower_band = result['vwap_lower']  # 2x std dev
 **Anchored VWAP**:
 Calculate VWAP from significant events (earnings, major news):
 ```python
-from herald.indicators.vwap import AnchoredVWAP
+from cthulhu.indicators.vwap import AnchoredVWAP
 
 indicator = AnchoredVWAP(anchor_index=50)  # Start from bar 50
 result = indicator.calculate(data)
@@ -302,7 +302,7 @@ result = indicator.calculate(data)
 
 **Usage**:
 ```python
-from herald.indicators.volume_indicators import VPT
+from cthulhu.indicators.volume_indicators import VPT
 
 indicator = VPT()
 result = indicator.calculate(data)
@@ -333,7 +333,7 @@ vpt_signal = result['vpt_signal']  # 1, 0, -1 signals
 
 **Usage**:
 ```python
-from herald.indicators.volume_indicators import VolumeOscillator
+from cthulhu.indicators.volume_indicators import VolumeOscillator
 
 indicator = VolumeOscillator(short_period=5, long_period=10)
 result = indicator.calculate(data)
@@ -365,7 +365,7 @@ histogram = result['volume_histogram']
 
 **Usage**:
 ```python
-from herald.indicators.price_volume_trend import PriceVolumeTrend
+from cthulhu.indicators.price_volume_trend import PriceVolumeTrend
 
 indicator = PriceVolumeTrend()
 result = indicator.calculate(data)
@@ -455,7 +455,7 @@ Total Score = (Performance × 0.4) + (Regime Affinity × 0.4) + (Confidence × 0
 ### Usage Example
 
 ```python
-from herald.strategy.strategy_selector import StrategySelector
+from cthulhu.strategy.strategy_selector import StrategySelector
 
 # Create strategies
 strategies = [
@@ -588,16 +588,16 @@ report = selector.get_performance_report()
 
 ```bash
 # Interactive mode
-python -m herald --config config_ultra_aggressive.json
+python -m cthulhu --config config_ultra_aggressive.json
 
 # Automated mode (headless)
-python -m herald --config config_ultra_aggressive.json --skip-setup --no-prompt
+python -m cthulhu --config config_ultra_aggressive.json --skip-setup --no-prompt
 
 # Dry-run (no real trades)
-python -m herald --config config_ultra_aggressive.json --dry-run
+python -m cthulhu --config config_ultra_aggressive.json --dry-run
 
 # Debug mode
-python -m herald --config config_ultra_aggressive.json --log-level DEBUG
+python -m cthulhu --config config_ultra_aggressive.json --log-level DEBUG
 ```
 
 ### 2. Monitor Dynamic Strategy Selection
@@ -615,7 +615,7 @@ INFO:   scalping: total=0.634, perf=0.700, regime=0.600
 
 ```bash
 # View performance report in logs
-grep "Recorded" herald.log | tail -20
+grep "Recorded" cthulhu.log | tail -20
 
 # Example output:
 # Recorded win for ema_crossover: $152.30 (WinRate=68.42%)
@@ -625,8 +625,8 @@ grep "Recorded" herald.log | tail -20
 ### 4. Test Individual Strategies
 
 ```python
-from herald.strategy.ema_crossover import EmaCrossover
-from herald.strategy.momentum_breakout import MomentumBreakout
+from cthulhu.strategy.ema_crossover import EmaCrossover
+from cthulhu.strategy.momentum_breakout import MomentumBreakout
 
 # Test EMA strategy
 ema_strategy = EmaCrossover(config={
@@ -768,7 +768,7 @@ Track these metrics:
 ## Desktop GUI Interface
 
 ### Overview
-Herald includes a comprehensive desktop GUI (`python -m herald --gui`) that provides real-time monitoring and manual trading capabilities.
+Cthulhu includes a comprehensive desktop GUI (`python -m cthulhu --gui`) that provides real-time monitoring and manual trading capabilities.
 
 ### Features
 
@@ -796,22 +796,22 @@ Herald includes a comprehensive desktop GUI (`python -m herald --gui`) that prov
 ### Usage
 ```bash
 # Launch GUI
-python -m herald --gui
+python -m cthulhu --gui
 
 # Or run full system with GUI
-python -m herald --config config.json
+python -m cthulhu --config config.json
 ```
 
 ### Configuration
-The GUI automatically connects to the running Herald instance and displays data from:
-- `herald.db` - Trade database
-- `herald.log` - Live log updates
+The GUI automatically connects to the running Cthulhu instance and displays data from:
+- `cthulhu.db` - Trade database
+- `cthulhu.log` - Live log updates
 - `logs/latest_summary.txt` - Performance metrics
 - `logs/strategy_info.txt` - Strategy status
 
 ## Conclusion
 
-These upgrades transform Herald from a basic single-strategy system into a sophisticated multi-strategy platform with:
+These upgrades transform Cthulhu from a basic single-strategy system into a sophisticated multi-strategy platform with:
 
 ✅ **4 Advanced Strategies**: EMA, Momentum, Scalping, SMA
 ✅ **Dynamic Selection**: Auto-adapts to market conditions

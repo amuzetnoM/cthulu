@@ -51,20 +51,20 @@ def clear_screen():
 
 
 def print_banner():
-    """Print Herald setup banner."""
+    """Print Cthulhu setup banner."""
     banner = """
     ╦ ╦╔═╗╦═╗╔═╗╦  ╔╦╗
     ╠═╣║╣ ╠╦╝╠═╣║   ║║
     ╩ ╩╚═╝╩╚═╩ ╩╩═╝═╩╝
     ─────────────────────────────
-           HERALD v5.0.0
+           CTHULHU v5.0.1
     Interactive Setup Wizard
     """
     try:
         safe_print("\033[96m" + banner + "\033[0m")
     except Exception:
         # Fallback to a plain ASCII banner
-        safe_print("*** HERALD v5.0.0 - Interactive Setup Wizard ***")
+        safe_print("*** CTHULHU v5.0.1 - Interactive Setup Wizard ***")
 
 
 def print_section(title: str, step: int = None, total_steps: int = None):
@@ -1093,7 +1093,7 @@ def run_nlp_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any]]
     """
     clear_screen()
     print_banner()
-    print("  Herald NLP setup wizard (lightweight, local).")
+    print("  Cthulhu NLP setup wizard (lightweight, local).")
     print("  Describe what you want (e.g., 'Aggressive GOLD#m M15 H1, 2% risk, $100 max loss')")
     print("  Leave blank to fall back to the interactive wizard.")
 
@@ -1210,7 +1210,7 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
     print("  Welcome to Herald! This wizard will help you configure")
     print("  the key trading parameters before you start.\n")
     print("  \033[90mPress Enter to accept defaults shown in [brackets].\033[0m\n")
-    print_info("Answer 'y' to start a new setup (configure new settings). Answer 'n' to use the last saved configuration and start Herald immediately.")
+    print_info("Answer 'y' to start a new setup (configure new settings). Answer 'n' to use the last saved configuration and start Cthulhu immediately.")
     
     try:
         proceed = get_input("Start setup? (y/n)", "y").lower()
@@ -1256,7 +1256,7 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
             print_warning("Failed to persist default config; continuing with in-memory config")
 
         print()
-        print_info("Starting Herald with the existing configuration...")
+        print_info("Starting Cthulhu with the existing configuration...")
         return config
     
     # Load existing config if available
@@ -1312,12 +1312,12 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
         print()
         if confirm_and_save(config, config_path):
             print()
-            print_success("Configuration saved. Starting Herald now...")
+            print_success("Configuration saved. Starting Cthulhu now...")
             print()
             return config
         else:
             print()
-            print_info("Configuration not saved. Starting Herald with in-memory configuration...")
+            print_info("Configuration not saved. Starting Cthulhu with in-memory configuration...")
             print()
             return config
     except WizardCancelled:

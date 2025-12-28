@@ -1,6 +1,6 @@
-# Herald Trading System - Comprehensive Analysis Report
+# Cthulhu Trading System - Comprehensive Analysis Report
 **Date:** December 28, 2025  
-**Version Analyzed:** 5.0.0  
+**Version Analyzed:** 5.0.1  
 **Analyst:** Github Advanced Security & Live Validation Bot
 
 **Status:** Live mode currently active (running and monitoring as of 2025-12-28).  
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-Herald is a well-architected autonomous trading system for MetaTrader 5 with strong foundations. The codebase demonstrates good software engineering practices with modular design, comprehensive testing, and production-ready features. However, there are opportunities for significant improvements in efficiency, robustness, cross-platform support, and developer experience.
+Cthulhu is a well-architected autonomous trading system for MetaTrader 5 with strong foundations. The codebase demonstrates good software engineering practices with modular design, comprehensive testing, and production-ready features. However, there are opportunities for significant improvements in efficiency, robustness, cross-platform support, and developer experience.
 
 **Overall Assessment:** ⭐⭐⭐⭐ (4/5) - Production-ready with room for optimization
 
@@ -18,7 +18,7 @@ Herald is a well-architected autonomous trading system for MetaTrader 5 with str
 - **Architectural Overhaul Complete:** Successfully completed full modular refactoring (10/10 phases) reducing codebase by 44%
 - **Strategy Expansion:** Added 6 advanced strategies with dynamic selection and 10 market regime detection
 - **Indicator Enhancement:** Expanded to 12 next-generation indicators including volume-based analysis
-- **Version Update:** Released v5.0.0 with complete feature set and production readiness
+- **Version Update:** Released v5.0.1 with complete feature set and production readiness
 - **Live Validation:** Extensive testing completed with runtime fixes for indicator merging and ATR detection
 
 **Next Immediate Steps:**
@@ -30,15 +30,15 @@ Herald is a well-architected autonomous trading system for MetaTrader 5 with str
 ---
 
 ## Addendum — Live-run Observations (2025-12-27)
-Herald was started in **Live** mode for extended validation. The system bootstrapped and entered the autonomous trading loop; the MT5 connector connected to the demo account and strategies started selecting at runtime. During these sessions the system produced the following notable runtime observations (excerpts from `logs/herald.log`):
+Cthulhu was started in **Live** mode for extended validation. The system bootstrapped and entered the autonomous trading loop; the MT5 connector connected to the demo account and strategies started selecting at runtime. During these sessions the system produced the following notable runtime observations (excerpts from `logs/cthulhu.log`):
 
 ```
-2025-12-27 23:40:07 [INFO] herald.strategy_selector: Selected strategy: scalping (score=0.660, perf=0.500, regime=0.900, conf=0.500)
-2025-12-27 23:40:07 [WARNING] herald.strategy.scalping: ATR not found in bar
-2025-12-27 23:41:07 [INFO] herald: Added 2 runtime indicators: ['RSI', 'ADX']
-2025-12-27 23:41:07 [ERROR] herald: Failed to calculate indicator RSI
+2025-12-27 23:40:07 [INFO] cthulhu.strategy_selector: Selected strategy: scalping (score=0.660, perf=0.500, regime=0.900, conf=0.500)
+2025-12-27 23:40:07 [WARNING] cthulhu.strategy.scalping: ATR not found in bar
+2025-12-27 23:41:07 [INFO] cthulhu: Added 2 runtime indicators: ['RSI', 'ADX']
+2025-12-27 23:41:07 [ERROR] cthulhu: Failed to calculate indicator RSI
 Traceback (most recent call last):
-  File "C:\workspace\herald\core\trading_loop.py", line 429, in _calculate_indicators      
+  File "C:\workspace\cthulhu\core\trading_loop.py", line 429, in _calculate_indicators      
     df = df.join(indicator_data, how='left')
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "<...>\site-packages\pandas\core\frame.py", line 10784, in join
@@ -47,9 +47,9 @@ Traceback (most recent call last):
     raise ValueError(f"columns overlap but no suffix specified: {to_rename}")
 ValueError: columns overlap but no suffix specified: Index(['rsi_7'], dtype='object')
 
-2025-12-27 23:41:07 [ERROR] herald: Failed to calculate indicator ADX
+2025-12-27 23:41:07 [ERROR] cthulhu: Failed to calculate indicator ADX
 Traceback (most recent call last):
-  File "C:\workspace\herald\core\trading_loop.py", line 429, in _calculate_indicators      
+  File "C:\workspace\cthulhu\core\trading_loop.py", line 429, in _calculate_indicators      
     df = df.join(indicator_data, how='left')
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "<...>\site-packages\pandas\core\frame.py", line 10784, in join
@@ -96,7 +96,7 @@ Position Close → Persistence & Metrics
 **Current State:**
 ```python
 # Some __init__.py files import concrete classes
-from herald.execution.engine import ExecutionEngine
+from cthulhu.execution.engine import ExecutionEngine
 ```
 
 **Recommendation**: Use lazy imports or import-at-use pattern.
@@ -106,7 +106,7 @@ from herald.execution.engine import ExecutionEngine
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from herald.execution.engine import ExecutionEngine
+    from cthulhu.execution.engine import ExecutionEngine
 
 __all__ = ["ExecutionEngine"]
 ```
@@ -497,10 +497,10 @@ EXPOSE 8181
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "from herald.observability.health import health_check; health_check()" || exit 1
+    CMD python -c "from cthulhu.observability.health import health_check; health_check()" || exit 1
 
 # Run application
-CMD ["python", "-m", "herald", "--config", "config.json", "--skip-setup", "--no-prompt"]
+CMD ["python", "-m", "cthulhu", "--config", "config.json", "--skip-setup", "--no-prompt"]
 ```
 
 **Create**: `docker-compose.yml` for easy deployment.
@@ -509,9 +509,9 @@ CMD ["python", "-m", "herald", "--config", "config.json", "--skip-setup", "--no-
 version: '3.8'
 
 services:
-  herald:
+  cthulhu:
     build: .
-    container_name: herald-trading
+    container_name: cthulhu-trading
     environment:
       - MT5_LOGIN=${MT5_LOGIN}
       - MT5_PASSWORD=${MT5_PASSWORD}
@@ -527,7 +527,7 @@ services:
     
   prometheus:
     image: prom/prometheus:latest
-    container_name: herald-prometheus
+    container_name: cthulhu-prometheus
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
@@ -535,7 +535,7 @@ services:
     
   grafana:
     image: grafana/grafana:latest
-    container_name: herald-grafana
+    container_name: cthulhu-grafana
     ports:
       - "3000:3000"
     environment:
@@ -598,7 +598,7 @@ def test_pnl_calculation_properties(price, volume, side):
 ```python
 import pytest
 import time
-from herald.position.manager import PositionManager
+from cthulhu.position.manager import PositionManager
 
 @pytest.mark.benchmark
 def test_position_manager_update_performance(benchmark):
@@ -622,7 +622,7 @@ def test_position_manager_update_performance(benchmark):
 @pytest.mark.benchmark
 def test_indicator_calculation_performance(benchmark):
     """Benchmark indicator calculations."""
-    from herald.indicators.rsi import RSI
+    from cthulhu.indicators.rsi import RSI
     import pandas as pd
     import numpy as np
     
@@ -646,7 +646,7 @@ def test_indicator_calculation_performance(benchmark):
 ```yaml
 - name: Run tests with coverage
   run: |
-    pytest tests/unit --cov=herald --cov-report=html --cov-report=term
+    pytest tests/unit --cov=cthulhu --cov-report=html --cov-report=term
     
 - name: Upload coverage to Codecov
   uses: codecov/codecov-action@v3
@@ -665,7 +665,7 @@ def test_indicator_calculation_performance(benchmark):
 
 ```python
 """
-herald.position.manager
+cthulhu.position.manager
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Position management and tracking.
@@ -695,7 +695,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-project = 'Herald Trading System'
+project = 'Cthulhu Trading System'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
@@ -736,7 +736,7 @@ class SecureConfig:
     
     def __init__(self):
         # Generate or load encryption key
-        key = os.getenv('HERALD_ENCRYPTION_KEY')
+        key = os.getenv('CTHULHU_ENCRYPTION_KEY')
         if not key:
             key = Fernet.generate_key()
             print(f"Store this key securely: {key.decode()}")
@@ -801,16 +801,16 @@ class SlidingWindowRateLimiter:
 from prometheus_client import Counter, Histogram, Gauge
 
 # Trading metrics
-trades_total = Counter('herald_trades_total', 'Total trades executed', ['side', 'result'])
-trade_pnl = Histogram('herald_trade_pnl', 'Trade P&L distribution')
-open_positions = Gauge('herald_open_positions', 'Number of open positions')
-account_balance = Gauge('herald_account_balance', 'Account balance')
-daily_pnl = Gauge('herald_daily_pnl', 'Daily P&L')
+trades_total = Counter('cthulhu_trades_total', 'Total trades executed', ['side', 'result'])
+trade_pnl = Histogram('cthulhu_trade_pnl', 'Trade P&L distribution')
+open_positions = Gauge('cthulhu_open_positions', 'Number of open positions')
+account_balance = Gauge('cthulhu_account_balance', 'Account balance')
+daily_pnl = Gauge('cthulhu_daily_pnl', 'Daily P&L')
 
 # System metrics
-loop_duration = Histogram('herald_loop_duration_seconds', 'Main loop execution time')
-api_calls = Counter('herald_api_calls_total', 'MT5 API calls', ['operation', 'status'])
-connection_errors = Counter('herald_connection_errors_total', 'Connection errors')
+loop_duration = Histogram('cthulhu_loop_duration_seconds', 'Main loop execution time')
+api_calls = Counter('cthulhu_api_calls_total', 'MT5 API calls', ['operation', 'status'])
+connection_errors = Counter('cthulhu_connection_errors_total', 'Connection errors')
 ```
 
 ### 8.2 Distributed Tracing
@@ -949,7 +949,7 @@ jobs:
       
       - name: Code Coverage
         run: |
-          pytest --cov=herald --cov-report=xml
+          pytest --cov=cthulhu --cov-report=xml
           
       - name: Upload to Codecov
         uses: codecov/codecov-action@v3
@@ -962,11 +962,11 @@ jobs:
       - name: Code Complexity
         run: |
           pip install radon
-          radon cc herald/ -a -nb
+          radon cc cthulhu/ -a -nb
           
       - name: Type Checking
         run: |
-          mypy herald/ --strict
+          mypy cthulhu/ --strict
 ```
 
 ---
@@ -995,7 +995,7 @@ jobs:
 
 ## 13. Conclusion
 
-Herald is a **production-ready enterprise-grade trading system** with comprehensive architecture and advanced capabilities. The completed overhaul has transformed it into a highly efficient, robust, and scalable platform that can:
+Cthulhu is a **production-ready enterprise-grade trading system** with comprehensive architecture and advanced capabilities. The completed overhaul has transformed it into a highly efficient, robust, and scalable platform that can:
 
 1. **Handle 10-50x more throughput** with modular architecture and performance optimizations
 2. **Achieve 99.9% uptime** with comprehensive resilience and monitoring

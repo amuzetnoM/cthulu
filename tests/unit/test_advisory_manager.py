@@ -1,6 +1,6 @@
 import time
-from herald.advisory.manager import AdvisoryManager
-from herald.execution.engine import OrderRequest, OrderType
+from cthulhu.advisory.manager import AdvisoryManager
+from cthulhu.execution.engine import OrderRequest, OrderType
 
 
 class DummyExec:

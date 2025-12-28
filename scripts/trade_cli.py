@@ -1,7 +1,7 @@
 """
-Herald Trade CLI
+Cthulhu Trade CLI
 
-Command-line interface for placing manual trades through Herald.
+Command-line interface for placing manual trades through Cthulhu.
 """
 
 import argparse
@@ -10,20 +10,20 @@ import sys
 from pathlib import Path
 
 import MetaTrader5 as mt5
-from herald import constants
+from cthulhu import constants
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Place a manual trade through Herald",
+        description="Place a manual trade through Cthulhu",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  herald-trade --symbol BTCUSD# --side BUY --volume 0.01
-  herald-trade --symbol EURUSD --side SELL --volume 0.1 --sl 1.0850 --tp 1.0750
-  herald-trade --symbol XAUUSD --side BUY --volume 0.05 --comment "Gold scalp"
-  herald-trade --close 485496556  # Close position by ticket
-  herald-trade --list  # List all open positions
+  cthulhu-trade --symbol BTCUSD# --side BUY --volume 0.01
+  cthulhu-trade --symbol EURUSD --side SELL --volume 0.1 --sl 1.0850 --tp 1.0750
+  cthulhu-trade --symbol XAUUSD --side BUY --volume 0.05 --comment "Gold scalp"
+  cthulhu-trade --close 485496556  # Close position by ticket
+  cthulhu-trade --list  # List all open positions
         """
     )
     
@@ -34,7 +34,7 @@ Examples:
     parser.add_argument('--volume', type=float, help='Lot size (e.g., 0.01, 0.1, 1.0)')
     parser.add_argument('--sl', type=float, default=0.0, help='Stop loss price')
     parser.add_argument('--tp', type=float, default=0.0, help='Take profit price')
-    parser.add_argument('--comment', type=str, default='Herald manual trade', 
+    parser.add_argument('--comment', type=str, default='Cthulhu manual trade', 
                        help='Trade comment')
     
     # Position management
@@ -47,7 +47,7 @@ Examples:
     
     # Config
     parser.add_argument('--config', type=str, default='config.json',
-                       help='Path to Herald config file')
+                       help='Path to Cthulhu config file')
     parser.add_argument('--dry-run', action='store_true',
                        help='Simulate without placing real trades')
     
@@ -117,7 +117,7 @@ Examples:
                 'price': price,
                 'deviation': 20,
                 'magic': constants.DEFAULT_MAGIC,
-                'comment': 'Herald close',
+                'comment': 'Cthulhu close',
                 'type_time': mt5.ORDER_TIME_GTC,
                 'type_filling': mt5.ORDER_FILLING_IOC,
             }
@@ -157,7 +157,7 @@ Examples:
                     'price': price,
                     'deviation': 20,
                     'magic': constants.DEFAULT_MAGIC,
-                    'comment': 'Herald close all',
+                    'comment': 'Cthulhu close all',
                     'type_time': mt5.ORDER_TIME_GTC,
                     'type_filling': mt5.ORDER_FILLING_IOC,
                 }

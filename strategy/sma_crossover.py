@@ -6,11 +6,11 @@ Entry on crossovers, exit on opposite signals or stop loss/take profit.
 """
 
 import pandas as pd
-from herald.connector.mt5_connector import mt5
+from cthulhu.connector.mt5_connector import mt5
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from herald.strategy.base import Strategy, Signal, SignalType
+from cthulhu.strategy.base import Strategy, Signal, SignalType
 
 
 class SmaCrossover(Strategy):

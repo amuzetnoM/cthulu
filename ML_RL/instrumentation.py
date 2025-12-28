@@ -87,7 +87,7 @@ class MLDataCollector:
                 # Unexpected error in writer thread; swallow to avoid crashing
                 try:
                     import logging
-                    logging.getLogger('herald.ml').exception('ML writer loop error')
+                    logging.getLogger('cthulhu.ml').exception('ML writer loop error')
                 except Exception:
                     pass
                 continue
@@ -118,7 +118,7 @@ class MLDataCollector:
             except Exception:
                 try:
                     import logging
-                    logging.getLogger('herald.ml').exception('Failed to flush ML buffer')
+                    logging.getLogger('cthulhu.ml').exception('Failed to flush ML buffer')
                 except Exception:
                     pass
 

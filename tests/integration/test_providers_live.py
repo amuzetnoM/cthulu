@@ -1,7 +1,7 @@
 import os
 import time
 import pytest
-from herald.market.providers import AlphaVantageProvider, BinanceProvider, MT5Provider
+from cthulhu.market.providers import AlphaVantageProvider, BinanceProvider, MT5Provider
 
 
 def _has_mt5_env():
@@ -32,7 +32,7 @@ def test_mt5_provider_skip_if_no_env():
         pytest.skip('MT5 credentials not provided in environment')
     # If MT5 envs present, attempt to initialize MT5 provider (requires connector implementation)
     # Connector must be the project's mt5 connector module; we attempt to import and initialize
-    from herald.connector import mt5_connector
+    from cthulhu.connector import mt5_connector
     # construct a ConnectionConfig from env
     cfg = mt5_connector.ConnectionConfig(
         login=int(os.getenv('MT5_LOGIN')),

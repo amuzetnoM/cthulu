@@ -1,12 +1,12 @@
 ---
 title: Deployment Guide
-description: Production deployment strategies for Herald including Docker, Linux, Windows service, and monitoring setup
+description: Production deployment strategies for Cthulhu including Docker, Linux, Windows service, and monitoring setup
 tags: [deployment, docker, production, monitoring]
 slug: /docs/deployment
 sidebar_position: 5
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 ## Table of Contents
 - [Quick Start](#quick-start)
@@ -23,12 +23,12 @@ sidebar_position: 5
 
 ### Using Docker (Recommended)
 
-The fastest way to deploy Herald is using Docker:
+The fastest way to deploy Cthulhu is using Docker:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/amuzetnoM/herald.git
-cd herald
+git clone https://github.com/amuzetnoM/cthulhu.git
+cd cthulhu
 
 # 2. Configure environment
 cp .env.example .env
@@ -42,7 +42,7 @@ nano config.json  # Adjust risk settings
 docker-compose up -d
 
 # 5. View logs
-docker-compose logs -f herald
+docker-compose logs -f cthulhu
 
 # 6. Access dashboards
 # Grafana: http://localhost:3000 (admin/admin)
@@ -65,10 +65,10 @@ docker-compose logs -f herald
 
 ```bash
 # Build image
-docker build -t herald:latest .
+docker build -t cthulhu:latest .
 
 # Or build with specific version
-docker build -t herald:5.0.0 .
+docker build -t cthulhu:5.0.1 .
 ```
 
 #### 2. Environment Configuration
@@ -99,13 +99,13 @@ docker-compose up -d
 
 # Or run standalone
 docker run -d \
-  --name herald \
+  --name cthulhu \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/logs:/app/logs \
   -v $(pwd)/config.json:/app/config.json:ro \
   -p 8181:8181 \
-  herald:latest
+  cthulhu:latest
 ```
 
 #### 4. Verify Deployment
@@ -115,10 +115,10 @@ docker run -d \
 docker ps
 
 # View logs
-docker logs herald -f
+docker logs cthulhu -f
 
 # Check health
-docker inspect herald | grep -A 5 Health
+docker inspect cthulhu | grep -A 5 Health
 ```
 
 ### Docker Commands
@@ -130,14 +130,14 @@ docker-compose up -d
 # Stop services
 docker-compose down
 
-# Restart Herald only
-docker-compose restart herald
+# Restart Cthulhu only
+docker-compose restart cthulhu
 
 # View logs
-docker-compose logs -f herald
+docker-compose logs -f cthulhu
 
 # Execute commands in container
-docker-compose exec herald python -m herald --help
+docker-compose exec cthulhu python -m cthulhu --help
 
 # Update to latest version
 docker-compose pull
@@ -149,16 +149,16 @@ docker-compose up -d
 ```bash
 # Run multiple instances with different symbols
 docker run -d \
-  --name herald-eurusd \
+  --name cthulhu-eurusd \
   -e SYMBOL=EURUSD \
   -v $(pwd)/config-eurusd.json:/app/config.json:ro \
-  herald:latest
+  cthulhu:latest
 
 docker run -d \
-  --name herald-xauusd \
+  --name cthulhu-xauusd \
   -e SYMBOL=XAUUSD \
   -v $(pwd)/config-xauusd.json:/app/config.json:ro \
-  herald:latest
+  cthulhu:latest
 ```
 
 ---
@@ -182,12 +182,12 @@ sudo yum install python312 python3-pip
 
 ```bash
 # Create application directory
-sudo mkdir -p /opt/herald
-sudo chown $USER:$USER /opt/herald
-cd /opt/herald
+sudo mkdir -p /opt/cthulhu
+sudo chown $USER:$USER /opt/cthulhu
+cd /opt/cthulhu
 
 # Clone repository
-git clone https://github.com/amuzetnoM/herald.git .
+git clone https://github.com/amuzetnoM/cthulhu.git .
 
 # Create virtual environment
 python3 -m venv venv
@@ -204,27 +204,27 @@ nano config.json
 
 #### 3. Create Systemd Service
 
-Create `/etc/systemd/system/herald.service`:
+Create `/etc/systemd/system/cthulhu.service`:
 
 ```ini
 [Unit]
-Description=Herald Trading System
+Description=Cthulhu Trading System
 After=network.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=herald
-Group=herald
-WorkingDirectory=/opt/herald
-Environment="PATH=/opt/herald/venv/bin"
+User=cthulhu
+Group=cthulhu
+WorkingDirectory=/opt/cthulhu
+Environment="PATH=/opt/cthulhu/venv/bin"
 
 # Environment variables from file
-EnvironmentFile=/opt/herald/.env
+EnvironmentFile=/opt/cthulhu/.env
 
 # Start command
-ExecStart=/opt/herald/venv/bin/python -m herald \
-    --config /opt/herald/config.json \
+ExecStart=/opt/cthulhu/venv/bin/python -m cthulhu \
+    --config /opt/cthulhu/config.json \
     --skip-setup \
     --no-prompt \
     --log-level INFO
@@ -240,7 +240,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/herald/data /opt/herald/logs
+ReadWritePaths=/opt/cthulhu/data /opt/cthulhu/logs
 
 # Resource limits
 MemoryLimit=1G
@@ -249,7 +249,7 @@ CPUQuota=200%
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=herald
+SyslogIdentifier=cthulhu
 
 [Install]
 WantedBy=multi-user.target
@@ -258,11 +258,11 @@ WantedBy=multi-user.target
 #### 4. Create Service User
 
 ```bash
-# Create herald user (no login)
-sudo useradd -r -s /bin/false -d /opt/herald herald
+# Create cthulhu user (no login)
+sudo useradd -r -s /bin/false -d /opt/cthulhu cthulhu
 
 # Set permissions
-sudo chown -R herald:herald /opt/herald
+sudo chown -R cthulhu:cthulhu /opt/cthulhu
 ```
 
 #### 5. Enable and Start Service
@@ -272,41 +272,41 @@ sudo chown -R herald:herald /opt/herald
 sudo systemctl daemon-reload
 
 # Enable service
-sudo systemctl enable herald
+sudo systemctl enable cthulhu
 
 # Start service
-sudo systemctl start herald
+sudo systemctl start cthulhu
 
 # Check status
-sudo systemctl status herald
+sudo systemctl status cthulhu
 
 # View logs
-sudo journalctl -u herald -f
+sudo journalctl -u cthulhu -f
 ```
 
 ### Service Management
 
 ```bash
 # Start service
-sudo systemctl start herald
+sudo systemctl start cthulhu
 
 # Stop service
-sudo systemctl stop herald
+sudo systemctl stop cthulhu
 
 # Restart service
-sudo systemctl restart herald
+sudo systemctl restart cthulhu
 
 # Check status
-sudo systemctl status herald
+sudo systemctl status cthulhu
 
 # View logs (last 100 lines)
-sudo journalctl -u herald -n 100
+sudo journalctl -u cthulhu -n 100
 
 # Follow logs in real-time
-sudo journalctl -u herald -f
+sudo journalctl -u cthulhu -f
 
 # Check resource usage
-systemctl show herald --property=MemoryCurrent,CPUUsageNSec
+systemctl show cthulhu --property=MemoryCurrent,CPUUsageNSec
 ```
 
 ---
@@ -329,52 +329,52 @@ $env:Path += ";C:\tools\nssm-2.24\win64"
 #### 2. Install Service
 
 ```powershell
-# Navigate to Herald directory
+# Navigate to Cthulhu directory
 cd C:\workspace\Herald
 
 # Install service
-nssm install Herald "C:\workspace\Herald\venv\Scripts\python.exe" `
-    "-m" "herald" `
+nssm install Cthulhu "C:\workspace\Herald\venv\Scripts\python.exe" `
+    "-m" "cthulhu" `
     "--config" "config.json" `
     "--skip-setup" `
     "--no-prompt"
 
 # Set working directory
-nssm set Herald AppDirectory "C:\workspace\Herald"
+nssm set Cthulhu AppDirectory "C:\workspace\Herald"
 
 # Set environment variables
-nssm set Herald AppEnvironmentExtra MT5_LOGIN=12345678 MT5_PASSWORD=your_password
+nssm set Cthulhu AppEnvironmentExtra MT5_LOGIN=12345678 MT5_PASSWORD=your_password
 
 # Configure restart policy
-nssm set Herald AppExit Default Restart
-nssm set Herald AppThrottle 5000
-nssm set Herald AppRestartDelay 10000
+nssm set Cthulhu AppExit Default Restart
+nssm set Cthulhu AppThrottle 5000
+nssm set Cthulhu AppRestartDelay 10000
 
 # Configure logging
-nssm set Herald AppStdout "C:\workspace\Herald\logs\stdout.log"
-nssm set Herald AppStderr "C:\workspace\Herald\logs\stderr.log"
+nssm set Cthulhu AppStdout "C:\workspace\Herald\logs\stdout.log"
+nssm set Cthulhu AppStderr "C:\workspace\Herald\logs\stderr.log"
 
 # Start service
-nssm start Herald
+nssm start Cthulhu
 ```
 
 #### 3. Service Management
 
 ```powershell
 # Start service
-nssm start Herald
+nssm start Cthulhu
 
 # Stop service
-nssm stop Herald
+nssm stop Cthulhu
 
 # Restart service
-nssm restart Herald
+nssm restart Cthulhu
 
 # Check status
-nssm status Herald
+nssm status Cthulhu
 
 # Remove service
-nssm remove Herald confirm
+nssm remove Cthulhu confirm
 ```
 
 ### Using Windows Task Scheduler (Alternative)
@@ -385,7 +385,7 @@ For non-service deployment, use Task Scheduler:
 # Create scheduled task
 $action = New-ScheduledTaskAction `
     -Execute "C:\workspace\Herald\venv\Scripts\python.exe" `
-    -Argument "-m herald --config config.json --skip-setup --no-prompt" `
+    -Argument "-m cthulhu --config config.json --skip-setup --no-prompt" `
     -WorkingDirectory "C:\workspace\Herald"
 
 $trigger = New-ScheduledTaskTrigger -AtStartup
@@ -396,7 +396,7 @@ $principal = New-ScheduledTaskPrincipal `
     -RunLevel Highest
 
 Register-ScheduledTask `
-    -TaskName "Herald Trading" `
+    -TaskName "Cthulhu Trading" `
     -Action $action `
     -Trigger $trigger `
     -Principal $principal `
@@ -469,9 +469,9 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'herald'
+  - job_name: 'cthulhu'
     static_configs:
-      - targets: ['herald:8181']
+      - targets: ['cthulhu:8181']
     scrape_interval: 10s  # More frequent for trading
 ```
 
@@ -492,24 +492,24 @@ Key dashboards:
 
 ### Alert Rules
 
-Create `/opt/herald/monitoring/alert_rules.yml`:
+Create `/opt/cthulhu/monitoring/alert_rules.yml`:
 
 ```yaml
 groups:
-  - name: herald_alerts
+  - name: cthulhu_alerts
     interval: 30s
     rules:
       - alert: HighDailyLoss
-        expr: herald_daily_pnl < -100
+        expr: cthulhu_daily_pnl < -100
         for: 5m
         annotations:
           summary: "Daily loss exceeds threshold"
           
       - alert: ConnectionDown
-        expr: up{job="herald"} == 0
+        expr: up{job="cthulhu"} == 0
         for: 2m
         annotations:
-          summary: "Herald connection lost"
+          summary: "Cthulhu connection lost"
           
       - alert: HighMemoryUsage
         expr: process_resident_memory_bytes > 1e9
@@ -524,13 +524,13 @@ groups:
 
 ### Automated Backup Script
 
-Create `/opt/herald/scripts/backup.sh`:
+Create `/opt/cthulhu/scripts/backup.sh`:
 
 ```bash
 #!/bin/bash
 
 # Configuration
-BACKUP_DIR="/opt/herald/backups"
+BACKUP_DIR="/opt/cthulhu/backups"
 RETENTION_DAYS=30
 DATE=$(date +%Y%m%d_%H%M%S)
 
@@ -538,16 +538,16 @@ DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p "$BACKUP_DIR"
 
 # Backup database
-cp /opt/herald/herald.db "$BACKUP_DIR/herald_${DATE}.db"
+cp /opt/cthulhu/cthulhu.db "$BACKUP_DIR/cthulhu_${DATE}.db"
 
 # Backup configuration
 tar -czf "$BACKUP_DIR/config_${DATE}.tar.gz" \
-    /opt/herald/config.json \
-    /opt/herald/.env \
-    /opt/herald/configs/
+    /opt/cthulhu/config.json \
+    /opt/cthulhu/.env \
+    /opt/cthulhu/configs/
 
 # Backup logs (last 7 days)
-find /opt/herald/logs -name "*.log" -mtime -7 \
+find /opt/cthulhu/logs -name "*.log" -mtime -7 \
     -exec tar -czf "$BACKUP_DIR/logs_${DATE}.tar.gz" {} +
 
 # Remove old backups
@@ -560,33 +560,33 @@ echo "Backup completed: $DATE"
 Make executable and add to cron:
 
 ```bash
-chmod +x /opt/herald/scripts/backup.sh
+chmod +x /opt/cthulhu/scripts/backup.sh
 
 # Add to crontab (daily at 2 AM)
 crontab -e
-0 2 * * * /opt/herald/scripts/backup.sh >> /opt/herald/logs/backup.log 2>&1
+0 2 * * * /opt/cthulhu/scripts/backup.sh >> /opt/cthulhu/logs/backup.log 2>&1
 ```
 
 ### Recovery Procedure
 
 ```bash
-# 1. Stop Herald
-sudo systemctl stop herald
+# 1. Stop Cthulhu
+sudo systemctl stop cthulhu
 
 # 2. Restore database
-cp /opt/herald/backups/herald_YYYYMMDD_HHMMSS.db /opt/herald/herald.db
+cp /opt/cthulhu/backups/cthulhu_YYYYMMDD_HHMMSS.db /opt/cthulhu/cthulhu.db
 
 # 3. Restore configuration
-tar -xzf /opt/herald/backups/config_YYYYMMDD_HHMMSS.tar.gz -C /
+tar -xzf /opt/cthulhu/backups/config_YYYYMMDD_HHMMSS.tar.gz -C /
 
 # 4. Verify permissions
-sudo chown -R herald:herald /opt/herald
+sudo chown -R cthulhu:cthulhu /opt/cthulhu
 
-# 5. Restart Herald
-sudo systemctl start herald
+# 5. Restart Cthulhu
+sudo systemctl start cthulhu
 
 # 6. Verify
-sudo systemctl status herald
+sudo systemctl status cthulhu
 ```
 
 ---
@@ -598,23 +598,23 @@ sudo systemctl status herald
 **Issue**: Service won't start
 ```bash
 # Check logs
-sudo journalctl -u herald -n 50
+sudo journalctl -u cthulhu -n 50
 
 # Verify Python environment
-/opt/herald/venv/bin/python --version
+/opt/cthulhu/venv/bin/python --version
 
 # Test configuration
-/opt/herald/venv/bin/python -m herald --config config.json --help
+/opt/cthulhu/venv/bin/python -m cthulhu --config config.json --help
 ```
 
 **Issue**: High memory usage
 ```bash
 # Check current usage
-docker stats herald
+docker stats cthulhu
 
 # Adjust memory limit in docker-compose.yml
 services:
-  herald:
+  cthulhu:
     mem_limit: 512m
 ```
 
@@ -634,7 +634,7 @@ cat .env | grep MT5_
 
 ## Support & Updates
 
-### Updating Herald
+### Updating Cthulhu
 
 ```bash
 # Docker
@@ -642,16 +642,16 @@ docker-compose pull
 docker-compose up -d
 
 # Systemd
-cd /opt/herald
+cd /opt/cthulhu
 git pull
-sudo systemctl restart herald
+sudo systemctl restart cthulhu
 ```
 
 ### Getting Help
 
-- Documentation: `/opt/herald/docs/`
-- Issues: https://github.com/amuzetnoM/herald/issues
-- Logs: `/opt/herald/logs/herald.log`
+- Documentation: `/opt/cthulhu/docs/`
+- Issues: https://github.com/amuzetnoM/cthulhu/issues
+- Logs: `/opt/cthulhu/logs/cthulhu.log`
 
 ---
 

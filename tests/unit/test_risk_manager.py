@@ -1,5 +1,5 @@
 import pytest
-from herald.position.risk_manager import suggest_sl_adjustment
+from cthulhu.position.risk_manager import suggest_sl_adjustment
 
 
 def test_within_threshold_tiny_balance():

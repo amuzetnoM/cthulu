@@ -10,7 +10,7 @@ import numpy as np
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from herald.strategy.base import Strategy, Signal, SignalType
+from cthulhu.strategy.base import Strategy, Signal, SignalType
 
 
 class MomentumBreakout(Strategy):

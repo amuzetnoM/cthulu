@@ -1,9 +1,9 @@
 """Simple script to test order provenance logging locally.
 
-Usage: python herald/scripts/test_order_provenance.py
+Usage: python cthulhu/scripts/test_order_provenance.py
 
 This will create an ExecutionEngine with a stub connector, monkeypatch mt5.order_send, and call place_order.
-It prints the ExecutionResult and the latest entry in `herald/logs/order_provenance.log`.
+It prints the ExecutionResult and the latest entry in `cthulhu/logs/order_provenance.log`.
 """
 
 import os
@@ -11,9 +11,9 @@ import json
 from unittest.mock import MagicMock
 # Stub missing modules to allow running in isolated test environment
 import types, sys
-mod = types.ModuleType('herald.position')
+mod = types.ModuleType('cthulhu.position')
 mod.risk_manager = types.SimpleNamespace()
-sys.modules['herald.position'] = mod
+sys.modules['cthulhu.position'] = mod
 
 # Import engine module directly from file to avoid package import side-effects
 from importlib.machinery import SourceFileLoader
@@ -31,7 +31,7 @@ connector.get_symbol_info.return_value = {'ask': 1.2346, 'bid': 1.2344}
 connector.get_account_info.return_value = {'trade_allowed': True}
 
 # Monkeypatch mt5.order_send
-import herald.execution.engine as eng_mod
+import cthulhu.execution.engine as eng_mod
 mock_result = MagicMock()
 # Simulate MT5 success
 mock_result.retcode = getattr(eng_mod.mt5, 'TRADE_RETCODE_DONE', 10009)

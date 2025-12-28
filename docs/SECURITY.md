@@ -1,12 +1,12 @@
 ---
 title: Security
-description: Security guidelines for Herald including credential management, API security, network protection, and access control
+description: Security guidelines for Cthulhu including credential management, API security, network protection, and access control
 tags: [security, credentials, api-security, access-control]
 slug: /docs/security
 sidebar_position: 7
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 ## Table of Contents
 - [Credential Management](#credential-management)
@@ -23,7 +23,7 @@ sidebar_position: 7
 
 ### Environment Variable Overrides
 
-**Herald v4.0.0 implements secure environment variable overrides:**
+**Cthulhu v4.0.0 implements secure environment variable overrides:**
 
 - **Individual Field Control**: Each MT5 credential can be overridden individually via environment variables
 - **Runtime Priority**: Environment variables always take precedence over config file values
@@ -178,7 +178,7 @@ class KeyRotation:
 Protect against API abuse:
 
 ```python
-from herald.utils.rate_limiter import SlidingWindowRateLimiter
+from cthulhu.utils.rate_limiter import SlidingWindowRateLimiter
 
 # Apply rate limiting to sensitive operations
 auth_limiter = SlidingWindowRateLimiter(
@@ -490,12 +490,12 @@ logger.addHandler(handler)
 # Set restrictive permissions on sensitive files
 chmod 600 .env
 chmod 600 config.json
-chmod 600 herald.db
+chmod 600 cthulhu.db
 chmod 600 *.key
 
 # Set directory permissions
-chmod 700 /opt/herald/data
-chmod 700 /opt/herald/logs
+chmod 700 /opt/cthulhu/data
+chmod 700 /opt/cthulhu/logs
 
 # Verify permissions
 ls -la .env
@@ -635,21 +635,21 @@ class SecurityMonitor:
 #!/bin/bash
 # security_audit.sh - Run regular security checks
 
-echo "=== Herald Security Audit ==="
+echo "=== Cthulhu Security Audit ==="
 echo "Date: $(date)"
 echo
 
 # Check file permissions
 echo "Checking file permissions..."
-find /opt/herald -type f -perm /go+w -ls
+find /opt/cthulhu -type f -perm /go+w -ls
 
 # Check for exposed credentials
 echo "Checking for exposed credentials..."
-grep -r "password\|api_key\|token" /opt/herald/*.json 2>/dev/null || echo "OK"
+grep -r "password\|api_key\|token" /opt/cthulhu/*.json 2>/dev/null || echo "OK"
 
 # Check open ports
 echo "Checking open ports..."
-sudo netstat -tulpn | grep herald
+sudo netstat -tulpn | grep cthulhu
 
 # Check for updates
 echo "Checking for security updates..."
@@ -657,7 +657,7 @@ sudo apt list --upgradable 2>/dev/null | grep -i security
 
 # Check logs for suspicious activity
 echo "Checking logs for failed auth..."
-grep -i "failed\|unauthorized" /opt/herald/logs/*.log | tail -10
+grep -i "failed\|unauthorized" /opt/cthulhu/logs/*.log | tail -10
 
 echo
 echo "=== Audit Complete ==="
@@ -726,7 +726,7 @@ if [ "$confirm" = "yes" ]; then
     echo "New password: $NEW_PASS"
     echo "1. Update password in MT5 terminal"
     echo "2. Update .env file"
-    echo "3. Restart Herald"
+    echo "3. Restart Cthulhu"
     echo "4. Verify connection"
 fi
 ```
@@ -745,7 +745,7 @@ pip install safety bandit
 safety check
 
 # Static code analysis for security issues
-bandit -r /opt/herald -f json -o security_report.json
+bandit -r /opt/cthulhu -f json -o security_report.json
 
 # Check for secrets in git history
 pip install detect-secrets

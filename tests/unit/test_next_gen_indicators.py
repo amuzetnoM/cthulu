@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-from herald.indicators.supertrend import Supertrend
-from herald.indicators.vwap import VWAP, AnchoredVWAP
+from cthulhu.indicators.supertrend import Supertrend
+from cthulhu.indicators.vwap import VWAP, AnchoredVWAP
 
 
 class TestSupertrend:

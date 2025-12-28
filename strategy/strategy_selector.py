@@ -12,7 +12,7 @@ from collections import deque
 import pandas as pd
 import numpy as np
 
-from herald.strategy.base import Strategy, Signal
+from cthulhu.strategy.base import Strategy, Signal
 
 
 class MarketRegime:
@@ -112,7 +112,7 @@ class StrategySelector:
         """
         self.strategies = {s.name: s for s in strategies}
         self.config = config or {}
-        self.logger = logging.getLogger("herald.strategy_selector")
+        self.logger = logging.getLogger("cthulhu.strategy_selector")
         
         # Performance tracking
         self.performance = {

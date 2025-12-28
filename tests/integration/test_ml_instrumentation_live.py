@@ -4,7 +4,7 @@ Live integration test for ML instrumentation.
 This test places a small market order using the real MT5 connector and ensures
 that the MLDataCollector writes event data into the raw data directory.
 
-Run with: RUN_MT5_INTEGRATION=1 pytest herald/tests/integration/test_ml_instrumentation_live.py -q
+Run with: RUN_MT5_INTEGRATION=1 pytest cthulhu/tests/integration/test_ml_instrumentation_live.py -q
 """
 import os
 import time
@@ -20,10 +20,10 @@ load_dotenv()
 if os.getenv('RUN_MT5_INTEGRATION') != '1' and os.getenv('RUN_MT5_CONNECT_TESTS') != '1':
     pytest.skip("MT5 integration tests disabled - set RUN_MT5_INTEGRATION=1 to enable", allow_module_level=True)
 
-from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
-from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
-from herald.ML_RL import instrumentation as instr
-from herald.ML_RL.instrumentation import MLDataCollector
+from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
+from cthulhu.ML_RL import instrumentation as instr
+from cthulhu.ML_RL.instrumentation import MLDataCollector
 
 
 def test_ml_instrumentation_end_to_end():

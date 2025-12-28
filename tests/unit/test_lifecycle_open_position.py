@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from herald.position.lifecycle import PositionLifecycle
+from cthulhu.position.lifecycle import PositionLifecycle
 
 
 class DummyEngine:

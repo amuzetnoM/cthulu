@@ -1,6 +1,6 @@
 import math
-from herald.observability.metrics import MetricsCollector
-from herald.persistence.database import Database
+from cthulhu.observability.metrics import MetricsCollector
+from cthulhu.persistence.database import Database
 
 
 def test_profit_factor_infinite(tmp_path, monkeypatch):

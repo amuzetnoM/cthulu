@@ -10,7 +10,7 @@ from datetime import datetime
 import pandas as pd
 
 from .base import ExitStrategy, ExitSignal
-from herald.position.manager import PositionInfo
+from cthulhu.position.manager import PositionInfo
 
 
 class TrailingStop(ExitStrategy):

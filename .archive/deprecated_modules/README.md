@@ -1,6 +1,6 @@
 # Deprecated Modules Archive
 
-This directory contains legacy code from the Herald system before the full architectural overhaul completed in December 2025.
+This directory contains legacy code from the Cthulhu system before the full architectural overhaul completed in December 2025.
 
 ## Archived Files
 

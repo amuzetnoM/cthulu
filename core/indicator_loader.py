@@ -10,14 +10,14 @@ import inspect
 import pandas as pd
 from typing import Dict, Any, List, Set, Optional
 
-from herald.indicators.rsi import RSI
-from herald.indicators.macd import MACD
-from herald.indicators.bollinger import BollingerBands
-from herald.indicators.stochastic import Stochastic
-from herald.indicators.adx import ADX
-from herald.indicators.supertrend import Supertrend
-from herald.indicators.vwap import VWAP, AnchoredVWAP
-from herald.indicators.atr import calculate_atr
+from cthulhu.indicators.rsi import RSI
+from cthulhu.indicators.macd import MACD
+from cthulhu.indicators.bollinger import BollingerBands
+from cthulhu.indicators.stochastic import Stochastic
+from cthulhu.indicators.adx import ADX
+from cthulhu.indicators.supertrend import Supertrend
+from cthulhu.indicators.vwap import VWAP, AnchoredVWAP
+from cthulhu.indicators.atr import calculate_atr
 
 
 # Indicator registry mapping type names to classes
@@ -259,7 +259,7 @@ class IndicatorRequirementResolver:
         """Extract requirements from dynamic strategy selector."""
         try:
             # Check if using StrategySelector
-            from herald.strategy.strategy_selector import StrategySelector
+            from cthulhu.strategy.strategy_selector import StrategySelector
             if isinstance(self.strategy, StrategySelector):
                 # ADX needed for regime detection
                 self.needs_adx = True

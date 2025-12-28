@@ -110,7 +110,7 @@ class Config(BaseModel):
     exit_strategies: Optional[list] = Field(default_factory=list)
     orphan_trades: OrphanConfig = Field(default_factory=OrphanConfig)
     advisory: AdvisoryConfig = Field(default_factory=AdvisoryConfig)
-    database: Dict[str, Any] = Field(default_factory=lambda: {"path": "herald.db"})
+    database: Dict[str, Any] = Field(default_factory=lambda: {"path": "cthulhu.db"})
     cache_enabled: bool = True
     logging: Dict[str, Any] = Field(default_factory=dict)
 

@@ -54,7 +54,7 @@ class PositionInfo:
     max_profit: float = 0.0
     max_drawdown: float = 0.0
     
-    # Herald-specific
+    # Cthulhu-specific
     is_external: bool = False  # True if adopted from manual trade
     
     def calculate_profit(self, current_price: float) -> float:

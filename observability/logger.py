@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 def setup_logger(
-    name: str = "herald",
+    name: str = "cthulhu",
     level: "str|int" = "INFO",
     log_file: Optional[str] = None,
     json_format: bool = False

@@ -1,6 +1,6 @@
 import pytest
-from herald.news.fred_adapter import FREDAdapter
-from herald.news.base import NewsEvent
+from cthulhu.news.fred_adapter import FREDAdapter
+from cthulhu.news.base import NewsEvent
 
 
 class DummyResp:

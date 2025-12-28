@@ -1,5 +1,5 @@
 """
-Herald Trading Loop Module
+Cthulhu Trading Loop Module
 
 This module contains the core trading loop logic, extracted from __main__.py
 for better modularity, testability, and maintainability.
@@ -24,16 +24,16 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 import pandas as pd
 
-from herald.strategy.base import Strategy, SignalType
-from herald.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
-from herald.risk.evaluator import RiskEvaluator
-from herald.position.tracker import PositionTracker
-from herald.position.lifecycle import PositionLifecycle
-from herald.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
-from herald.persistence.database import Database, TradeRecord, SignalRecord
-from herald.observability.metrics import MetricsCollector
-from herald.connector.mt5_connector import MT5Connector
-from herald.data.layer import DataLayer
+from cthulhu.strategy.base import Strategy, SignalType
+from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
+from cthulhu.risk.evaluator import RiskEvaluator
+from cthulhu.position.tracker import PositionTracker
+from cthulhu.position.lifecycle import PositionLifecycle
+from cthulhu.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
+from cthulhu.persistence.database import Database, TradeRecord, SignalRecord
+from cthulhu.observability.metrics import MetricsCollector
+from cthulhu.connector.mt5_connector import MT5Connector
+from cthulhu.data.layer import DataLayer
 
 
 @dataclass
@@ -104,9 +104,9 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     Returns:
         List of additional indicator instances to add
     """
-    from herald.indicators.rsi import RSI
-    from herald.indicators.adx import ADX
-    from herald.indicators.atr import ATR
+    from cthulhu.indicators.rsi import RSI
+    from cthulhu.indicators.adx import ADX
+    from cthulhu.indicators.atr import ATR
     
     required_emas = set()
     extra_indicators = []
@@ -125,7 +125,7 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     
     # Strategy instance inspection
     try:
-        from herald.strategy.strategy_selector import StrategySelector
+        from cthulhu.strategy.strategy_selector import StrategySelector
         if isinstance(strategy, StrategySelector):
             for s in strategy.strategies.values():
                 collect_ema_periods(s)
@@ -162,7 +162,7 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     rsi_period = 14  # default
     try:
         # If strategy is a selector, check sub-strategies for RSI needs
-        from herald.strategy.strategy_selector import StrategySelector
+        from cthulhu.strategy.strategy_selector import StrategySelector
         if isinstance(strategy, StrategySelector):
             for s in strategy.strategies.values():
                 if hasattr(s, 'rsi_period'):
@@ -227,7 +227,7 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     # Check for ADX requirement
     needs_adx = False
     try:
-        from herald.strategy.strategy_selector import StrategySelector
+        from cthulhu.strategy.strategy_selector import StrategySelector
         if isinstance(strategy, StrategySelector):
             needs_adx = True  # Dynamic selector uses ADX for regime detection
     except Exception:
@@ -567,7 +567,7 @@ class TradingLoop:
 
                 if rsi_col and rsi_col not in df.columns:
                     try:
-                        from herald.indicators.rsi import RSI
+                        from cthulhu.indicators.rsi import RSI
                         rsi_ind = RSI(period=rsi_period_int or 14)
                         rsi_data = rsi_ind.calculate(df)
                         if isinstance(rsi_data, pd.Series):
@@ -613,7 +613,7 @@ class TradingLoop:
                 # ATR fallback
                 if 'atr' not in df.columns:
                     try:
-                        from herald.indicators.atr import ATR
+                        from cthulhu.indicators.atr import ATR
                         atr_ind = ATR(period=getattr(self.ctx.strategy, 'atr_period', 14))
                         atr_data = atr_ind.calculate(df)
                         if isinstance(atr_data, pd.Series):
@@ -690,7 +690,7 @@ class TradingLoop:
             
             # If using StrategySelector, inspect child strategies
             try:
-                from herald.strategy.strategy_selector import StrategySelector
+                from cthulhu.strategy.strategy_selector import StrategySelector
                 if isinstance(self.ctx.strategy, StrategySelector):
                     for s in self.ctx.strategy.strategies.values():
                         collect_ema_periods(s)
@@ -752,7 +752,7 @@ class TradingLoop:
                     
                     # If scalping is present among runtime strategies, add defaults (5,10) as safe fallback
                     try:
-                        from herald.strategy.strategy_selector import StrategySelector
+                        from cthulhu.strategy.strategy_selector import StrategySelector
                         if isinstance(self.ctx.strategy, StrategySelector):
                             if 'scalping' in (name.lower() for name in self.ctx.strategy.strategies.keys()):
                                 scalping_periods.update({5, 10})
@@ -820,7 +820,7 @@ class TradingLoop:
             
             # If dynamic selector, use its generator method
             try:
-                from herald.strategy.strategy_selector import StrategySelector
+                from cthulhu.strategy.strategy_selector import StrategySelector
                 if isinstance(self.ctx.strategy, StrategySelector):
                     signal = self.ctx.strategy.generate_signal(df, current_bar)
                 else:

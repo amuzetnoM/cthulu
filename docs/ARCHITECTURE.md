@@ -1,6 +1,6 @@
 ---
 title: Architecture Overview
-description: Technical architecture and system design of the Herald multi-strategy autonomous trading platform
+description: Technical architecture and system design of the Cthulhu multi-strategy autonomous trading platform
 tags: [architecture, system-design, technical-overview]
 slug: /docs/architecture
 sidebar_position: 3
@@ -8,7 +8,71 @@ sidebar_position: 3
 
 ## System Architecture
 
-<a href="https://artifact-virtual.gitbook.io/herald"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a>
+<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a>
+
+### High-Level System Overview
+
+```mermaid
+graph TB
+    subgraph "User Interface Layer"
+        GUI[Desktop GUI<br/>Tkinter Dashboard]
+        RPC[RPC Server<br/>HTTP API]
+    end
+    
+    subgraph "Core Trading Engine"
+        ORCH[Multi-Strategy<br/>Orchestrator]
+        STRAT[Strategy Engine<br/>6 Strategies]
+        EXEC[Execution Engine<br/>Order Management]
+    end
+    
+    subgraph "Intelligence Layer"
+        IND[Indicator Library<br/>12 Indicators]
+        REGIME[Regime Detection<br/>10 States]
+        NEWS[News Integration<br/>FRED, TradingEconomics]
+    end
+    
+    subgraph "Data & Persistence"
+        DATA[Data Layer<br/>OHLCV Processing]
+        DB[SQLite Database<br/>Trade History]
+        CACHE[Cache Layer<br/>Performance]
+    end
+    
+    subgraph "Risk & Position Management"
+        RISK[Risk Manager<br/>Position Sizing]
+        POS[Position Manager<br/>Lifecycle]
+        EXIT[Exit Strategies<br/>4 Types]
+    end
+    
+    subgraph "External Services"
+        MT5[MetaTrader 5<br/>Broker]
+        PROM[Prometheus<br/>Metrics]
+    end
+    
+    GUI --> ORCH
+    RPC --> ORCH
+    ORCH --> REGIME
+    REGIME --> STRAT
+    STRAT --> IND
+    STRAT --> NEWS
+    STRAT --> EXEC
+    EXEC --> RISK
+    RISK --> MT5
+    EXEC --> POS
+    POS --> EXIT
+    EXIT --> MT5
+    DATA --> MT5
+    IND --> DATA
+    POS --> DB
+    EXEC --> DB
+    ORCH --> PROM
+    DATA --> CACHE
+    
+    style ORCH fill:#00ff88,stroke:#00cc6a,color:#000
+    style MT5 fill:#00aaff,stroke:#0088cc,color:#000
+    style DB fill:#ffaa00,stroke:#dd8800,color:#000
+```
+
+### Component Architecture (ASCII for compatibility)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -175,7 +239,63 @@ sidebar_position: 3
           └──────────────────────┘
 ```
 
-## Autonomous Trading Flow (Phase 2)
+## Autonomous Trading Flow
+
+### Trading Loop Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Orchestrator
+    participant MT5
+    participant Strategy
+    participant Risk
+    participant Execution
+    participant Position
+    
+    User->>Orchestrator: Start Trading
+    
+    loop Every Trading Cycle
+        Orchestrator->>MT5: Check Connection
+        MT5-->>Orchestrator: Status OK
+        
+        Orchestrator->>MT5: Fetch Market Data
+        MT5-->>Orchestrator: OHLCV Data
+        
+        Orchestrator->>Strategy: Detect Market Regime
+        Strategy-->>Orchestrator: Regime Classification
+        
+        Orchestrator->>Strategy: Analyze & Generate Signal
+        Strategy-->>Orchestrator: Trade Signal (BUY/SELL/HOLD)
+        
+        alt Signal is BUY or SELL
+            Orchestrator->>Risk: Validate Trade
+            Risk-->>Orchestrator: Risk Approved + Position Size
+            
+            Orchestrator->>Execution: Execute Order
+            Execution->>MT5: Place Order
+            MT5-->>Execution: Order Filled
+            Execution-->>Orchestrator: Execution Result
+            
+            Orchestrator->>Position: Track New Position
+            Position-->>Orchestrator: Position Registered
+        end
+        
+        Orchestrator->>Position: Check Existing Positions
+        Position->>Position: Evaluate Exit Conditions
+        
+        alt Exit Condition Met
+            Position->>Execution: Close Position
+            Execution->>MT5: Close Order
+            MT5-->>Execution: Position Closed
+        end
+        
+        Orchestrator->>Orchestrator: Update Metrics
+        Orchestrator->>User: Log Status
+    end
+```
+
+### Detailed Trading Flow (Text-based for compatibility)
 
 ```
 1. Initialization (Orchestrator)
@@ -274,13 +394,13 @@ Strategy.get_candles()
 ## Monitoring & Deployment Recommendations
 
 **Short-term (30-60 min validation)**
-- Run Herald locally in a terminal using the aggressive mindset config and `--log-level DEBUG`:
+- Run Cthulhu locally in a terminal using the aggressive mindset config and `--log-level DEBUG`:
 
 ```bash
-python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt --log-level DEBUG
+python -m cthulhu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt --log-level DEBUG
 ```
 
-- Tail logs (e.g., `tail -f herald.log`) and watch for these messages:
+- Tail logs (e.g., `tail -f cthulhu.log`) and watch for these messages:
   - `Adopted trade:` — adoption events
   - `Set SL/TP for #` — confirmed SL/TP set on broker
   - `SL/TP verification failed` — broker refused modification (investigate immediately)
@@ -290,15 +410,15 @@ python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json 
 - Containerize with Docker and expose Prometheus metrics via simple endpoint (use `observability/prometheus.py` and a tiny metrics HTTP server).
 - Use an orchestrator (Docker Compose or Kubernetes) and set restart policies, resource limits, and liveness/readiness probes.
 - Centralized logging + alerting (Prometheus + Alertmanager; PagerDuty/Slack integration for critical alerts):
-  - Alert on any `herald_sl_tp_failure_total > 0` within a 1-minute window
-  - Alert on `herald_mt5_connected == 0` for 2 consecutive checks
+  - Alert on any `cthulhu_sl_tp_failure_total > 0` within a 1-minute window
+  - Alert on `cthulhu_mt5_connected == 0` for 2 consecutive checks
   - Alert on repeated adoption failures or repeated market data absence
 
 **Monitoring approach choice**
 - Terminal monitoring: fast, low-friction for smoke tests and short runs (30–60 min). I can run and monitor logs and report back.
 - Containerized monitoring: recommended for production — reproducible, easier integration with metrics and alerting, and safer for long-term uptime.
 
-Let me know if you want me to: **(A)** run a 30–60 minute live terminal monitoring session now, or **(B)** start containerizing Herald and add Prometheus HTTP exposure + alert rules (I can start with a Dockerfile and a metrics endpoint).
+Let me know if you want me to: **(A)** run a 30–60 minute live terminal monitoring session now, or **(B)** start containerizing Cthulhu and add Prometheus HTTP exposure + alert rules (I can start with a Dockerfile and a metrics endpoint).
     │
     │ (OHLCV DataFrame)
     ▼
@@ -492,7 +612,7 @@ Production Environment (Future)
 
 ### Phase 2: Multi-Strategy
 ```
-Herald Bot
+Cthulhu Bot
 ├── Strategy Manager
 │   ├── MA Crossover
 │   ├── RSI + MACD
@@ -504,7 +624,7 @@ Herald Bot
 
 ### Phase 3: ML Integration
 ```
-Herald Bot
+Cthulhu Bot
 ├── Feature Engine
 ├── ML Model Manager
 │   ├── Random Forest
@@ -515,7 +635,7 @@ Herald Bot
 
 ### Phase 4: Multi-Asset
 ```
-Herald Bot
+Cthulhu Bot
 ├── Asset Manager
 │   ├── XAUUSD (Gold)
 │   ├── EURUSD (Forex)
@@ -584,3 +704,49 @@ flowchart TD
 **Current Status:** Complete - Production-Ready Enterprise Trading System  
 **Architecture:** Fully modular, extensible, enterprise-grade with 6 strategies and 12 indicators  
 **Next Steps:** Performance optimization and advanced monitoring enhancements
+
+### Strategy Selection Logic
+
+```mermaid
+flowchart TD
+    Start([Start Trading Cycle]) --> FetchData[Fetch Market Data]
+    FetchData --> CalcIndicators[Calculate Indicators]
+    CalcIndicators --> DetectRegime{Detect Market<br/>Regime}
+    
+    DetectRegime -->|Trending Up Strong| TrendFollow[Trend Following<br/>Strategy]
+    DetectRegime -->|Trending Down Strong| TrendFollow
+    DetectRegime -->|Ranging Tight| MeanReversion[Mean Reversion<br/>Strategy]
+    DetectRegime -->|Ranging Wide| MeanReversion
+    DetectRegime -->|Volatile Breakout| MomentumBreakout[Momentum Breakout<br/>Strategy]
+    DetectRegime -->|Consolidating| Scalping[Scalping<br/>Strategy]
+    
+    TrendFollow --> GenerateSignal[Generate Trade Signal]
+    MeanReversion --> GenerateSignal
+    MomentumBreakout --> GenerateSignal
+    Scalping --> GenerateSignal
+    
+    GenerateSignal --> CheckSignal{Signal<br/>Type?}
+    CheckSignal -->|BUY/SELL| RiskCheck[Risk Manager<br/>Validation]
+    CheckSignal -->|HOLD| WaitNext[Wait for Next Cycle]
+    
+    RiskCheck --> RiskPass{Risk<br/>Approved?}
+    RiskPass -->|Yes| Execute[Execute Order]
+    RiskPass -->|No| WaitNext
+    
+    Execute --> TrackPosition[Track Position]
+    TrackPosition --> MonitorExits[Monitor Exit<br/>Conditions]
+    
+    MonitorExits --> ExitCheck{Exit<br/>Triggered?}
+    ExitCheck -->|Yes| ClosePosition[Close Position]
+    ExitCheck -->|No| WaitNext
+    
+    ClosePosition --> UpdateMetrics[Update Performance<br/>Metrics]
+    WaitNext --> UpdateMetrics
+    UpdateMetrics --> End([End Cycle])
+    
+    style Start fill:#00ff88,stroke:#00cc6a
+    style Execute fill:#ffaa00,stroke:#dd8800
+    style ClosePosition fill:#ff4444,stroke:#cc3333
+    style End fill:#00ff88,stroke:#00cc6a
+```
+

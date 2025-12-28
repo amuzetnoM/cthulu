@@ -1,7 +1,7 @@
 import math
 from time import sleep
-from herald.observability.metrics import MetricsCollector
-from herald.observability.prometheus import PrometheusExporter
+from cthulhu.observability.metrics import MetricsCollector
+from cthulhu.observability.prometheus import PrometheusExporter
 
 
 def test_drawdown_duration_and_recovery():

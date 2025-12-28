@@ -1,17 +1,17 @@
-# Prometheus configuration for Herald Trading System
+# Prometheus configuration for Cthulhu Trading System
 
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    monitor: 'herald-monitor'
+    monitor: 'cthulhu-monitor'
 
 scrape_configs:
-  - job_name: 'herald'
+  - job_name: 'cthulhu'
     static_configs:
-      - targets: ['herald:8181']
+      - targets: ['cthulhu:8181']
         labels:
-          service: 'herald-trading'
+          service: 'cthulhu-trading'
     
   - job_name: 'prometheus'
     static_configs:

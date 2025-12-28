@@ -91,7 +91,7 @@ class PositionLifecycle:
                         from position.tracker import PositionInfo
                     except Exception:
                         # Fallback to package import for test / runtime environments
-                        from herald.position.tracker import PositionInfo
+                        from cthulhu.position.tracker import PositionInfo
                     
                     # Create tracked position
                     tracked_pos = PositionInfo(
@@ -152,7 +152,7 @@ class PositionLifecycle:
             try:
                 # If engine returned an ExecutionResult-like object, inspect status
                 if hasattr(result, 'status'):
-                    from herald.execution.engine import OrderStatus
+                    from cthulhu.execution.engine import OrderStatus
                     success = (getattr(result, 'status', None) == OrderStatus.FILLED)
                 else:
                     # Fallback: truthiness for legacy boolean API

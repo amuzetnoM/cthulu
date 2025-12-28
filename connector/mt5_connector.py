@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
 from pathlib import Path
-from herald.market.tick_manager import TickManager
+from cthulhu.market.tick_manager import TickManager
 
 
 @dataclass
@@ -75,7 +75,7 @@ class MT5Connector:
         """
         self.config = config
         self.connected = False
-        self.logger = logging.getLogger("herald.connector")
+        self.logger = logging.getLogger("cthulhu.connector")
         self._lock = Lock()
         self._last_request_time = 0.0
         self._min_request_interval = 0.1  # 100ms between requests

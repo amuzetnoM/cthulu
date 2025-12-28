@@ -40,7 +40,7 @@ docs/development_log
 logs/
 *.log
 *.log.*
-herald.log
+cthulhu.log
 
 # IDE
 .vscode/

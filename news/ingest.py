@@ -5,9 +5,9 @@ from typing import Optional
 import logging
 from .manager import NewsManager
 from .base import NewsAdapter, NewsEvent
-from herald.ML_RL.instrumentation import MLDataCollector
+from cthulhu.ML_RL.instrumentation import MLDataCollector
 
-logger = logging.getLogger('herald.news.ingest')
+logger = logging.getLogger('cthulhu.news.ingest')
 
 
 class NewsIngestor:

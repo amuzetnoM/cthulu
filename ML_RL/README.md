@@ -1,6 +1,6 @@
-Herald ML/RI Pipeline
+Cthulhu ML/RI Pipeline
 
-Purpose: A lightweight, fast, and reliable ML pipeline for Herald.
+Purpose: A lightweight, fast, and reliable ML pipeline for Cthulhu.
 
 High-level layout:
 

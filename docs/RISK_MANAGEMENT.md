@@ -1,17 +1,17 @@
 ---
 title: Risk Management
-description: Risk management configuration and stop-loss strategies for Herald trading system
+description: Risk management configuration and stop-loss strategies for Cthulhu trading system
 tags: [risk-management, stop-loss, position-sizing]
 slug: /docs/risk-management
 sidebar_position: 9
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
 
 
 ## Overview
 
-This document describes the lightweight risk-management knobs added to Herald and how the system adapts stop-loss placement to account size.
+This document describes the lightweight risk-management knobs added to Cthulhu and how the system adapts stop-loss placement to account size.
 
 Key configuration entries (in `config_schema.py` under `risk`):
 
@@ -31,14 +31,14 @@ Key configuration entries (in `config_schema.py` under `risk`):
 
 Behavior summary:
 
-- When placing a new order (or when applying SL during adoption), Herald calls `position.risk_manager.suggest_sl_adjustment(...)` with the account balance and proposed SL.
+- When placing a new order (or when applying SL during adoption), Cthulhu calls `position.risk_manager.suggest_sl_adjustment(...)` with the account balance and proposed SL.
 - If the proposed SL is wider than a computed relative threshold, the `risk_manager` returns an `adjusted_sl` nearer to market and suggests target timeframes and a trading mindset (`scalping`, `short-term`, `swing`).
 - The `ExecutionEngine` and `PositionManager` will apply the adjusted SL automatically and attach the suggestion to order/position metadata.
 
 Operational guidance:
 
-- For small accounts (<= 1k), thresholds are tight so Herald will favor scalping timeframes (`M1`, `M5`, `M15`) and small SLs.
-- For larger accounts, thresholds are looser and Herald will permit wider SLs and swing-style timeframes.
+- For small accounts (<= 1k), thresholds are tight so Cthulhu will favor scalping timeframes (`M1`, `M5`, `M15`) and small SLs.
+- For larger accounts, thresholds are looser and Cthulhu will permit wider SLs and swing-style timeframes.
 
 Future improvements:
 

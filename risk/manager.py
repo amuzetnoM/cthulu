@@ -7,7 +7,7 @@ and basic policy checks (max positions, allowed leverage, per-trade risk percent
 from typing import Tuple, Optional, Dict, Any
 import logging
 
-logger = logging.getLogger('herald.risk')
+logger = logging.getLogger('cthulhu.risk')
 
 
 class RiskManager:

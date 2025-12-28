@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 import os, json, time
-from herald.connector.mt5_connector import MT5Connector, ConnectionConfig
-from herald.position.manager import PositionManager
-from herald.execution.engine import ExecutionEngine
-from herald.ML_RL.instrumentation import MLDataCollector
+from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulhu.position.manager import PositionManager
+from cthulhu.execution.engine import ExecutionEngine
+from cthulhu.ML_RL.instrumentation import MLDataCollector
 
 load_dotenv()
 

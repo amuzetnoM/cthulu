@@ -2,8 +2,8 @@ import json
 import urllib.request
 import urllib.error
 import time
-from herald.rpc.server import run_rpc_server
-from herald.execution.engine import OrderStatus
+from cthulhu.rpc.server import run_rpc_server
+from cthulhu.execution.engine import OrderStatus
 
 
 class DummyExecutionEngine:

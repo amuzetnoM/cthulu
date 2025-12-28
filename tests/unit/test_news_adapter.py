@@ -1,4 +1,4 @@
-from herald.news.newsapi_adapter import NewsApiAdapter
+from cthulhu.news.newsapi_adapter import NewsApiAdapter
 
 
 def test_news_api_adapter_returns_events():

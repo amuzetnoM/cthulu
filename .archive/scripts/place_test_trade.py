@@ -1,6 +1,6 @@
 import MetaTrader5 as mt5
 import time
-from herald import constants
+from cthulhu import constants
 
 print('Initializing MT5 (no params)...')
 ok = mt5.initialize()

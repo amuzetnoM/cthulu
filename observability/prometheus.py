@@ -43,7 +43,7 @@ class PrometheusMetric:
 
 class PrometheusExporter:
     """
-    Prometheus metrics exporter for Herald trading system.
+    Prometheus metrics exporter for Cthulhu trading system.
     
     Exports metrics such as:
     - Trade count (total, wins, losses)
@@ -52,14 +52,14 @@ class PrometheusExporter:
     - System health (MT5 connected, uptime)
     """
     
-    def __init__(self, prefix: str = "herald"):
+    def __init__(self, prefix: str = "cthulhu"):
         """
         Initialize Prometheus exporter.
         
         Args:
             prefix: Metric name prefix
         """
-        self.logger = logging.getLogger("herald.prometheus")
+        self.logger = logging.getLogger("cthulhu.prometheus")
         self.prefix = prefix
         self._start_time = time.time()
         self._metrics_cache: Dict[str, PrometheusMetric] = {}
@@ -173,7 +173,7 @@ class PrometheusExporter:
             f"{self.prefix}_uptime_seconds",
             uptime,
             "counter",
-            "Herald uptime in seconds"
+            "Cthulhu uptime in seconds"
         )
         
         # Trade counters
@@ -298,7 +298,7 @@ class PrometheusExporter:
         
         return "\n".join(lines)
     
-    def write_to_file(self, path: str = "/tmp/herald_metrics.prom"):
+    def write_to_file(self, path: str = "/tmp/cthulhu_metrics.prom"):
         """
         Write metrics to a file for node_exporter textfile collector.
         

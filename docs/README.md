@@ -1,5 +1,5 @@
 ---
-title: Herald
+title: Cthulhu
 description: Advanced multi-strategy autonomous trading system with MetaTrader 5 integration, dynamic strategy selection, and comprehensive risk management
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 slug: /docs/
@@ -13,9 +13,9 @@ sidebar_position: 1
                                  
 ```
 
-<a href="https://artifact-virtual.gitbook.io/herald"><img alt="Version" src="https://img.shields.io/badge/version-5.0.0-blue?style=flat-square" /></a> 
+<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a> 
 
-> [CHANGELOG](https://artifact-virtual.gitbook.io/herald)
+> [CHANGELOG](https://artifact-virtual.gitbook.io/cthulhu)
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
   <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
   <img src="https://img.shields.io/badge/Integration-MT5-lightgrey?style=flat-square" />
@@ -31,8 +31,8 @@ sidebar_position: 1
 
 <br>
 
- **NEW in v5.0.0**  
-> Herald now features an **enhanced multi-strategy trading system** with advanced dynamic strategy selection and 10 market regimes!  
+ **NEW in v5.0.1**  
+> Cthulhu now features an **enhanced multi-strategy trading system** with advanced dynamic strategy selection and 10 market regimes!  
 >
 > - **6 advanced strategies**: SMA/EMA Crossover, Momentum Breakout, Scalping, Mean Reversion, and Trend Following  
 > - **10 market regimes**: Strong/weak trends, tight/wide ranging, breakout/consolidation volatility, reversals  
@@ -69,7 +69,7 @@ sidebar_position: 1
 
 ## Overview
 
-Herald implements a staged, modular approach to automated trading.
+Cthulhu implements a staged, modular approach to automated trading.
 The architecture emphasizes clear boundaries, testability, and safety with pluggable components that can be 
 enhanced without disrupting core functionality.
 
@@ -101,11 +101,11 @@ Persistence & Metrics
 
 ### Getting Started
 
-Herald uses an **interactive setup wizard** as the primary entry point. When you run Herald, it guides you through configuring your trading parameters before starting:
+Cthulhu uses an **interactive setup wizard** as the primary entry point. When you run Cthulhu, it guides you through configuring your trading parameters before starting:
 
 ```bash
-# Start Herald (opens interactive setup wizard)
-herald --config config.json
+# Start Cthulhu (opens interactive setup wizard)
+cthulhu --config config.json
 ```
 
 The wizard walks you through:
@@ -117,84 +117,84 @@ The wizard walks you through:
 
 **Quickstart / Deployment checklist**
 
-- Ensure MT5 AutoTrading is enabled (Terminal -> AutoTrading); this allows Herald to apply SL/TP settings to adopted trades automatically.
+- Ensure MT5 AutoTrading is enabled (Terminal -> AutoTrading); this allows Cthulhu to apply SL/TP settings to adopted trades automatically.
 - For headless runs, use `--skip-setup` and `--no-prompt` to avoid interactive prompts.
 - Use `--symbol` to override the config symbol at startup (useful for multi-process deployments).
 
 ```bash
 # Quick start: run aggressive H1 profile for GOLD#m in non-interactive mode
-python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt
+python -m cthulhu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt
 ```
 
-Note: If you see repeated `Failed to select symbol` warnings, enable market watch symbol visibility in MT5 or use `--symbol` with the broker-specific symbol name (Herald now attempts flexible matching and will log candidate matches).
+Note: If you see repeated `Failed to select symbol` warnings, enable market watch symbol visibility in MT5 or use `--symbol` with the broker-specific symbol name (Cthulhu now attempts flexible matching and will log candidate matches).
 ### End-to-end testing utilities
 
 Two small helper scripts are provided to validate adoption and SL/TP behavior in a live MT5 account:
 
-- `scripts/place_test_trade.py` — places a **Herald** trade (magic number = Herald's magic); useful to test the full trading loop and reconciliation behavior.
+- `scripts/place_test_trade.py` — places a **Cthulhu** trade (magic number = Cthulhu's magic); useful to test the full trading loop and reconciliation behavior.
 - `scripts/place_external_test_trade.py` — places an **external** trade (magic = 0) to validate adoption and SL/TP application.
 
 Example: place an external test trade and run adopt-only scan to validate adoption and SL/TP application:
 
 ```bash
 python scripts/place_external_test_trade.py
-python -m herald --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --adopt-only --log-level DEBUG
+python -m cthulhu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --adopt-only --log-level DEBUG
 ```
 
-If SL/TP application fails due to terminal or broker restrictions, Herald performs several aggressive immediate retries, then queues background retries. Herald now *verifies* SL/TP after applying them by reading back the position from MT5; if verification fails the action is logged and a Prometheus metric is emitted (if configured). Review logs for `SL/TP verification failed` messages and check the `herald_sl_tp_failure_total` metric via the Prometheus exporter.
+If SL/TP application fails due to terminal or broker restrictions, Cthulhu performs several aggressive immediate retries, then queues background retries. Cthulhu now *verifies* SL/TP after applying them by reading back the position from MT5; if verification fails the action is logged and a Prometheus metric is emitted (if configured). Review logs for `SL/TP verification failed` messages and check the `cthulhu_sl_tp_failure_total` metric via the Prometheus exporter.
 ### Command Line Options
 
 ```bash
 # Interactive setup (default)
-herald --config config.json
+cthulhu --config config.json
 
 # Skip wizard for automation/CI (uses existing config as-is)
-herald --config config.json --skip-setup
+cthulhu --config config.json --skip-setup
 
 # Dry run mode (simulates orders without placing them)
-herald --config config.json --dry-run
+cthulhu --config config.json --dry-run
 
 # Apply a mindset overlay
-herald --config config.json --skip-setup --mindset aggressive
+cthulhu --config config.json --skip-setup --mindset aggressive
 
 # Disable interactive prompts at shutdown (leave positions open)
-herald --config config.json --no-prompt
+cthulhu --config config.json --no-prompt
 
 # Debug logging
-herald --config config.json --skip-setup --log-level DEBUG
+cthulhu --config config.json --skip-setup --log-level DEBUG
 ```
 
 ### Manual Trade CLI 🆕
 
-The `herald-trade` CLI allows manual trade placement that Herald will then manage:
+The `cthulhu-trade` CLI allows manual trade placement that Cthulhu will then manage:
 
 ```bash
 # Place a trade
-herald-trade --symbol BTCUSD# --side BUY --volume 0.01
+cthulhu-trade --symbol BTCUSD# --side BUY --volume 0.01
 
 # List open positions
-herald-trade --list
+cthulhu-trade --list
 
 # Close a specific position
-herald-trade --close 485496556
+cthulhu-trade --close 485496556
 
 # Close all positions
-herald-trade --close-all
+cthulhu-trade --close-all
 ```
 
-Trades placed via `herald-trade` use Herald's magic number, so they are automatically tracked and managed by the trading loop's exit strategies.
+Trades placed via `cthulhu-trade` use Cthulhu's magic number, so they are automatically tracked and managed by the trading loop's exit strategies.
 
 ## Development & CI
 
 - Run tests locally (default: unit tests):
-  - `python -m pytest herald/tests/unit -q`  # unit tests
-  - `python -m pytest herald -q`  # full package tests (integration tests skipped unless enabled)
+  - `python -m pytest cthulhu/tests/unit -q`  # unit tests
+  - `python -m pytest cthulhu -q`  # full package tests (integration tests skipped unless enabled)
 
 - To enable MT5 integration tests (only in environments with MT5 set up), export an env var and run:
-  - `setx RUN_MT5_CONNECT_TESTS 1 ; pytest herald -q` (Windows PowerShell)
-  - `RUN_MT5_CONNECT_TESTS=1 pytest herald -q` (Linux/macOS)
+  - `setx RUN_MT5_CONNECT_TESTS 1 ; pytest cthulhu -q` (Windows PowerShell)
+  - `RUN_MT5_CONNECT_TESTS=1 pytest cthulhu -q` (Linux/macOS)
 
-- Continuous Integration: GitHub Actions runs Herald package unit tests and lint on each push/PR (see `.github/workflows/ci.yml`).
+- Continuous Integration: GitHub Actions runs Cthulhu package unit tests and lint on each push/PR (see `.github/workflows/ci.yml`).
 
 ## Output Directories
 
@@ -258,7 +258,7 @@ Trades placed via `herald-trade` use Herald's magic number, so they are automati
 ## Architecture
 
 ```
-herald/
+cthulhu/
 ├── config/           # Configuration management
 │   ├── wizard.py     # Interactive setup wizard
 │   ├── mindsets.py   # Risk profiles
@@ -436,8 +436,8 @@ herald/
 #### Windows (PowerShell)
 
 ```powershell
-# Clone or navigate to Herald directory
-cd C:\workspace\Herald
+# Clone or navigate to Cthulhu directory
+cd C:\workspace\Cthulhu
 
 # Run automated setup
 .\scripts\setup.ps1
@@ -446,8 +446,8 @@ cd C:\workspace\Herald
 #### Linux/macOS
 
 ```bash
-# Clone or navigate to Herald directory
-cd ~/herald
+# Clone or navigate to Cthulhu directory
+cd ~/cthulhu
 
 # Run automated setup
 bash scripts/setup.sh
@@ -478,7 +478,7 @@ notepad config.json  # Windows
 ## Configuration & Optional Features
 
 ### Enabling News & Calendar Ingest
-Herald's NewsIngestor is opt-in and writes `news_event` and `calendar_event` into the ML event stream. To enable:
+Cthulhu's NewsIngestor is opt-in and writes `news_event` and `calendar_event` into the ML event stream. To enable:
 
 - Environment: set `NEWS_INGEST_ENABLED=1` or in config set `config['news']['enabled']=true`.
 - Recommended fallback feeds: set `NEWS_RSS_FEEDS` to a comma-separated list of RSS/Atom feeds.
@@ -597,20 +597,20 @@ Edit `config.json` (see `config.example.json`):
 }
 ```
 
-### Run Herald (Autonomous Trading)
+### Run Cthulhu (Autonomous Trading)
 
 ```bash
-# Start Herald with interactive setup wizard (recommended)
-python -m herald --config config.json
+# Start Cthulhu with interactive setup wizard (recommended)
+python -m cthulhu --config config.json
 
 # Skip wizard for automation (uses existing config.json as-is)
-python -m herald --config config.json --skip-setup
+python -m cthulhu --config config.json --skip-setup
 
 # Dry run mode (no real orders) - Test your setup safely
-python -m herald --config config.json --dry-run
+python -m cthulhu --config config.json --dry-run
 
 # With debug logging
-python -m herald --config config.json --skip-setup --log-level DEBUG
+python -m cthulhu --config config.json --skip-setup --log-level DEBUG
 
 # Quick test connection
 python -c "from connector.mt5_connector import MT5Connector, ConnectionConfig; \
@@ -635,18 +635,18 @@ python -c "from connector.mt5_connector import MT5Connector, ConnectionConfig; \
    - Monitors open positions
    - Checks exit conditions (priority-based)
    - Closes positions when exit triggered
-6. Logs all activity to console and `herald.log`
-7. Stores trades in `herald.db` database
+6. Logs all activity to console and `cthulhu.log`
+7. Stores trades in `cthulhu.db` database
 
 **Monitor Live Trading:**
 ```bash
 # Watch log file
-tail -f herald.log  # Linux/macOS
-Get-Content herald.log -Wait -Tail 50  # Windows PowerShell
+tail -f cthulhu.log  # Linux/macOS
+Get-Content cthulhu.log -Wait -Tail 50  # Windows PowerShell
 
 # Query database for open positions
 python -c "from persistence.database import Database; \
-           db = Database('herald.db'); \
+           db = Database('cthulhu.db'); \
            trades = db.get_open_trades(); \
            print(f'Open trades: {len(trades)}')"
 ```
@@ -716,7 +716,7 @@ Configuration is managed through JSON files. Copy `config.example.json` to `conf
 }
 ```
 
-When enabled, Herald will detect and adopt trades placed outside Herald (e.g., manual trades, trades from other EAs) and apply exit strategies to manage them.
+When enabled, Cthulhu will detect and adopt trades placed outside Cthulhu (e.g., manual trades, trades from other EAs) and apply exit strategies to manage them.
 
 ---
 
@@ -725,9 +725,9 @@ When enabled, Herald will detect and adopt trades placed outside Herald (e.g., m
 ### Basic Operation
 
 ```python
-from herald import MT5Connector, DataLayer, SmaCrossover, ExecutionEngine, RiskManager
-from herald.connector import ConnectionConfig
-from herald.risk import RiskLimits
+from cthulhu import MT5Connector, DataLayer, SmaCrossover, ExecutionEngine, RiskManager
+from cthulhu.connector import ConnectionConfig
+from cthulhu.risk import RiskLimits
 
 # Initialize components
 config = ConnectionConfig(
@@ -786,25 +786,25 @@ if signal:
 
 ```bash
 # Start bot with default config
-python -m herald
+python -m cthulhu
 
 # Use custom config
-python -m herald --config config.json --mindset balanced
+python -m cthulhu --config config.json --mindset balanced
 
 # Dry run (no actual trading)
-python -m herald --dry-run
+python -m cthulhu --dry-run
 
 # Backtest mode
-python -m herald --backtest --start 2024-01-01 --end 2024-12-31
+python -m cthulhu --backtest --start 2024-01-01 --end 2024-12-31
 
 # Check system health
-python -m herald --health-check
+python -m cthulhu --health-check
 
 # View current positions
-python -m herald --positions
+python -m cthulhu --positions
 
 # Emergency shutdown
-python -m herald --shutdown
+python -m cthulhu --shutdown
 ```
 
 ---
@@ -814,8 +814,8 @@ python -m herald --shutdown
 ### Project Structure
 
 ```
-Herald/
-├── herald/                 # Main package
+Cthulhu/
+├── cthulhu/                 # Main package
 │   ├── connector/          # MT5 integration
 │   ├── data/               # Data processing
 │   ├── strategy/           # Trading strategies
@@ -837,7 +837,7 @@ Herald/
 ### Adding a New Strategy
 
 ```python
-from herald.strategy import Strategy, Signal, SignalType
+from cthulhu.strategy import Strategy, Signal, SignalType
 import pandas as pd
 
 class MyStrategy(Strategy):
@@ -868,13 +868,13 @@ class MyStrategy(Strategy):
 
 ```bash
 # Format code
-black herald/ tests/
+black cthulhu/ tests/
 
 # Lint
-pylint herald/
+pylint cthulhu/
 
 # Type check
-mypy herald/
+mypy cthulhu/
 
 # Run all checks
 ./scripts/quality_check.sh
@@ -897,7 +897,7 @@ pytest tests/unit/
 pytest tests/integration/
 
 # With coverage
-pytest --cov=herald --cov-report=html
+pytest --cov=cthulhu --cov-report=html
 
 # Specific test
 pytest tests/unit/test_connector.py -v
@@ -938,24 +938,24 @@ pytest tests/unit/test_connector.py -v
 
 ```powershell
 # Install service
-nssm install Herald "C:\workspace\Herald\venv\Scripts\python.exe" "-m herald"
-nssm set Herald AppDirectory "C:\workspace\Herald"
-nssm start Herald
+nssm install Cthulhu "C:\workspace\Cthulhu\venv\Scripts\python.exe" "-m cthulhu"
+nssm set Cthulhu AppDirectory "C:\workspace\Cthulhu"
+nssm start Cthulhu
 ```
 
 #### Linux (systemd)
 
 ```ini
-# /etc/systemd/system/herald.service
+# /etc/systemd/system/cthulhu.service
 [Unit]
-Description=Herald Trading Bot
+Description=Cthulhu Trading Bot
 After=network.target
 
 [Service]
 Type=simple
 User=trader
-WorkingDirectory=/opt/herald
-ExecStart=/opt/herald/venv/bin/python -m herald
+WorkingDirectory=/opt/cthulhu
+ExecStart=/opt/cthulhu/venv/bin/python -m cthulhu
 Restart=on-failure
 RestartSec=30
 
@@ -964,9 +964,9 @@ WantedBy=multi-user.target
 ```
 
 ```bash
-sudo systemctl enable herald
-sudo systemctl start herald
-sudo systemctl status herald
+sudo systemctl enable cthulhu
+sudo systemctl start cthulhu
+sudo systemctl status cthulhu
 ```
 
 ---
@@ -1012,13 +1012,13 @@ ERROR: MT5 initialize failed: (code, message)
 
 ```powershell
 # View recent errors
-Select-String -Path logs\herald.log -Pattern "ERROR" | Select-Object -Last 20
+Select-String -Path logs\cthulhu.log -Pattern "ERROR" | Select-Object -Last 20
 
 # Monitor live
-Get-Content logs\herald.log -Wait -Tail 50
+Get-Content logs\cthulhu.log -Wait -Tail 50
 
 # Search for specific pattern
-Select-String -Path logs\herald.log -Pattern "signal generated"
+Select-String -Path logs\cthulhu.log -Pattern "signal generated"
 ```
 
 ---
@@ -1035,7 +1035,7 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.0.0
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.0.1
 - **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
@@ -1052,7 +1052,7 @@ Past performance is not indicative of future results. Use at your own risk.
 
 | Version | Date | Status | Description |
 |---------|------|--------|-------------|
-| **5.0.0** | Dec 2025 | ✅ Current | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
+| **5.0.1** | Dec 2025 | ✅ Current | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
 | **4.0.0** | Dec 2024 | ✅ Complete | **Dynamic Strategy Selection** - Multi-strategy framework, exit strategies |
 | **3.0.0** | Dec 2024 | ✅ Complete | **Production Ready** - Zero-error test suite, MT5 funded account verified |
 | **2.0.0** | Dec 2024 | ✅ Complete | **Autonomous Trading** - Indicators, position management |
@@ -1066,8 +1066,8 @@ See [CHANGELOG.md](docs/CHANGELOG.md) for detailed release notes.
 - **Documentation**: `docs/` directory
 - **Phase 2 Guide**: [PHASE2_README.md](PHASE2_README.md)
 - **Examples**: `config.example.json`, `.env.example`
-- **Database**: Query `herald.db` for trade history
-- **Logs**: Review `herald.log` for execution details
+- **Database**: Query `cthulhu.db` for trade history
+- **Logs**: Review `cthulhu.log` for execution details
 - **Issues**: Create issue in repository
 
 ## Roadmap
@@ -1125,4 +1125,4 @@ Includes core trading system AND deployment hardening:
 
 **Built with focus on safety, testability, and production readiness.**
 
-*Herald v5.0.0 - Complete. Production-ready autonomous trading with comprehensive strategy selection, advanced indicators, and enterprise-grade architecture.*
+*Cthulhu v5.0.1 - Complete. Production-ready autonomous trading with comprehensive strategy selection, advanced indicators, and enterprise-grade architecture.*

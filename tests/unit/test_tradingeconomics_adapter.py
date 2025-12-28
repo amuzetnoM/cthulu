@@ -1,4 +1,4 @@
-from herald.news.tradingeconomics_adapter import TradingEconomicsAdapter
+from cthulhu.news.tradingeconomics_adapter import TradingEconomicsAdapter
 
 
 def test_no_key_returns_empty():

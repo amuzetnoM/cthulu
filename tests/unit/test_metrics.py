@@ -1,4 +1,4 @@
-from herald.observability.metrics import MetricsCollector
+from cthulhu.observability.metrics import MetricsCollector
 
 
 def test_metrics_record_and_summary():
