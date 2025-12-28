@@ -401,16 +401,21 @@ class TradingLoop:
     def _execute_loop_iteration(self):
         """Execute one iteration of the trading loop."""
         # 1. Market data ingestion
+        self.ctx.logger.info(f"Loop #{self.loop_count}: Fetching market data...")
         df = self._ingest_market_data()
         if df is None:
+            self.ctx.logger.warning("No market data received, skipping iteration")
             return
         
         # 2. Calculate indicators
+        self.ctx.logger.info(f"Loop #{self.loop_count}: Calculating indicators...")
         df = self._calculate_indicators(df)
         if df is None:
+            self.ctx.logger.warning("Indicator calculation failed")
             return
         
         # 3. Generate strategy signals
+        self.ctx.logger.info(f"Loop #{self.loop_count}: Generating signals...")
         signal = self._generate_signal(df)
         
         # 4. Process entry signals
@@ -944,6 +949,8 @@ class TradingLoop:
                     f"Signal generated: {signal.side.name} {signal.symbol} "
                     f"(confidence: {signal.confidence:.2f})"
                 )
+            else:
+                self.ctx.logger.info("Strategy returned NO SIGNAL for this bar")
             
             return signal
         
