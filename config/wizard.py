@@ -57,14 +57,14 @@ def print_banner():
     ╠═╣║╣ ╠╦╝╠═╣║   ║║
     ╩ ╩╚═╝╩╚═╩ ╩╩═╝═╩╝
     ─────────────────────────────
-           HERALD v5.0.0
+           CTHULHU v5.0.1
     Interactive Setup Wizard
     """
     try:
         safe_print("\033[96m" + banner + "\033[0m")
     except Exception:
         # Fallback to a plain ASCII banner
-        safe_print("*** HERALD v5.0.0 - Interactive Setup Wizard ***")
+        safe_print("*** CTHULHU v5.0.1 - Interactive Setup Wizard ***")
 
 
 def print_section(title: str, step: int = None, total_steps: int = None):

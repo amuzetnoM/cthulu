@@ -10,6 +10,70 @@ sidebar_position: 3
 
 <a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a>
 
+### High-Level System Overview
+
+```mermaid
+graph TB
+    subgraph "User Interface Layer"
+        GUI[Desktop GUI<br/>Tkinter Dashboard]
+        RPC[RPC Server<br/>HTTP API]
+    end
+    
+    subgraph "Core Trading Engine"
+        ORCH[Multi-Strategy<br/>Orchestrator]
+        STRAT[Strategy Engine<br/>6 Strategies]
+        EXEC[Execution Engine<br/>Order Management]
+    end
+    
+    subgraph "Intelligence Layer"
+        IND[Indicator Library<br/>12 Indicators]
+        REGIME[Regime Detection<br/>10 States]
+        NEWS[News Integration<br/>FRED, TradingEconomics]
+    end
+    
+    subgraph "Data & Persistence"
+        DATA[Data Layer<br/>OHLCV Processing]
+        DB[SQLite Database<br/>Trade History]
+        CACHE[Cache Layer<br/>Performance]
+    end
+    
+    subgraph "Risk & Position Management"
+        RISK[Risk Manager<br/>Position Sizing]
+        POS[Position Manager<br/>Lifecycle]
+        EXIT[Exit Strategies<br/>4 Types]
+    end
+    
+    subgraph "External Services"
+        MT5[MetaTrader 5<br/>Broker]
+        PROM[Prometheus<br/>Metrics]
+    end
+    
+    GUI --> ORCH
+    RPC --> ORCH
+    ORCH --> REGIME
+    REGIME --> STRAT
+    STRAT --> IND
+    STRAT --> NEWS
+    STRAT --> EXEC
+    EXEC --> RISK
+    RISK --> MT5
+    EXEC --> POS
+    POS --> EXIT
+    EXIT --> MT5
+    DATA --> MT5
+    IND --> DATA
+    POS --> DB
+    EXEC --> DB
+    ORCH --> PROM
+    DATA --> CACHE
+    
+    style ORCH fill:#00ff88,stroke:#00cc6a,color:#000
+    style MT5 fill:#00aaff,stroke:#0088cc,color:#000
+    style DB fill:#ffaa00,stroke:#dd8800,color:#000
+```
+
+### Component Architecture (ASCII for compatibility)
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                 Multi-Strategy Orchestrator                         │
@@ -175,7 +239,63 @@ sidebar_position: 3
           └──────────────────────┘
 ```
 
-## Autonomous Trading Flow (Phase 2)
+## Autonomous Trading Flow
+
+### Trading Loop Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Orchestrator
+    participant MT5
+    participant Strategy
+    participant Risk
+    participant Execution
+    participant Position
+    
+    User->>Orchestrator: Start Trading
+    
+    loop Every Trading Cycle
+        Orchestrator->>MT5: Check Connection
+        MT5-->>Orchestrator: Status OK
+        
+        Orchestrator->>MT5: Fetch Market Data
+        MT5-->>Orchestrator: OHLCV Data
+        
+        Orchestrator->>Strategy: Detect Market Regime
+        Strategy-->>Orchestrator: Regime Classification
+        
+        Orchestrator->>Strategy: Analyze & Generate Signal
+        Strategy-->>Orchestrator: Trade Signal (BUY/SELL/HOLD)
+        
+        alt Signal is BUY or SELL
+            Orchestrator->>Risk: Validate Trade
+            Risk-->>Orchestrator: Risk Approved + Position Size
+            
+            Orchestrator->>Execution: Execute Order
+            Execution->>MT5: Place Order
+            MT5-->>Execution: Order Filled
+            Execution-->>Orchestrator: Execution Result
+            
+            Orchestrator->>Position: Track New Position
+            Position-->>Orchestrator: Position Registered
+        end
+        
+        Orchestrator->>Position: Check Existing Positions
+        Position->>Position: Evaluate Exit Conditions
+        
+        alt Exit Condition Met
+            Position->>Execution: Close Position
+            Execution->>MT5: Close Order
+            MT5-->>Execution: Position Closed
+        end
+        
+        Orchestrator->>Orchestrator: Update Metrics
+        Orchestrator->>User: Log Status
+    end
+```
+
+### Detailed Trading Flow (Text-based for compatibility)
 
 ```
 1. Initialization (Orchestrator)
@@ -584,3 +704,49 @@ flowchart TD
 **Current Status:** Complete - Production-Ready Enterprise Trading System  
 **Architecture:** Fully modular, extensible, enterprise-grade with 6 strategies and 12 indicators  
 **Next Steps:** Performance optimization and advanced monitoring enhancements
+
+### Strategy Selection Logic
+
+```mermaid
+flowchart TD
+    Start([Start Trading Cycle]) --> FetchData[Fetch Market Data]
+    FetchData --> CalcIndicators[Calculate Indicators]
+    CalcIndicators --> DetectRegime{Detect Market<br/>Regime}
+    
+    DetectRegime -->|Trending Up Strong| TrendFollow[Trend Following<br/>Strategy]
+    DetectRegime -->|Trending Down Strong| TrendFollow
+    DetectRegime -->|Ranging Tight| MeanReversion[Mean Reversion<br/>Strategy]
+    DetectRegime -->|Ranging Wide| MeanReversion
+    DetectRegime -->|Volatile Breakout| MomentumBreakout[Momentum Breakout<br/>Strategy]
+    DetectRegime -->|Consolidating| Scalping[Scalping<br/>Strategy]
+    
+    TrendFollow --> GenerateSignal[Generate Trade Signal]
+    MeanReversion --> GenerateSignal
+    MomentumBreakout --> GenerateSignal
+    Scalping --> GenerateSignal
+    
+    GenerateSignal --> CheckSignal{Signal<br/>Type?}
+    CheckSignal -->|BUY/SELL| RiskCheck[Risk Manager<br/>Validation]
+    CheckSignal -->|HOLD| WaitNext[Wait for Next Cycle]
+    
+    RiskCheck --> RiskPass{Risk<br/>Approved?}
+    RiskPass -->|Yes| Execute[Execute Order]
+    RiskPass -->|No| WaitNext
+    
+    Execute --> TrackPosition[Track Position]
+    TrackPosition --> MonitorExits[Monitor Exit<br/>Conditions]
+    
+    MonitorExits --> ExitCheck{Exit<br/>Triggered?}
+    ExitCheck -->|Yes| ClosePosition[Close Position]
+    ExitCheck -->|No| WaitNext
+    
+    ClosePosition --> UpdateMetrics[Update Performance<br/>Metrics]
+    WaitNext --> UpdateMetrics
+    UpdateMetrics --> End([End Cycle])
+    
+    style Start fill:#00ff88,stroke:#00cc6a
+    style Execute fill:#ffaa00,stroke:#dd8800
+    style ClosePosition fill:#ff4444,stroke:#cc3333
+    style End fill:#00ff88,stroke:#00cc6a
+```
+
