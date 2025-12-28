@@ -17,7 +17,7 @@ import sys
 import os
 import logging
 from pathlib import Path
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Dict
 
 
 class ShutdownHandler:
@@ -43,6 +43,7 @@ class ShutdownHandler:
         metrics,
         logger: logging.Logger,
         args: Optional[Any] = None,
+        config: Optional[Dict[str, Any]] = None,
         persist_summary_fn: Optional[Callable] = None,
         summary_path: Optional[Path] = None,
         news_ingestor: Optional[Any] = None,
@@ -60,6 +61,7 @@ class ShutdownHandler:
             metrics: Metrics collector instance
             logger: Logger instance
             args: Command-line arguments (optional)
+            config: System configuration (optional)
             persist_summary_fn: Function to persist metrics summary (optional)
             summary_path: Path to summary file (optional)
             news_ingestor: News ingestor instance (optional)
@@ -73,6 +75,7 @@ class ShutdownHandler:
         self.metrics = metrics
         self.logger = logger
         self.args = args
+        self.config = config
         self.persist_summary_fn = persist_summary_fn
         self.summary_path = summary_path
         self.news_ingestor = news_ingestor
@@ -115,9 +118,32 @@ class ShutdownHandler:
         Prompts the user (if not in dry-run mode) for what to do with
         open positions: close all, leave open, or close specific tickets.
         """
-        if not self.args or self.args.dry_run:
-            # In dry-run mode, nothing to do
+        self.logger.info("Checking for open positions during shutdown")
+        
+        # Check if dry-run mode
+        is_dry_run = self.config.get('runtime', {}).get('dry_run', False) if self.config else (self.args.dry_run if self.args else False)
+        if is_dry_run:
+            self.logger.info("Dry-run mode: skipping position handling")
             return
+        
+        # Check if there are any open positions (in-memory or from MT5)
+        open_positions = self.position_manager.get_all_positions()
+        mt5_positions = []
+        if self.connector:
+            try:
+                mt5_positions = self.connector.get_open_positions()
+                self.logger.info(f"MT5 positions query returned {len(mt5_positions)} positions")
+            except Exception as e:
+                self.logger.error(f"Error querying MT5 positions: {e}")
+        
+        total_positions = len(open_positions) + len(mt5_positions)
+        self.logger.info(f"Total positions found: {total_positions} (tracked: {len(open_positions)}, MT5: {len(mt5_positions)})")
+        
+        if total_positions == 0:
+            self.logger.info("No open positions to handle")
+            return
+        
+        self.logger.info(f"Found {total_positions} open positions ({len(open_positions)} tracked, {len(mt5_positions)} in MT5)")
         
         try:
             choice = self._prompt_user_for_position_action()
@@ -199,6 +225,9 @@ class ShutdownHandler:
                 with open('/dev/tty', 'r') as tty:
                     print(prompt_text, end='', flush=True)
                     return tty.readline().strip().lower()
+        except KeyboardInterrupt:
+            self.logger.warning("Input interrupted, using default: {default}")
+            return default.lower()
         except Exception:
             # If all else fails, return default
             return default.lower()
@@ -206,8 +235,29 @@ class ShutdownHandler:
     def _close_all_positions(self):
         """Close all open positions."""
         self.logger.info("User requested: close ALL positions")
+        
+        closed_count = 0
+        
+        # Close tracked positions
         close_results = self.position_manager.close_all_positions("System shutdown")
-        self.logger.info(f"Closed {len(close_results)} positions")
+        closed_count += len(close_results)
+        
+        # Close MT5 positions
+        if self.connector:
+            try:
+                mt5_positions = self.connector.get_open_positions()
+                for pos in mt5_positions:
+                    ticket = pos.get('ticket')
+                    if ticket:
+                        try:
+                            self.connector.close_position(ticket, "System shutdown")
+                            closed_count += 1
+                        except Exception as e:
+                            self.logger.error(f"Failed to close MT5 position {ticket}: {e}")
+            except Exception as e:
+                self.logger.error(f"Error closing MT5 positions: {e}")
+        
+        self.logger.info(f"Closed {closed_count} positions total")
     
     def _close_selected_positions(self):
         """Close specific positions selected by user."""
@@ -302,6 +352,7 @@ def create_shutdown_handler(
     metrics,
     logger: logging.Logger,
     args: Optional[Any] = None,
+    config: Optional[Dict[str, Any]] = None,
     persist_summary_fn: Optional[Callable] = None,
     summary_path: Optional[Path] = None,
     **optional_components
@@ -316,6 +367,7 @@ def create_shutdown_handler(
         metrics: Metrics collector instance
         logger: Logger instance
         args: Command-line arguments (optional)
+        config: System configuration (optional)
         persist_summary_fn: Function to persist metrics summary (optional)
         summary_path: Path to summary file (optional)
         **optional_components: Additional optional components (news_ingestor, ml_collector, etc.)
@@ -330,6 +382,7 @@ def create_shutdown_handler(
         metrics=metrics,
         logger=logger,
         args=args,
+        config=config,
         persist_summary_fn=persist_summary_fn,
         summary_path=summary_path,
         news_ingestor=optional_components.get('news_ingestor'),

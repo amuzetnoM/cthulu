@@ -285,6 +285,8 @@ def main():
                     database=components.database,
                     metrics=components.metrics,
                     logger=logger,
+                    args=args,
+                    config=components.config,
                     ml_collector=components.ml_collector,
                     trade_monitor=components.monitor,
                     gui_process=getattr(components, 'gui_process', None)
