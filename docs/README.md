@@ -4,13 +4,16 @@ description: Advanced multi-strategy autonomous trading system with MetaTrader 5
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 slug: /docs/
 sidebar_position: 1
----
+
+--- 
 ```
-   __ __                 __    __
-  / // /__ _______ ___ _/ /___/ /
- / _  / -_) __/ _ `/ // / / _  / 
-/_//_/\__/_/  \_,_/\_,_/_/\_,_/  
-                                 
+_________   __  .__          .__         
+\_   ___ \_/  |_|  |__  __ __|  |  __ __ 
+/    \  \/\   __\  |  \|  |  \  | |  |  \
+\     \____|  | |   Y  \  |  /  |_|  |  /
+ \______  /|__| |___|  /____/|____/____/ 
+        \/           \/                  
+
 ```
 
 <a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a> 
