@@ -11,11 +11,16 @@ import json
 
 
 class TestExecutionEngine(unittest.TestCase):
-    @patch('herald.execution.engine.mt5')
+    @patch('cthulhu.execution.engine.mt5')
     def test_place_order_resolves_position_ticket(self, mock_mt5):
+        # Mock MT5 constants
+        mock_mt5.TRADE_RETCODE_DONE = 10009
+        mock_mt5.ORDER_TYPE_BUY = 0
+        mock_mt5.ORDER_FILLING_IOC = 1
+        
         # Mock MT5 result for order_send
         mock_result = MagicMock()
-        mock_result.retcode = getattr(mock_mt5, 'TRADE_RETCODE_DONE', 10009)
+        mock_result.retcode = 10009
         mock_result.price = 1.2345
         mock_result.volume = 0.1
         mock_result.order = 777
@@ -75,10 +80,15 @@ class TestExecutionEngine(unittest.TestCase):
         except Exception:
             pass
 
-    @patch('herald.execution.engine.mt5')
+    @patch('cthulhu.execution.engine.mt5')
     def test_ml_collector_receives_provenance_id(self, mock_mt5):
+        # Mock MT5 constants
+        mock_mt5.TRADE_RETCODE_DONE = 10009
+        mock_mt5.ORDER_TYPE_BUY = 0
+        mock_mt5.ORDER_FILLING_IOC = 1
+        
         mock_result = MagicMock()
-        mock_result.retcode = getattr(mock_mt5, 'TRADE_RETCODE_DONE', 10009)
+        mock_result.retcode = 10009
         mock_result.price = 1.2345
         mock_result.volume = 0.1
         mock_result.order = 999

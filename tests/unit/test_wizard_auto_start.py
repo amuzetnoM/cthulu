@@ -12,7 +12,7 @@ def test_run_setup_wizard_skips_setup_and_returns_existing_config(tmp_path, monk
     cfg_path.write_text(json.dumps(cfg_data))
 
     # Simulate user choosing not to run interactive setup
-    monkeypatch.setattr('herald.config.wizard.get_input', lambda prompt, default="": "n")
+    monkeypatch.setattr('cthulhu.config.wizard.get_input', lambda prompt, default="": "n")
 
     res = run_setup_wizard(str(cfg_path))
     assert res == cfg_data
@@ -27,6 +27,6 @@ def test_choose_mindset_accepts_four_choices(monkeypatch, capsys):
     from cthulhu.config.wizard import choose_mindset
 
     # Simulate selecting option 3 (Aggressive)
-    monkeypatch.setattr('herald.config.wizard.get_input', lambda prompt, default="": "3")
+    monkeypatch.setattr('cthulhu.config.wizard.get_input', lambda prompt, default="": "3")
     res = choose_mindset()
     assert res == 'aggressive'

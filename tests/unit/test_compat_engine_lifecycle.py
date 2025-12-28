@@ -13,9 +13,13 @@ class DummyConnector:
 class DummyDB:
     def __init__(self):
         self.updated = []
+        self.removed_positions = []
 
     def update_position_status(self, ticket, status, reason):
         self.updated.append((ticket, status, reason))
+    
+    def remove_position(self, ticket):
+        self.removed_positions.append(ticket)
 
 
 class DummyTracker:
@@ -88,4 +92,5 @@ def test_lifecycle_close_position_handles_execution_result(monkeypatch):
     # Assert
     assert closed is True
     assert 22 in tracker.removed
-    assert db.updated == [(22, 'closed', 'Test close')]
+    # When position is closed successfully, it's removed from DB, not updated
+    assert 22 in db.removed_positions
