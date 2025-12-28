@@ -80,7 +80,8 @@ Get-Content $log -Tail 0 -Wait | ForEach-Object {
             Write-Report "Success" @("No errors observed for $RequiredSteadyMinutes minutes. Monitoring complete.")
             exit 0
         }
-    } else {
+    }
+    else {
         if ((Get-Date) - $lastErrorTime -ge (New-TimeSpan -Minutes $RequiredSteadyMinutes)) {
             Write-Report "Success" @("No errors observed for $RequiredSteadyMinutes minutes since last incident. Monitoring complete.")
             exit 0
