@@ -16,7 +16,63 @@ slug: /docs/changelog
 
 ## UNRELEASED
 
-> This section is for upcoming changes that are not yet released.
+> This section is for upcoming changes that are not yet released. The
+> entries below are harvested from recent commits on the main branch and
+> represent work that is deployed to the repository but not yet included
+> in a published release.
+
+### Recent commits (most recent first)
+
+- 5b982b2 fix: Update evaluator.py to use get_all_positions() for total exposure calculation (amuzetnoM, 2025-12-29)
+- 5f247f2 fix: Enhance safe joining of indicator data to prevent column overlap errors (amuzetnoM, 2025-12-29)
+- 2a7d656 ci: add ghcr build workflow; fix Dockerfile CMD; monitor script (amuzetnoM, 2025-12-29)
+- d45e91b fix: Update SYSTEM_REPORT.md to reflect accurate monitoring session results and live monitoring status (amuzetnoM, 2025-12-29)
+- fd1ff02 fix: Refactor account_info handling in approve method to streamline support for dict and object formats (amuzetnoM, 2025-12-29)
+- 5798256 fix: Improve handling of account_info in approve_trade method to support both dict and object formats (amuzetnoM, 2025-12-29)
+- edddfe0 Enhance observability and monitoring features (amuzetnoM, 2025-12-29)
+- 0f1d547 feat: Implement comprehensive monitoring and observability enhancements, including Grafana dashboards, Prometheus configuration, and stability monitoring script (amuzetnoM, 2025-12-29)
+- febc36d feat: Add trading signal approval method to RiskEvaluator for position size calculation and limit checks (amuzetnoM, 2025-12-29)
+- 9b12eae fix: Correct casing of 'CthuluBootstrap' and update log/database file references to 'cthulu.log' and 'cthulu.db' in README.md (amuzetnoM, 2025-12-29)
+- 4b86179 Refactor imports and update package name from 'cthulhu' to 'cthulu' across test files and UI components (amuzetnoM, 2025-12-29)
+- 2fcc849 chore: Update README.md to improve formatting and add Cthulhu logo (amuzetnoM, 2025-12-28)
+- e89613d Refactor trading bot configuration and scripts to rename from "Herald" to "Cthulu" (amuzetnoM, 2025-12-28)
+- 3b69def feat: Implement lazy imports and compatibility shims for legacy package names; enhance indicator validation and runtime flexibility (amuzetnoM, 2025-12-28)
+- 813c8f2 fix: Update test badge to reflect 185 passing tests in README.md (amuzetnoM, 2025-12-28)
+- d5d9e94 feat: Add comprehensive CHANGELOG and release notes for versions 1.0.0 to 5.0.1 (amuzetnoM, 2025-12-28)
+- 803c521 Update wizard.py to reflect branding change from Herald to Cthulhu (amuzetnoM, 2025-12-28)
+- 3c55c85 Fix formatting and improve readability in README.md (amuzetnoM, 2025-12-28)
+- c43ace7 Merge pull request #6 from amuzetnoM/copilot/update-branding-to-cthulu (Ali Shakil, 2025-12-28)
+- 957bd09 Add mermaid diagrams to docs and fix remaining version references (copilot-swe-agent[bot], 2025-12-28)
+- 2721604 Update docs: version 5.0.1, improved roadmap, add privacy/terms pages (copilot-swe-agent[bot], 2025-12-28)
+- d85d93d Add comprehensive testing summary - all requirements met (copilot-swe-agent[bot], 2025-12-28)
+- 38a23ff Add release instructions and draft release body for v5.0.1 (copilot-swe-agent[bot], 2025-12-28)
+- 15b5534 Bump version to 5.0.1 and add GitHub Actions CI workflow (copilot-swe-agent[bot], 2025-12-28)
+- e6d96ba Fix unit tests after rebranding: update mock paths and test expectations (copilot-swe-agent[bot], 2025-12-28)
+- ca7fb65 Final polish: Update remaining comments and test references to Cthulhu (copilot-swe-agent[bot], 2025-12-28)
+- 75b7b9f Polish: Update deployment docs and remaining Herald references (copilot-swe-agent[bot], 2025-12-28)
+- 90d9c95 Complete rebranding: Update HTML files and remaining references (copilot-swe-agent[bot], 2025-12-28)
+- 29b2789 Final cleanup: Update remaining Herald references to Cthulhu (copilot-swe-agent[bot], 2025-12-28)
+- 4df62c4 Complete Herald to Cthulu rebranding in code comments and docstrings (copilot-swe-agent[bot], 2025-12-28)
+- 3981f42 Update documentation and config files: Herald to Cthulu rebranding (copilot-swe-agent[bot], 2025-12-28)
+- 942c0aa Update Python source files: Herald to Cthulu rebranding (copilot-swe-agent[bot], 2025-12-28)
+- fc8e9cf Initial plan (copilot-swe-agent[bot], 2025-12-28)
+- c1b2d95 feat: Add version badge to documentation files and update titles for consistency (amuzetnoM, 2025-12-28)
+- c6a4f54 Remove obsolete MQL5 handbook files and scripts (amuzetnoM, 2025-12-28)
+- ae71cc6 feat: Enhance shutdown handler with configuration support and improved position management logging (amuzetnoM, 2025-12-28)
+- 8236d72 fix: Enhance shutdown signal handling and add input timeout for user prompts (amuzetnoM, 2025-12-28)
+- 4245c98 feat: Implement positions tracking in database with CRUD operations and update position lifecycle management (amuzetnoM, 2025-12-28)
+- 9955ba4 feat: Add method to retrieve open positions from MT5 and enhance trade adoption policy with logging option (amuzetnoM, 2025-12-28)
+- 6a55173 fix: Clean up README and improve clarity; refactor force_trade.py for better structure and readability (amuzetnoM, 2025-12-28)
+- cd60ddd fix: Remove redundant section header for improved clarity in README (amuzetnoM, 2025-12-28)
+- 74cab71 fix: Add spacing before "Adaptive Trading Intelligence" section in README for improved readability (amuzetnoM, 2025-12-28)
+- 615186b fix: Update Quick Start Guide and README for version 5.0.0; correct changelog reference (amuzetnoM, 2025-12-28)
+- cf5f14c fix: Update README title and versioning details for clarity; enhance changelog format (amuzetnoM, 2025-12-28)
+- 8a0af52 feat: Complete architectural overhaul, expand strategies and indicators; release v5.0.0 (amuzetnoM, 2025-12-28)
+- 39bbb75 feat: Update Docker build version to 5.0.0 in deployment guide (amuzetnoM, 2025-12-28)
+- aed3192 feat: Enhance setup wizard with progress indicators and improved option styling; add new indicators and strategies (amuzetnoM, 2025-12-28)
+- 439215e feat(release): Add release notes for versions 1.0.0 to 5.0.0 with highlights, key changes, and migration guides (amuzetnoM, 2025-12-28)
+- 2a8eab5 feat: Add price levels and volume analysis for momentum breakout strategy in trading loop (amuzetnoM, 2025-12-28)
+- 2a69a74 feat: Update indicator selection in setup wizard to allow skipping and adding all indicators (amuzetnoM, 2025-12-28)
 ---
 
 ## **5.0.1 — 2025-12-27**
@@ -51,6 +107,8 @@ This release advances Cthulu from v4.0.0 to v5.0.1 with a major architecture cha
 
 
 ## Table of contents
+ - [5.0.1 — 2025-12-28](#501---2025-12-28)
+ - [5.0.0 — 2025-12-27](#500---2025-12-27)
  - [4.0.0 — 2025-12-26](#400---2025-12-26)
  - [3.3.1 — 2025-12-24](#331---2025-12-24)
  - [3.2.0 — 2025-12-17](#320---2025-12-17)
@@ -63,6 +121,14 @@ This release advances Cthulu from v4.0.0 to v5.0.1 with a major architecture cha
  ---
 
 ## **4.0.0 — 2025-12-26**
+
+## **5.0.0 — 2025-12-27**
+
+### Summary
+Major architecture and runtime stability release following live validation. This release addresses issues found during live runs, hardens runtime indicator handling, removes a blocking live-run safety gate in favor of a warning, and adds CI improvements (Windows + coverage).
+
+For full details see the release notes: `docs/Changelog/v5.0.0.md`.
+
 
 ### Summary
 **MAJOR RELEASE**: Multi-Strategy Trading System with Dynamic Selection and Next-Generation Indicators
