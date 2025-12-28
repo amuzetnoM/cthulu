@@ -1,13 +1,13 @@
 <# 
 .SYNOPSIS
-    Herald Trading Bot - Automated Setup Script
+    Cthulhu Trading Bot - Automated Setup Script
 
 .DESCRIPTION
-    Automated installation and configuration for Herald MT5 trading bot.
+    Automated installation and configuration for Cthulhu MT5 trading bot.
     Sets up Python environment, installs dependencies, validates configuration.
 
 .NOTES
-    Author: Herald Project
+    Author: Cthulhu Project
     Version: 1.0.0
     Requires: Python 3.10+, MetaTrader 5 Terminal
 #>
@@ -31,7 +31,7 @@ function Write-Fail { param($msg) Write-Host "✗ $msg" -ForegroundColor Red }
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Herald Trading Bot - Automated Setup" -ForegroundColor Cyan
+Write-Host "  Cthulhu Trading Bot - Automated Setup" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
@@ -189,7 +189,7 @@ Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "  1. Configure your MT5 credentials in config\config.yaml"
 Write-Host "  2. Run tests: python -m pytest tests/"
-Write-Host "  3. Start Herald: python -m herald"
+Write-Host "  3. Start Cthulhu: python -m cthulhu"
 Write-Host ""
 Write-Host "Documentation: docs\README.md" -ForegroundColor Cyan
 Write-Host ""

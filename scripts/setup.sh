@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# Herald Trading Bot - Automated Setup Script (Linux/macOS)
+# Cthulhu Trading Bot - Automated Setup Script (Linux/macOS)
 # 
-# Automated installation and configuration for Herald MT5 trading bot.
+# Automated installation and configuration for Cthulhu MT5 trading bot.
 # Sets up Python environment, installs dependencies, validates configuration.
 
 set -e
@@ -25,7 +25,7 @@ print_fail() { echo -e "${RED}✗ $1${NC}"; exit 1; }
 
 echo ""
 echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}  Herald Trading Bot - Automated Setup${NC}"
+echo -e "${CYAN}  Cthulhu Trading Bot - Automated Setup${NC}"
 echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
 echo ""
 
@@ -168,7 +168,7 @@ echo ""
 echo -e "${CYAN}Next steps:${NC}"
 echo "  1. Configure your MT5 credentials in config/config.yaml"
 echo "  2. Run tests: python -m pytest tests/"
-echo "  3. Start Herald: python -m herald"
+echo "  3. Start Cthulhu: python -m cthulhu"
 echo ""
 echo -e "${CYAN}Documentation: docs/README.md${NC}"
 echo ""

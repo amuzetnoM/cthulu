@@ -1211,7 +1211,7 @@ def run_setup_wizard(config_path: str = "config.json") -> Optional[Dict[str, Any
     clear_screen()
     print_banner()
     
-    print("  Welcome to Herald! This wizard will help you configure")
+    print("  Welcome to Cthulhu! This wizard will help you configure")
     print("  the key trading parameters before you start.\n")
     print("  \033[90mPress Enter to accept defaults shown in [brackets].\033[0m\n")
     print_info("Answer 'y' to start a new setup (configure new settings). Answer 'n' to use the last saved configuration and start Cthulhu immediately.")

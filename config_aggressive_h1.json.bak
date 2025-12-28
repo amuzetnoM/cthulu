@@ -37,6 +37,6 @@
   "exit_strategies": [],
   "indicators": [],
   "database": {
-    "path": "herald.db"
+    "path": "cthulhu.db"
   }
 }

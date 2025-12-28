@@ -1,6 +1,6 @@
 {
-  "_comment": "Aggressive profile, H1 timeframe - for multi-timeframe run"
-  ,"mt5": {
+  "_comment": "Aggressive profile, H1 timeframe - for multi-timeframe run",
+  "mt5": {
     "login": "${MT5_LOGIN}",
     "password": "${MT5_PASSWORD}",
     "server": "${MT5_SERVER}",
@@ -36,5 +36,7 @@
   "confidence_threshold": 0.35,
   "exit_strategies": [],
   "indicators": [],
-  "database": { "path": "herald.db" }
+  "database": {
+    "path": "cthulhu.db"
+  }
 }

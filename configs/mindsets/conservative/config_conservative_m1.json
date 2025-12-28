@@ -109,7 +109,7 @@
     }
   ],
   "database": {
-    "path": "herald.db",
+    "path": "cthulhu.db",
     "backup_interval_hours": 24
   },
   "orphan_trades": {
