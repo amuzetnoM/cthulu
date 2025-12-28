@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional
 from datetime import datetime, timedelta, time as dt_time
 
 from .base import ExitStrategy, ExitSignal
-from cthulhu.position.manager import PositionInfo
+from cthulu.position.manager import PositionInfo
 
 
 class TimeBasedExit(ExitStrategy):
@@ -239,3 +239,7 @@ class TimeBasedExit(ExitStrategy):
         earliest_close = min(close_times)
         hours_until = (earliest_close - current_time).total_seconds() / 3600
         return max(0, hours_until)
+
+
+
+

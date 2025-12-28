@@ -191,3 +191,7 @@ class AnchoredVWAP(Indicator):
         
 
         return result
+
+
+
+

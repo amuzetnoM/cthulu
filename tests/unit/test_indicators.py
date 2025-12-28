@@ -31,14 +31,14 @@ class TestRSI(unittest.TestCase):
     def test_rsi_import(self):
         """Test that RSI indicator can be imported."""
         try:
-            from cthulhu.indicators.rsi import calculate_rsi
+            from cthulu.indicators.rsi import calculate_rsi
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import calculate_rsi from indicators.rsi")
     
     def test_rsi_calculation(self):
         """Test RSI calculation returns valid values."""
-        from cthulhu.indicators.rsi import calculate_rsi
+        from cthulu.indicators.rsi import calculate_rsi
         
         rsi = calculate_rsi(self.df, period=14)
         
@@ -54,7 +54,7 @@ class TestRSI(unittest.TestCase):
     
     def test_rsi_oversold_overbought(self):
         """Test RSI oversold/overbought detection."""
-        from cthulhu.indicators.rsi import calculate_rsi, is_oversold, is_overbought
+        from cthulu.indicators.rsi import calculate_rsi, is_oversold, is_overbought
         
         rsi = calculate_rsi(self.df, period=14)
         
@@ -91,14 +91,14 @@ class TestMACD(unittest.TestCase):
     def test_macd_import(self):
         """Test that MACD indicator can be imported."""
         try:
-            from cthulhu.indicators.macd import calculate_macd
+            from cthulu.indicators.macd import calculate_macd
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import calculate_macd from indicators.macd")
     
     def test_macd_calculation(self):
         """Test MACD calculation returns MACD line, signal, and histogram."""
-        from cthulhu.indicators.macd import calculate_macd
+        from cthulu.indicators.macd import calculate_macd
         
         macd, signal, histogram = calculate_macd(self.df, fast=12, slow=26, signal_period=9)
         
@@ -112,7 +112,7 @@ class TestMACD(unittest.TestCase):
     
     def test_macd_crossover(self):
         """Test MACD crossover detection."""
-        from cthulhu.indicators.macd import calculate_macd, detect_crossover
+        from cthulu.indicators.macd import calculate_macd, detect_crossover
         
         macd, signal, histogram = calculate_macd(self.df)
         
@@ -145,14 +145,14 @@ class TestBollingerBands(unittest.TestCase):
     def test_bollinger_import(self):
         """Test that Bollinger Bands can be imported."""
         try:
-            from cthulhu.indicators.bollinger import calculate_bollinger_bands
+            from cthulu.indicators.bollinger import calculate_bollinger_bands
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import calculate_bollinger_bands from indicators.bollinger")
     
     def test_bollinger_calculation(self):
         """Test Bollinger Bands calculation."""
-        from cthulhu.indicators.bollinger import calculate_bollinger_bands
+        from cthulu.indicators.bollinger import calculate_bollinger_bands
         
         upper, middle, lower = calculate_bollinger_bands(self.df, period=20, std_dev=2)
         
@@ -167,7 +167,7 @@ class TestBollingerBands(unittest.TestCase):
     
     def test_bollinger_squeeze(self):
         """Test Bollinger Bands squeeze detection."""
-        from cthulhu.indicators.bollinger import calculate_bollinger_bands, detect_squeeze
+        from cthulu.indicators.bollinger import calculate_bollinger_bands, detect_squeeze
         
         upper, middle, lower = calculate_bollinger_bands(self.df)
         
@@ -199,14 +199,14 @@ class TestStochastic(unittest.TestCase):
     def test_stochastic_import(self):
         """Test that Stochastic indicator can be imported."""
         try:
-            from cthulhu.indicators.stochastic import calculate_stochastic
+            from cthulu.indicators.stochastic import calculate_stochastic
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import calculate_stochastic from indicators.stochastic")
     
     def test_stochastic_calculation(self):
         """Test Stochastic calculation returns %K and %D."""
-        from cthulhu.indicators.stochastic import calculate_stochastic
+        from cthulu.indicators.stochastic import calculate_stochastic
         
         k, d = calculate_stochastic(self.df, k_period=14, d_period=3)
         
@@ -243,14 +243,14 @@ class TestADX(unittest.TestCase):
     def test_adx_import(self):
         """Test that ADX indicator can be imported."""
         try:
-            from cthulhu.indicators.adx import calculate_adx
+            from cthulu.indicators.adx import calculate_adx
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import calculate_adx from indicators.adx")
     
     def test_adx_calculation(self):
         """Test ADX calculation."""
-        from cthulhu.indicators.adx import calculate_adx
+        from cthulu.indicators.adx import calculate_adx
         
         adx = calculate_adx(self.df, period=14)
         
@@ -263,7 +263,7 @@ class TestADX(unittest.TestCase):
     
     def test_adx_trend_strength(self):
         """Test ADX trend strength classification."""
-        from cthulhu.indicators.adx import calculate_adx, is_strong_trend
+        from cthulu.indicators.adx import calculate_adx, is_strong_trend
         
         adx = calculate_adx(self.df)
         
@@ -294,14 +294,14 @@ class TestATR(unittest.TestCase):
     def test_atr_import(self):
         """Test that ATR indicator can be imported."""
         try:
-            from cthulhu.indicators.atr import calculate_atr
+            from cthulu.indicators.atr import calculate_atr
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import calculate_atr from indicators.atr")
     
     def test_atr_calculation(self):
         """Test ATR calculation."""
-        from cthulhu.indicators.atr import calculate_atr
+        from cthulu.indicators.atr import calculate_atr
         
         atr = calculate_atr(self.df, period=14)
         
@@ -314,3 +314,7 @@ class TestATR(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+
+

@@ -2,16 +2,16 @@ import unittest
 from unittest.mock import MagicMock, patch
 from datetime import datetime
 
-from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
-from cthulhu.persistence.database import Database
-from cthulhu.observability.telemetry import Telemetry
-from cthulhu import constants
+from cthulu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
+from cthulu.persistence.database import Database
+from cthulu.observability.telemetry import Telemetry
+from cthulu import constants
 import os
 import json
 
 
 class TestExecutionEngine(unittest.TestCase):
-    @patch('cthulhu.execution.engine.mt5')
+    @patch('Cthulu.execution.engine.mt5')
     def test_place_order_resolves_position_ticket(self, mock_mt5):
         # Mock MT5 constants
         mock_mt5.TRADE_RETCODE_DONE = 10009
@@ -49,7 +49,7 @@ class TestExecutionEngine(unittest.TestCase):
         tmp = tempfile.NamedTemporaryFile(delete=False)
         tmp.close()
         db = Database(tmp.name)
-        from cthulhu.observability.telemetry import Telemetry
+        from cthulu.observability.telemetry import Telemetry
         telemetry = Telemetry(db)
 
         engine = ExecutionEngine(connector=connector, telemetry=telemetry)
@@ -80,7 +80,7 @@ class TestExecutionEngine(unittest.TestCase):
         except Exception:
             pass
 
-    @patch('cthulhu.execution.engine.mt5')
+    @patch('Cthulu.execution.engine.mt5')
     def test_ml_collector_receives_provenance_id(self, mock_mt5):
         # Mock MT5 constants
         mock_mt5.TRADE_RETCODE_DONE = 10009
@@ -133,3 +133,7 @@ class TestExecutionEngine(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+
+

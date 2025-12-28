@@ -15,15 +15,15 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 
-from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
-from cthulhu.data.layer import DataLayer
-from cthulhu.risk.evaluator import RiskEvaluator, RiskLimits
-from cthulhu.execution.engine import ExecutionEngine
-from cthulhu.position.tracker import PositionTracker
-from cthulhu.position.lifecycle import PositionLifecycle
-from cthulhu.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
-from cthulhu.persistence.database import Database
-from cthulhu.observability.metrics import MetricsCollector
+from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulu.data.layer import DataLayer
+from cthulu.risk.evaluator import RiskEvaluator, RiskLimits
+from cthulu.execution.engine import ExecutionEngine
+from cthulu.position.tracker import PositionTracker
+from cthulu.position.lifecycle import PositionLifecycle
+from cthulu.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
+from cthulu.persistence.database import Database
+from cthulu.observability.metrics import MetricsCollector
 from config_schema import Config
 from config.mindsets import apply_mindset
 
@@ -59,8 +59,8 @@ class SystemComponents:
     exporter: Any = None
 
 
-class CthulhuBootstrap:
-    """Handles Cthulhu system initialization."""
+class CthuluBootstrap:
+    """Handles Cthulu system initialization."""
     
     def __init__(self, logger: Optional[logging.Logger] = None):
         """Initialize bootstrap handler.
@@ -208,7 +208,7 @@ class CthulhuBootstrap:
         additional monitoring and convenience APIs used by the trading loop.
         """
         try:
-            from cthulhu.position.manager import PositionManager
+            from cthulu.position.manager import PositionManager
             self.logger.info("Initializing position manager...")
             pm = PositionManager(connector=connector, execution_engine=execution_engine)
             self.logger.info('PositionManager initialized')
@@ -305,7 +305,7 @@ class CthulhuBootstrap:
             Initialized Database instance
         """
         self.logger.info("Initializing database...")
-        db_path = config.get('database', {}).get('path', 'cthulhu.db')
+        db_path = config.get('database', {}).get('path', 'Cthulu.db')
         database = Database(db_path)
         return database
     
@@ -342,7 +342,7 @@ class CthulhuBootstrap:
                 ml_enabled = args.enable_ml
             
             if ml_enabled:
-                from cthulhu.ML_RL.instrumentation import MLDataCollector
+                from cthulu.ML_RL.instrumentation import MLDataCollector
                 ml_prefix = ml_config.get('prefix', 'events')
                 ml_collector = MLDataCollector(prefix=ml_prefix)
                 self.logger.info('MLDataCollector initialized')
@@ -368,7 +368,7 @@ class CthulhuBootstrap:
         """
         advisory_manager = None
         try:
-            from cthulhu.advisory.manager import AdvisoryManager
+            from cthulu.advisory.manager import AdvisoryManager
             advisory_cfg = config.get('advisory', {}) if isinstance(config, dict) else {}
             advisory_manager = AdvisoryManager(advisory_cfg, execution_engine, ml_collector)
             if advisory_manager.enabled:
@@ -391,8 +391,8 @@ class CthulhuBootstrap:
         try:
             prom_cfg = config.get('observability', {}).get('prometheus', {})
             if prom_cfg.get('enabled', False):
-                from cthulhu.observability.prometheus import PrometheusExporter
-                exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'cthulhu'))
+                from cthulu.observability.prometheus import PrometheusExporter
+                exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'Cthulu'))
                 self.logger.info('Prometheus exporter initialized')
         except Exception:
             self.logger.exception('Failed to initialize Prometheus exporter; continuing without it')
@@ -418,7 +418,7 @@ class CthulhuBootstrap:
         """
         monitor = None
         try:
-            from cthulhu.monitoring.trade_monitor import TradeMonitor
+            from cthulu.monitoring.trade_monitor import TradeMonitor
             poll_interval = config.get('monitor_poll_interval', 5.0)
             monitor = TradeMonitor(
                 position_tracker,
@@ -434,7 +434,7 @@ class CthulhuBootstrap:
         return monitor
     
     def bootstrap(self, config_path: str, args: Any) -> SystemComponents:
-        """Bootstrap the entire Cthulhu system.
+        """Bootstrap the entire Cthulu system.
         
         Args:
             config_path: Path to configuration file
@@ -469,7 +469,7 @@ class CthulhuBootstrap:
         database = self.initialize_database(config)
         # Wire telemetry helper to execution engine so provenance is persisted
         try:
-            from cthulhu.observability.telemetry import Telemetry
+            from cthulu.observability.telemetry import Telemetry
             telemetry = Telemetry(database)
             execution_engine.telemetry = telemetry
         except Exception:
@@ -546,5 +546,9 @@ def bootstrap_system(config_path: str, args: Any, logger: logging.Logger) -> Sys
     Returns:
         SystemComponents with all initialized components
     """
-    bootstrapper = CthulhuBootstrap(logger=logger)
+    bootstrapper = CthuluBootstrap(logger=logger)
     return bootstrapper.bootstrap(config_path, args)
+
+
+
+

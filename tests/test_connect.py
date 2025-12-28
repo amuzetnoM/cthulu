@@ -32,3 +32,7 @@ def test_mt5_initialize_and_account_info():
         info = mt5.account_info()
         assert info is not None
         mt5.shutdown()
+
+
+
+

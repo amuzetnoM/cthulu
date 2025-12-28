@@ -1,6 +1,6 @@
-Cthulhu ML/RI Pipeline
+Cthulu ML/RI Pipeline
 
-Purpose: A lightweight, fast, and reliable ML pipeline for Cthulhu.
+Purpose: A lightweight, fast, and reliable ML pipeline for Cthulu.
 
 High-level layout:
 
@@ -19,3 +19,7 @@ Architecture:
 4. If approval and performance: advisory -> gated advisory filters -> advisory+small position sizing -> production.
 
 Design principles: simple, explainable, versioned, and auditable. Keep processing fast and robust; favor lightweight models initially.
+
+
+
+

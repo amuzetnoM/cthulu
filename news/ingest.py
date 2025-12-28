@@ -5,9 +5,9 @@ from typing import Optional
 import logging
 from .manager import NewsManager
 from .base import NewsAdapter, NewsEvent
-from cthulhu.ML_RL.instrumentation import MLDataCollector
+from cthulu.ML_RL.instrumentation import MLDataCollector
 
-logger = logging.getLogger('cthulhu.news.ingest')
+logger = logging.getLogger('Cthulu.news.ingest')
 
 
 class NewsIngestor:
@@ -68,3 +68,7 @@ class NewsIngestor:
                 if self._stop.is_set():
                     break
                 time.sleep(1)
+
+
+
+

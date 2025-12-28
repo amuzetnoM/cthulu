@@ -1,18 +1,22 @@
-# Prometheus configuration for Cthulhu Trading System
+# Prometheus configuration for Cthulu Trading System
 
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    monitor: 'cthulhu-monitor'
+    monitor: 'Cthulu-monitor'
 
 scrape_configs:
-  - job_name: 'cthulhu'
+  - job_name: 'Cthulu'
     static_configs:
-      - targets: ['cthulhu:8181']
+      - targets: ['Cthulu:8181']
         labels:
-          service: 'cthulhu-trading'
+          service: 'Cthulu-trading'
     
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
+
+
+
+

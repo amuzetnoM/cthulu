@@ -2,12 +2,12 @@
 """CLI to query recent order provenance rows."""
 import argparse
 import json
-from cthulhu.persistence.database import Database
+from cthulu.persistence.database import Database
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--db', default='cthulhu.db', help='Path to DB file')
+    p.add_argument('--db', default='Cthulu.db', help='Path to DB file')
     p.add_argument('--limit', type=int, default=50)
     args = p.parse_args()
 
@@ -18,3 +18,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+

@@ -506,3 +506,7 @@ class RiskEvaluator:
                 'risk_percent': 1.0,
                 'timeframes': ['M15']
             }
+
+
+
+

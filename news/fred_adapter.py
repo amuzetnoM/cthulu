@@ -6,7 +6,7 @@ import logging
 from .base import NewsAdapter, NewsEvent
 from datetime import datetime
 
-logger = logging.getLogger('cthulhu.news.fred')
+logger = logging.getLogger('Cthulu.news.fred')
 
 
 class FREDAdapter(NewsAdapter):
@@ -56,3 +56,7 @@ class FREDAdapter(NewsAdapter):
                 logger.exception('Failed to fetch FRED series %s', s)
                 continue
         return out
+
+
+
+

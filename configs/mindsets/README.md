@@ -11,4 +11,8 @@ Suffix mapping:
 
 Guidelines:
 - Keep sensitive MT5 credentials in `.env` and use `FROM_ENV` placeholders in these files.
-- Use `--mindset <name>` and `--config <path>` or the `scripts/run_cthulhu_multi_tf.ps1` helper to run multiple timeframes.
+- Use `--mindset <name>` and `--config <path>` or the `scripts/run_Cthulu_multi_tf.ps1` helper to run multiple timeframes.
+
+
+
+

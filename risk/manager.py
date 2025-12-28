@@ -7,7 +7,7 @@ and basic policy checks (max positions, allowed leverage, per-trade risk percent
 from typing import Tuple, Optional, Dict, Any
 import logging
 
-logger = logging.getLogger('cthulhu.risk')
+logger = logging.getLogger('Cthulu.risk')
 
 
 class RiskManager:
@@ -59,3 +59,7 @@ class RiskManager:
 
 class RiskLimits:
     pass
+
+
+
+

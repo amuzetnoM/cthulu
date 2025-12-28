@@ -1,6 +1,6 @@
 ---
 title: Deployment Guide
-description: Production deployment strategies for Cthulhu including Docker, Linux, Windows service, and monitoring setup
+description: Production deployment strategies for Cthulu including Docker, Linux, Windows service, and monitoring setup
 tags: [deployment, docker, production, monitoring]
 slug: /docs/deployment
 sidebar_position: 5
@@ -23,12 +23,12 @@ sidebar_position: 5
 
 ### Using Docker (Recommended)
 
-The fastest way to deploy Cthulhu is using Docker:
+The fastest way to deploy Cthulu is using Docker:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/amuzetnoM/cthulhu.git
-cd cthulhu
+git clone https://github.com/amuzetnoM/Cthulu.git
+cd Cthulu
 
 # 2. Configure environment
 cp .env.example .env
@@ -42,7 +42,7 @@ nano config.json  # Adjust risk settings
 docker-compose up -d
 
 # 5. View logs
-docker-compose logs -f cthulhu
+docker-compose logs -f Cthulu
 
 # 6. Access dashboards
 # Grafana: http://localhost:3000 (admin/admin)
@@ -65,10 +65,10 @@ docker-compose logs -f cthulhu
 
 ```bash
 # Build image
-docker build -t cthulhu:latest .
+docker build -t Cthulu:latest .
 
 # Or build with specific version
-docker build -t cthulhu:5.0.1 .
+docker build -t Cthulu:5.0.1 .
 ```
 
 #### 2. Environment Configuration
@@ -99,13 +99,13 @@ docker-compose up -d
 
 # Or run standalone
 docker run -d \
-  --name cthulhu \
+  --name Cthulu \
   --env-file .env \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/logs:/app/logs \
   -v $(pwd)/config.json:/app/config.json:ro \
   -p 8181:8181 \
-  cthulhu:latest
+  Cthulu:latest
 ```
 
 #### 4. Verify Deployment
@@ -115,10 +115,10 @@ docker run -d \
 docker ps
 
 # View logs
-docker logs cthulhu -f
+docker logs Cthulu -f
 
 # Check health
-docker inspect cthulhu | grep -A 5 Health
+docker inspect Cthulu | grep -A 5 Health
 ```
 
 ### Docker Commands
@@ -130,14 +130,14 @@ docker-compose up -d
 # Stop services
 docker-compose down
 
-# Restart Cthulhu only
-docker-compose restart cthulhu
+# Restart Cthulu only
+docker-compose restart Cthulu
 
 # View logs
-docker-compose logs -f cthulhu
+docker-compose logs -f Cthulu
 
 # Execute commands in container
-docker-compose exec cthulhu python -m cthulhu --help
+docker-compose exec Cthulu python -m Cthulu --help
 
 # Update to latest version
 docker-compose pull
@@ -149,16 +149,16 @@ docker-compose up -d
 ```bash
 # Run multiple instances with different symbols
 docker run -d \
-  --name cthulhu-eurusd \
+  --name Cthulu-eurusd \
   -e SYMBOL=EURUSD \
   -v $(pwd)/config-eurusd.json:/app/config.json:ro \
-  cthulhu:latest
+  Cthulu:latest
 
 docker run -d \
-  --name cthulhu-xauusd \
+  --name Cthulu-xauusd \
   -e SYMBOL=XAUUSD \
   -v $(pwd)/config-xauusd.json:/app/config.json:ro \
-  cthulhu:latest
+  Cthulu:latest
 ```
 
 ---
@@ -182,12 +182,12 @@ sudo yum install python312 python3-pip
 
 ```bash
 # Create application directory
-sudo mkdir -p /opt/cthulhu
-sudo chown $USER:$USER /opt/cthulhu
-cd /opt/cthulhu
+sudo mkdir -p /opt/Cthulu
+sudo chown $USER:$USER /opt/Cthulu
+cd /opt/Cthulu
 
 # Clone repository
-git clone https://github.com/amuzetnoM/cthulhu.git .
+git clone https://github.com/amuzetnoM/Cthulu.git .
 
 # Create virtual environment
 python3 -m venv venv
@@ -204,27 +204,27 @@ nano config.json
 
 #### 3. Create Systemd Service
 
-Create `/etc/systemd/system/cthulhu.service`:
+Create `/etc/systemd/system/Cthulu.service`:
 
 ```ini
 [Unit]
-Description=Cthulhu Trading System
+Description=Cthulu Trading System
 After=network.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-User=cthulhu
-Group=cthulhu
-WorkingDirectory=/opt/cthulhu
-Environment="PATH=/opt/cthulhu/venv/bin"
+User=Cthulu
+Group=Cthulu
+WorkingDirectory=/opt/Cthulu
+Environment="PATH=/opt/Cthulu/venv/bin"
 
 # Environment variables from file
-EnvironmentFile=/opt/cthulhu/.env
+EnvironmentFile=/opt/Cthulu/.env
 
 # Start command
-ExecStart=/opt/cthulhu/venv/bin/python -m cthulhu \
-    --config /opt/cthulhu/config.json \
+ExecStart=/opt/Cthulu/venv/bin/python -m Cthulu \
+    --config /opt/Cthulu/config.json \
     --skip-setup \
     --no-prompt \
     --log-level INFO
@@ -240,7 +240,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/cthulhu/data /opt/cthulhu/logs
+ReadWritePaths=/opt/Cthulu/data /opt/Cthulu/logs
 
 # Resource limits
 MemoryLimit=1G
@@ -249,7 +249,7 @@ CPUQuota=200%
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=cthulhu
+SyslogIdentifier=Cthulu
 
 [Install]
 WantedBy=multi-user.target
@@ -258,11 +258,11 @@ WantedBy=multi-user.target
 #### 4. Create Service User
 
 ```bash
-# Create cthulhu user (no login)
-sudo useradd -r -s /bin/false -d /opt/cthulhu cthulhu
+# Create Cthulu user (no login)
+sudo useradd -r -s /bin/false -d /opt/Cthulu Cthulu
 
 # Set permissions
-sudo chown -R cthulhu:cthulhu /opt/cthulhu
+sudo chown -R Cthulu:Cthulu /opt/Cthulu
 ```
 
 #### 5. Enable and Start Service
@@ -272,41 +272,41 @@ sudo chown -R cthulhu:cthulhu /opt/cthulhu
 sudo systemctl daemon-reload
 
 # Enable service
-sudo systemctl enable cthulhu
+sudo systemctl enable Cthulu
 
 # Start service
-sudo systemctl start cthulhu
+sudo systemctl start Cthulu
 
 # Check status
-sudo systemctl status cthulhu
+sudo systemctl status Cthulu
 
 # View logs
-sudo journalctl -u cthulhu -f
+sudo journalctl -u Cthulu -f
 ```
 
 ### Service Management
 
 ```bash
 # Start service
-sudo systemctl start cthulhu
+sudo systemctl start Cthulu
 
 # Stop service
-sudo systemctl stop cthulhu
+sudo systemctl stop Cthulu
 
 # Restart service
-sudo systemctl restart cthulhu
+sudo systemctl restart Cthulu
 
 # Check status
-sudo systemctl status cthulhu
+sudo systemctl status Cthulu
 
 # View logs (last 100 lines)
-sudo journalctl -u cthulhu -n 100
+sudo journalctl -u Cthulu -n 100
 
 # Follow logs in real-time
-sudo journalctl -u cthulhu -f
+sudo journalctl -u Cthulu -f
 
 # Check resource usage
-systemctl show cthulhu --property=MemoryCurrent,CPUUsageNSec
+systemctl show Cthulu --property=MemoryCurrent,CPUUsageNSec
 ```
 
 ---
@@ -329,52 +329,52 @@ $env:Path += ";C:\tools\nssm-2.24\win64"
 #### 2. Install Service
 
 ```powershell
-# Navigate to Cthulhu directory
+# Navigate to Cthulu directory
 cd C:\workspace\Herald
 
 # Install service
-nssm install Cthulhu "C:\workspace\Herald\venv\Scripts\python.exe" `
-    "-m" "cthulhu" `
+nssm install Cthulu "C:\workspace\Herald\venv\Scripts\python.exe" `
+    "-m" "Cthulu" `
     "--config" "config.json" `
     "--skip-setup" `
     "--no-prompt"
 
 # Set working directory
-nssm set Cthulhu AppDirectory "C:\workspace\Herald"
+nssm set Cthulu AppDirectory "C:\workspace\Herald"
 
 # Set environment variables
-nssm set Cthulhu AppEnvironmentExtra MT5_LOGIN=12345678 MT5_PASSWORD=your_password
+nssm set Cthulu AppEnvironmentExtra MT5_LOGIN=12345678 MT5_PASSWORD=your_password
 
 # Configure restart policy
-nssm set Cthulhu AppExit Default Restart
-nssm set Cthulhu AppThrottle 5000
-nssm set Cthulhu AppRestartDelay 10000
+nssm set Cthulu AppExit Default Restart
+nssm set Cthulu AppThrottle 5000
+nssm set Cthulu AppRestartDelay 10000
 
 # Configure logging
-nssm set Cthulhu AppStdout "C:\workspace\Herald\logs\stdout.log"
-nssm set Cthulhu AppStderr "C:\workspace\Herald\logs\stderr.log"
+nssm set Cthulu AppStdout "C:\workspace\Herald\logs\stdout.log"
+nssm set Cthulu AppStderr "C:\workspace\Herald\logs\stderr.log"
 
 # Start service
-nssm start Cthulhu
+nssm start Cthulu
 ```
 
 #### 3. Service Management
 
 ```powershell
 # Start service
-nssm start Cthulhu
+nssm start Cthulu
 
 # Stop service
-nssm stop Cthulhu
+nssm stop Cthulu
 
 # Restart service
-nssm restart Cthulhu
+nssm restart Cthulu
 
 # Check status
-nssm status Cthulhu
+nssm status Cthulu
 
 # Remove service
-nssm remove Cthulhu confirm
+nssm remove Cthulu confirm
 ```
 
 ### Using Windows Task Scheduler (Alternative)
@@ -385,7 +385,7 @@ For non-service deployment, use Task Scheduler:
 # Create scheduled task
 $action = New-ScheduledTaskAction `
     -Execute "C:\workspace\Herald\venv\Scripts\python.exe" `
-    -Argument "-m cthulhu --config config.json --skip-setup --no-prompt" `
+    -Argument "-m Cthulu --config config.json --skip-setup --no-prompt" `
     -WorkingDirectory "C:\workspace\Herald"
 
 $trigger = New-ScheduledTaskTrigger -AtStartup
@@ -396,7 +396,7 @@ $principal = New-ScheduledTaskPrincipal `
     -RunLevel Highest
 
 Register-ScheduledTask `
-    -TaskName "Cthulhu Trading" `
+    -TaskName "Cthulu Trading" `
     -Action $action `
     -Trigger $trigger `
     -Principal $principal `
@@ -469,9 +469,9 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'cthulhu'
+  - job_name: 'Cthulu'
     static_configs:
-      - targets: ['cthulhu:8181']
+      - targets: ['Cthulu:8181']
     scrape_interval: 10s  # More frequent for trading
 ```
 
@@ -492,24 +492,24 @@ Key dashboards:
 
 ### Alert Rules
 
-Create `/opt/cthulhu/monitoring/alert_rules.yml`:
+Create `/opt/Cthulu/monitoring/alert_rules.yml`:
 
 ```yaml
 groups:
-  - name: cthulhu_alerts
+  - name: Cthulu_alerts
     interval: 30s
     rules:
       - alert: HighDailyLoss
-        expr: cthulhu_daily_pnl < -100
+        expr: Cthulu_daily_pnl < -100
         for: 5m
         annotations:
           summary: "Daily loss exceeds threshold"
           
       - alert: ConnectionDown
-        expr: up{job="cthulhu"} == 0
+        expr: up{job="Cthulu"} == 0
         for: 2m
         annotations:
-          summary: "Cthulhu connection lost"
+          summary: "Cthulu connection lost"
           
       - alert: HighMemoryUsage
         expr: process_resident_memory_bytes > 1e9
@@ -524,13 +524,13 @@ groups:
 
 ### Automated Backup Script
 
-Create `/opt/cthulhu/scripts/backup.sh`:
+Create `/opt/Cthulu/scripts/backup.sh`:
 
 ```bash
 #!/bin/bash
 
 # Configuration
-BACKUP_DIR="/opt/cthulhu/backups"
+BACKUP_DIR="/opt/Cthulu/backups"
 RETENTION_DAYS=30
 DATE=$(date +%Y%m%d_%H%M%S)
 
@@ -538,16 +538,16 @@ DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p "$BACKUP_DIR"
 
 # Backup database
-cp /opt/cthulhu/cthulhu.db "$BACKUP_DIR/cthulhu_${DATE}.db"
+cp /opt/Cthulu/Cthulu.db "$BACKUP_DIR/Cthulu_${DATE}.db"
 
 # Backup configuration
 tar -czf "$BACKUP_DIR/config_${DATE}.tar.gz" \
-    /opt/cthulhu/config.json \
-    /opt/cthulhu/.env \
-    /opt/cthulhu/configs/
+    /opt/Cthulu/config.json \
+    /opt/Cthulu/.env \
+    /opt/Cthulu/configs/
 
 # Backup logs (last 7 days)
-find /opt/cthulhu/logs -name "*.log" -mtime -7 \
+find /opt/Cthulu/logs -name "*.log" -mtime -7 \
     -exec tar -czf "$BACKUP_DIR/logs_${DATE}.tar.gz" {} +
 
 # Remove old backups
@@ -560,33 +560,33 @@ echo "Backup completed: $DATE"
 Make executable and add to cron:
 
 ```bash
-chmod +x /opt/cthulhu/scripts/backup.sh
+chmod +x /opt/Cthulu/scripts/backup.sh
 
 # Add to crontab (daily at 2 AM)
 crontab -e
-0 2 * * * /opt/cthulhu/scripts/backup.sh >> /opt/cthulhu/logs/backup.log 2>&1
+0 2 * * * /opt/Cthulu/scripts/backup.sh >> /opt/Cthulu/logs/backup.log 2>&1
 ```
 
 ### Recovery Procedure
 
 ```bash
-# 1. Stop Cthulhu
-sudo systemctl stop cthulhu
+# 1. Stop Cthulu
+sudo systemctl stop Cthulu
 
 # 2. Restore database
-cp /opt/cthulhu/backups/cthulhu_YYYYMMDD_HHMMSS.db /opt/cthulhu/cthulhu.db
+cp /opt/Cthulu/backups/Cthulu_YYYYMMDD_HHMMSS.db /opt/Cthulu/Cthulu.db
 
 # 3. Restore configuration
-tar -xzf /opt/cthulhu/backups/config_YYYYMMDD_HHMMSS.tar.gz -C /
+tar -xzf /opt/Cthulu/backups/config_YYYYMMDD_HHMMSS.tar.gz -C /
 
 # 4. Verify permissions
-sudo chown -R cthulhu:cthulhu /opt/cthulhu
+sudo chown -R Cthulu:Cthulu /opt/Cthulu
 
-# 5. Restart Cthulhu
-sudo systemctl start cthulhu
+# 5. Restart Cthulu
+sudo systemctl start Cthulu
 
 # 6. Verify
-sudo systemctl status cthulhu
+sudo systemctl status Cthulu
 ```
 
 ---
@@ -598,23 +598,23 @@ sudo systemctl status cthulhu
 **Issue**: Service won't start
 ```bash
 # Check logs
-sudo journalctl -u cthulhu -n 50
+sudo journalctl -u Cthulu -n 50
 
 # Verify Python environment
-/opt/cthulhu/venv/bin/python --version
+/opt/Cthulu/venv/bin/python --version
 
 # Test configuration
-/opt/cthulhu/venv/bin/python -m cthulhu --config config.json --help
+/opt/Cthulu/venv/bin/python -m Cthulu --config config.json --help
 ```
 
 **Issue**: High memory usage
 ```bash
 # Check current usage
-docker stats cthulhu
+docker stats Cthulu
 
 # Adjust memory limit in docker-compose.yml
 services:
-  cthulhu:
+  Cthulu:
     mem_limit: 512m
 ```
 
@@ -634,7 +634,7 @@ cat .env | grep MT5_
 
 ## Support & Updates
 
-### Updating Cthulhu
+### Updating Cthulu
 
 ```bash
 # Docker
@@ -642,18 +642,22 @@ docker-compose pull
 docker-compose up -d
 
 # Systemd
-cd /opt/cthulhu
+cd /opt/Cthulu
 git pull
-sudo systemctl restart cthulhu
+sudo systemctl restart Cthulu
 ```
 
 ### Getting Help
 
-- Documentation: `/opt/cthulhu/docs/`
-- Issues: https://github.com/amuzetnoM/cthulhu/issues
-- Logs: `/opt/cthulhu/logs/cthulhu.log`
+- Documentation: `/opt/Cthulu/docs/`
+- Issues: https://github.com/amuzetnoM/Cthulu/issues
+- Logs: `/opt/Cthulu/logs/Cthulu.log`
 
 ---
 
 **Last Updated**: December 2024  
 **Version**: 3.3.1
+
+
+
+

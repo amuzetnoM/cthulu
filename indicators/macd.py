@@ -170,3 +170,7 @@ def detect_crossover(macd_series: pd.Series, signal_series: pd.Series):
     bullish = (macd_series > signal_series) & (macd_series.shift(1) <= signal_series.shift(1))
     bearish = (macd_series < signal_series) & (macd_series.shift(1) >= signal_series.shift(1))
     return bullish.fillna(False), bearish.fillna(False)
+
+
+
+

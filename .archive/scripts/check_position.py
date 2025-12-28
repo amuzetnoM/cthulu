@@ -11,3 +11,7 @@ if pos:
     p = pos[0]
     print('ticket', p.ticket, 'symbol', p.symbol, 'volume', p.volume, 'sl', p.sl, 'tp', p.tp)
 mt5.shutdown()
+
+
+
+

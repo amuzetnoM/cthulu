@@ -2,13 +2,13 @@ import pandas as pd
 import numpy as np
 import logging
 
-from cthulhu.__main__ import ensure_runtime_indicators
-from cthulhu.strategy.sma_crossover import SmaCrossover
-from cthulhu.indicators.macd import MACD
-from cthulhu.indicators.bollinger import BollingerBands
-from cthulhu.indicators.stochastic import Stochastic
+from cthulu.__main__ import ensure_runtime_indicators
+from cthulu.strategy.sma_crossover import SmaCrossover
+from cthulu.indicators.macd import MACD
+from cthulu.indicators.bollinger import BollingerBands
+from cthulu.indicators.stochastic import Stochastic
 
-logger = logging.getLogger('cthulhu.tests')
+logger = logging.getLogger('Cthulu.tests')
 
 
 def _make_ohlcv(n=300):
@@ -51,3 +51,7 @@ def test_ensure_runtime_adds_macd_bollinger_stochastic():
     assert 'macd' in df.columns and 'signal' in df.columns and 'histogram' in df.columns
     assert 'bb_upper' in df.columns and 'bb_middle' in df.columns and 'bb_lower' in df.columns
     assert 'stoch_k' in df.columns and 'stoch_d' in df.columns
+
+
+
+

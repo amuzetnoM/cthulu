@@ -5,7 +5,7 @@ import logging
 from .base import NewsAdapter, NewsEvent
 import time
 
-logger = logging.getLogger('cthulhu.news.tradingeconomics')
+logger = logging.getLogger('Cthulu.news.tradingeconomics')
 
 
 class TradingEconomicsAdapter(NewsAdapter):
@@ -74,3 +74,7 @@ class TradingEconomicsAdapter(NewsAdapter):
         except Exception:
             logger.exception('Failed to fetch tradingeconomics calendar')
             return []
+
+
+
+

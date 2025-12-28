@@ -7,7 +7,7 @@ Provides preset configurations for different trading styles:
 - CONSERVATIVE: Lower risk, wider stops, stricter filters
 
 Usage:
-    from cthulhu.config.mindsets import MINDSETS, apply_mindset
+    from cthulu.config.mindsets import MINDSETS, apply_mindset
     
     # Apply a mindset to your config
     config = apply_mindset(base_config, "balanced")
@@ -286,3 +286,7 @@ def list_mindsets() -> Dict[str, str]:
         Dict of mindset_name -> description
     """
     return {name: m["description"] for name, m in MINDSETS.items()}
+
+
+
+

@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 
 from .base import ExitStrategy, ExitSignal
-from cthulhu.position.manager import PositionInfo
+from cthulu.position.manager import PositionInfo
 
 
 class ProfitTargetExit(ExitStrategy):
@@ -238,3 +238,7 @@ class ProfitTargetExit(ExitStrategy):
         else:
             profit_pct = (position.unrealized_pnl / (position.volume * position.open_price)) * 100
             return max(0, self.target_pct - profit_pct)
+
+
+
+

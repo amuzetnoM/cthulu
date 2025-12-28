@@ -1,6 +1,6 @@
 import time
-from cthulhu.advisory.manager import AdvisoryManager
-from cthulhu.execution.engine import OrderRequest, OrderType
+from cthulu.advisory.manager import AdvisoryManager
+from cthulu.execution.engine import OrderRequest, OrderType
 
 
 class DummyExec:
@@ -69,3 +69,7 @@ def test_ghost_mode_places_limited_trades():
 
     r3 = m.decide(req)
     assert r3['action'] == 'reject'
+
+
+
+

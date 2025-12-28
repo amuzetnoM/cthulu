@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 from datetime import datetime
-from cthulhu.exit.base import ExitStrategy, ExitSignal
-from cthulhu.position.manager import PositionInfo
+from cthulu.exit.base import ExitStrategy, ExitSignal
+from cthulu.position.manager import PositionInfo
 
 
 class StopLossExit(ExitStrategy):
@@ -80,3 +80,7 @@ class StopLossExit(ExitStrategy):
 
 # Backwards-compatibility alias
 StopLoss = StopLossExit
+
+
+
+

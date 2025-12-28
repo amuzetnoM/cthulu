@@ -11,3 +11,7 @@ if info:
     print('tick ask, bid:', getattr(tick, 'ask', None), getattr(tick, 'bid', None))
 mt5.shutdown()
 print('done')
+
+
+
+

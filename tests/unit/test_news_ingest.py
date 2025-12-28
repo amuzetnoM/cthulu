@@ -1,8 +1,8 @@
 import time
-from cthulhu.news.manager import NewsManager
-from cthulhu.news.base import NewsEvent, NewsAdapter
-from cthulhu.news.ingest import NewsIngestor
-from cthulhu.ML_RL.instrumentation import MLDataCollector
+from cthulu.news.manager import NewsManager
+from cthulu.news.base import NewsEvent, NewsAdapter
+from cthulu.news.ingest import NewsIngestor
+from cthulu.ML_RL.instrumentation import MLDataCollector
 
 
 class FakeManager(NewsManager):
@@ -36,6 +36,10 @@ def test_ingestor_records_events(tmp_path):
     # Verify some output files exist for the collector prefix
     import os
     # Use the collector's BASE directory for ML files
-    from cthulhu.ML_RL.instrumentation import BASE as ML_BASE
+    from cthulu.ML_RL.instrumentation import BASE as ML_BASE
     files = [f for f in os.listdir(ML_BASE) if f.startswith(collector.prefix)]
     assert files, 'No ML files written by ingest loop'
+
+
+
+

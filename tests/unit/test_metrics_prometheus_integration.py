@@ -1,7 +1,7 @@
 import math
 from time import sleep
-from cthulhu.observability.metrics import MetricsCollector
-from cthulhu.observability.prometheus import PrometheusExporter
+from cthulu.observability.metrics import MetricsCollector
+from cthulu.observability.prometheus import PrometheusExporter
 
 
 def test_drawdown_duration_and_recovery():
@@ -48,3 +48,6 @@ def test_prometheus_exporter_integration():
     assert 'herald_test_drawdown_percent' in metrics
     assert 'herald_test_avg_rr' in metrics
     assert metrics.get('herald_test_rr_count', 0) >= 0
+
+
+

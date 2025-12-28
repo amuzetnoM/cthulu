@@ -9,7 +9,7 @@ import logging
 from typing import Optional, Dict, Any, Tuple
 from dataclasses import dataclass
 from datetime import date
-from cthulhu.strategy.base import Signal, SignalType
+from cthulu.strategy.base import Signal, SignalType
 
 
 @dataclass
@@ -69,7 +69,7 @@ class RiskManager:
             limits: Risk limit configuration
         """
         self.limits = limits
-        self.logger = logging.getLogger("cthulhu.risk")
+        self.logger = logging.getLogger("Cthulu.risk")
         
         # Daily tracking
         self.daily_pnl = 0.0
@@ -421,3 +421,7 @@ class RiskManager:
                 'max_total_positions': self.limits.max_total_positions,
             }
         }
+
+
+
+

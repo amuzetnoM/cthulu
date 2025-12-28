@@ -9,7 +9,7 @@ import pandas as pd
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from cthulhu.strategy.base import Strategy, Signal, SignalType
+from cthulu.strategy.base import Strategy, Signal, SignalType
 
 
 class EmaCrossover(Strategy):
@@ -171,3 +171,7 @@ class EmaCrossover(Strategy):
                 'strategy_type': 'day_trading'
             }
         )
+
+
+
+

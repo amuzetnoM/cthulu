@@ -1,4 +1,4 @@
-from cthulhu.news.tradingeconomics_adapter import TradingEconomicsAdapter
+from cthulu.news.tradingeconomics_adapter import TradingEconomicsAdapter
 
 
 def test_no_key_returns_empty():
@@ -32,3 +32,7 @@ def test_parses_calendar(monkeypatch):
     assert ev.provider == 'TradingEconomics'
     assert 'US' == ev.symbol
     assert ev.meta.get('importance') == 'high'
+
+
+
+

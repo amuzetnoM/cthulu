@@ -32,3 +32,7 @@ for t in tests:
     money = re.search(r"\$\s*(\d+(?:\.\d+)?)", lower) or re.search(r"max\s*loss\s*(?:is|of|:)??\s*(\d+(?:\.\d+)?)", lower)
     print('money match:', money.group(0) if money else None)
     print('parse_natural_language_intent:', parse_natural_language_intent(t))
+
+
+
+

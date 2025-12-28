@@ -1,6 +1,6 @@
 ---
 title: Risk Management
-description: Risk management configuration and stop-loss strategies for Cthulhu trading system
+description: Risk management configuration and stop-loss strategies for Cthulu trading system
 tags: [risk-management, stop-loss, position-sizing]
 slug: /docs/risk-management
 sidebar_position: 9
@@ -11,7 +11,7 @@ sidebar_position: 9
 
 ## Overview
 
-This document describes the lightweight risk-management knobs added to Cthulhu and how the system adapts stop-loss placement to account size.
+This document describes the lightweight risk-management knobs added to Cthulu and how the system adapts stop-loss placement to account size.
 
 Key configuration entries (in `config_schema.py` under `risk`):
 
@@ -31,16 +31,20 @@ Key configuration entries (in `config_schema.py` under `risk`):
 
 Behavior summary:
 
-- When placing a new order (or when applying SL during adoption), Cthulhu calls `position.risk_manager.suggest_sl_adjustment(...)` with the account balance and proposed SL.
+- When placing a new order (or when applying SL during adoption), Cthulu calls `position.risk_manager.suggest_sl_adjustment(...)` with the account balance and proposed SL.
 - If the proposed SL is wider than a computed relative threshold, the `risk_manager` returns an `adjusted_sl` nearer to market and suggests target timeframes and a trading mindset (`scalping`, `short-term`, `swing`).
 - The `ExecutionEngine` and `PositionManager` will apply the adjusted SL automatically and attach the suggestion to order/position metadata.
 
 Operational guidance:
 
-- For small accounts (<= 1k), thresholds are tight so Cthulhu will favor scalping timeframes (`M1`, `M5`, `M15`) and small SLs.
-- For larger accounts, thresholds are looser and Cthulhu will permit wider SLs and swing-style timeframes.
+- For small accounts (<= 1k), thresholds are tight so Cthulu will favor scalping timeframes (`M1`, `M5`, `M15`) and small SLs.
+- For larger accounts, thresholds are looser and Cthulu will permit wider SLs and swing-style timeframes.
 
 Future improvements:
 
 - Symbol-specific pip scaling and lot-size-aware distance calculations.
 - Volatility-based dynamic thresholds using recent ATR.
+
+
+
+

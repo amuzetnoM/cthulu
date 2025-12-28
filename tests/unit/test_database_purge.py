@@ -1,11 +1,11 @@
 import pytest
 from datetime import datetime, timedelta
 
-from cthulhu.persistence.database import Database
+from cthulu.persistence.database import Database
 
 
 def test_purge_provenance_older_than(tmp_path):
-    db_path = tmp_path / "test_cthulhu.db"
+    db_path = tmp_path / "test_Cthulu.db"
     db = Database(str(db_path))
 
     # Insert two provenance rows: one old, one recent
@@ -25,3 +25,7 @@ def test_purge_provenance_older_than(tmp_path):
     ids = [r['id'] for r in remaining]
     assert new_id in ids
     assert old_id not in ids
+
+
+
+

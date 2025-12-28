@@ -172,7 +172,7 @@
     }
   ],
   "database": {
-    "path": "cthulhu_ultra_aggressive.db"
+    "path": "Cthulu_ultra_aggressive.db"
   },
   "features": {
     "ml_enabled": true,
@@ -180,3 +180,7 @@
     "multi_timeframe_analysis": true
   }
 }
+
+
+
+

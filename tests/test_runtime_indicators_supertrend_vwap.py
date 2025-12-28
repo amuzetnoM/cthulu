@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 import logging
 
-from cthulhu.__main__ import ensure_runtime_indicators
-from cthulhu.strategy.sma_crossover import SmaCrossover
-from cthulhu.indicators.supertrend import Supertrend
-from cthulhu.indicators.vwap import VWAP
+from cthulu.__main__ import ensure_runtime_indicators
+from cthulu.strategy.sma_crossover import SmaCrossover
+from cthulu.indicators.supertrend import Supertrend
+from cthulu.indicators.vwap import VWAP
 
-logger = logging.getLogger('cthulhu.tests')
+logger = logging.getLogger('Cthulu.tests')
 
 
 def _make_ohlcv(n=300):
@@ -47,3 +47,7 @@ def test_ensure_runtime_adds_supertrend_and_vwap():
     # Validate columns
     assert 'supertrend' in df.columns and 'supertrend_direction' in df.columns
     assert 'vwap' in df.columns and 'vwap_upper' in df.columns and 'vwap_lower' in df.columns
+
+
+
+

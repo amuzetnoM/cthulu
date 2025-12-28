@@ -8,7 +8,7 @@ import pytest
 from pathlib import Path
 
 print("=" * 60)
-print("Cthulhu Trading Bot - Installation Test")
+print("Cthulu Trading Bot - Installation Test")
 print("=" * 60)
 print()
 
@@ -125,7 +125,7 @@ except Exception as e:
     print(f"  ❌ MT5 test failed: {e}")
 
 # Test 6: Core modules
-print("\n✓ Testing Cthulhu modules...")
+print("\n✓ Testing Cthulu modules...")
 try:
     from utils.logger import setup_logger
     from utils.config import Config
@@ -135,7 +135,7 @@ try:
     from strategies.base_strategy import BaseStrategy
     from strategies.simple_ma_cross import SimpleMovingAverageCross
     
-    print(f"  ✅ All Cthulhu modules import successfully")
+    print(f"  ✅ All Cthulu modules import successfully")
 except Exception as e:
     print(f"  ❌ Module import failed: {e}")
     import traceback
@@ -154,11 +154,15 @@ elif not config_path.exists():
     print("   Run: cp config.example.yaml config.yaml")
     print("   Then edit config.yaml with your MT5 credentials")
 else:
-    print("✅ Cthulhu is ready!")
+    print("✅ Cthulu is ready!")
     print("\nNext steps:")
     print("1. Ensure config.yaml has your MT5 credentials")
     print("2. Make sure you're using a DEMO account")
     print("3. Run: python main.py")
-    print("\nMonitor logs: Get-Content .\\logs\\cthulhu.log -Wait -Tail 50")
+    print("\nMonitor logs: Get-Content .\\logs\\Cthulu.log -Wait -Tail 50")
 
 print("=" * 60)
+
+
+
+

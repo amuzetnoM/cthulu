@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  cthulhu:
+  Cthulu:
     build: .
-    container_name: cthulhu-trading
+    container_name: Cthulu-trading
     environment:
       - MT5_LOGIN=${MT5_LOGIN}
       - MT5_PASSWORD=${MT5_PASSWORD}
@@ -21,7 +21,7 @@ services:
       - "8181:8181"  # RPC server
     restart: unless-stopped
     networks:
-      - cthulhu-network
+      - Cthulu-network
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
       interval: 30s
@@ -31,7 +31,7 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: cthulhu-prometheus
+    container_name: Cthulu-prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -43,12 +43,12 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - cthulhu-network
+      - Cthulu-network
     restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
-    container_name: cthulhu-grafana
+    container_name: Cthulu-grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -60,15 +60,19 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - cthulhu-network
+      - Cthulu-network
     restart: unless-stopped
     depends_on:
       - prometheus
 
 networks:
-  cthulhu-network:
+  Cthulu-network:
     driver: bridge
 
 volumes:
   prometheus-data:
   grafana-data:
+
+
+
+

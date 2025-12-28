@@ -16,12 +16,12 @@ _________   __  .__          .__
 ---
 
 <p align="center">
-  <img src="../assets/cthulu-black.png" alt="Cthulhu logo" width="480" />
+  <img src="../assets/cthulu-black.png" alt="Cthulu logo" width="480" />
 </p>
 
-<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a> 
+<a href="https://artifact-virtual.gitbook.io/Cthulu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a> 
 
-> [CHANGELOG](https://artifact-virtual.gitbook.io/cthulhu)
+> [CHANGELOG](https://artifact-virtual.gitbook.io/Cthulu)
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
   <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
   <img src="https://img.shields.io/badge/Integration-MT5-lightgrey?style=flat-square" />
@@ -38,7 +38,7 @@ _________   __  .__          .__
 <br>
 
  **NEW in v5.0.1**  
-> Cthulhu now features an **enhanced multi-strategy trading system** with advanced dynamic strategy selection and 10 market regimes!  
+> Cthulu now features an **enhanced multi-strategy trading system** with advanced dynamic strategy selection and 10 market regimes!  
 >
 > - **6 advanced strategies**: SMA/EMA Crossover, Momentum Breakout, Scalping, Mean Reversion, and Trend Following  
 > - **10 market regimes**: Strong/weak trends, tight/wide ranging, breakout/consolidation volatility, reversals  
@@ -75,7 +75,7 @@ _________   __  .__          .__
 
 ## Overview
 
-Cthulhu implements a staged, modular approach to automated trading.
+Cthulu implements a staged, modular approach to automated trading.
 The architecture emphasizes clear boundaries, testability, and safety with pluggable components that can be 
 enhanced without disrupting core functionality.
 
@@ -107,11 +107,11 @@ Persistence & Metrics
 
 ### Getting Started
 
-Cthulhu uses an **interactive setup wizard** as the primary entry point. When you run Cthulhu, it guides you through configuring your trading parameters before starting:
+Cthulu uses an **interactive setup wizard** as the primary entry point. When you run Cthulu, it guides you through configuring your trading parameters before starting:
 
 ```bash
-# Start Cthulhu (opens interactive setup wizard)
-cthulhu --config config.json
+# Start Cthulu (opens interactive setup wizard)
+cthulu --config config.json
 ```
 
 The wizard walks you through:
@@ -123,84 +123,84 @@ The wizard walks you through:
 
 **Quickstart / Deployment checklist**
 
-- Ensure MT5 AutoTrading is enabled (Terminal -> AutoTrading); this allows Cthulhu to apply SL/TP settings to adopted trades automatically.
+- Ensure MT5 AutoTrading is enabled (Terminal -> AutoTrading); this allows Cthulu to apply SL/TP settings to adopted trades automatically.
 - For headless runs, use `--skip-setup` and `--no-prompt` to avoid interactive prompts.
 - Use `--symbol` to override the config symbol at startup (useful for multi-process deployments).
 
 ```bash
 # Quick start: run aggressive H1 profile for GOLD#m in non-interactive mode
-python -m cthulhu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt
+python -m cthulu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt
 ```
 
-Note: If you see repeated `Failed to select symbol` warnings, enable market watch symbol visibility in MT5 or use `--symbol` with the broker-specific symbol name (Cthulhu now attempts flexible matching and will log candidate matches).
+Note: If you see repeated `Failed to select symbol` warnings, enable market watch symbol visibility in MT5 or use `--symbol` with the broker-specific symbol name (Cthulu now attempts flexible matching and will log candidate matches).
 ### End-to-end testing utilities
 
 Two small helper scripts are provided to validate adoption and SL/TP behavior in a live MT5 account:
 
-- `scripts/place_test_trade.py` — places a **Cthulhu** trade (magic number = Cthulhu's magic); useful to test the full trading loop and reconciliation behavior.
+- `scripts/place_test_trade.py` — places a **Cthulu** trade (magic number = Cthulu's magic); useful to test the full trading loop and reconciliation behavior.
 - `scripts/place_external_test_trade.py` — places an **external** trade (magic = 0) to validate adoption and SL/TP application.
 
 Example: place an external test trade and run adopt-only scan to validate adoption and SL/TP application:
 
 ```bash
 python scripts/place_external_test_trade.py
-python -m cthulhu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --adopt-only --log-level DEBUG
+python -m cthulu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --adopt-only --log-level DEBUG
 ```
 
-If SL/TP application fails due to terminal or broker restrictions, Cthulhu performs several aggressive immediate retries, then queues background retries. Cthulhu now *verifies* SL/TP after applying them by reading back the position from MT5; if verification fails the action is logged and a Prometheus metric is emitted (if configured). Review logs for `SL/TP verification failed` messages and check the `cthulhu_sl_tp_failure_total` metric via the Prometheus exporter.
+If SL/TP application fails due to terminal or broker restrictions, Cthulu performs several aggressive immediate retries, then queues background retries. Cthulu now *verifies* SL/TP after applying them by reading back the position from MT5; if verification fails the action is logged and a Prometheus metric is emitted (if configured). Review logs for `SL/TP verification failed` messages and check the `Cthulu_sl_tp_failure_total` metric via the Prometheus exporter.
 ### Command Line Options
 
 ```bash
 # Interactive setup (default)
-cthulhu --config config.json
+cthulu --config config.json
 
 # Skip wizard for automation/CI (uses existing config as-is)
-cthulhu --config config.json --skip-setup
+cthulu --config config.json --skip-setup
 
 # Dry run mode (simulates orders without placing them)
-cthulhu --config config.json --dry-run
+cthulu --config config.json --dry-run
 
 # Apply a mindset overlay
-cthulhu --config config.json --skip-setup --mindset aggressive
+cthulu --config config.json --skip-setup --mindset aggressive
 
 # Disable interactive prompts at shutdown (leave positions open)
-cthulhu --config config.json --no-prompt
+cthulu --config config.json --no-prompt
 
 # Debug logging
-cthulhu --config config.json --skip-setup --log-level DEBUG
+cthulu --config config.json --skip-setup --log-level DEBUG
 ```
 
 ### Manual Trade CLI 🆕
 
-The `cthulhu-trade` CLI allows manual trade placement that Cthulhu will then manage:
+The `Cthulu-trade` CLI allows manual trade placement that Cthulu will then manage:
 
 ```bash
 # Place a trade
-cthulhu-trade --symbol BTCUSD# --side BUY --volume 0.01
+Cthulu-trade --symbol BTCUSD# --side BUY --volume 0.01
 
 # List open positions
-cthulhu-trade --list
+Cthulu-trade --list
 
 # Close a specific position
-cthulhu-trade --close 485496556
+Cthulu-trade --close 485496556
 
 # Close all positions
-cthulhu-trade --close-all
+Cthulu-trade --close-all
 ```
 
-Trades placed via `cthulhu-trade` use Cthulhu's magic number, so they are automatically tracked and managed by the trading loop's exit strategies.
+Trades placed via `Cthulu-trade` use Cthulu's magic number, so they are automatically tracked and managed by the trading loop's exit strategies.
 
 ## Development & CI
 
 - Run tests locally (default: unit tests):
-  - `python -m pytest cthulhu/tests/unit -q`  # unit tests
-  - `python -m pytest cthulhu -q`  # full package tests (integration tests skipped unless enabled)
+  - `python -m pytest Cthulu/tests/unit -q`  # unit tests
+  - `python -m pytest Cthulu -q`  # full package tests (integration tests skipped unless enabled)
 
 - To enable MT5 integration tests (only in environments with MT5 set up), export an env var and run:
-  - `setx RUN_MT5_CONNECT_TESTS 1 ; pytest cthulhu -q` (Windows PowerShell)
-  - `RUN_MT5_CONNECT_TESTS=1 pytest cthulhu -q` (Linux/macOS)
+  - `setx RUN_MT5_CONNECT_TESTS 1 ; pytest Cthulu -q` (Windows PowerShell)
+  - `RUN_MT5_CONNECT_TESTS=1 pytest Cthulu -q` (Linux/macOS)
 
-- Continuous Integration: GitHub Actions runs Cthulhu package unit tests and lint on each push/PR (see `.github/workflows/ci.yml`).
+- Continuous Integration: GitHub Actions runs Cthulu package unit tests and lint on each push/PR (see `.github/workflows/ci.yml`).
 
 ## Output Directories
 
@@ -264,7 +264,7 @@ Trades placed via `cthulhu-trade` use Cthulhu's magic number, so they are automa
 ## Architecture
 
 ```
-cthulhu/
+Cthulu/
 ├── config/           # Configuration management
 │   ├── wizard.py     # Interactive setup wizard
 │   ├── mindsets.py   # Risk profiles
@@ -442,8 +442,8 @@ cthulhu/
 #### Windows (PowerShell)
 
 ```powershell
-# Clone or navigate to Cthulhu directory
-cd C:\workspace\Cthulhu
+# Clone or navigate to Cthulu directory
+cd C:\workspace\Cthulu
 
 # Run automated setup
 .\scripts\setup.ps1
@@ -452,8 +452,8 @@ cd C:\workspace\Cthulhu
 #### Linux/macOS
 
 ```bash
-# Clone or navigate to Cthulhu directory
-cd ~/cthulhu
+# Clone or navigate to Cthulu directory
+cd ~/Cthulu
 
 # Run automated setup
 bash scripts/setup.sh
@@ -484,7 +484,7 @@ notepad config.json  # Windows
 ## Configuration & Optional Features
 
 ### Enabling News & Calendar Ingest
-Cthulhu's NewsIngestor is opt-in and writes `news_event` and `calendar_event` into the ML event stream. To enable:
+Cthulu's NewsIngestor is opt-in and writes `news_event` and `calendar_event` into the ML event stream. To enable:
 
 - Environment: set `NEWS_INGEST_ENABLED=1` or in config set `config['news']['enabled']=true`.
 - Recommended fallback feeds: set `NEWS_RSS_FEEDS` to a comma-separated list of RSS/Atom feeds.
@@ -603,20 +603,20 @@ Edit `config.json` (see `config.example.json`):
 }
 ```
 
-### Run Cthulhu (Autonomous Trading)
+### Run Cthulu (Autonomous Trading)
 
 ```bash
-# Start Cthulhu with interactive setup wizard (recommended)
-python -m cthulhu --config config.json
+# Start Cthulu with interactive setup wizard (recommended)
+python -m cthulu --config config.json
 
 # Skip wizard for automation (uses existing config.json as-is)
-python -m cthulhu --config config.json --skip-setup
+python -m cthulu --config config.json --skip-setup
 
 # Dry run mode (no real orders) - Test your setup safely
-python -m cthulhu --config config.json --dry-run
+python -m cthulu --config config.json --dry-run
 
 # With debug logging
-python -m cthulhu --config config.json --skip-setup --log-level DEBUG
+python -m cthulu --config config.json --skip-setup --log-level DEBUG
 
 # Quick test connection
 python -c "from connector.mt5_connector import MT5Connector, ConnectionConfig; \
@@ -641,18 +641,18 @@ python -c "from connector.mt5_connector import MT5Connector, ConnectionConfig; \
    - Monitors open positions
    - Checks exit conditions (priority-based)
    - Closes positions when exit triggered
-6. Logs all activity to console and `cthulhu.log`
-7. Stores trades in `cthulhu.db` database
+6. Logs all activity to console and `Cthulu.log`
+7. Stores trades in `Cthulu.db` database
 
 **Monitor Live Trading:**
 ```bash
 # Watch log file
-tail -f cthulhu.log  # Linux/macOS
-Get-Content cthulhu.log -Wait -Tail 50  # Windows PowerShell
+tail -f Cthulu.log  # Linux/macOS
+Get-Content Cthulu.log -Wait -Tail 50  # Windows PowerShell
 
 # Query database for open positions
 python -c "from persistence.database import Database; \
-           db = Database('cthulhu.db'); \
+           db = Database('Cthulu.db'); \
            trades = db.get_open_trades(); \
            print(f'Open trades: {len(trades)}')"
 ```
@@ -722,7 +722,7 @@ Configuration is managed through JSON files. Copy `config.example.json` to `conf
 }
 ```
 
-When enabled, Cthulhu will detect and adopt trades placed outside Cthulhu (e.g., manual trades, trades from other EAs) and apply exit strategies to manage them.
+When enabled, Cthulu will detect and adopt trades placed outside Cthulu (e.g., manual trades, trades from other EAs) and apply exit strategies to manage them.
 
 ---
 
@@ -731,9 +731,9 @@ When enabled, Cthulhu will detect and adopt trades placed outside Cthulhu (e.g.,
 ### Basic Operation
 
 ```python
-from cthulhu import MT5Connector, DataLayer, SmaCrossover, ExecutionEngine, RiskManager
-from cthulhu.connector import ConnectionConfig
-from cthulhu.risk import RiskLimits
+from cthulu import MT5Connector, DataLayer, SmaCrossover, ExecutionEngine, RiskManager
+from cthulu.connector import ConnectionConfig
+from cthulu.risk import RiskLimits
 
 # Initialize components
 config = ConnectionConfig(
@@ -792,25 +792,25 @@ if signal:
 
 ```bash
 # Start bot with default config
-python -m cthulhu
+python -m cthulu
 
 # Use custom config
-python -m cthulhu --config config.json --mindset balanced
+python -m cthulu --config config.json --mindset balanced
 
 # Dry run (no actual trading)
-python -m cthulhu --dry-run
+python -m cthulu --dry-run
 
 # Backtest mode
-python -m cthulhu --backtest --start 2024-01-01 --end 2024-12-31
+python -m cthulu --backtest --start 2024-01-01 --end 2024-12-31
 
 # Check system health
-python -m cthulhu --health-check
+python -m cthulu --health-check
 
 # View current positions
-python -m cthulhu --positions
+python -m cthulu --positions
 
 # Emergency shutdown
-python -m cthulhu --shutdown
+python -m cthulu --shutdown
 ```
 
 ---
@@ -820,8 +820,8 @@ python -m cthulhu --shutdown
 ### Project Structure
 
 ```
-Cthulhu/
-├── cthulhu/                 # Main package
+Cthulu/
+├── Cthulu/                 # Main package
 │   ├── connector/          # MT5 integration
 │   ├── data/               # Data processing
 │   ├── strategy/           # Trading strategies
@@ -843,7 +843,7 @@ Cthulhu/
 ### Adding a New Strategy
 
 ```python
-from cthulhu.strategy import Strategy, Signal, SignalType
+from cthulu.strategy import Strategy, Signal, SignalType
 import pandas as pd
 
 class MyStrategy(Strategy):
@@ -874,13 +874,13 @@ class MyStrategy(Strategy):
 
 ```bash
 # Format code
-black cthulhu/ tests/
+black Cthulu/ tests/
 
 # Lint
-pylint cthulhu/
+pylint Cthulu/
 
 # Type check
-mypy cthulhu/
+mypy Cthulu/
 
 # Run all checks
 ./scripts/quality_check.sh
@@ -903,7 +903,7 @@ pytest tests/unit/
 pytest tests/integration/
 
 # With coverage
-pytest --cov=cthulhu --cov-report=html
+pytest --cov=Cthulu --cov-report=html
 
 # Specific test
 pytest tests/unit/test_connector.py -v
@@ -944,24 +944,24 @@ pytest tests/unit/test_connector.py -v
 
 ```powershell
 # Install service
-nssm install Cthulhu "C:\workspace\Cthulhu\venv\Scripts\python.exe" "-m cthulhu"
-nssm set Cthulhu AppDirectory "C:\workspace\Cthulhu"
-nssm start Cthulhu
+nssm install Cthulu "C:\workspace\Cthulu\venv\Scripts\python.exe" "-m Cthulu"
+nssm set Cthulu AppDirectory "C:\workspace\Cthulu"
+nssm start Cthulu
 ```
 
 #### Linux (systemd)
 
 ```ini
-# /etc/systemd/system/cthulhu.service
+# /etc/systemd/system/Cthulu.service
 [Unit]
-Description=Cthulhu Trading Bot
+Description=Cthulu Trading Bot
 After=network.target
 
 [Service]
 Type=simple
 User=trader
-WorkingDirectory=/opt/cthulhu
-ExecStart=/opt/cthulhu/venv/bin/python -m cthulhu
+WorkingDirectory=/opt/Cthulu
+ExecStart=/opt/Cthulu/venv/bin/python -m cthulu
 Restart=on-failure
 RestartSec=30
 
@@ -970,9 +970,9 @@ WantedBy=multi-user.target
 ```
 
 ```bash
-sudo systemctl enable cthulhu
-sudo systemctl start cthulhu
-sudo systemctl status cthulhu
+sudo systemctl enable Cthulu
+sudo systemctl start Cthulu
+sudo systemctl status Cthulu
 ```
 
 ---
@@ -1018,13 +1018,13 @@ ERROR: MT5 initialize failed: (code, message)
 
 ```powershell
 # View recent errors
-Select-String -Path logs\cthulhu.log -Pattern "ERROR" | Select-Object -Last 20
+Select-String -Path logs\Cthulu.log -Pattern "ERROR" | Select-Object -Last 20
 
 # Monitor live
-Get-Content logs\cthulhu.log -Wait -Tail 50
+Get-Content logs\Cthulu.log -Wait -Tail 50
 
 # Search for specific pattern
-Select-String -Path logs\cthulhu.log -Pattern "signal generated"
+Select-String -Path logs\Cthulu.log -Pattern "signal generated"
 ```
 
 ---
@@ -1072,8 +1072,8 @@ See [CHANGELOG.md](docs/CHANGELOG.md) for detailed release notes.
 - **Documentation**: `docs/` directory
 - **Phase 2 Guide**: [PHASE2_README.md](PHASE2_README.md)
 - **Examples**: `config.example.json`, `.env.example`
-- **Database**: Query `cthulhu.db` for trade history
-- **Logs**: Review `cthulhu.log` for execution details
+- **Database**: Query `Cthulu.db` for trade history
+- **Logs**: Review `Cthulu.log` for execution details
 - **Issues**: Create issue in repository
 
 ## Roadmap
@@ -1131,4 +1131,10 @@ Includes core trading system AND deployment hardening:
 
 **Built with focus on safety, testability, and production readiness.**
 
-*Cthulhu v5.0.1 - Complete. Production-ready autonomous trading with comprehensive strategy selection, advanced indicators, and enterprise-grade architecture.*
+*Cthulu v5.0.1 - Complete. Production-ready autonomous trading with comprehensive strategy selection, advanced indicators, and enterprise-grade architecture.*
+
+
+
+
+
+

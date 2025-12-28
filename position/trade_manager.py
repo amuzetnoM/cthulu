@@ -1,6 +1,6 @@
 """External trade detection and adoption manager.
 
-Scans MT5 for positions that were not opened by Cthulhu (different magic number) and
+Scans MT5 for positions that were not opened by Cthulu (different magic number) and
 adopts them into the PositionManager for management under configured policy.
 """
 from dataclasses import dataclass, field
@@ -8,10 +8,10 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
 import logging
 
-from cthulhu.position.manager import PositionInfo, PositionManager
-from cthulhu.connector.mt5_connector import mt5
+from cthulu.position.manager import PositionInfo, PositionManager
+from cthulu.connector.mt5_connector import mt5
 
-logger = logging.getLogger('cthulhu.trade_manager')
+logger = logging.getLogger('Cthulu.trade_manager')
 
 
 @dataclass
@@ -46,7 +46,7 @@ class TradeManager:
         now_ts = datetime.now(timezone.utc).timestamp()
         for p in positions or []:
             try:
-                # Skip if Cthulhu's own magic number
+                # Skip if Cthulu's own magic number
                 if getattr(p, 'magic', None) == self.magic_number:
                     continue
 
@@ -119,3 +119,7 @@ class TradeManager:
         if not trades:
             return 0
         return self.adopt_trades(trades)
+
+
+
+

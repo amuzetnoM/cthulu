@@ -61,3 +61,7 @@ except Exception:
 
 mt5.shutdown()
 print('MT5 shutdown')
+
+
+
+

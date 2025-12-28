@@ -16,3 +16,7 @@ class NewsAdapter:
     def fetch_recent(self) -> List[NewsEvent]:
         """Fetch recent news/events and return as list of NewsEvent."""
         raise NotImplementedError()
+
+
+
+

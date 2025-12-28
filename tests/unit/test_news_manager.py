@@ -1,6 +1,6 @@
-from cthulhu.news.newsapi_adapter import NewsApiAdapter
-from cthulhu.news.rss_adapter import RssAdapter
-from cthulhu.news.manager import NewsManager
+from cthulu.news.newsapi_adapter import NewsApiAdapter
+from cthulu.news.rss_adapter import RssAdapter
+from cthulu.news.manager import NewsManager
 
 
 def test_news_manager_fallback(tmp_path, monkeypatch):
@@ -24,3 +24,6 @@ def test_news_manager_fallback(tmp_path, monkeypatch):
     # Subsequent fetch should hit cache
     events2 = manager.fetch_recent()
     assert events2 and events2[0].symbol == 'GOLD'
+
+
+

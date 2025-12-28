@@ -119,3 +119,7 @@ def evaluate(position, connector, config: Dict[str, Any]) -> Dict[str, Any]:
 
     except Exception as e:
         return {"adjust_sl": None, "adjust_tp": None, "reason": f"error:{e}", "mindset": None}
+
+
+
+

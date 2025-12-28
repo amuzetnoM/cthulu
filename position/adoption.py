@@ -2,12 +2,12 @@
 Trade Adoption Module
 
 Handles detection and adoption of external (manual) trades that were placed
-outside of Herald. This allows Cthulhu to manage positions that users create
+outside of Herald. This allows Cthulu to manage positions that users create
 manually in MT5.
 
 Responsibilities:
 - Scan for external/manual trades
-- Apply Cthulhu's exit strategies to external trades
+- Apply Cthulu's exit strategies to external trades
 - Policy-based filtering (which trades to adopt)
 - Logging and tracking of adoptions
 
@@ -67,9 +67,9 @@ class TradeAdoptionPolicy:
 
 class TradeAdoptionManager:
     """
-    Manages adoption of external trades into Cthulhu's management system.
+    Manages adoption of external trades into Cthulu's management system.
     
-    This class identifies manual trades placed outside Cthulhu and brings them
+    This class identifies manual trades placed outside Cthulu and brings them
     under Herald's exit strategy management.
     """
     
@@ -125,7 +125,7 @@ class TradeAdoptionManager:
     
     def _identify_external_trades(self) -> List[dict]:
         """
-        Identify trades that were not opened by Cthulhu.
+        Identify trades that were not opened by Cthulu.
         
         Returns:
             List of external trade dicts from MT5
@@ -219,7 +219,7 @@ class TradeAdoptionManager:
     
     def _adopt_trade(self, trade: dict) -> bool:
         """
-        Adopt an external trade into Cthulhu's management.
+        Adopt an external trade into Cthulu's management.
         
         Args:
             trade: Trade dict from MT5
@@ -282,7 +282,7 @@ class TradeAdoptionManager:
                 magic_number=magic,
                 comment=f"[ADOPTED] {comment}",
                 strategy_name="external",
-                entry_reason="Manual trade adopted by Cthulhu",
+                entry_reason="Manual trade adopted by Cthulu",
                 is_external=True
             )
             
@@ -342,3 +342,7 @@ class TradeAdoptionManager:
             f"Volume={trade.get('volume')}, "
             f"Magic={trade.get('magic')}"
         )
+
+
+
+

@@ -9,3 +9,7 @@ __path__ = __import__("cthulu").__path__
 
 # Insert a simple module into sys.modules to aid some import tricks
 sys.modules.setdefault("herald", sys.modules.get("cthulu"))
+
+
+
+

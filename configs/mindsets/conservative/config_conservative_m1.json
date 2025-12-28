@@ -109,7 +109,7 @@
     }
   ],
   "database": {
-    "path": "cthulhu.db",
+    "path": "cthulu.db",
     "backup_interval_hours": 24
   },
   "orphan_trades": {
@@ -133,3 +133,7 @@
     "format": "json"
   }
 }
+
+
+
+

@@ -29,7 +29,7 @@ class Indicator(ABC):
         """
         self.name = name
         self.params = params
-        self.logger = logging.getLogger(f"cthulhu.indicators.{name}")
+        self.logger = logging.getLogger(f"Cthulu.indicators.{name}")
         self._state: Dict[str, Any] = {}
         self._last_calculation: datetime = None
         
@@ -124,3 +124,7 @@ class Indicator(ABC):
             'parameters': self.params,
             'calculation_timestamp': self._last_calculation.isoformat() if self._last_calculation else None
         }
+
+
+
+

@@ -1,7 +1,7 @@
 import os
 import time
 import pytest
-from cthulhu.ML_RL.instrumentation import MLDataCollector
+from cthulu.ML_RL.instrumentation import MLDataCollector
 
 
 pytestmark = pytest.mark.integration
@@ -17,7 +17,7 @@ def test_news_ingest_live_one_cycle():
         pytest.skip('No external news/calendar providers configured in environment')
 
     # Build adapters similar to production flow
-    from cthulhu.news import RssAdapter, NewsApiAdapter, FREDAdapter, TradingEconomicsAdapter, NewsManager, NewsIngestor
+    from cthulu.news import RssAdapter, NewsApiAdapter, FREDAdapter, TradingEconomicsAdapter, NewsManager, NewsIngestor
 
     adapters = []
     if os.getenv('NEWS_USE_RSS', 'true').lower() in ('1', 'true', 'yes'):
@@ -45,6 +45,10 @@ def test_news_ingest_live_one_cycle():
         collector.close()
 
     # Check ML raw output files for the collector prefix
-    from cthulhu.ML_RL.instrumentation import BASE as ML_BASE
+    from cthulu.ML_RL.instrumentation import BASE as ML_BASE
     files = [f for f in os.listdir(ML_BASE) if f.startswith(collector.prefix)]
     assert files, 'No ML files written by live news ingest (check provider keys and network)'
+
+
+
+

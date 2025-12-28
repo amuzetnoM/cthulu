@@ -10,10 +10,10 @@ import threading
 import time
 import logging
 from typing import Optional
-from cthulhu.position.manager import PositionManager
-from cthulhu.position.trade_manager import TradeManager
+from cthulu.position.manager import PositionManager
+from cthulu.position.trade_manager import TradeManager
 
-logger = logging.getLogger('cthulhu.monitor')
+logger = logging.getLogger('Cthulu.monitor')
 
 class TradeMonitor:
     def __init__(self, position_manager: PositionManager, trade_manager: Optional[TradeManager] = None, poll_interval: float = 5.0, ml_collector: Optional[object] = None, news_manager: Optional[object] = None, news_alert_window: int = 600):
@@ -134,3 +134,7 @@ class TradeMonitor:
             logger.exception('Failed to fetch news events')
 
         return
+
+
+
+

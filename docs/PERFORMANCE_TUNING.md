@@ -1,6 +1,6 @@
 ---
 title: Performance Tuning
-description: Optimize Cthulhu's performance with database tuning, memory management, CPU optimization, and benchmarking strategies
+description: Optimize Cthulu's performance with database tuning, memory management, CPU optimization, and benchmarking strategies
 tags: [performance, optimization, tuning, benchmarking]
 slug: /docs/performance-tuning
 sidebar_position: 6
@@ -22,7 +22,7 @@ sidebar_position: 6
 
 ## Overview
 
-This guide provides strategies to optimize Cthulhu's performance for maximum efficiency and throughput.
+This guide provides strategies to optimize Cthulu's performance for maximum efficiency and throughput.
 
 ### Target Performance Metrics
 
@@ -40,10 +40,10 @@ This guide provides strategies to optimize Cthulhu's performance for maximum eff
 
 ### Built-in Monitoring
 
-Cthulhu includes performance metrics via Prometheus:
+Cthulu includes performance metrics via Prometheus:
 
 ```python
-from cthulhu.observability.metrics import MetricsCollector
+from cthulu.observability.metrics import MetricsCollector
 
 metrics = MetricsCollector()
 metrics.record_loop_duration(0.5)  # seconds
@@ -62,10 +62,10 @@ metrics.record_api_call("get_rates", 0.1)
 
 ```bash
 # Via Prometheus
-curl http://localhost:9090/api/v1/query?query=cthulhu_loop_duration_seconds
+curl http://localhost:9090/api/v1/query?query=Cthulu_loop_duration_seconds
 
 # Via Grafana Dashboard
-# Navigate to http://localhost:3000 and select Cthulhu Performance dashboard
+# Navigate to http://localhost:3000 and select Cthulu Performance dashboard
 ```
 
 ---
@@ -117,7 +117,7 @@ batch_update_positions(positions, pnls)
 **Solution**: Implement smart caching with TTL.
 
 ```python
-from cthulhu.utils.cache import SmartCache
+from cthulu.utils.cache import SmartCache
 
 # Create cache with 5-second TTL
 cache = SmartCache(ttl_seconds=5)
@@ -149,7 +149,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import QueuePool
 
 engine = create_engine(
-    'sqlite:///cthulhu.db',
+    'sqlite:///Cthulu.db',
     poolclass=QueuePool,
     pool_size=5,          # Keep 5 connections open
     max_overflow=10,      # Allow 10 additional connections
@@ -266,13 +266,13 @@ database.insert_trades_batch(trades)
 
 ```bash
 # Regular vacuum to reclaim space and optimize
-sqlite3 cthulhu.db "VACUUM;"
+sqlite3 Cthulu.db "VACUUM;"
 
 # Analyze to update statistics
-sqlite3 cthulhu.db "ANALYZE;"
+sqlite3 Cthulu.db "ANALYZE;"
 
 # Check database integrity
-sqlite3 cthulhu.db "PRAGMA integrity_check;"
+sqlite3 Cthulu.db "PRAGMA integrity_check;"
 ```
 
 ---
@@ -284,7 +284,7 @@ sqlite3 cthulhu.db "PRAGMA integrity_check;"
 Prevent API throttling:
 
 ```python
-from cthulhu.utils.rate_limiter import TokenBucketRateLimiter
+from cthulu.utils.rate_limiter import TokenBucketRateLimiter
 
 # MT5 typically allows ~100 calls/second
 rate_limiter = TokenBucketRateLimiter(
@@ -517,7 +517,7 @@ Create `tests/benchmarks/test_performance.py`:
 ```python
 import pytest
 import time
-from cthulhu.position.manager import PositionManager
+from cthulu.position.manager import PositionManager
 
 @pytest.mark.benchmark
 def test_position_update_speed(benchmark):
@@ -632,10 +632,10 @@ assert rps > 50, f"RPS too low: {rps}"
 
 ```bash
 # Performance tuning via environment
-export CTHULHU_BATCH_SIZE=100
-export CTHULHU_CACHE_TTL=5
-export CTHULHU_WORKERS=4
-export CTHULHU_GC_THRESHOLD=700  # GC threshold
+export Cthulu_BATCH_SIZE=100
+export Cthulu_CACHE_TTL=5
+export Cthulu_WORKERS=4
+export Cthulu_GC_THRESHOLD=700  # GC threshold
 ```
 
 ---
@@ -657,7 +657,7 @@ Use Grafana to monitor:
 ```yaml
 # Alert if loop duration exceeds 2 seconds
 - alert: SlowMainLoop
-  expr: cthulhu_loop_duration_seconds > 2
+  expr: Cthulu_loop_duration_seconds > 2
   for: 5m
   annotations:
     summary: "Main loop running slow"
@@ -748,3 +748,7 @@ def suspect_function():
 
 **Last Updated**: December 2024  
 **Version**: 3.3.1
+
+
+
+

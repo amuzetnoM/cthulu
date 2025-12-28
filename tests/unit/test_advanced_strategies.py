@@ -7,11 +7,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-from cthulhu.strategy.ema_crossover import EmaCrossover
-from cthulhu.strategy.momentum_breakout import MomentumBreakout
-from cthulhu.strategy.scalping import ScalpingStrategy
-from cthulhu.strategy.strategy_selector import StrategySelector, MarketRegime
-from cthulhu.strategy.base import SignalType
+from cthulu.strategy.ema_crossover import EmaCrossover
+from cthulu.strategy.momentum_breakout import MomentumBreakout
+from cthulu.strategy.scalping import ScalpingStrategy
+from cthulu.strategy.strategy_selector import StrategySelector, MarketRegime
+from cthulu.strategy.base import SignalType
 
 
 class TestEMACrossover:
@@ -339,7 +339,7 @@ class TestStrategySelector:
         
     def test_performance_tracking(self):
         """Test strategy performance tracking."""
-        from cthulhu.strategy.base import Signal
+        from cthulu.strategy.base import Signal
         
         # Record signal
         signal = Signal(
@@ -374,3 +374,7 @@ class TestStrategySelector:
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
+
+
+
+

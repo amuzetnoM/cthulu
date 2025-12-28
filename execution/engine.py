@@ -5,7 +5,7 @@ Handles order placement, modification, and reconciliation.
 Supports market/limit orders with idempotent submission and external reconciliation.
 """
 
-from cthulhu.connector.mt5_connector import mt5
+from cthulu.connector.mt5_connector import mt5
 import logging
 import traceback
 import inspect
@@ -16,9 +16,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-from cthulhu.strategy.base import Signal, SignalType
-from cthulhu.position import risk_manager
-from cthulhu import constants
+from cthulu.strategy.base import Signal, SignalType
+from cthulu.position import risk_manager
+from cthulu import constants
 
 
 class OrderType(Enum):
@@ -135,7 +135,7 @@ class ExecutionEngine:
         self.slippage = slippage
         # Optional risk configuration overrides (from app config)
         self.risk_config = risk_config or {}
-        self.logger = logging.getLogger("cthulhu.execution")
+        self.logger = logging.getLogger("Cthulu.execution")
         # Optional metrics collector (MetricsCollector)
         self.metrics = metrics
         # Optional ML instrumentation collector
@@ -415,7 +415,7 @@ class ExecutionEngine:
                 try:
                     if self.ml_collector:
                         order_payload = {
-                            'source': 'cthulhu',
+                            'source': 'Cthulu',
                             'signal_id': order_req.signal_id,
                             'symbol': order_req.symbol,
                             'side': order_req.side,
@@ -444,7 +444,7 @@ class ExecutionEngine:
                         self.ml_collector.record_order(order_payload)
 
                         exec_payload = {
-                            'source': 'cthulhu',
+                            'source': 'Cthulu',
                             'order_id': getattr(result, 'order', None),
                             'position_ticket': position_ticket,
                             'status': 'FILLED',
@@ -561,7 +561,7 @@ class ExecutionEngine:
                 "price": price,
                 "deviation": self.slippage,
                 "magic": self.magic_number,
-                "comment": "Cthulhu close",
+                "comment": "Cthulu close",
                 "type_time": mt5.ORDER_TIME_GTC,
                 "type_filling": mt5.ORDER_FILLING_IOC,
             }
@@ -733,7 +733,7 @@ class ExecutionEngine:
             "price": price,
             "deviation": self.slippage,
             "magic": self.magic_number,
-            "comment": order_req.client_tag or "Cthulhu",
+            "comment": order_req.client_tag or "Cthulu",
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_IOC,
         }
@@ -753,9 +753,9 @@ class ExecutionEngine:
                     # suggest_scaled_sl returns an absolute price distance to use as SL
                     dist = self.limits = None
                     try:
-                        # Try to use risk manager helper located in cthulhu.position.risk_manager
-                        from cthulhu.position.risk_manager import suggest_sl_adjustment as _sugg_fn
-                        from cthulhu.position.risk_manager import _threshold_from_config as _thr_fn
+                        # Try to use risk manager helper located in Cthulu.position.risk_manager
+                        from cthulu.position.risk_manager import suggest_sl_adjustment as _sugg_fn
+                        from cthulu.position.risk_manager import _threshold_from_config as _thr_fn
                         # Compute a naive proposed SL by using a relative threshold
                         threshold = _threshold_from_config(balance, self.risk_config.get('sl_balance_thresholds') if isinstance(self.risk_config, dict) else None, self.risk_config.get('sl_balance_breakpoints') if isinstance(self.risk_config, dict) else None)
                         if order_req.side.upper() == 'BUY':
@@ -811,3 +811,7 @@ class ExecutionEngine:
             request["tp"] = order_req.tp
             
         return request
+
+
+
+

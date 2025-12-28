@@ -1,6 +1,6 @@
 ---
 title: Architecture Overview
-description: Technical architecture and system design of the Cthulhu multi-strategy autonomous trading platform
+description: Technical architecture and system design of the Cthulu multi-strategy autonomous trading platform
 tags: [architecture, system-design, technical-overview]
 slug: /docs/architecture
 sidebar_position: 3
@@ -8,7 +8,7 @@ sidebar_position: 3
 
 ## System Architecture
 
-<a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a>
+<a href="https://artifact-virtual.gitbook.io/Cthulu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a>
 
 ### High-Level System Overview
 
@@ -394,13 +394,13 @@ Strategy.get_candles()
 ## Monitoring & Deployment Recommendations
 
 **Short-term (30-60 min validation)**
-- Run Cthulhu locally in a terminal using the aggressive mindset config and `--log-level DEBUG`:
+- Run Cthulu locally in a terminal using the aggressive mindset config and `--log-level DEBUG`:
 
 ```bash
-python -m cthulhu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt --log-level DEBUG
+python -m Cthulu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt --log-level DEBUG
 ```
 
-- Tail logs (e.g., `tail -f cthulhu.log`) and watch for these messages:
+- Tail logs (e.g., `tail -f Cthulu.log`) and watch for these messages:
   - `Adopted trade:` — adoption events
   - `Set SL/TP for #` — confirmed SL/TP set on broker
   - `SL/TP verification failed` — broker refused modification (investigate immediately)
@@ -410,15 +410,15 @@ python -m cthulhu --config configs/mindsets/aggressive/config_aggressive_h1.json
 - Containerize with Docker and expose Prometheus metrics via simple endpoint (use `observability/prometheus.py` and a tiny metrics HTTP server).
 - Use an orchestrator (Docker Compose or Kubernetes) and set restart policies, resource limits, and liveness/readiness probes.
 - Centralized logging + alerting (Prometheus + Alertmanager; PagerDuty/Slack integration for critical alerts):
-  - Alert on any `cthulhu_sl_tp_failure_total > 0` within a 1-minute window
-  - Alert on `cthulhu_mt5_connected == 0` for 2 consecutive checks
+  - Alert on any `Cthulu_sl_tp_failure_total > 0` within a 1-minute window
+  - Alert on `Cthulu_mt5_connected == 0` for 2 consecutive checks
   - Alert on repeated adoption failures or repeated market data absence
 
 **Monitoring approach choice**
 - Terminal monitoring: fast, low-friction for smoke tests and short runs (30–60 min). I can run and monitor logs and report back.
 - Containerized monitoring: recommended for production — reproducible, easier integration with metrics and alerting, and safer for long-term uptime.
 
-Let me know if you want me to: **(A)** run a 30–60 minute live terminal monitoring session now, or **(B)** start containerizing Cthulhu and add Prometheus HTTP exposure + alert rules (I can start with a Dockerfile and a metrics endpoint).
+Let me know if you want me to: **(A)** run a 30–60 minute live terminal monitoring session now, or **(B)** start containerizing Cthulu and add Prometheus HTTP exposure + alert rules (I can start with a Dockerfile and a metrics endpoint).
     │
     │ (OHLCV DataFrame)
     ▼
@@ -612,7 +612,7 @@ Production Environment (Future)
 
 ### Phase 2: Multi-Strategy
 ```
-Cthulhu Bot
+Cthulu Bot
 ├── Strategy Manager
 │   ├── MA Crossover
 │   ├── RSI + MACD
@@ -624,7 +624,7 @@ Cthulhu Bot
 
 ### Phase 3: ML Integration
 ```
-Cthulhu Bot
+Cthulu Bot
 ├── Feature Engine
 ├── ML Model Manager
 │   ├── Random Forest
@@ -635,7 +635,7 @@ Cthulhu Bot
 
 ### Phase 4: Multi-Asset
 ```
-Cthulhu Bot
+Cthulu Bot
 ├── Asset Manager
 │   ├── XAUUSD (Gold)
 │   ├── EURUSD (Forex)
@@ -749,4 +749,8 @@ flowchart TD
     style ClosePosition fill:#ff4444,stroke:#cc3333
     style End fill:#00ff88,stroke:#00cc6a
 ```
+
+
+
+
 

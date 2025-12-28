@@ -1,8 +1,8 @@
-# Cthulhu Trading System - Complete Context & Overview
+# Cthulu Trading System - Complete Context & Overview
 
 ## Executive Summary
 
-Cthulhu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that implements adaptive, algorithmic trading strategies with comprehensive risk management, real-time monitoring, and machine learning instrumentation. The system features multiple trading mindsets (conservative, balanced, aggressive, ultra-aggressive), dynamic strategy selection, and a sophisticated exit management system.
+Cthulu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that implements adaptive, algorithmic trading strategies with comprehensive risk management, real-time monitoring, and machine learning instrumentation. The system features multiple trading mindsets (conservative, balanced, aggressive, ultra-aggressive), dynamic strategy selection, and a sophisticated exit management system.
 
 **Current Status:** Fully operational with complete architectural overhaul finished.
 
@@ -102,7 +102,7 @@ Cthulhu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that
 
 ### 1. Trading Mindsets
 
-Cthulhu supports **4 trading mindsets** that adjust risk tolerance and trading frequency:
+Cthulu supports **4 trading mindsets** that adjust risk tolerance and trading frequency:
 
 | Mindset | Position Size | Daily Loss Limit | Max Positions | Poll Interval | Use Case |
 |---------|--------------|------------------|---------------|---------------|----------|
@@ -126,7 +126,7 @@ Cthulhu supports **4 trading mindsets** that adjust risk tolerance and trading f
 
 #### Dynamic Strategy Selection
 
-When `strategy.type = "dynamic"`, Cthulhu uses **StrategySelector** that:
+When `strategy.type = "dynamic"`, Cthulu uses **StrategySelector** that:
 - Monitors multiple strategies simultaneously
 - Evaluates performance metrics (win rate, profit factor, Sharpe ratio)
 - Detects market regime (trending/ranging using ADX)
@@ -157,7 +157,7 @@ When `strategy.type = "dynamic"`, Cthulhu uses **StrategySelector** that:
 
 #### Technical Indicators
 
-Cthulhu calculates **12 next-generation technical indicators**:
+Cthulu calculates **12 next-generation technical indicators**:
 
 1. **RSI (Relative Strength Index)** - Momentum oscillator (0-100)
    - Overbought: >70, Oversold: <30
@@ -334,10 +334,10 @@ Kelly % = (Win Rate × Average Win) - (Loss Rate × Average Loss) / Average Win
 
 #### External Trade Adoption
 
-**TradeManager** can adopt trades not placed by Cthulhu:
+**TradeManager** can adopt trades not placed by Cthulu:
 - Manual trades from MT5 terminal
 - Trades from other EAs/bots
-- Applies Cthulhu's exit strategies
+- Applies Cthulu's exit strategies
 - Configurable adoption policy (symbols, age limit)
 
 **Use Case:** Take over existing positions and manage exits.
@@ -369,7 +369,7 @@ Kelly % = (Win Rate × Average Win) - (Loss Rate × Average Loss) / Average Win
 #### Logging
 
 - **Console**: INFO level, real-time updates
-- **File**: `cthulhu.log` - DEBUG level, rotating
+- **File**: `Cthulu.log` - DEBUG level, rotating
 - **Structured**: JSON format option for parsing
 
 #### Metrics Collection
@@ -594,8 +594,8 @@ python __main__.py --config config.json
 
 ```bash
 # Clone repository
-git clone https://github.com/amuzetnoM/cthulhu.git
-cd cthulhu
+git clone https://github.com/amuzetnoM/Cthulu.git
+cd Cthulu
 
 # Install dependencies
 pip install -r requirements.txt
@@ -614,7 +614,7 @@ python __main__.py --config config.json
 python __main__.py --config config.json --dry-run --mindset balanced
 
 # View logs
-tail -f cthulhu.log
+tail -f Cthulu.log
 ```
 
 ### Configuration Wizard
@@ -636,8 +636,8 @@ python __main__.py --config config.json --wizard-ai
 python __main__.py --config config.json --mindset balanced
 
 # Monitor via GUI (auto-opens)
-# Logs written to cthulhu.log
-# Database: cthulhu.db
+# Logs written to Cthulu.log
+# Database: Cthulu.db
 # Metrics: logs/latest_summary.txt
 ```
 
@@ -707,7 +707,7 @@ python __main__.py --config config.json --headless --no-prompt
 cat logs/latest_summary.txt
 
 # Database queries
-sqlite3 cthulhu.db "SELECT * FROM trades ORDER BY entry_time DESC LIMIT 10;"
+sqlite3 Cthulu.db "SELECT * FROM trades ORDER BY entry_time DESC LIMIT 10;"
 ```
 
 ## Troubleshooting
@@ -745,8 +745,8 @@ sqlite3 cthulhu.db "SELECT * FROM trades ORDER BY entry_time DESC LIMIT 10;"
 python __main__.py --config config.json --log-level DEBUG
 
 # Check specific components
-grep "StrategySelector" cthulhu.log
-grep "RSI\|ATR" cthulhu.log
+grep "StrategySelector" Cthulu.log
+grep "RSI\|ATR" Cthulu.log
 ```
 
 ## Development
@@ -754,7 +754,7 @@ grep "RSI\|ATR" cthulhu.log
 ### Code Structure
 
 ```
-cthulhu/
+Cthulu/
 ├── __main__.py           # Entry point (being refactored)
 ├── core/                 # NEW - Refactored modules
 ├── connector/            # MT5 API wrapper
@@ -844,7 +844,7 @@ INDICATOR_REGISTRY = {
    - Disable "Ask manual confirmation" for trades
    - Configure max slippage
 
-3. **Cthulhu Configuration**
+3. **Cthulu Configuration**
    - Use `--no-gui --no-prompt` for headless
    - Set appropriate poll interval
    - Configure daily loss limits
@@ -857,21 +857,21 @@ INDICATOR_REGISTRY = {
    - Enable Prometheus/Grafana
 
 5. **Backups**
-   - Database: `cthulhu.db`
+   - Database: `Cthulu.db`
    - Configuration: `config.json`
-   - Logs: `cthulhu.log`, `logs/`
+   - Logs: `Cthulu.log`, `logs/`
 
 ### Systemd Service (Linux)
 
 ```ini
 [Unit]
-Description=Cthulhu Trading System
+Description=Cthulu Trading System
 After=network.target
 
 [Service]
 Type=simple
-User=cthulhu
-WorkingDirectory=/opt/cthulhu
+User=Cthulu
+WorkingDirectory=/opt/Cthulu
 ExecStart=/usr/bin/python3 __main__.py --config config.json --headless --no-prompt
 Restart=on-failure
 RestartSec=10s
@@ -892,7 +892,7 @@ WantedBy=multi-user.target
 ### RPC Server
 
 - Binds to `127.0.0.1` by default (localhost only)
-- Use `CTHULHU_API_TOKEN` for authentication
+- Use `Cthulu_API_TOKEN` for authentication
 - Consider firewall rules if exposing externally
 - Enable HTTPS for production
 
@@ -947,6 +947,10 @@ Track system updates and releases in `/docs/changelog/`
 **Last Updated**: 2025-12-26  
 **Status**: Active Development  
 **License**: See LICENSE file  
-**Author**: Cthulhu Development Team
+**Author**: Cthulu Development Team
 
 For questions or contributions, please open an issue or pull request on GitHub.
+
+
+
+

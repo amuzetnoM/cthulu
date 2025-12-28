@@ -19,8 +19,8 @@ try:
     from ..observability.prometheus import PrometheusExporter
 except Exception:
     # Fallback to absolute imports for scripts run outside the package context
-    from cthulhu.market.providers import MT5Provider, AlphaVantageProvider, BinanceProvider
-    from cthulhu.observability.prometheus import PrometheusExporter
+    from cthulu.market.providers import MT5Provider, AlphaVantageProvider, BinanceProvider
+    from cthulu.observability.prometheus import PrometheusExporter
 import os
 
 
@@ -233,7 +233,7 @@ class TickManager:
                                 try:
                                     age = time() - float(tick.get('ts', time()))
                                     self.exporter._update_metric(
-                                        f"cthulhu_tick_age_seconds",
+                                        f"Cthulu_tick_age_seconds",
                                         float(age),
                                         "gauge",
                                         "Age of most recent tick in seconds",
@@ -242,7 +242,7 @@ class TickManager:
                                     # count source switches (non-mt5 source)
                                     if tick.get('source') and not tick.get('source').startswith('mt5'):
                                         self.exporter._update_metric(
-                                            f"cthulhu_tick_source_switches_total",
+                                            f"Cthulu_tick_source_switches_total",
                                             1.0,
                                             "counter",
                                             "Count of ticks originating from fallback sources",
@@ -255,7 +255,7 @@ class TickManager:
                                 self._tick_poll_errors += 1
                                 try:
                                     self.exporter._update_metric(
-                                        f"cthulhu_tick_poll_errors_total",
+                                        f"Cthulu_tick_poll_errors_total",
                                         float(self._tick_poll_errors),
                                         "counter",
                                         "Total tick poll errors"
@@ -269,3 +269,7 @@ class TickManager:
 
             except Exception:
                 sleep(0.5)
+
+
+
+

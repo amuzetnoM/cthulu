@@ -54,7 +54,7 @@ class PositionInfo:
     max_profit: float = 0.0
     max_drawdown: float = 0.0
     
-    # Cthulhu-specific
+    # Cthulu-specific
     is_external: bool = False  # True if adopted from manual trade
     
     def calculate_profit(self, current_price: float) -> float:
@@ -223,3 +223,7 @@ class PositionTracker:
         """Clear all tracked positions (for testing/reset)."""
         self._positions.clear()
         logger.info("Position tracker cleared")
+
+
+
+

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from cthulhu.position.lifecycle import PositionLifecycle
+from cthulu.position.lifecycle import PositionLifecycle
 
 
 class DummyEngine:
@@ -54,3 +54,6 @@ def test_open_position_places_order_and_tracks():
     assert ticket == 123
     assert len(tracker.tracked) == 1
     assert db.saved, "Position should be persisted via save_position"
+
+
+

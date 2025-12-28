@@ -1,8 +1,8 @@
 import pytest
 from datetime import datetime
 
-from cthulhu.execution.engine import ExecutionEngine, ExecutionResult, OrderStatus, OrderRequest, OrderType
-from cthulhu.position.lifecycle import PositionLifecycle
+from cthulu.execution.engine import ExecutionEngine, ExecutionResult, OrderStatus, OrderRequest, OrderType
+from cthulu.position.lifecycle import PositionLifecycle
 
 
 class DummyConnector:
@@ -94,3 +94,7 @@ def test_lifecycle_close_position_handles_execution_result(monkeypatch):
     assert 22 in tracker.removed
     # When position is closed successfully, it's removed from DB, not updated
     assert 22 in db.removed_positions
+
+
+
+

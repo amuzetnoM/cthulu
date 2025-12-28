@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Get started with Cthulhu trading system - installation, configuration, and first trades
+description: Get started with Cthulu trading system - installation, configuration, and first trades
 tags: [quickstart, installation, setup, getting-started]
 slug: /docs/quickstart
 sidebar_position: 4
@@ -12,8 +12,8 @@ sidebar_position: 4
 
 ```bash
 # Clone or update repository
-git clone https://github.com/amuzetnoM/cthulhu.git
-cd cthulhu
+git clone https://github.com/amuzetnoM/Cthulu.git
+cd Cthulu
 
 # Install dependencies
 pip install -r requirements.txt
@@ -43,7 +43,7 @@ Choose one of two wizards:
 
 #### Interactive Wizard (Recommended for beginners)
 ```bash
-python -m cthulhu --wizard
+python -m Cthulu --wizard
 ```
 Step-by-step prompts for:
 - Trading mindset (aggressive/balanced/conservative)
@@ -54,7 +54,7 @@ Step-by-step prompts for:
 
 #### NLP Wizard (Advanced - describe in natural language)
 ```bash
-python -m cthulhu --wizard-ai
+python -m Cthulu --wizard-ai
 ```
 Example input:
 ```
@@ -65,18 +65,18 @@ Aggressive GOLD#m on M15 and H1, 2% risk, $100 max loss
 
 ```bash
 # Dry run (recommended first)
-python -m cthulhu --config config.json --dry-run
+python -m Cthulu --config config.json --dry-run
 
 # Live trading (requires confirmation)
 export LIVE_RUN_CONFIRM=1
-python -m cthulhu --config config.json
+python -m Cthulu --config config.json
 ```
 
 ---
 
 ## 🎨 GUI Features
 
-The Cthulhu GUI launches automatically and provides:
+The Cthulu GUI launches automatically and provides:
 
 ### Dark Mode Interface
 - Real-time performance metrics
@@ -208,7 +208,7 @@ Pre-configured risk profiles:
 
 Apply via CLI:
 ```bash
-python -m cthulhu --config config.json --mindset aggressive
+python -m Cthulu --config config.json --mindset aggressive
 ```
 
 Or during wizard setup.
@@ -219,24 +219,24 @@ Or during wizard setup.
 
 ```bash
 # Basic
-python -m cthulhu --config config.json                    # Start with config
+python -m Cthulu --config config.json                    # Start with config
 
 # Wizard
-python -m cthulhu --wizard                                 # Interactive setup
-python -m cthulhu --wizard-ai                             # NLP-based setup
-python -m cthulhu --config config.json --skip-setup       # Skip wizard
+python -m Cthulu --wizard                                 # Interactive setup
+python -m Cthulu --wizard-ai                             # NLP-based setup
+python -m Cthulu --config config.json --skip-setup       # Skip wizard
 
 # Trading Modes
-python -m cthulhu --config config.json --dry-run          # Simulate trades
-python -m cthulhu --config config.json --adopt-only       # Only manage existing trades
+python -m Cthulu --config config.json --dry-run          # Simulate trades
+python -m Cthulu --config config.json --adopt-only       # Only manage existing trades
 
 # Customization
-python -m cthulhu --config config.json --mindset aggressive
-python -m cthulhu --config config.json --symbol GOLD#m
-python -m cthulhu --config config.json --enable-ml        # Enable ML features
+python -m Cthulu --config config.json --mindset aggressive
+python -m Cthulu --config config.json --symbol GOLD#m
+python -m Cthulu --config config.json --enable-ml        # Enable ML features
 
 # RPC Server
-python -m cthulhu --config config.json --enable-rpc       # Enable RPC for GUI
+python -m Cthulu --config config.json --enable-rpc       # Enable RPC for GUI
 ```
 
 ---
@@ -260,7 +260,7 @@ python -m cthulhu --config config.json --enable-rpc       # Enable RPC for GUI
 - **Can't launch**: Check `logs/gui_stderr.log` for errors
 
 ### Configuration Issues
-- Run wizard: `python -m cthulhu --wizard`
+- Run wizard: `python -m Cthulu --wizard`
 - Check example: `config.example.json`
 - See documentation: `UPGRADE_FIXES.md`
 
@@ -291,14 +291,18 @@ python -m cthulhu --config config.json --enable-rpc       # Enable RPC for GUI
 1. **Start with dry-run**: Test your config without risking capital
 2. **Use balanced mindset**: Good for most traders
 3. **Monitor GUI**: Keep eye on active strategy and regime
-4. **Review logs**: Check `cthulhu.log` for detailed activity
+4. **Review logs**: Check `Cthulu.log` for detailed activity
 5. **Adjust gradually**: Small changes, measure impact
 
 ---
 
 ## 🆘 Support
 
-- Issues: https://github.com/amuzetnoM/cthulhu/issues
-- Discussions: https://github.com/amuzetnoM/cthulhu/discussions
+- Issues: https://github.com/amuzetnoM/Cthulu/issues
+- Discussions: https://github.com/amuzetnoM/Cthulu/discussions
 
 Happy Trading! 🚀📈
+
+
+
+

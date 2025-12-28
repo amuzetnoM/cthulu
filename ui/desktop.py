@@ -18,9 +18,9 @@ except Exception:
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from cthulhu.persistence.database import Database, TradeRecord
+from cthulu.persistence.database import Database, TradeRecord
 
-LOG_PATH = Path(__file__).parents[1] / 'cthulhu.log'
+LOG_PATH = Path(__file__).parents[1] / 'Cthulu.log'
 SUMMARY_PATH = Path(__file__).parents[1] / 'logs' / 'latest_summary.txt'
 STRATEGY_INFO_PATH = Path(__file__).parents[1] / 'logs' / 'strategy_info.txt'
 
@@ -36,7 +36,7 @@ RPC_ENDPOINTS = [
 
 THEME_BG = '#0f1720'
 THEME_FG = '#e6eef6'
-ACCENT = '#8b5cf6'  # Cthulhu thematic purple
+ACCENT = '#8b5cf6'  # Cthulu thematic purple
 
 
 def tail_file(path: Path, lines: int = TAIL_LINES):
@@ -72,10 +72,10 @@ def read_summary(path: Path):
         return f'Error reading summary: {e}'
 
 
-class CthulhuGUI:
+class CthuluGUI:
     def __init__(self, root):
         self.root = root
-        root.title('Cthulhu — Monitor')
+        root.title('Cthulu — Monitor')
         root.geometry('1000x760')
         root.configure(bg=THEME_BG)
 
@@ -239,7 +239,7 @@ class CthulhuGUI:
         self.place_btn = ttk.Button(bottom, text='Place Trade', style='Accent.TButton', command=self.place_manual_trade)
         self.place_btn.grid(row=2, column=5, sticky='e', padx=(8, 4), pady=4)
 
-        # Live log viewer (shows last N lines of cthulhu.log)
+        # Live log viewer (shows last N lines of Cthulu.log)
         log_frame = ttk.Frame(root)
         # Allow log area to expand and be resizable
         log_frame.pack(fill='both', expand=True, padx=15, pady=(8, 12))
@@ -265,7 +265,7 @@ class CthulhuGUI:
 
         # Database connection for trade history
         try:
-            self.db = Database("cthulhu.db")
+            self.db = Database("Cthulu.db")
         except Exception as e:
             print(f"Warning: Could not connect to database: {e}")
             self.db = None
@@ -334,7 +334,7 @@ class CthulhuGUI:
                     self.db.close()
                 except Exception:
                     pass
-                self.db = Database("cthulhu.db")
+                self.db = Database("Cthulu.db")
             except Exception:
                 # fall back to existing self.db
                 pass
@@ -442,7 +442,7 @@ class CthulhuGUI:
                 self.db.close()
             self.root.destroy()
         finally:
-            # Exit cleanly with 0 so cthulhu treats this as user-closed GUI
+            # Exit cleanly with 0 so Cthulu treats this as user-closed GUI
             sys.exit(0)
 
     def place_manual_trade(self):
@@ -522,13 +522,13 @@ def main():
                 handle = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
                 if handle:
                     kernel32.CloseHandle(handle)
-                    print(f"Cthulhu GUI is already running (PID: {pid})")
+                    print(f"Cthulu GUI is already running (PID: {pid})")
                     sys.exit(0)
             else:
                 # Unix-like systems
                 try:
                     os.kill(pid, 0)
-                    print(f"Cthulhu GUI is already running (PID: {pid})")
+                    print(f"Cthulu GUI is already running (PID: {pid})")
                     sys.exit(0)
                 except OSError:
                     # Process doesn't exist, remove stale lock
@@ -572,7 +572,7 @@ def main():
     sys.excepthook = gui_excepthook
 
     root = tk.Tk()
-    app = CthulhuGUI(root)
+    app = CthuluGUI(root)
     try:
         dbg("Entering mainloop")
         root.mainloop()
@@ -588,3 +588,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+

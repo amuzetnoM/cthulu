@@ -102,10 +102,14 @@ jobs:
     
     - name: Test imports
       run: |
-        python -c "from cthulhu.observability.logger import setup_logger; logger = setup_logger('test'); print('Logger test: OK')"
-        python -c "from cthulhu import __version__; print(f'Version: {__version__}')"
+        python -c "from cthulu.observability.logger import setup_logger; logger = setup_logger('test'); print('Logger test: OK')"
+        python -c "from cthulu import __version__; print(f'Version: {__version__}')"
     
     - name: Verify CLI entry point
       run: |
-        python -m cthulhu --help || echo "CLI help displayed (expected to fail without config)"
+        python -m Cthulu --help || echo "CLI help displayed (expected to fail without config)"
       continue-on-error: true
+
+
+
+

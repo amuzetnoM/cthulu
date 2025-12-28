@@ -1,5 +1,5 @@
 """
-Cthulhu Autonomous Trading System
+Cthulu Autonomous Trading System
 
 Main orchestrator implementing the Phase 2 autonomous trading loop.
 """
@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-from cthulhu.connector.mt5_connector import mt5
+from cthulu.connector.mt5_connector import mt5
 import pandas as pd
 
 # Add project root to path
@@ -22,31 +22,31 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 __version__ = "4.0.0"
 
-from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
-from cthulhu.data.layer import DataLayer
-from cthulhu.strategy.base import Strategy, SignalType
-from cthulhu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
-from cthulhu.risk.manager import RiskManager, RiskLimits
-from cthulhu.position.manager import PositionManager
-from cthulhu.position.trade_manager import TradeManager, TradeAdoptionPolicy
-from cthulhu.persistence.database import Database, TradeRecord, SignalRecord
-from cthulhu.observability.logger import setup_logger
-from cthulhu.observability.metrics import MetricsCollector
+from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulu.data.layer import DataLayer
+from cthulu.strategy.base import Strategy, SignalType
+from cthulu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
+from cthulu.risk.manager import RiskManager, RiskLimits
+from cthulu.position.manager import PositionManager
+from cthulu.position.trade_manager import TradeManager, TradeAdoptionPolicy
+from cthulu.persistence.database import Database, TradeRecord, SignalRecord
+from cthulu.observability.logger import setup_logger
+from cthulu.observability.metrics import MetricsCollector
 
 # Exit strategies
-from cthulhu.exit.trailing_stop import TrailingStop
-from cthulhu.exit.time_based import TimeBasedExit
-from cthulhu.exit.profit_target import ProfitTargetExit
-from cthulhu.exit.adverse_movement import AdverseMovementExit
+from cthulu.exit.trailing_stop import TrailingStop
+from cthulu.exit.time_based import TimeBasedExit
+from cthulu.exit.profit_target import ProfitTargetExit
+from cthulu.exit.adverse_movement import AdverseMovementExit
 
 # Indicators
-from cthulhu.indicators.rsi import RSI
-from cthulhu.indicators.macd import MACD
-from cthulhu.indicators.bollinger import BollingerBands
-from cthulhu.indicators.stochastic import Stochastic
-from cthulhu.indicators.adx import ADX
-from cthulhu.indicators.supertrend import Supertrend
-from cthulhu.indicators.vwap import VWAP, AnchoredVWAP
+from cthulu.indicators.rsi import RSI
+from cthulu.indicators.macd import MACD
+from cthulu.indicators.bollinger import BollingerBands
+from cthulu.indicators.stochastic import Stochastic
+from cthulu.indicators.adx import ADX
+from cthulu.indicators.supertrend import Supertrend
+from cthulu.indicators.vwap import VWAP, AnchoredVWAP
 
 
 # Global shutdown flag
@@ -149,11 +149,11 @@ def load_strategy(strategy_config: Dict[str, Any]) -> Strategy:
     Returns:
         Configured strategy instance or StrategySelector for dynamic mode
     """
-    from cthulhu.strategy.sma_crossover import SmaCrossover
-    from cthulhu.strategy.ema_crossover import EmaCrossover
-    from cthulhu.strategy.momentum_breakout import MomentumBreakout
-    from cthulhu.strategy.scalping import ScalpingStrategy
-    from cthulhu.strategy.strategy_selector import StrategySelector
+    from cthulu.strategy.sma_crossover import SmaCrossover
+    from cthulu.strategy.ema_crossover import EmaCrossover
+    from cthulu.strategy.momentum_breakout import MomentumBreakout
+    from cthulu.strategy.scalping import ScalpingStrategy
+    from cthulu.strategy.strategy_selector import StrategySelector
 
     # Normalize strategy config: keep nested 'params' but expose its keys at top-level
     strat_cfg = dict(strategy_config) if isinstance(strategy_config, dict) else {}
@@ -277,7 +277,7 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
 
     # Strategy instance inspection
     try:
-        from cthulhu.strategy.strategy_selector import StrategySelector
+        from cthulu.strategy.strategy_selector import StrategySelector
         if isinstance(strategy, StrategySelector):
             for s in strategy.strategies.values():
                 collect_ema_periods(s)
@@ -323,7 +323,7 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
 
     # Always include scalping defaults if strategy includes scalping
     try:
-        from cthulhu.strategy.strategy_selector import StrategySelector
+        from cthulu.strategy.strategy_selector import StrategySelector
         if isinstance(strategy, StrategySelector):
             if 'scalping' in (name.lower() for name in strategy.strategies.keys()):
                 required_emas.update({5, 10})
@@ -447,7 +447,7 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
         # If ATR is needed and missing, compute it here with sensible default
         if need_atr and 'atr' not in df.columns:
             try:
-                from cthulhu.indicators.atr import calculate_atr
+                from cthulu.indicators.atr import calculate_atr
                 # Prefer strategy-specific period, else default 14
                 period = getattr(strategy, 'atr_period', None) or strat_cfg.get('params', {}).get('atr_period', 14) or 14
                 period = int(period)
@@ -462,7 +462,7 @@ def ensure_runtime_indicators(df, indicators, strategy, config, logger):
     try:
         need_adx = False
         try:
-            from cthulhu.strategy.strategy_selector import StrategySelector
+            from cthulu.strategy.strategy_selector import StrategySelector
             if isinstance(strategy, StrategySelector):
                 need_adx = True
         except Exception:
@@ -552,7 +552,7 @@ def main():
         "  herald --config config.json --mindset aggressive\n"
         "\n"
         "Workflow:\n"
-        "  Cthulhu starts with an interactive setup wizard that guides you through\n"
+        "  Cthulu starts with an interactive setup wizard that guides you through\n"
         "  configuring symbol, timeframe, risk limits, and strategy settings.\n"
         "  Use --skip-setup to bypass the wizard for automated/headless runs.\n"
         "\n"
@@ -563,7 +563,7 @@ def main():
     )
 
     parser = argparse.ArgumentParser(
-        description=f"Cthulhu — Adaptive Trading Intelligence (v{__version__})",
+        description=f"Cthulu — Adaptive Trading Intelligence (v{__version__})",
         epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -600,7 +600,7 @@ def main():
     ml_group.add_argument('--enable-ml', dest='enable_ml', action='store_true', help='Enable ML instrumentation (overrides config)')
     ml_group.add_argument('--disable-ml', dest='enable_ml', action='store_false', help='Disable ML instrumentation (overrides config)')
     parser.set_defaults(enable_ml=None)
-    parser.add_argument('--version', action='version', version=f"Cthulhu {__version__}")
+    parser.add_argument('--version', action='version', version=f"Cthulu {__version__}")
     parser.add_argument('--max-loops', type=int, default=0, help='Exit after N main loop iterations (0 = run until shutdown)')
     args = parser.parse_args()
 
@@ -624,7 +624,7 @@ def main():
         if result is None:
             print("Setup cancelled. Exiting.")
             return 0
-        # Wizard completed — continue to start Cthulhu (do not exit).
+        # Wizard completed — continue to start Cthulu (do not exit).
         print("\nWizard completed. Continuing to start Herald...\n")
         # Avoid running the setup wizard twice (also guarded by not args.skip_setup later)
         args.skip_setup = True
@@ -635,11 +635,11 @@ def main():
         if result is None:
             print("Setup cancelled. Exiting.")
             return 0
-        print("\nStarting Cthulhu with configured settings...\n")
+        print("\nStarting Cthulu with configured settings...\n")
     logger = setup_logger(
         name='herald',
         level=args.log_level,
-        log_file='cthulhu.log',
+        log_file='Cthulu.log',
         json_format=False
     )
     
@@ -648,7 +648,7 @@ def main():
     sig_module.signal(sig_module.SIGTERM, signal_handler)
     
     logger.info("=" * 70)
-    logger.info(f"Cthulhu Autonomous Trading System v{__version__} - Phase 2")
+    logger.info(f"Cthulu Autonomous Trading System v{__version__} - Phase 2")
     logger.info("=" * 70)
     
     # Load configuration using typed schema and mapping
@@ -729,7 +729,7 @@ def main():
         
         # 6. Persistence
         logger.info("Initializing database...")
-        db_path = config.get('database', {}).get('path', 'cthulhu.db')
+        db_path = config.get('database', {}).get('path', 'Cthulu.db')
         database = Database(db_path)
         
         # 7. Metrics
@@ -744,8 +744,8 @@ def main():
         try:
             prom_cfg = config.get('observability', {}).get('prometheus', {}) if isinstance(config, dict) else {}
             if prom_cfg.get('enabled', False):
-                from cthulhu.observability.prometheus import PrometheusExporter
-                exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'cthulhu'))
+                from cthulu.observability.prometheus import PrometheusExporter
+                exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'Cthulu'))
                 logger.info('Prometheus exporter initialized')
         except Exception:
             logger.exception('Failed to initialize Prometheus exporter; continuing without it')
@@ -767,7 +767,7 @@ def main():
                 if hasattr(args, 'enable_ml') and args.enable_ml is not None:
                     ml_enabled = args.enable_ml
                 if ml_enabled:
-                    from cthulhu.ML_RL.instrumentation import MLDataCollector
+                    from cthulu.ML_RL.instrumentation import MLDataCollector
                     ml_prefix = ml_config.get('prefix', 'events')
                     ml_collector = MLDataCollector(prefix=ml_prefix)
                     logger.info('MLDataCollector initialized')
@@ -781,7 +781,7 @@ def main():
 
         # Advisory manager (advisory/ghost modes)
         try:
-            from cthulhu.advisory.manager import AdvisoryManager
+            from cthulu.advisory.manager import AdvisoryManager
             advisory_cfg = config.get('advisory', {}) if isinstance(config, dict) else {}
             advisory_manager = AdvisoryManager(advisory_cfg, execution_engine, ml_collector)
             if advisory_manager.enabled:
@@ -823,7 +823,7 @@ def main():
 
         # 11. Start trade monitor (optional, non-blocking)
         try:
-            from cthulhu.monitoring.trade_monitor import TradeMonitor
+            from cthulu.monitoring.trade_monitor import TradeMonitor
             monitor = TradeMonitor(position_manager, trade_manager=trade_manager, poll_interval=config.get('monitor_poll_interval', 5.0), ml_collector=ml_collector if ml_collector else None)
             monitor.start()
             logger.info(f"TradeMonitor started (ml_collector={type(monitor.ml_collector)})")
@@ -849,7 +849,7 @@ def main():
                     
                 # Also persist strategy info if using dynamic selector
                 try:
-                    from cthulhu.strategy.strategy_selector import StrategySelector
+                    from cthulu.strategy.strategy_selector import StrategySelector
                     if isinstance(strategy, StrategySelector):
                         with open(out_path.parent / 'strategy_info.txt', 'w', encoding='utf-8') as fh:
                             fh.write(f"Current Strategy: {strategy.current_strategy.name if strategy.current_strategy else 'None'}\n")
@@ -889,7 +889,7 @@ def main():
                 logger.info('GUI autostart disabled via CLI (--no-gui/--headless)')
 
             if autostart_gui:
-                gui_cmd = [sys.executable, '-m', 'cthulhu.ui.desktop']
+                gui_cmd = [sys.executable, '-m', 'Cthulu.ui.desktop']
                 try:
                     # Capture GUI stdout/stderr to files to diagnose immediate failures
                     gui_out = Path(__file__).parent / 'logs' / 'gui_stdout.log'
@@ -932,7 +932,7 @@ def main():
                         rc = p.returncode
                         logger.info('GUI process exited with return code %s', rc)
                         # If GUI exited cleanly (user closed it), treat as explicit shutdown request.
-                        # If GUI crashed (non-zero), keep Cthulhu running as the primary terminal and restore console.
+                        # If GUI crashed (non-zero), keep Cthulu running as the primary terminal and restore console.
                         if rc == 0:
                             # If the GUI process exited cleanly, check whether it was a short-lived
                             # instance that exited because another GUI instance is already running
@@ -1117,11 +1117,11 @@ def main():
         # Start RPC server by default (no CLI flag required) - local-only by design
         try:
             import os as _os
-            token = _os.getenv('CTHULHU_API_TOKEN')
-            from cthulhu.rpc.server import run_rpc_server
+            token = _os.getenv('Cthulu_API_TOKEN')
+            from cthulu.rpc.server import run_rpc_server
             try:
                 if not token:
-                    logger.warning('CTHULHU_API_TOKEN not set; RPC server running locally unauthenticated')
+                    logger.warning('Cthulu_API_TOKEN not set; RPC server running locally unauthenticated')
                 rpc_thread, rpc_server = run_rpc_server(args.rpc_host, args.rpc_port, token, execution_engine, risk_manager, position_manager, database)
                 logger.info('RPC server started (default enabled)')
             except Exception:
@@ -1136,7 +1136,7 @@ def main():
             news_enabled = news_cfg.get('enabled', False) or (env_enable == '1')
             news_ingestor = None
             if news_enabled:
-                from cthulhu.news import RssAdapter, NewsApiAdapter, FREDAdapter, TradingEconomicsAdapter, NewsIngestor, NewsManager
+                from cthulu.news import RssAdapter, NewsApiAdapter, FREDAdapter, TradingEconomicsAdapter, NewsIngestor, NewsManager
                 adapters = []
                 # RSS fallback
                 if os.getenv('NEWS_USE_RSS', str(news_cfg.get('use_rss', True))).lower() in ('1', 'true', 'yes'):
@@ -1191,10 +1191,10 @@ def main():
         logger.info(f"Connected to MT5 account {account_info['login']}")
         logger.info(f"Balance: {account_info['balance']:.2f}, Equity: {account_info['equity']:.2f}")
         
-        # Reconcile any existing Cthulhu positions from previous session
+        # Reconcile any existing Cthulu positions from previous session
         reconciled = position_manager.reconcile_positions()
         if reconciled > 0:
-            logger.info(f"Reconciled {reconciled} existing Cthulhu position(s)")
+            logger.info(f"Reconciled {reconciled} existing Cthulu position(s)")
         
         # Adopt any external trades if enabled
         if args.adopt_only:
@@ -1304,7 +1304,7 @@ def main():
 
                     # If using StrategySelector, inspect child strategies
                     try:
-                        from cthulhu.strategy.strategy_selector import StrategySelector
+                        from cthulu.strategy.strategy_selector import StrategySelector
                         if isinstance(strategy, StrategySelector):
                             for s in strategy.strategies.values():
                                 collect_ema_periods(s)
@@ -1366,7 +1366,7 @@ def main():
 
                             # If scalping is present among runtime strategies, add defaults (5,10) as safe fallback
                             try:
-                                from cthulhu.strategy.strategy_selector import StrategySelector
+                                from cthulu.strategy.strategy_selector import StrategySelector
                                 if isinstance(strategy, StrategySelector):
                                     if 'scalping' in (name.lower() for name in strategy.strategies.keys()):
                                         scalping_periods.update({5, 10})
@@ -1451,7 +1451,7 @@ def main():
 
                 # If dynamic selector, use its generator method
                 try:
-                    from cthulhu.strategy.strategy_selector import StrategySelector
+                    from cthulu.strategy.strategy_selector import StrategySelector
                     if isinstance(strategy, StrategySelector):
                         signal = strategy.generate_signal(df, current_bar)
                     else:
@@ -1857,7 +1857,7 @@ def main():
             logger.error(f"Error during shutdown: {e}", exc_info=True)
             
         logger.info("=" * 70)
-        logger.info("Cthulhu Autonomous Trading System - Stopped")
+        logger.info("Cthulu Autonomous Trading System - Stopped")
         logger.info("=" * 70)
         
     return 0
@@ -1880,5 +1880,9 @@ if __name__ == "__main__":
         except Exception:
             pass
         # Also print to stderr so calling process can capture it
-        print('Fatal error during Cthulhu startup. See logs/startup_crash.log for details.', file=sys.stderr)
+        print('Fatal error during Cthulu startup. See logs/startup_crash.log for details.', file=sys.stderr)
         raise
+
+
+
+

@@ -40,7 +40,7 @@ try:
     from ..market.tick_manager import TickManager
 except Exception:
     # Fallback to absolute import for scripts run outside the package context
-    from cthulhu.market.tick_manager import TickManager
+    from cthulu.market.tick_manager import TickManager
 
 
 @dataclass
@@ -80,7 +80,7 @@ class MT5Connector:
         """
         self.config = config
         self.connected = False
-        self.logger = logging.getLogger("cthulhu.connector")
+        self.logger = logging.getLogger("Cthulu.connector")
         self._lock = Lock()
         self._last_request_time = 0.0
         self._min_request_interval = 0.1  # 100ms between requests
@@ -713,3 +713,7 @@ class MT5Connector:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         self.disconnect()
+
+
+
+

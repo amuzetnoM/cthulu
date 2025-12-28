@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from cthulhu.config.wizard import run_setup_wizard
+from cthulu.config.wizard import run_setup_wizard
 
 
 def test_run_setup_wizard_skips_setup_and_returns_existing_config(tmp_path, monkeypatch, capsys):
@@ -12,21 +12,25 @@ def test_run_setup_wizard_skips_setup_and_returns_existing_config(tmp_path, monk
     cfg_path.write_text(json.dumps(cfg_data))
 
     # Simulate user choosing not to run interactive setup
-    monkeypatch.setattr('cthulhu.config.wizard.get_input', lambda prompt, default="": "n")
+    monkeypatch.setattr('Cthulu.config.wizard.get_input', lambda prompt, default="": "n")
 
     res = run_setup_wizard(str(cfg_path))
     assert res == cfg_data
 
     captured = capsys.readouterr()
-    assert "Starting Cthulhu with the existing configuration" in captured.out
+    assert "Starting Cthulu with the existing configuration" in captured.out
     # Ensure the y/n legend message is shown
     assert "Answer 'y' to start a new setup" in captured.out
 
 
 def test_choose_mindset_accepts_four_choices(monkeypatch, capsys):
-    from cthulhu.config.wizard import choose_mindset
+    from cthulu.config.wizard import choose_mindset
 
     # Simulate selecting option 3 (Aggressive)
-    monkeypatch.setattr('cthulhu.config.wizard.get_input', lambda prompt, default="": "3")
+    monkeypatch.setattr('Cthulu.config.wizard.get_input', lambda prompt, default="": "3")
     res = choose_mindset()
     assert res == 'aggressive'
+
+
+
+

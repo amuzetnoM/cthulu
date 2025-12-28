@@ -66,7 +66,7 @@ class Database:
     - Export capabilities
     """
     
-    def __init__(self, db_path: str = "cthulhu.db"):
+    def __init__(self, db_path: str = "Cthulu.db"):
         """
         Initialize database connection.
         
@@ -74,7 +74,7 @@ class Database:
             db_path: Path to SQLite database file
         """
         self.db_path = Path(db_path)
-        self.logger = logging.getLogger("cthulhu.persistence")
+        self.logger = logging.getLogger("Cthulu.persistence")
         self.conn: Optional[sqlite3.Connection] = None
         
         # Create database directory if needed
@@ -818,3 +818,7 @@ class Database:
         if self.conn:
             self.conn.close()
             self.logger.info("Database connection closed")
+
+
+
+

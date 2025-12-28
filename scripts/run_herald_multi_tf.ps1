@@ -5,7 +5,7 @@ param(
     [switch]$DryRun
 )
 
-# Helper to start Cthulhu for multiple timeframes using configs stored under configs/mindsets/<mindset>/
+# Helper to start Cthulu for multiple timeframes using configs stored under configs/mindsets/<mindset>/
 $python = "python"
 
 # Normalize timeframes input (allow comma-separated string)
@@ -40,10 +40,10 @@ foreach ($raw in $Timeframes) {
         }
 
         foreach ($sym in $Symbols) {
-            $argList = @('-m', 'cthulhu', '--config', "$cfgPath", '--mindset', $Mindset, '--skip-setup', '--symbol', $sym)
+            $argList = @('-m', 'cthulu', '--config', "$cfgPath", '--mindset', $Mindset, '--skip-setup', '--symbol', $sym)
             if ($DryRun) { $argList += '--dry-run' }
 
-            Write-Host "Starting Cthulhu for $sym on $tf using $cfgPath"
+            Write-Host "Starting Cthulu for $sym on $tf using $cfgPath"
             $proc = Start-Process -FilePath $python -ArgumentList $argList -NoNewWindow -PassThru
             Write-Host "  -> Started PID: $($proc.Id)" -ForegroundColor Cyan
             $startedCount++
@@ -51,4 +51,8 @@ foreach ($raw in $Timeframes) {
     }
 }
 
-Write-Host "Started $startedCount Cthulhu process(es)."
+Write-Host "Started $startedCount Cthulu process(es)."
+
+
+
+

@@ -93,7 +93,7 @@ class Strategy(ABC):
         """
         self.name = name
         self.config = config
-        self.logger = logging.getLogger(f"cthulhu.strategy.{name}")
+        self.logger = logging.getLogger(f"Cthulu.strategy.{name}")
         self._state: Dict[str, Any] = {}
         
     @abstractmethod
@@ -196,3 +196,7 @@ class Strategy(ABC):
                 return False
                 
         return True
+
+
+
+

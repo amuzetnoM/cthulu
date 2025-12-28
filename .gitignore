@@ -40,7 +40,7 @@ docs/development_log
 logs/
 *.log
 *.log.*
-cthulhu.log
+Cthulu.log
 
 # IDE
 .vscode/
@@ -97,3 +97,6 @@ docs/changelog/mql5_handbook
 
 # Ignore backup config containing credentials
 config.json.bak
+
+
+

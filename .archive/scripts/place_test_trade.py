@@ -1,6 +1,6 @@
 import MetaTrader5 as mt5
 import time
-from cthulhu import constants
+from cthulu import constants
 
 print('Initializing MT5 (no params)...')
 ok = mt5.initialize()
@@ -69,3 +69,7 @@ except Exception:
 
 mt5.shutdown()
 print('MT5 shutdown')
+
+
+
+

@@ -134,3 +134,7 @@ class CircuitBreaker:
     def is_closed(self) -> bool:
         """Check if circuit is closed."""
         return self.state == CircuitState.CLOSED
+
+
+
+

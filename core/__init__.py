@@ -1,7 +1,7 @@
 """
-Cthulhu Core Module
+Cthulu Core Module
 
-Contains the refactored core components of Cthulhu:
+Contains the refactored core components of Cthulu:
 - bootstrap: System initialization
 - trading_loop: Main trading logic ✅
 - indicator_loader: Indicator management  
@@ -12,7 +12,7 @@ Contains the refactored core components of Cthulhu:
 
 from .indicator_loader import IndicatorLoader, IndicatorRequirementResolver
 from .strategy_factory import StrategyFactory
-from .bootstrap import CthulhuBootstrap, SystemComponents
+from .bootstrap import cthuluBootstrap, SystemComponents
 from .exit_loader import ExitStrategyLoader
 from .trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators
 from .shutdown import ShutdownHandler, create_shutdown_handler
@@ -21,7 +21,7 @@ __all__ = [
     'IndicatorLoader',
     'IndicatorRequirementResolver',
     'StrategyFactory',
-    'CthulhuBootstrap',
+    'CthuluBootstrap',
     'SystemComponents',
     'ExitStrategyLoader',
     'TradingLoop',
@@ -30,3 +30,7 @@ __all__ = [
     'ShutdownHandler',
     'create_shutdown_handler',
 ]
+
+
+
+

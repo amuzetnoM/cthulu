@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 from datetime import datetime
-from cthulhu.exit.base import ExitStrategy, ExitSignal
-from cthulhu.position.manager import PositionInfo
+from cthulu.exit.base import ExitStrategy, ExitSignal
+from cthulu.position.manager import PositionInfo
 
 
 class TakeProfitExit(ExitStrategy):
@@ -73,3 +73,7 @@ class TakeProfitExit(ExitStrategy):
 
 # Backwards-compatible alias
 TakeProfit = TakeProfitExit
+
+
+
+

@@ -2,8 +2,8 @@ import json
 import urllib.request
 import urllib.error
 import time
-from cthulhu.rpc.server import run_rpc_server
-from cthulhu.execution.engine import OrderStatus
+from cthulu.rpc.server import run_rpc_server
+from cthulu.execution.engine import OrderStatus
 
 
 class DummyExecutionEngine:
@@ -223,3 +223,7 @@ def test_successful_filled_calls_db_and_track():
 
     server.shutdown()
     thread.join(timeout=2)
+
+
+
+

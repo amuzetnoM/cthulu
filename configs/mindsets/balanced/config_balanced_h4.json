@@ -45,6 +45,10 @@
   "exit_strategies": [],
   "indicators": [],
   "database": {
-    "path": "cthulhu.db"
+    "path": "cthulu.db"
   }
 }
+
+
+
+

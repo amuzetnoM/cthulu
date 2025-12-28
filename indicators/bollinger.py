@@ -192,3 +192,7 @@ def calculate_bollinger_bands(data: pd.DataFrame, period: int = 20, std_dev: flo
 def detect_squeeze(upper_series: pd.Series, lower_series: pd.Series, threshold: float = 0.02):
     width = (upper_series - lower_series) / upper_series
     return width < threshold
+
+
+
+

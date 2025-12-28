@@ -3,13 +3,13 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cthulhu"
+name = "cthulu"
 version = "5.0.1"
 description = "Adaptive Trading Intelligence for MetaTrader 5"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Cthulhu Project"}
+    {name = "Cthulu Project"}
 ]
 keywords = ["trading", "metatrader5", "mt5", "algorithmic-trading", "forex", "crypto"]
 classifiers = [
@@ -46,8 +46,8 @@ dev = [
 ]
 
 [project.scripts]
-cthulhu = "cthulhu.__main__:main"
-cthulhu-trade = "cthulhu.scripts.trade_cli:main"
+cthulu = "cthulu.__main__:main"
+cthulu-trade = "cthulu.scripts.trade_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/amuzetnoM/herald"
@@ -56,11 +56,11 @@ Repository = "https://github.com/amuzetnoM/herald.git"
 Issues = "https://github.com/amuzetnoM/herald/issues"
 
 [tool.setuptools]
-packages = ["cthulhu"]
-package-dir = {"cthulhu" = "."}
+packages = ["cthulu"]
+package-dir = {"cthulu" = "cthulu"}
 
 [tool.setuptools.package-data]
-cthulhu = ["config/*.json", "config/*.yaml"]
+cthulu = ["config/*.json", "config/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -96,3 +96,7 @@ exclude = ["venv", ".venv", "tests"]
 max-line-length = 120
 exclude = [".git", "__pycache__", "venv", ".venv", "build", "dist"]
 ignore = ["E501", "W503"]
+
+
+
+

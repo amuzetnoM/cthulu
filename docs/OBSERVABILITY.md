@@ -1,17 +1,17 @@
 ---
 title: Observability & Metrics
-description: Performance metrics, Prometheus exporter, and guidance for monitoring Cthulhu
+description: Performance metrics, Prometheus exporter, and guidance for monitoring Cthulu
 tags: [observability, metrics, prometheus]
 slug: /docs/observability/metrics
 ---
 
 # Observability & Performance Metrics
 
-This document describes Cthulhu's performance metrics, how they're computed, and how to expose them via the built-in Prometheus exporter.
+This document describes Cthulu's performance metrics, how they're computed, and how to expose them via the built-in Prometheus exporter.
 
 ## Overview
 
-Cthulhu now produces a comprehensive performance snapshot that is suitable for realtime monitoring and historical analysis.
+Cthulu now produces a comprehensive performance snapshot that is suitable for realtime monitoring and historical analysis.
 Key capabilities:
 - Per-trade and per-symbol aggregates (realized/unrealized PnL, wins/losses, exposures)
 - Risk:Reward (R:R) tracking (average, median, count)
@@ -38,7 +38,7 @@ Important fields available in `PerformanceMetrics` (snapshot returned by `Metric
 
 ## Prometheus exporter
 
-Cthulhu includes a lightweight Prometheus exporter (`cthulhu.observability.prometheus.PrometheusExporter`) that can be enabled via configuration and will expose the following metric families (prefix configurable via `prefix`):
+Cthulu includes a lightweight Prometheus exporter (`Cthulu.observability.prometheus.PrometheusExporter`) that can be enabled via configuration and will expose the following metric families (prefix configurable via `prefix`):
 
 - `<prefix>_trades_total`
 - `<prefix>_trades_won`
@@ -60,12 +60,12 @@ Add the following to your config JSON under `observability`:
 "observability": {
   "prometheus": {
     "enabled": true,
-    "prefix": "cthulhu"
+    "prefix": "Cthulu"
   }
 }
 ```
 
-Then run Cthulhu normally. The exporter is updated automatically during the main loop (on the scheduled performance summary sync) and can be written to a textfile (for Node Exporter's textfile collector) or extended to serve via HTTP if required.
+Then run Cthulu normally. The exporter is updated automatically during the main loop (on the scheduled performance summary sync) and can be written to a textfile (for Node Exporter's textfile collector) or extended to serve via HTTP if required.
 
 ## Best practices
 
@@ -82,3 +82,6 @@ Then run Cthulhu normally. The exporter is updated automatically during the main
 ---
 
 For examples and more details, see `docs/changelog/CHANGELOG.md` and the tests (`tests/unit/test_metrics_improved.py`, `tests/unit/test_metrics_prometheus_integration.py`).
+
+
+

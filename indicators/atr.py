@@ -94,3 +94,7 @@ class ATR(Indicator):
 
 # Exports
 __all__ = ["calculate_atr", "ATR"]
+
+
+
+

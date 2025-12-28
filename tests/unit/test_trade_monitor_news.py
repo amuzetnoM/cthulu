@@ -1,6 +1,6 @@
 import time
-from cthulhu.monitoring.trade_monitor import TradeMonitor
-from cthulhu.news.base import NewsEvent
+from cthulu.monitoring.trade_monitor import TradeMonitor
+from cthulu.news.base import NewsEvent
 
 
 class DummyTradeManager:
@@ -46,3 +46,7 @@ def test_monitor_pauses_on_high_importance():
     # Should have recorded a news_alert and paused trading
     assert any(e[0] == 'monitor.news_alert' for e in ml.events)
     assert tm.paused_until is not None
+
+
+
+

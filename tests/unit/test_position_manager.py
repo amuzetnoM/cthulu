@@ -14,14 +14,14 @@ class TestPositionInfo(unittest.TestCase):
     def test_position_info_import(self):
         """Test that PositionInfo can be imported."""
         try:
-            from cthulhu.position.manager import PositionInfo
+            from cthulu.position.manager import PositionInfo
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import PositionInfo from position.position_manager")
     
     def test_position_info_creation(self):
         """Test creating a PositionInfo instance."""
-        from cthulhu.position.manager import PositionInfo
+        from cthulu.position.manager import PositionInfo
         
         pos = PositionInfo(
             ticket=12345,
@@ -41,7 +41,7 @@ class TestPositionInfo(unittest.TestCase):
     
     def test_position_info_unrealized_pnl(self):
         """Test unrealized P&L calculation."""
-        from cthulhu.position.manager import PositionInfo
+        from cthulu.position.manager import PositionInfo
         
         # Buy position with profit
         pos_buy = PositionInfo(
@@ -78,14 +78,14 @@ class TestPositionManager(unittest.TestCase):
     def test_position_manager_import(self):
         """Test that PositionManager can be imported."""
         try:
-            from cthulhu.position.manager import PositionManager
+            from cthulu.position.manager import PositionManager
             self.assertTrue(True)
         except ImportError:
             self.fail("Could not import PositionManager from position.position_manager")
     
     def test_position_manager_initialization(self):
         """Test PositionManager initialization."""
-        from cthulhu.position.manager import PositionManager
+        from cthulu.position.manager import PositionManager
         
         manager = PositionManager()
         
@@ -94,7 +94,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_add_position(self):
         """Test adding a position to the manager."""
-        from cthulhu.position.manager import PositionManager, PositionInfo
+        from cthulu.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -115,7 +115,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_remove_position(self):
         """Test removing a position from the manager."""
-        from cthulhu.position.manager import PositionManager, PositionInfo
+        from cthulu.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -137,7 +137,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_update_position(self):
         """Test updating position current price."""
-        from cthulhu.position.manager import PositionManager, PositionInfo
+        from cthulu.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -161,7 +161,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_get_positions_by_symbol(self):
         """Test filtering positions by symbol."""
-        from cthulhu.position.manager import PositionManager, PositionInfo
+        from cthulu.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -194,7 +194,7 @@ class TestPositionManager(unittest.TestCase):
 
     def test_legacy_constructor_entry_price_and_position_type(self):
         """Test that legacy constructor args entry_price and position_type map to open_price and side respectively."""
-        from cthulhu.position.manager import PositionInfo
+        from cthulu.position.manager import PositionInfo
 
         pos = PositionInfo(
             ticket=100,
@@ -211,7 +211,7 @@ class TestPositionManager(unittest.TestCase):
 
     def test_legacy_prefixed_constructor(self):
         """Test that `_legacy_entry_price` and `_legacy_position_type` constructor args map correctly."""
-        from cthulhu.position.manager import PositionInfo
+        from cthulu.position.manager import PositionInfo
 
         pos = PositionInfo(
             ticket=101,
@@ -228,7 +228,7 @@ class TestPositionManager(unittest.TestCase):
     
     def test_total_unrealized_pnl(self):
         """Test calculating total unrealized P&L across all positions."""
-        from cthulhu.position.manager import PositionManager, PositionInfo
+        from cthulu.position.manager import PositionManager, PositionInfo
         
         manager = PositionManager()
         
@@ -263,3 +263,7 @@ class TestPositionManager(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+
+

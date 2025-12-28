@@ -10,7 +10,7 @@ from datetime import datetime
 import pandas as pd
 
 from .base import ExitStrategy, ExitSignal
-from cthulhu.position.manager import PositionInfo
+from cthulu.position.manager import PositionInfo
 
 
 class TrailingStop(ExitStrategy):
@@ -245,3 +245,7 @@ class TrailingStopExit(TrailingStop):
         if state and state.get('stop_price'):
             return state['stop_price']
         return position.stop_loss
+
+
+
+

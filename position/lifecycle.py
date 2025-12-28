@@ -91,7 +91,7 @@ class PositionLifecycle:
                         from position.tracker import PositionInfo
                     except Exception:
                         # Fallback to package import for test / runtime environments
-                        from cthulhu.position.tracker import PositionInfo
+                        from cthulu.position.tracker import PositionInfo
                     
                     # Create tracked position
                     tracked_pos = PositionInfo(
@@ -152,7 +152,7 @@ class PositionLifecycle:
             try:
                 # If engine returned an ExecutionResult-like object, inspect status
                 if hasattr(result, 'status'):
-                    from cthulhu.execution.engine import OrderStatus
+                    from cthulu.execution.engine import OrderStatus
                     success = (getattr(result, 'status', None) == OrderStatus.FILLED)
                 else:
                     # Fallback: truthiness for legacy boolean API
@@ -439,3 +439,7 @@ class PositionLifecycle:
         except Exception as e:
             logger.error(f"Error checking position lifecycle health: {e}", exc_info=True)
             return False
+
+
+
+

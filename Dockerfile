@@ -45,4 +45,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import sys; sys.exit(0)" || exit 1
 
 # Default command (can be overridden)
-CMD ["python", "-m", "cthulhu", "--config", "config.json", "--skip-setup", "--no-prompt"]
+CMD ["python", "-m", "Cthulu", "--config", "config.json", "--skip-setup", "--no-prompt"]
+
+
+
+

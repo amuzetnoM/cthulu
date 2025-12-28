@@ -280,3 +280,7 @@ def calculate_adx(data: pd.DataFrame, period: int = 14) -> pd.Series:
 def is_strong_trend(adx_series: pd.Series, threshold: float = 25.0) -> pd.Series:
     """Convenience wrapper: identify strong trend points in ADX series."""
     return adx_series > threshold
+
+
+
+

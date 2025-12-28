@@ -8,10 +8,10 @@ Extracted from __main__.py for better modularity.
 import logging
 from typing import Dict, Any, List, Optional
 
-from cthulhu.exit.trailing_stop import TrailingStop
-from cthulhu.exit.time_based import TimeBasedExit
-from cthulhu.exit.profit_target import ProfitTargetExit
-from cthulhu.exit.adverse_movement import AdverseMovementExit
+from cthulu.exit.trailing_stop import TrailingStop
+from cthulu.exit.time_based import TimeBasedExit
+from cthulu.exit.profit_target import ProfitTargetExit
+from cthulu.exit.adverse_movement import AdverseMovementExit
 
 
 # Exit strategy registry mapping type names to classes
@@ -138,3 +138,7 @@ def load_exit_strategies(exit_configs: Dict[str, Any]) -> List:
     """
     loader = ExitStrategyLoader()
     return loader.load_exit_strategies(exit_configs)
+
+
+
+

@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any, Optional
 
-from cthulhu.indicators.base import Indicator
+from cthulu.indicators.base import Indicator
 
 
 class VPT(Indicator):
@@ -137,3 +137,6 @@ class PriceVolumeTrend(Indicator):
 
         pvt.name = 'pvt'
         return pvt
+
+
+

@@ -2,9 +2,9 @@ from __future__ import annotations
 import time
 import logging
 from typing import Dict, Any, Optional
-from cthulhu.execution.engine import OrderRequest, ExecutionResult, ExecutionEngine, OrderType
+from cthulu.execution.engine import OrderRequest, ExecutionResult, ExecutionEngine, OrderType
 
-logger = logging.getLogger('cthulhu.advisory')
+logger = logging.getLogger('Cthulu.advisory')
 
 
 class AdvisoryManager:
@@ -185,3 +185,7 @@ class AdvisoryManager:
         payload['decision'] = 'execute'
         self._record_ml('advisory.signal', payload)
         return {'action': 'execute', 'result': None}
+
+
+
+

@@ -4,7 +4,7 @@ MT5 Connection Test Suite
 Tests connection to MetaTrader 5 using credentials from .env file.
 Verifies broker server connectivity and retrieves account information.
 
-Run with: RUN_MT5_CONNECT_TESTS=1 pytest cthulhu/tests/test_connection.py -v
+Run with: RUN_MT5_CONNECT_TESTS=1 pytest Cthulu/tests/test_connection.py -v
 """
 
 import os
@@ -20,7 +20,7 @@ load_dotenv()
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
 import pytest
 
 
@@ -112,4 +112,8 @@ def test_connection_health(mt5_connector):
     """Verify connection is healthy."""
     is_connected = mt5_connector.is_connected()
     assert is_connected, "Connection health check failed"
+
+
+
+
 

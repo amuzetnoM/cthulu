@@ -1,6 +1,6 @@
 import argparse
 
-from cthulhu.__main__ import init_ml_collector
+from cthulu.__main__ import init_ml_collector
 
 
 class FakeLogger:
@@ -29,3 +29,7 @@ def test_ml_disabled_by_cli():
     config = {'ml': {'enabled': True, 'prefix': 't'}}
     ml = init_ml_collector(config, args, FakeLogger())
     assert ml is None
+
+
+
+

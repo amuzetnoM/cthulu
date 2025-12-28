@@ -1,7 +1,7 @@
 """
 Database Initialization Script
 
-Creates SQLite database schema for Cthulhu trading system.
+Creates SQLite database schema for Cthulu trading system.
 Schemas: trades, orders, positions, signals, metrics
 """
 
@@ -11,9 +11,9 @@ from pathlib import Path
 from datetime import datetime
 
 
-def init_database(db_path: str = "data/cthulhu.db"):
+def init_database(db_path: str = "data/Cthulu.db"):
     """
-    Initialize Cthulhu database with required tables.
+    Initialize Cthulu database with required tables.
     
     Args:
         db_path: Path to SQLite database file
@@ -169,3 +169,7 @@ def init_database(db_path: str = "data/cthulhu.db"):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     init_database()
+
+
+
+

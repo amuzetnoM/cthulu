@@ -29,3 +29,7 @@ print('Last error:', mt5.last_error())
 p = mt5.positions_get(ticket=ticket)[0]
 print('Position after:', p.ticket, 'sl', p.sl, 'tp', p.tp)
 mt5.shutdown()
+
+
+
+

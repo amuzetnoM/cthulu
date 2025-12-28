@@ -1,13 +1,13 @@
 """Telemetry helper for provenance and long-term order auditing.
 
-Provides a small wrapper around `cthulhu.persistence.database.Database` to record
+Provides a small wrapper around `Cthulu.persistence.database.Database` to record
 order provenance entries and expose simple query helpers.
 """
 from typing import Dict, Any, List, Optional
 import logging
-from cthulhu.persistence.database import Database
+from cthulu.persistence.database import Database
 
-logger = logging.getLogger('cthulhu.telemetry')
+logger = logging.getLogger('Cthulu.telemetry')
 
 class Telemetry:
     def __init__(self, db: Database):
@@ -28,3 +28,7 @@ class Telemetry:
         except Exception:
             logger.exception('Failed to fetch recent provenance')
             return []
+
+
+
+

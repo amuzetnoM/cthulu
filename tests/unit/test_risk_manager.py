@@ -1,5 +1,5 @@
 import pytest
-from cthulhu.position.risk_manager import suggest_sl_adjustment
+from cthulu.position.risk_manager import suggest_sl_adjustment
 
 
 def test_within_threshold_tiny_balance():
@@ -30,3 +30,7 @@ def test_thresholds_from_config():
     res = suggest_sl_adjustment('SYM', bal, price, proposed_sl, side='SELL', thresholds=thresholds, breakpoints=breakpoints)
     assert res['adjusted_sl'] is not None
     assert res['suggested_mindset'] in ('short-term','swing')
+
+
+
+

@@ -6,8 +6,8 @@ import unittest
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
-from cthulhu.position.manager import PositionInfo, PositionManager
-from cthulhu.position.trade_manager import TradeManager, TradeAdoptionPolicy
+from cthulu.position.manager import PositionInfo, PositionManager
+from cthulu.position.trade_manager import TradeManager, TradeAdoptionPolicy
 
 
 class TestTradeAdoptionPolicy(unittest.TestCase):
@@ -80,7 +80,7 @@ class TestTradeManager(unittest.TestCase):
         trades = manager.scan_for_external_trades()
         self.assertEqual(trades, [])
         
-    @patch('cthulhu.position.trade_manager.mt5')
+    @patch('Cthulu.position.trade_manager.mt5')
     def test_scan_detects_external_trade(self, mock_mt5):
         """Test that scan detects external trades."""
         # Create mock MT5 position with different magic number
@@ -111,10 +111,10 @@ class TestTradeManager(unittest.TestCase):
         self.assertEqual(trades[0].symbol, "EURUSD")
         self.assertEqual(trades[0].side, "BUY")
         
-    @patch('cthulhu.position.trade_manager.mt5')
-    def test_scan_ignores_cthulhu_trades(self, mock_mt5):
-        """Test that scan ignores Cthulhu's own trades."""
-        # Create mock MT5 position with Cthulhu's magic number
+    @patch('Cthulu.position.trade_manager.mt5')
+    def test_scan_ignores_Cthulu_trades(self, mock_mt5):
+        """Test that scan ignores Cthulu's own trades."""
+        # Create mock MT5 position with Cthulu's magic number
         mock_position = MagicMock()
         mock_position.ticket = 888888
         mock_position.symbol = "EURUSD"
@@ -126,19 +126,19 @@ class TestTradeManager(unittest.TestCase):
         mock_position.tp = 0
         mock_position.price_current = 1.1020
         mock_position.profit = 20.0
-        mock_position.magic = 123456  # Cthulhu's magic number
+        mock_position.magic = 123456  # Cthulu's magic number
         mock_position.swap = 0.0
         mock_position.commission = 0.0
-        mock_position.comment = "Cthulhu"
+        mock_position.comment = "Cthulu"
         
         mock_mt5.positions_get.return_value = [mock_position]
         
         trades = self.trade_manager.scan_for_external_trades()
         
-        # Should be empty since it's Cthulhu's trade
+        # Should be empty since it's Cthulu's trade
         self.assertEqual(len(trades), 0)
         
-    @patch('cthulhu.position.trade_manager.mt5')
+    @patch('Cthulu.position.trade_manager.mt5')
     def test_scan_respects_symbol_filter(self, mock_mt5):
         """Test that scan respects adopt_symbols filter."""
         policy = TradeAdoptionPolicy(enabled=True, adopt_symbols=["GBPUSD"])
@@ -170,7 +170,7 @@ class TestTradeManager(unittest.TestCase):
         # Should be empty since EURUSD not in adopt_symbols
         self.assertEqual(len(trades), 0)
         
-    @patch('cthulhu.position.trade_manager.mt5')
+    @patch('Cthulu.position.trade_manager.mt5')
     def test_scan_respects_ignore_symbols(self, mock_mt5):
         """Test that scan respects ignore_symbols filter."""
         policy = TradeAdoptionPolicy(enabled=True, ignore_symbols=["XAUUSD"])
@@ -279,3 +279,7 @@ class TestTradeManager(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+
+

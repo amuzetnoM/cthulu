@@ -1,4 +1,4 @@
-"""Lightweight RPC server for controlling Cthulhu at runtime.
+"""Lightweight RPC server for controlling Cthulu at runtime.
 
 Provides a minimal POST /trade endpoint protected by a bearer token.
 Designed to be local-only (binds to 127.0.0.1 by default) and dependency-free (uses http.server).
@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from threading import Thread
 from typing import Optional
 
-logger = logging.getLogger('cthulhu.rpc')
+logger = logging.getLogger('Cthulu.rpc')
 
 
 class RPCRequestHandler(BaseHTTPRequestHandler):
@@ -83,7 +83,7 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
 
         # Build OrderRequest lazily to avoid importing heavy modules at module import time
         try:
-            from cthulhu.execution.engine import OrderRequest, OrderType, OrderStatus, ExecutionResult
+            from cthulu.execution.engine import OrderRequest, OrderType, OrderStatus, ExecutionResult
         except Exception:
             self._send_json(500, {'error': 'Server misconfiguration: cannot import Execution engine'})
             return
@@ -173,7 +173,7 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 tracked = self.position_manager.track_position(result, signal_metadata={})
                 # record in DB via TradeRecord
                 try:
-                    from cthulhu.persistence.database import TradeRecord
+                    from cthulu.persistence.database import TradeRecord
                     from datetime import datetime as _dt
                     tr = TradeRecord(
                         signal_id='rpc_manual',
@@ -261,3 +261,7 @@ def run_rpc_server(host: str, port: int, token: Optional[str], execution_engine,
     t.start()
     logger.info(f"RPC server listening on http://{host}:{port} (local only).")
     return t, server
+
+
+
+

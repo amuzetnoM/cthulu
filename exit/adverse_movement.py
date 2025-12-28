@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from collections import deque
 
 from .base import ExitStrategy, ExitSignal
-from cthulhu.position.manager import PositionInfo
+from cthulu.position.manager import PositionInfo
 
 
 class AdverseMovementExit(ExitStrategy):
@@ -251,3 +251,7 @@ class AdverseMovementExit(ExitStrategy):
         if ticket in self._last_exit:
             del self._last_exit[ticket]
         self.logger.debug(f"Removed adverse movement tracking for {ticket}")
+
+
+
+

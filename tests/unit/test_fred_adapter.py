@@ -1,6 +1,6 @@
 import pytest
-from cthulhu.news.fred_adapter import FREDAdapter
-from cthulhu.news.base import NewsEvent
+from cthulu.news.fred_adapter import FREDAdapter
+from cthulu.news.base import NewsEvent
 
 
 class DummyResp:
@@ -39,3 +39,7 @@ def test_parses_latest_observation(monkeypatch):
     assert ev.provider == 'FRED'
     assert 'GDP' in ev.symbol
     assert '123.45' in ev.headline
+
+
+
+

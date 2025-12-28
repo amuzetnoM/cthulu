@@ -180,3 +180,7 @@ class PositionManager:
                 out[p.symbol]['count'] += 1
                 out[p.symbol]['volume'] += p.volume
         return out
+
+
+
+

@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import logging
 
-from cthulhu.__main__ import ensure_runtime_indicators
-from cthulhu.strategy.scalping import ScalpingStrategy
+from cthulu.__main__ import ensure_runtime_indicators
+from cthulu.strategy.scalping import ScalpingStrategy
 from types import SimpleNamespace
 
 
@@ -34,3 +34,7 @@ def test_runtime_atr_added_for_scalping():
     # After ensure_runtime_indicators, df should contain 'atr'
     assert 'atr' in df.columns
     assert df['atr'].notnull().any()
+
+
+
+

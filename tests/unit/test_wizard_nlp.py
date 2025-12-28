@@ -1,5 +1,5 @@
 import unittest
-from cthulhu.config.wizard import parse_natural_language_intent
+from cthulu.config.wizard import parse_natural_language_intent
 
 
 class TestNLPWizardParser(unittest.TestCase):
@@ -33,3 +33,7 @@ class TestNLPWizardParser(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+
+

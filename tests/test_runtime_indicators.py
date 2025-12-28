@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 import logging
 
-from cthulhu.__main__ import ensure_runtime_indicators
-from cthulhu.strategy.scalping import ScalpingStrategy
-from cthulhu.indicators.rsi import RSI
+from cthulu.__main__ import ensure_runtime_indicators
+from cthulu.strategy.scalping import ScalpingStrategy
+from cthulu.indicators.rsi import RSI
 
-logger = logging.getLogger('cthulhu.tests')
+logger = logging.getLogger('Cthulu.tests')
 
 
 def _make_ohlcv(n=500):
@@ -45,8 +45,8 @@ def test_ensure_runtime_indicators_computes_ema_and_rsi():
             df = df.join(data, how='left')
 
     # Compute EMA columns via TradingLoop helper (simulate main loop behavior)
-    from cthulhu.core.trading_loop import TradingLoop, TradingLoopContext
-    local_logger = logging.getLogger('cthulhu.tests')
+    from cthulu.core.trading_loop import TradingLoop, TradingLoopContext
+    local_logger = logging.getLogger('Cthulu.tests')
     ctx = TradingLoopContext(
         logger=local_logger,
         connector=None,
@@ -80,7 +80,7 @@ def test_ensure_runtime_indicators_computes_ema_and_rsi():
 
 def test_runtime_indicator_rename_on_overlap():
     import pandas as pd
-    from cthulhu.core.trading_loop import TradingLoop, TradingLoopContext
+    from cthulu.core.trading_loop import TradingLoop, TradingLoopContext
 
     # Prepare DF with existing rsi_7 column that would conflict
     df = pd.DataFrame({'close': [1, 2, 3]}, index=pd.date_range('2025-01-01', periods=3))
@@ -94,7 +94,7 @@ def test_runtime_indicator_rename_on_overlap():
             return pd.Series([1.0]*len(df), index=df.index, name=f'rsi_{self.period}')
 
     # Minimal context
-    logger = logging.getLogger('cthulhu.tests')
+    logger = logging.getLogger('Cthulu.tests')
     ctx = TradingLoopContext(
         connector=None,
         data_layer=None,
@@ -132,7 +132,7 @@ def test_runtime_indicator_rename_on_overlap():
 
 def test_adx_runtime_namespace():
     import pandas as pd
-    from cthulhu.core.trading_loop import TradingLoop, TradingLoopContext
+    from cthulu.core.trading_loop import TradingLoop, TradingLoopContext
 
     df = pd.DataFrame({'close': [1, 2, 3]}, index=pd.date_range('2025-01-01', periods=3))
     df['adx'] = [5.0, 6.0, 7.0]
@@ -146,7 +146,7 @@ def test_adx_runtime_namespace():
                 'minus_di': [8.0]*len(df),
             }, index=df.index)
 
-    logger = logging.getLogger('cthulhu.tests')
+    logger = logging.getLogger('Cthulu.tests')
     ctx = TradingLoopContext(
         connector=None,
         data_layer=None,
@@ -182,7 +182,7 @@ def test_adx_runtime_namespace():
 
 def test_rsi_fallback_computes_alias_if_missing():
     import pandas as pd
-    from cthulhu.core.trading_loop import TradingLoop, TradingLoopContext
+    from cthulu.core.trading_loop import TradingLoop, TradingLoopContext
 
     # Build DF without RSI or ATR
     df = pd.DataFrame({'close': [100, 101, 102]}, index=pd.date_range('2025-01-01', periods=3))
@@ -191,7 +191,7 @@ def test_rsi_fallback_computes_alias_if_missing():
         rsi_period = 7
         atr_period = 14
 
-    logger = logging.getLogger('cthulhu.tests')
+    logger = logging.getLogger('Cthulu.tests')
     ctx = TradingLoopContext(
         connector=None,
         data_layer=None,
@@ -222,4 +222,8 @@ def test_rsi_fallback_computes_alias_if_missing():
     # After fallback, we should have rsi_7 and atr columns available
     assert 'rsi_7' in out.columns or 'rsi' in out.columns
     assert 'atr' in out.columns
+
+
+
+
 

@@ -58,3 +58,7 @@ class RssAdapter(NewsAdapter):
             return 'GOLD'
         # Could be extended with regexes for tickers
         return ''
+
+
+
+

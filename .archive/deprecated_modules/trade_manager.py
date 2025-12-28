@@ -11,9 +11,9 @@ from datetime import datetime
 import time
 from dataclasses import dataclass, field
 
-from cthulhu.connector.mt5_connector import mt5
-from cthulhu.position.manager import PositionInfo, PositionManager
-from cthulhu import constants
+from cthulu.connector.mt5_connector import mt5
+from cthulu.position.manager import PositionInfo, PositionManager
+from cthulu import constants
 
 
 @dataclass
@@ -49,14 +49,14 @@ class TradeManager:
     """
     Manages detection and adoption of trades not placed by Herald.
     
-    This allows Cthulhu to:
+    This allows Cthulu to:
     1. Detect manual trades placed directly in MT5
     2. Detect trades from other EAs/bots
     3. Apply Herald's exit strategies to these external trades
     4. Track and log adopted trade performance
     """
     
-    # Herald's magic number (trades placed by Cthulhu have this)
+    # Herald's magic number (trades placed by Cthulu have this)
     HERALD_MAGIC = constants.DEFAULT_MAGIC
     
     def __init__(
@@ -100,7 +100,7 @@ class TradeManager:
         self.magic_number = magic_number
         self.default_stop_pct = default_stop_pct
         self.default_rr = default_rr
-        self.logger = logging.getLogger("cthulhu.trade_manager")
+        self.logger = logging.getLogger("Cthulu.trade_manager")
         
         # Track adopted trades
         self._adopted_tickets: Set[int] = set()
@@ -155,19 +155,19 @@ class TradeManager:
                     
                 # Check if this is Herald's own trade
                 if pos.magic == self.magic_number:
-                    # Cthulhu trade not in registry - reconcile into position manager
+                    # Cthulu trade not in registry - reconcile into position manager
                     try:
-                        self.logger.info(f"Reconciling Cthulhu trade #{pos.ticket} into registry")
+                        self.logger.info(f"Reconciling Cthulu trade #{pos.ticket} into registry")
                         # Build PositionInfo and add to position manager so the bot knows about its own trade
                         pi = self._create_position_info(pos)
                         # Use add_position (compat shim) to avoid requiring an ExecutionResult
                         try:
                             self.position_manager.add_position(pi)
-                            self.logger.info(f"Reconciled Cthulhu trade #{pos.ticket} added to registry")
+                            self.logger.info(f"Reconciled Cthulu trade #{pos.ticket} added to registry")
                         except Exception as e:
                             self.logger.error(f"Failed to add reconciled trade #{pos.ticket} to registry: {e}")
                     except Exception:
-                        self.logger.exception(f"Failed to reconcile Cthulhu trade #{getattr(pos, 'ticket', 'unknown')}")
+                        self.logger.exception(f"Failed to reconcile Cthulu trade #{getattr(pos, 'ticket', 'unknown')}")
                     # Skip adoption for own trades
                     continue
                     
@@ -363,7 +363,7 @@ class TradeManager:
                                     err_msg = str(err) if err else 'unknown error'
                                     self.logger.warning(f"Failed to apply SL/TP to adopted trade #{trade.ticket} after retries; queuing for retry (error: {err_msg})")
                                     if 'AutoTrading' in err_msg or 'auto' in err_msg.lower():
-                                        self.logger.warning("AutoTrading appears to be disabled in the MT5 client. Please enable AutoTrading to allow SL/TP updates; Cthulhu will retry automatically.")
+                                        self.logger.warning("AutoTrading appears to be disabled in the MT5 client. Please enable AutoTrading to allow SL/TP updates; Cthulu will retry automatically.")
                                     now_ts = int(time.time())
                                     self._pending_sl_tp[trade.ticket] = {
                                         'sl': sl,
@@ -464,3 +464,7 @@ class TradeManager:
 
 # Backwards compatibility alias
 OrphanTradeManager = TradeManager
+
+
+
+

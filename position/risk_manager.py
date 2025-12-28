@@ -68,3 +68,7 @@ def suggest_sl_adjustment(symbol: str, balance: float, price: float, proposed_sl
             }
     except Exception:
         return {'adjusted_sl': proposed_sl, 'reason': 'error'}
+
+
+
+

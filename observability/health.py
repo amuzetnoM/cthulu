@@ -43,7 +43,7 @@ class HealthCheckResult:
 
 class HealthChecker:
     """
-    Health check coordinator for Cthulhu trading system.
+    Health check coordinator for Cthulu trading system.
     
     Performs checks on:
     - MT5 connectivity
@@ -60,7 +60,7 @@ class HealthChecker:
             connector: MT5Connector instance (optional)
             database: Database instance (optional)
         """
-        self.logger = logging.getLogger("cthulhu.health")
+        self.logger = logging.getLogger("Cthulu.health")
         self.connector = connector
         self.database = database
         self._last_check: Optional[Dict[str, HealthCheckResult]] = None
@@ -255,7 +255,7 @@ class HealthChecker:
         return {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
-            "service": "cthulhu"
+            "service": "Cthulu"
         }
     
     def readiness(self) -> Dict[str, Any]:
@@ -270,12 +270,16 @@ class HealthChecker:
             return {
                 "status": "ready",
                 "timestamp": datetime.now().isoformat(),
-                "service": "cthulhu"
+                "service": "Cthulu"
             }
         else:
             return {
                 "status": "not_ready",
                 "timestamp": datetime.now().isoformat(),
-                "service": "cthulhu",
+                "service": "Cthulu",
                 "reason": mt5_check.message if mt5_check.status != HealthStatus.HEALTHY else account_check.message
             }
+
+
+
+

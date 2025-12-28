@@ -8,12 +8,12 @@ Replaces scattered strategy loading logic with a clean factory pattern.
 import logging
 from typing import Dict, Any, Optional
 
-from cthulhu.strategy.base import Strategy
-from cthulhu.strategy.sma_crossover import SmaCrossover
-from cthulhu.strategy.ema_crossover import EmaCrossover
-from cthulhu.strategy.momentum_breakout import MomentumBreakout
-from cthulhu.strategy.scalping import ScalpingStrategy
-from cthulhu.strategy.strategy_selector import StrategySelector
+from cthulu.strategy.base import Strategy
+from cthulu.strategy.sma_crossover import SmaCrossover
+from cthulu.strategy.ema_crossover import EmaCrossover
+from cthulu.strategy.momentum_breakout import MomentumBreakout
+from cthulu.strategy.scalping import ScalpingStrategy
+from cthulu.strategy.strategy_selector import StrategySelector
 
 
 # Strategy registry mapping type names to classes
@@ -183,3 +183,7 @@ def load_strategy(strategy_config: Dict[str, Any]) -> Strategy:
     """
     factory = StrategyFactory()
     return factory.create(strategy_config)
+
+
+
+

@@ -18,3 +18,7 @@ class NewsApiAdapter(NewsAdapter):
         return [
             NewsEvent(provider=self.provider_name, ts=now, symbol='GOLD', headline='Test headline', body='Test body', meta={'source': 'poC'})
         ]
+
+
+
+

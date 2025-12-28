@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-from cthulhu.indicators.supertrend import Supertrend
-from cthulhu.indicators.vwap import VWAP, AnchoredVWAP
+from cthulu.indicators.supertrend import Supertrend
+from cthulu.indicators.vwap import VWAP, AnchoredVWAP
 
 
 class TestSupertrend:
@@ -325,3 +325,7 @@ class TestIndicatorIntegration:
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
+
+
+
+

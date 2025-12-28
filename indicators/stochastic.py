@@ -217,3 +217,7 @@ def calculate_stochastic(data: pd.DataFrame, k_period: int = 14, d_period: int =
     res = inst.calculate(data)
     return res['stoch_k'], res['stoch_d']
             
+
+
+
+

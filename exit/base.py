@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from cthulhu.position.manager import PositionInfo
+from cthulu.position.manager import PositionInfo
 
 
 @dataclass
@@ -62,7 +62,7 @@ class ExitStrategy(ABC):
         self.name = name
         self.params = params
         self.priority = priority
-        self.logger = logging.getLogger(f"cthulhu.exit.{name}")
+        self.logger = logging.getLogger(f"Cthulu.exit.{name}")
         self._state: Dict[str, Any] = {}
         self._enabled = True
         
@@ -144,3 +144,7 @@ class ExitStrategy(ABC):
             'parameters': self.params,
             'priority': self.priority
         }
+
+
+
+

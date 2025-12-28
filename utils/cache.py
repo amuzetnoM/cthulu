@@ -136,3 +136,7 @@ class SmartCache(Generic[T]):
             'hit_rate': hit_rate,
             'ttl_seconds': self.ttl
         }
+
+
+
+

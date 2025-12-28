@@ -65,3 +65,7 @@ if res is None or getattr(res,'retcode',None) != mt5.TRADE_RETCODE_DONE:
 
 mt5.shutdown()
 print('done')
+
+
+
+

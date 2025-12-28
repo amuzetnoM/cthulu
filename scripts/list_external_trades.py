@@ -10,9 +10,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from dotenv import load_dotenv
 load_dotenv()
 
-from cthulhu.connector.mt5_connector import MT5Connector, ConnectionConfig
-from cthulhu.position.trade_manager import TradeManager
-from cthulhu.position.manager import PositionManager
+from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulu.position.trade_manager import TradeManager
+from cthulu.position.manager import PositionManager
 
 def main(cfg_path):
     cfg = json.loads(Path(cfg_path).read_text())
@@ -37,3 +37,7 @@ if __name__ == '__main__':
         print('Usage: list_external_trades.py <config.json>')
         sys.exit(2)
     sys.exit(main(sys.argv[1]))
+
+
+
+

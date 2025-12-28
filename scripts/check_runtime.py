@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from cthulhu.core.trading_loop import ensure_runtime_indicators
-from cthulhu.strategy.scalping import ScalpingStrategy
+from cthulu.core.trading_loop import ensure_runtime_indicators
+from cthulu.strategy.scalping import ScalpingStrategy
 import logging
 
 idx = pd.date_range(end=pd.Timestamp.now(), periods=100, freq='T')
@@ -11,3 +11,7 @@ config = {'strategy': {'type': 'scalping', 'params': {}}}
 extra = ensure_runtime_indicators(df, [], strat, config, logging.getLogger())
 print('extra types:', [e.__class__.__name__ for e in extra])
 print('df cols:', list(df.columns))
+
+
+
+

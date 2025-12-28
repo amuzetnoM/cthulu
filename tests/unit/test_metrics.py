@@ -1,4 +1,4 @@
-from cthulhu.observability.metrics import MetricsCollector
+from cthulu.observability.metrics import MetricsCollector
 
 
 def test_metrics_record_and_summary():
@@ -13,3 +13,6 @@ def test_metrics_record_and_summary():
     assert abs(stats.net_profit - 5.0) < 1e-6
     # Ensure print_summary runs without exception
     m.print_summary()
+
+
+

@@ -13,7 +13,7 @@ git push origin v5.0.1
 ### Option 1: Using GitHub CLI
 ```bash
 gh release create v5.0.1 \
-  --title "v5.0.1 - Cthulhu Rebranding" \
+  --title "v5.0.1 - Cthulu Rebranding" \
   --notes-file docs/release_notes/v5.0.1.md \
   --draft \
   --target copilot/update-branding-to-cthulu
@@ -23,7 +23,7 @@ gh release create v5.0.1 \
 1. Go to: https://github.com/amuzetnoM/herald/releases/new
 2. Tag version: `v5.0.1`
 3. Target branch: `copilot/update-branding-to-cthulu`
-4. Release title: `v5.0.1 - Cthulhu Rebranding`
+4. Release title: `v5.0.1 - Cthulu Rebranding`
 5. Copy content from `docs/release_notes/v5.0.1.md` into the description
 6. Check "Set as a pre-release" or "Create a draft release"
 7. Click "Publish release" or "Save draft"
@@ -32,7 +32,7 @@ gh release create v5.0.1 \
 The full release notes are available in: `docs/release_notes/v5.0.1.md`
 
 ## Key Changes in v5.0.1
-- Complete rebranding from Herald to Cthulhu
+- Complete rebranding from Herald to Cthulu
 - 150+ files updated with ~978 references changed
 - All 156 unit tests passing
 - Added GitHub Actions CI/CD workflow
@@ -49,5 +49,9 @@ The GitHub Actions workflow will automatically run when the PR is merged or the 
 Before releasing, verify:
 - [ ] All unit tests pass: `python -m pytest tests/unit/ -v`
 - [ ] Package installs correctly: `pip install -e .`
-- [ ] Imports work: `python -c "from cthulhu import __version__; print(__version__)"`
-- [ ] CLI works: `python -m cthulhu --help`
+- [ ] Imports work: `python -c "from cthulu import __version__; print(__version__)"`
+- [ ] CLI works: `python -m Cthulu --help`
+
+
+
+

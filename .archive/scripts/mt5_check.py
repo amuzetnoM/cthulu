@@ -16,3 +16,7 @@ print('Found symbols containing XAU/GOLD:', found[:50])
 
 mt5.shutdown()
 print('MT5 shutdown')
+
+
+
+
