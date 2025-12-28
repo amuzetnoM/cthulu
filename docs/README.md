@@ -7,21 +7,25 @@ sidebar_position: 1
 
 ---
 
-<p align="center">
-  <img src="../assets/cthulu-black.png" alt="Cthulu logo" width="480" />
-</p>
-
 
 <a href="https://artifact-virtual.gitbook.io/Cthulu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a> 
 
 > [CHANGELOG](https://artifact-virtual.gitbook.io/Cthulu)
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+
+<p align="center">
+  <img src="../assets/cthulu-black.png" alt="Cthulu logo" width="480" />
+</p>
+
+
+
   <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
   <img src="https://img.shields.io/badge/Integration-MT5-lightgrey?style=flat-square" />
   <img src="https://img.shields.io/badge/Persistenece-Persistence-003B57?style=flat-square" />
   <img src="https://img.shields.io/badge/pandas-DataFrames-150458?style=flat-square" />
   <img src="https://img.shields.io/badge/Prometheus-Metrics-00A5E3?style=flat-square" />
   <img src="https://img.shields.io/badge/Tkinter-GUI-6AA84F?style=flat-square" />
+  <br><n>
   <img src="https://img.shields.io/badge/tests-185%20passing-brightgreen?logo=pytest&style=flat-square" />
   <img src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat-square" />
   <img src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=flat-square" />
