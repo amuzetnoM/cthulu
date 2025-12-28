@@ -1,4 +1,4 @@
-"""Lightweight RPC server for controlling Herald at runtime.
+"""Lightweight RPC server for controlling Cthulhu at runtime.
 
 Provides a minimal POST /trade endpoint protected by a bearer token.
 Designed to be local-only (binds to 127.0.0.1 by default) and dependency-free (uses http.server).

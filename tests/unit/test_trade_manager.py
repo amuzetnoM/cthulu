@@ -129,7 +129,7 @@ class TestTradeManager(unittest.TestCase):
         mock_position.magic = 123456  # Herald's magic number
         mock_position.swap = 0.0
         mock_position.commission = 0.0
-        mock_position.comment = "Herald"
+        mock_position.comment = "Cthulhu"
         
         mock_mt5.positions_get.return_value = [mock_position]
         

@@ -18,7 +18,7 @@ def test_run_setup_wizard_skips_setup_and_returns_existing_config(tmp_path, monk
     assert res == cfg_data
 
     captured = capsys.readouterr()
-    assert "Starting Herald with the existing configuration" in captured.out
+    assert "Starting Cthulhu with the existing configuration" in captured.out
     # Ensure the y/n legend message is shown
     assert "Answer 'y' to start a new setup" in captured.out
 

@@ -36,7 +36,7 @@ RPC_ENDPOINTS = [
 
 THEME_BG = '#0f1720'
 THEME_FG = '#e6eef6'
-ACCENT = '#8b5cf6'  # Herald thematic purple
+ACCENT = '#8b5cf6'  # Cthulhu thematic purple
 
 
 def tail_file(path: Path, lines: int = TAIL_LINES):
@@ -72,10 +72,10 @@ def read_summary(path: Path):
         return f'Error reading summary: {e}'
 
 
-class HeraldGUI:
+class CthulhuGUI:
     def __init__(self, root):
         self.root = root
-        root.title('Herald — Monitor')
+        root.title('Cthulhu — Monitor')
         root.geometry('1000x760')
         root.configure(bg=THEME_BG)
 
@@ -522,13 +522,13 @@ def main():
                 handle = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
                 if handle:
                     kernel32.CloseHandle(handle)
-                    print(f"Herald GUI is already running (PID: {pid})")
+                    print(f"Cthulhu GUI is already running (PID: {pid})")
                     sys.exit(0)
             else:
                 # Unix-like systems
                 try:
                     os.kill(pid, 0)
-                    print(f"Herald GUI is already running (PID: {pid})")
+                    print(f"Cthulhu GUI is already running (PID: {pid})")
                     sys.exit(0)
                 except OSError:
                     # Process doesn't exist, remove stale lock
@@ -572,7 +572,7 @@ def main():
     sys.excepthook = gui_excepthook
 
     root = tk.Tk()
-    app = HeraldGUI(root)
+    app = CthulhuGUI(root)
     try:
         dbg("Entering mainloop")
         root.mainloop()

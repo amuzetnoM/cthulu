@@ -561,7 +561,7 @@ class ExecutionEngine:
                 "price": price,
                 "deviation": self.slippage,
                 "magic": self.magic_number,
-                "comment": "Herald close",
+                "comment": "Cthulhu close",
                 "type_time": mt5.ORDER_TIME_GTC,
                 "type_filling": mt5.ORDER_FILLING_IOC,
             }
@@ -733,7 +733,7 @@ class ExecutionEngine:
             "price": price,
             "deviation": self.slippage,
             "magic": self.magic_number,
-            "comment": order_req.client_tag or "Herald",
+            "comment": order_req.client_tag or "Cthulhu",
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_IOC,
         }

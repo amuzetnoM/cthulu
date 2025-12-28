@@ -43,7 +43,7 @@ class HealthCheckResult:
 
 class HealthChecker:
     """
-    Health check coordinator for Herald trading system.
+    Health check coordinator for Cthulhu trading system.
     
     Performs checks on:
     - MT5 connectivity

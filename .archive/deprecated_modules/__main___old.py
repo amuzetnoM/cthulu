@@ -1,5 +1,5 @@
 """
-Herald Autonomous Trading System
+Cthulhu Autonomous Trading System
 
 Main orchestrator implementing the Phase 2 autonomous trading loop.
 """
@@ -552,7 +552,7 @@ def main():
         "  herald --config config.json --mindset aggressive\n"
         "\n"
         "Workflow:\n"
-        "  Herald starts with an interactive setup wizard that guides you through\n"
+        "  Cthulhu starts with an interactive setup wizard that guides you through\n"
         "  configuring symbol, timeframe, risk limits, and strategy settings.\n"
         "  Use --skip-setup to bypass the wizard for automated/headless runs.\n"
         "\n"
@@ -563,7 +563,7 @@ def main():
     )
 
     parser = argparse.ArgumentParser(
-        description=f"Herald — Adaptive Trading Intelligence (v{__version__})",
+        description=f"Cthulhu — Adaptive Trading Intelligence (v{__version__})",
         epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -600,7 +600,7 @@ def main():
     ml_group.add_argument('--enable-ml', dest='enable_ml', action='store_true', help='Enable ML instrumentation (overrides config)')
     ml_group.add_argument('--disable-ml', dest='enable_ml', action='store_false', help='Disable ML instrumentation (overrides config)')
     parser.set_defaults(enable_ml=None)
-    parser.add_argument('--version', action='version', version=f"Herald {__version__}")
+    parser.add_argument('--version', action='version', version=f"Cthulhu {__version__}")
     parser.add_argument('--max-loops', type=int, default=0, help='Exit after N main loop iterations (0 = run until shutdown)')
     args = parser.parse_args()
 
@@ -624,7 +624,7 @@ def main():
         if result is None:
             print("Setup cancelled. Exiting.")
             return 0
-        # Wizard completed — continue to start Herald (do not exit).
+        # Wizard completed — continue to start Cthulhu (do not exit).
         print("\nWizard completed. Continuing to start Herald...\n")
         # Avoid running the setup wizard twice (also guarded by not args.skip_setup later)
         args.skip_setup = True
@@ -635,7 +635,7 @@ def main():
         if result is None:
             print("Setup cancelled. Exiting.")
             return 0
-        print("\nStarting Herald with configured settings...\n")
+        print("\nStarting Cthulhu with configured settings...\n")
     logger = setup_logger(
         name='herald',
         level=args.log_level,
@@ -648,7 +648,7 @@ def main():
     sig_module.signal(sig_module.SIGTERM, signal_handler)
     
     logger.info("=" * 70)
-    logger.info(f"Herald Autonomous Trading System v{__version__} - Phase 2")
+    logger.info(f"Cthulhu Autonomous Trading System v{__version__} - Phase 2")
     logger.info("=" * 70)
     
     # Load configuration using typed schema and mapping
@@ -932,7 +932,7 @@ def main():
                         rc = p.returncode
                         logger.info('GUI process exited with return code %s', rc)
                         # If GUI exited cleanly (user closed it), treat as explicit shutdown request.
-                        # If GUI crashed (non-zero), keep Herald running as the primary terminal and restore console.
+                        # If GUI crashed (non-zero), keep Cthulhu running as the primary terminal and restore console.
                         if rc == 0:
                             # If the GUI process exited cleanly, check whether it was a short-lived
                             # instance that exited because another GUI instance is already running
@@ -1191,10 +1191,10 @@ def main():
         logger.info(f"Connected to MT5 account {account_info['login']}")
         logger.info(f"Balance: {account_info['balance']:.2f}, Equity: {account_info['equity']:.2f}")
         
-        # Reconcile any existing Herald positions from previous session
+        # Reconcile any existing Cthulhu positions from previous session
         reconciled = position_manager.reconcile_positions()
         if reconciled > 0:
-            logger.info(f"Reconciled {reconciled} existing Herald position(s)")
+            logger.info(f"Reconciled {reconciled} existing Cthulhu position(s)")
         
         # Adopt any external trades if enabled
         if args.adopt_only:
@@ -1857,7 +1857,7 @@ def main():
             logger.error(f"Error during shutdown: {e}", exc_info=True)
             
         logger.info("=" * 70)
-        logger.info("Herald Autonomous Trading System - Stopped")
+        logger.info("Cthulhu Autonomous Trading System - Stopped")
         logger.info("=" * 70)
         
     return 0
@@ -1880,5 +1880,5 @@ if __name__ == "__main__":
         except Exception:
             pass
         # Also print to stderr so calling process can capture it
-        print('Fatal error during Herald startup. See logs/startup_crash.log for details.', file=sys.stderr)
+        print('Fatal error during Cthulhu startup. See logs/startup_crash.log for details.', file=sys.stderr)
         raise

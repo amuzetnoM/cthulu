@@ -1,7 +1,7 @@
 """
-Herald Core Module
+Cthulhu Core Module
 
-Contains the refactored core components of Herald:
+Contains the refactored core components of Cthulhu:
 - bootstrap: System initialization
 - trading_loop: Main trading logic ✅
 - indicator_loader: Indicator management  
@@ -12,7 +12,7 @@ Contains the refactored core components of Herald:
 
 from .indicator_loader import IndicatorLoader, IndicatorRequirementResolver
 from .strategy_factory import StrategyFactory
-from .bootstrap import HeraldBootstrap, SystemComponents
+from .bootstrap import CthulhuBootstrap, SystemComponents
 from .exit_loader import ExitStrategyLoader
 from .trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators
 from .shutdown import ShutdownHandler, create_shutdown_handler
@@ -21,7 +21,7 @@ __all__ = [
     'IndicatorLoader',
     'IndicatorRequirementResolver',
     'StrategyFactory',
-    'HeraldBootstrap',
+    'CthulhuBootstrap',
     'SystemComponents',
     'ExitStrategyLoader',
     'TradingLoop',

@@ -1,5 +1,5 @@
 """
-Herald Trading Loop Module
+Cthulhu Trading Loop Module
 
 This module contains the core trading loop logic, extracted from __main__.py
 for better modularity, testability, and maintainability.

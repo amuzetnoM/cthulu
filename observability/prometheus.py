@@ -43,7 +43,7 @@ class PrometheusMetric:
 
 class PrometheusExporter:
     """
-    Prometheus metrics exporter for Herald trading system.
+    Prometheus metrics exporter for Cthulhu trading system.
     
     Exports metrics such as:
     - Trade count (total, wins, losses)
@@ -173,7 +173,7 @@ class PrometheusExporter:
             f"{self.prefix}_uptime_seconds",
             uptime,
             "counter",
-            "Herald uptime in seconds"
+            "Cthulhu uptime in seconds"
         )
         
         # Trade counters

@@ -1,6 +1,6 @@
 """External trade detection and adoption manager.
 
-Scans MT5 for positions that were not opened by Herald (different magic number) and
+Scans MT5 for positions that were not opened by Cthulhu (different magic number) and
 adopts them into the PositionManager for management under configured policy.
 """
 from dataclasses import dataclass, field

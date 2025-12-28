@@ -1,4 +1,4 @@
-"""Force a test trade using Herald's execution engine."""
+"""Force a test trade using Cthulhu's execution engine."""
 
 import sys
 from pathlib import Path
@@ -45,7 +45,7 @@ order = OrderRequest(
     volume=0.01,  # Minimum lot size
     side='BUY',
     client_tag='force-test',
-    metadata={'note': 'Herald forced test trade'},
+    metadata={'note': 'Cthulhu forced test trade'},
 )
 
 print(f"\nPlacing BUY order for 0.01 lot {symbol}...")

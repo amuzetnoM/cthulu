@@ -1,5 +1,5 @@
 """
-Utility functions and classes for Herald Trading System.
+Utility functions and classes for Cthulhu Trading System.
 """
 
 from cthulhu.utils.circuit_breaker import CircuitBreaker, CircuitState

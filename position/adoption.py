@@ -2,7 +2,7 @@
 Trade Adoption Module
 
 Handles detection and adoption of external (manual) trades that were placed
-outside of Herald. This allows Herald to manage positions that users create
+outside of Herald. This allows Cthulhu to manage positions that users create
 manually in MT5.
 
 Responsibilities:
@@ -69,7 +69,7 @@ class TradeAdoptionManager:
     """
     Manages adoption of external trades into Herald's management system.
     
-    This class identifies manual trades placed outside Herald and brings them
+    This class identifies manual trades placed outside Cthulhu and brings them
     under Herald's exit strategy management.
     """
     

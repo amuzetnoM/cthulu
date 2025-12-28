@@ -1,7 +1,7 @@
 """
 Herald Shutdown Module
 
-This module handles graceful shutdown of the Herald trading system,
+This module handles graceful shutdown of the Cthulhu trading system,
 extracted from __main__.py for better modularity and testability.
 
 The shutdown process includes:
@@ -22,7 +22,7 @@ from typing import Optional, Callable, Any, Dict
 
 class ShutdownHandler:
     """
-    Handles graceful shutdown of the Herald trading system.
+    Handles graceful shutdown of the Cthulhu trading system.
     
     This class manages the complete shutdown sequence, including:
     - User interaction for position closure decisions
@@ -341,7 +341,7 @@ class ShutdownHandler:
     def _log_shutdown_complete(self):
         """Log shutdown completion banner."""
         self.logger.info("=" * 70)
-        self.logger.info("Herald Autonomous Trading System - Stopped")
+        self.logger.info("Cthulhu Autonomous Trading System - Stopped")
         self.logger.info("=" * 70)
 
 

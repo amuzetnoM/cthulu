@@ -59,8 +59,8 @@ class SystemComponents:
     exporter: Any = None
 
 
-class HeraldBootstrap:
-    """Handles Herald system initialization."""
+class CthulhuBootstrap:
+    """Handles Cthulhu system initialization."""
     
     def __init__(self, logger: Optional[logging.Logger] = None):
         """Initialize bootstrap handler.
@@ -434,7 +434,7 @@ class HeraldBootstrap:
         return monitor
     
     def bootstrap(self, config_path: str, args: Any) -> SystemComponents:
-        """Bootstrap the entire Herald system.
+        """Bootstrap the entire Cthulhu system.
         
         Args:
             config_path: Path to configuration file
@@ -546,5 +546,5 @@ def bootstrap_system(config_path: str, args: Any, logger: logging.Logger) -> Sys
     Returns:
         SystemComponents with all initialized components
     """
-    bootstrapper = HeraldBootstrap(logger=logger)
+    bootstrapper = CthulhuBootstrap(logger=logger)
     return bootstrapper.bootstrap(config_path, args)
