@@ -53,6 +53,7 @@ class SignalRecord:
     executed: bool = False
     metadata: str = ""  # JSON string
     execution_timestamp: Optional[datetime] = None
+    strategy_name: str = ""  # Name of strategy that generated the signal
 
 
 class Database:

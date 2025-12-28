@@ -580,6 +580,52 @@ class MT5Connector:
             self.logger.error(f"Error fetching symbol info: {e}")
             return None
 
+    def get_point_value(self, symbol: str) -> Optional[float]:
+        """Return point value in account currency for one point movement for symbol."""
+        try:
+            info = self.get_symbol_info(symbol)
+            if not info:
+                return None
+            point = info.get('point')
+            contract = info.get('contract_size') or info.get('trade_contract_size') or info.get('contract')
+            if point is None:
+                return None
+            if contract is None:
+                # fallback to 1.0
+                contract = 1.0
+            return float(point) * float(contract)
+        except Exception:
+            return None
+
+    def get_min_lot(self, symbol: str) -> float:
+        """Return minimum tradable lot size for symbol."""
+        try:
+            info = self.get_symbol_info(symbol)
+            if not info:
+                return 0.01
+            return float(info.get('volume_min', 0.01))
+        except Exception:
+            return 0.01
+
+    def get_spread(self, symbol: str) -> Optional[float]:
+        """Return current spread for symbol in points or price units."""
+        try:
+            info = self.get_symbol_info(symbol)
+            if not info:
+                return None
+            # prefer explicit spread if available
+            spread = info.get('spread')
+            if spread is not None:
+                return float(spread)
+            # fallback to ask-bid
+            bid = info.get('bid')
+            ask = info.get('ask')
+            if bid is not None and ask is not None:
+                return abs(float(ask) - float(bid))
+            return None
+        except Exception:
+            return None
+
     def get_position_by_ticket(self, ticket: int) -> Optional[Dict[str, Any]]:
         """Return position information for a given MT5 position ticket.
 
