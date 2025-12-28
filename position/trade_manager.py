@@ -46,7 +46,7 @@ class TradeManager:
         now_ts = datetime.now(timezone.utc).timestamp()
         for p in positions or []:
             try:
-                # Skip if Herald's own magic number
+                # Skip if Cthulhu's own magic number
                 if getattr(p, 'magic', None) == self.magic_number:
                     continue
 

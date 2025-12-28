@@ -7,7 +7,7 @@ manually in MT5.
 
 Responsibilities:
 - Scan for external/manual trades
-- Apply Herald's exit strategies to external trades
+- Apply Cthulhu's exit strategies to external trades
 - Policy-based filtering (which trades to adopt)
 - Logging and tracking of adoptions
 
@@ -67,7 +67,7 @@ class TradeAdoptionPolicy:
 
 class TradeAdoptionManager:
     """
-    Manages adoption of external trades into Herald's management system.
+    Manages adoption of external trades into Cthulhu's management system.
     
     This class identifies manual trades placed outside Cthulhu and brings them
     under Herald's exit strategy management.
@@ -125,7 +125,7 @@ class TradeAdoptionManager:
     
     def _identify_external_trades(self) -> List[dict]:
         """
-        Identify trades that were not opened by Herald.
+        Identify trades that were not opened by Cthulhu.
         
         Returns:
             List of external trade dicts from MT5
@@ -219,7 +219,7 @@ class TradeAdoptionManager:
     
     def _adopt_trade(self, trade: dict) -> bool:
         """
-        Adopt an external trade into Herald's management.
+        Adopt an external trade into Cthulhu's management.
         
         Args:
             trade: Trade dict from MT5
@@ -282,7 +282,7 @@ class TradeAdoptionManager:
                 magic_number=magic,
                 comment=f"[ADOPTED] {comment}",
                 strategy_name="external",
-                entry_reason="Manual trade adopted by Herald",
+                entry_reason="Manual trade adopted by Cthulhu",
                 is_external=True
             )
             

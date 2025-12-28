@@ -4,7 +4,7 @@ MT5 Connection Test Suite
 Tests connection to MetaTrader 5 using credentials from .env file.
 Verifies broker server connectivity and retrieves account information.
 
-Run with: RUN_MT5_CONNECT_TESTS=1 pytest herald/tests/test_connection.py -v
+Run with: RUN_MT5_CONNECT_TESTS=1 pytest cthulhu/tests/test_connection.py -v
 """
 
 import os

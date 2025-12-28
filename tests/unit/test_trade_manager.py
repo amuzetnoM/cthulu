@@ -80,7 +80,7 @@ class TestTradeManager(unittest.TestCase):
         trades = manager.scan_for_external_trades()
         self.assertEqual(trades, [])
         
-    @patch('herald.position.trade_manager.mt5')
+    @patch('cthulhu.position.trade_manager.mt5')
     def test_scan_detects_external_trade(self, mock_mt5):
         """Test that scan detects external trades."""
         # Create mock MT5 position with different magic number
@@ -111,10 +111,10 @@ class TestTradeManager(unittest.TestCase):
         self.assertEqual(trades[0].symbol, "EURUSD")
         self.assertEqual(trades[0].side, "BUY")
         
-    @patch('herald.position.trade_manager.mt5')
-    def test_scan_ignores_herald_trades(self, mock_mt5):
-        """Test that scan ignores Herald's own trades."""
-        # Create mock MT5 position with Herald's magic number
+    @patch('cthulhu.position.trade_manager.mt5')
+    def test_scan_ignores_cthulhu_trades(self, mock_mt5):
+        """Test that scan ignores Cthulhu's own trades."""
+        # Create mock MT5 position with Cthulhu's magic number
         mock_position = MagicMock()
         mock_position.ticket = 888888
         mock_position.symbol = "EURUSD"
@@ -126,7 +126,7 @@ class TestTradeManager(unittest.TestCase):
         mock_position.tp = 0
         mock_position.price_current = 1.1020
         mock_position.profit = 20.0
-        mock_position.magic = 123456  # Herald's magic number
+        mock_position.magic = 123456  # Cthulhu's magic number
         mock_position.swap = 0.0
         mock_position.commission = 0.0
         mock_position.comment = "Cthulhu"
@@ -135,10 +135,10 @@ class TestTradeManager(unittest.TestCase):
         
         trades = self.trade_manager.scan_for_external_trades()
         
-        # Should be empty since it's Herald's trade
+        # Should be empty since it's Cthulhu's trade
         self.assertEqual(len(trades), 0)
         
-    @patch('herald.position.trade_manager.mt5')
+    @patch('cthulhu.position.trade_manager.mt5')
     def test_scan_respects_symbol_filter(self, mock_mt5):
         """Test that scan respects adopt_symbols filter."""
         policy = TradeAdoptionPolicy(enabled=True, adopt_symbols=["GBPUSD"])
@@ -170,7 +170,7 @@ class TestTradeManager(unittest.TestCase):
         # Should be empty since EURUSD not in adopt_symbols
         self.assertEqual(len(trades), 0)
         
-    @patch('herald.position.trade_manager.mt5')
+    @patch('cthulhu.position.trade_manager.mt5')
     def test_scan_respects_ignore_symbols(self, mock_mt5):
         """Test that scan respects ignore_symbols filter."""
         policy = TradeAdoptionPolicy(enabled=True, ignore_symbols=["XAUUSD"])
