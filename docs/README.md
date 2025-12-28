@@ -4,8 +4,6 @@ description: Advanced multi-strategy autonomous trading system with MetaTrader 5
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 slug: /docs/
 sidebar_position: 1
-
---- 
 ```
 _________   __  .__          .__         
 \_   ___ \_/  |_|  |__  __ __|  |  __ __ 
@@ -15,6 +13,11 @@ _________   __  .__          .__
         \/           \/                  
 
 ```
+---
+
+<p align="center">
+  <img src="../assets/cthulu-black.png" alt="Cthulhu logo" width="480" />
+</p>
 
 <a href="https://artifact-virtual.gitbook.io/cthulhu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a> 
 
