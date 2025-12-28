@@ -4,7 +4,7 @@ description: Advanced multi-strategy autonomous trading system with MetaTrader 5
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 slug: /docs/
 sidebar_position: 1
-```
+
 _________   __  .__          .__         
 \_   ___ \_/  |_|  |__  __ __|  |  __ __ 
 /    \  \/\   __\  |  \|  |  \  | |  |  \
@@ -12,7 +12,6 @@ _________   __  .__          .__
  \______  /|__| |___|  /____/|____/____/ 
         \/           \/                  
 
-```
 ---
 
 <p align="center">
