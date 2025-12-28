@@ -10,10 +10,18 @@
 
 ## Current Session Status (2025-12-29)
 
-### Monitoring Session 1
-**Start:** 2025-12-29 00:39 UTC  
-**Duration Target:** 60 minutes continuous operation  
-**Objective:** Ensure stable operation with zero errors
+### Monitoring Session 1 - Attempt 1
+**Start:** 2025-12-29 00:44:35 UTC  
+**Duration:** 12 minutes before restart  
+**Result:** ❌ Process restarted due to error
+
+**Issue Found:** The old process (PID 4368) still had the unfixed code and crashed at 00:56:04.
+The fix was already present in C:\workspace\cthulu\risk\evaluator.py but the running process needed restart.
+
+### Monitoring Session 1 - Attempt 2
+**Start:** 2025-12-29 00:56:09 UTC (PID 19728)  
+**Status:** ⏳ ACTIVE - Monitoring in progress  
+**Objective:** 60 minutes continuous error-free operation
 
 ### Issues Discovered & Fixed
 
@@ -38,6 +46,41 @@
 ### Live Monitoring Status
 **Last Update:** 2025-12-29 00:44:35 UTC  
 **Elapsed Time:** 0 / 60 minutes  
+
+### Actions Taken
+- 00:44:00 UTC - Patched `risk/evaluator.py` to accept dict/object `account_info` values and compute `balance` robustly. Verified import success.
+- 00:44:30 UTC - Added `scripts/monitor_cthulu.ps1` to tail `logs/cthulu.log` and append error contexts to this file automatically.
+
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 00:53:35 UTC  
+**Elapsed Time:** 9 / 60 minutes  
+**Process Status:** Running  
+**Total Checks:** 4  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** ✅ HEALTHY
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 00:56:35 UTC  
+**Elapsed Time:** 12 / 60 minutes  
+**Process Status:** Stopped (issues)  
+**Total Checks:** 5  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** 🔴 STOPPED
+
+### Live Monitoring Status
+**Last Update:** 2025-12-29 00:57:22 UTC  
+**Elapsed Time:** 0 / 60 minutes  
+**Process Status:** Running  
+**Total Checks:** 1  
+**Total Errors:** 0  
+**Total Warnings:** 0  
+**Health:** ✅ HEALTHY
+### Next Steps
+- Start monitoring script (running in background) to capture any new errors and append them here.
+- If errors are detected, investigate, apply fixes, document them here, and restart the bot until 60 minutes of uninterrupted operation is achieved.
 **Process Status:** Running  
 **Total Checks:** 1  
 **Total Errors:** 0  
@@ -1085,3 +1128,362 @@ Cthulu is a **production-ready enterprise-grade trading system** with comprehens
 
 
 
+\n## 2025-12-29T00:56:04.1785742+05:00 - Error detected while monitoring
+2025-12-29T00:56:04 [INFO] Risk rejected: Approval error: 'dict' object has no attribute 'balance'
+--- Log context (last 200 lines) ---
+2025-12-29T00:16:04 [INFO] MLDataCollector initialized
+2025-12-29T00:16:04 [INFO] Initializing execution engine...
+2025-12-29T00:16:04 [INFO] Initializing database...
+2025-12-29T00:16:05 [INFO] Database initialized: Cthulu.db
+2025-12-29T00:16:05 [INFO] Initializing position tracker...
+2025-12-29T00:16:05 [INFO] Initializing position manager...
+2025-12-29T00:16:05 [INFO] PositionManager initialized
+2025-12-29T00:16:05 [INFO] RiskEvaluator initialized with runtime dependencies
+2025-12-29T00:16:05 [INFO] Initializing position lifecycle...
+2025-12-29T00:16:05 [INFO] External trade adoption ENABLED (log_only: False)
+2025-12-29T00:16:05 [INFO] Initializing strategy...
+2025-12-29T00:16:05 [INFO] SMA Crossover initialized: short=10, long=30, atr=14
+2025-12-29T00:16:05 [INFO] Strategy initialized: SmaCrossover
+2025-12-29T00:16:05 [INFO] Initializing metrics collector...
+2025-12-29T00:16:05 [INFO] Loaded 0 historical trades from database
+2025-12-29T00:16:05 [INFO] Starting TradeMonitor
+2025-12-29T00:16:05 [INFO] TradeMonitor started (poll_interval=5.0s)
+2025-12-29T00:16:05 [INFO] System bootstrap complete
+2025-12-29T00:16:05 [INFO] System bootstrap complete
+2025-12-29T00:16:05 [INFO] Phase 2: Initializing trading loop...
+2025-12-29T00:16:05 [INFO] Trading loop initialized
+2025-12-29T00:16:05 [INFO] Phase 3: Starting trading loop...
+2025-12-29T00:16:05 [INFO] Press Ctrl+C to stop
+2025-12-29T00:16:05 [INFO] Starting autonomous trading loop...
+2025-12-29T00:16:05 [INFO] Press Ctrl+C to shutdown gracefully
+2025-12-29T00:16:05 [INFO] Using MT5 login from environment
+2025-12-29T00:16:05 [INFO] Using MT5 password from environment
+2025-12-29T00:16:05 [INFO] Using MT5 server from environment
+2025-12-29T00:16:05 [INFO] Connecting to MT5 (attempt 1/3)...
+2025-12-29T00:16:05 [INFO] Initializing MT5 with credentials...
+2025-12-29T00:16:10 [INFO] Connected to XMGlobal-MT5 6 (account: ****0069)
+2025-12-29T00:16:10 [INFO] Balance: $1030.62, Trade allowed: True
+2025-12-29T00:16:10 [INFO] Added 2 runtime indicators: ['ATR', 'BollingerBands']
+2025-12-29T00:16:16 [INFO] Keyboard interrupt received
+2025-12-29T00:16:16 [INFO] Keyboard interrupt received
+2025-12-29T00:16:16 [INFO] Phase 4: Initiating graceful shutdown...
+2025-12-29T00:16:16 [INFO] Initiating graceful shutdown...
+2025-12-29T00:16:16 [INFO] Checking for open positions during shutdown
+2025-12-29T00:16:16 [INFO] MT5 positions query returned 0 positions
+2025-12-29T00:16:16 [INFO] Total positions found: 0 (tracked: 0, MT5: 0)
+2025-12-29T00:16:16 [INFO] No open positions to handle
+2025-12-29T00:16:16 [INFO] Final performance metrics:
+2025-12-29T00:16:16 [INFO] Disconnected from MT5
+2025-12-29T00:16:16 [INFO] Disconnected from MT5
+2025-12-29T00:16:16 [INFO] MLDataCollector closed
+2025-12-29T00:16:16 [INFO] Stopping TradeMonitor
+2025-12-29T00:16:16 [INFO] TradeMonitor stopped
+2025-12-29T00:16:16 [INFO] ======================================================================
+2025-12-29T00:16:16 [INFO] Cthulu Autonomous Trading System - Stopped
+2025-12-29T00:16:16 [INFO] ======================================================================
+2025-12-29T00:16:16 [INFO] Graceful shutdown complete
+2025-12-29T00:16:16 [INFO] ================================================================================
+2025-12-29T00:16:16 [INFO] Cthulu shutdown complete
+2025-12-29T00:16:16 [INFO] ================================================================================
+2025-12-29T00:32:53 [INFO] ================================================================================
+2025-12-29T00:32:53 [INFO] Cthulu Autonomous Trading System v5.0.1
+2025-12-29T00:32:53 [INFO] ================================================================================
+2025-12-29T00:32:53 [INFO] Configuration: config.json
+2025-12-29T00:32:53 [INFO] Mindset: default
+2025-12-29T00:32:53 [INFO] Mode: Live
+2025-12-29T00:32:53 [INFO] ================================================================================
+2025-12-29T00:32:53 [INFO] Phase 1: Bootstrapping system...
+2025-12-29T00:32:53 [INFO] Configuration loaded from config.json
+2025-12-29T00:32:53 [INFO] Initializing MT5 connector...
+2025-12-29T00:32:53 [INFO] Initializing data layer...
+2025-12-29T00:32:53 [INFO] Initializing risk evaluator...
+2025-12-29T00:32:53 [INFO] MLDataCollector initialized
+2025-12-29T00:32:53 [INFO] Initializing execution engine...
+2025-12-29T00:32:53 [INFO] Initializing database...
+2025-12-29T00:32:53 [INFO] Database initialized: Cthulu.db
+2025-12-29T00:32:53 [INFO] Initializing position tracker...
+2025-12-29T00:32:53 [INFO] Initializing position manager...
+2025-12-29T00:32:53 [INFO] PositionManager initialized
+2025-12-29T00:32:53 [INFO] RiskEvaluator initialized with runtime dependencies
+2025-12-29T00:32:53 [INFO] Initializing position lifecycle...
+2025-12-29T00:32:53 [INFO] External trade adoption ENABLED (log_only: False)
+2025-12-29T00:32:53 [INFO] Initializing strategy...
+2025-12-29T00:32:53 [INFO] SMA Crossover initialized: short=10, long=30, atr=14
+2025-12-29T00:32:53 [INFO] Strategy initialized: SmaCrossover
+2025-12-29T00:32:53 [INFO] Initializing metrics collector...
+2025-12-29T00:32:53 [INFO] Loaded 0 historical trades from database
+2025-12-29T00:32:53 [INFO] Starting TradeMonitor
+2025-12-29T00:32:53 [INFO] TradeMonitor started (poll_interval=5.0s)
+2025-12-29T00:32:53 [INFO] System bootstrap complete
+2025-12-29T00:32:53 [INFO] System bootstrap complete
+2025-12-29T00:32:53 [INFO] Phase 2: Initializing trading loop...
+2025-12-29T00:32:53 [INFO] Trading loop initialized
+2025-12-29T00:32:53 [INFO] Phase 3: Starting trading loop...
+2025-12-29T00:32:53 [INFO] Press Ctrl+C to stop
+2025-12-29T00:32:53 [INFO] Starting autonomous trading loop...
+2025-12-29T00:32:53 [INFO] Press Ctrl+C to shutdown gracefully
+2025-12-29T00:32:53 [INFO] Using MT5 login from environment
+2025-12-29T00:32:53 [INFO] Using MT5 password from environment
+2025-12-29T00:32:53 [INFO] Using MT5 server from environment
+2025-12-29T00:32:53 [INFO] Connecting to MT5 (attempt 1/3)...
+2025-12-29T00:32:53 [INFO] Initializing MT5 with credentials...
+2025-12-29T00:32:56 [INFO] Connected to XMGlobal-MT5 6 (account: ****0069)
+2025-12-29T00:32:56 [INFO] Balance: $1030.62, Trade allowed: True
+2025-12-29T00:32:56 [INFO] Added 1 runtime indicators: ['ATR']
+2025-12-29T00:33:23 [INFO] Signal generated: SHORT BTCUSD# (confidence: 0.70)
+2025-12-29T00:33:23 [ERROR] Order execution error: 'RiskEvaluator' object has no attribute 'approve'
+Traceback (most recent call last):
+  File "C:\workspace\cthulu\core\trading_loop.py", line 944, in _process_entry_signal
+    approved, reason, position_size = self.ctx.risk_manager.approve(
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RiskEvaluator' object has no attribute 'approve'
+2025-12-29T00:34:57 [INFO] ================================================================================
+2025-12-29T00:34:57 [INFO] Cthulu Autonomous Trading System v5.0.1
+2025-12-29T00:34:57 [INFO] ================================================================================
+2025-12-29T00:34:57 [INFO] Configuration: config.json
+2025-12-29T00:34:57 [INFO] Mindset: default
+2025-12-29T00:34:57 [INFO] Mode: Live
+2025-12-29T00:34:57 [INFO] ================================================================================
+2025-12-29T00:34:57 [INFO] Phase 1: Bootstrapping system...
+2025-12-29T00:34:57 [INFO] Configuration loaded from config.json
+2025-12-29T00:34:57 [INFO] Initializing MT5 connector...
+2025-12-29T00:34:57 [INFO] Initializing data layer...
+2025-12-29T00:34:57 [INFO] Initializing risk evaluator...
+2025-12-29T00:34:57 [INFO] MLDataCollector initialized
+2025-12-29T00:34:57 [INFO] Initializing execution engine...
+2025-12-29T00:34:57 [INFO] Initializing database...
+2025-12-29T00:34:57 [INFO] Database initialized: Cthulu.db
+2025-12-29T00:34:57 [INFO] Initializing position tracker...
+2025-12-29T00:34:57 [INFO] Initializing position manager...
+2025-12-29T00:34:57 [INFO] PositionManager initialized
+2025-12-29T00:34:57 [INFO] RiskEvaluator initialized with runtime dependencies
+2025-12-29T00:34:57 [INFO] Initializing position lifecycle...
+2025-12-29T00:34:57 [INFO] External trade adoption ENABLED (log_only: False)
+2025-12-29T00:34:57 [INFO] Initializing strategy...
+2025-12-29T00:34:57 [INFO] SMA Crossover initialized: short=10, long=30, atr=14
+2025-12-29T00:34:57 [INFO] Strategy initialized: SmaCrossover
+2025-12-29T00:34:57 [INFO] Initializing metrics collector...
+2025-12-29T00:34:57 [INFO] Loaded 0 historical trades from database
+2025-12-29T00:34:57 [INFO] Starting TradeMonitor
+2025-12-29T00:34:57 [INFO] TradeMonitor started (poll_interval=5.0s)
+2025-12-29T00:34:57 [INFO] System bootstrap complete
+2025-12-29T00:34:57 [INFO] System bootstrap complete
+2025-12-29T00:34:57 [INFO] Phase 2: Initializing trading loop...
+2025-12-29T00:34:57 [INFO] Trading loop initialized
+2025-12-29T00:34:57 [INFO] Phase 3: Starting trading loop...
+2025-12-29T00:34:57 [INFO] Press Ctrl+C to stop
+2025-12-29T00:34:57 [INFO] Starting autonomous trading loop...
+2025-12-29T00:34:57 [INFO] Press Ctrl+C to shutdown gracefully
+2025-12-29T00:34:57 [INFO] Using MT5 login from environment
+2025-12-29T00:34:57 [INFO] Using MT5 password from environment
+2025-12-29T00:34:57 [INFO] Using MT5 server from environment
+2025-12-29T00:34:57 [INFO] Connecting to MT5 (attempt 1/3)...
+2025-12-29T00:34:57 [INFO] Initializing MT5 with credentials...
+2025-12-29T00:35:01 [INFO] Connected to XMGlobal-MT5 6 (account: ****0069)
+2025-12-29T00:35:01 [INFO] Balance: $1030.62, Trade allowed: True
+2025-12-29T00:35:01 [INFO] Added 1 runtime indicators: ['ATR']
+2025-12-29T00:40:27 [INFO] Signal generated: LONG BTCUSD# (confidence: 0.70)
+2025-12-29T00:40:27 [INFO] Risk rejected: Approval error: 'dict' object has no attribute 'balance'
+2025-12-29T00:42:33 [INFO] ================================================================================
+2025-12-29T00:42:33 [INFO] Cthulu Autonomous Trading System v5.0.1
+2025-12-29T00:42:33 [INFO] ================================================================================
+2025-12-29T00:42:33 [INFO] Configuration: config.json
+2025-12-29T00:42:33 [INFO] Mindset: default
+2025-12-29T00:42:33 [INFO] Mode: Live
+2025-12-29T00:42:33 [INFO] ================================================================================
+2025-12-29T00:42:33 [INFO] Phase 1: Bootstrapping system...
+2025-12-29T00:42:33 [INFO] Configuration loaded from config.json
+2025-12-29T00:42:33 [INFO] Initializing MT5 connector...
+2025-12-29T00:42:33 [INFO] Initializing data layer...
+2025-12-29T00:42:33 [INFO] Initializing risk evaluator...
+2025-12-29T00:42:33 [INFO] MLDataCollector initialized
+2025-12-29T00:42:33 [INFO] Initializing execution engine...
+2025-12-29T00:42:33 [INFO] Initializing database...
+2025-12-29T00:42:33 [INFO] Database initialized: Cthulu.db
+2025-12-29T00:42:33 [INFO] Initializing position tracker...
+2025-12-29T00:42:33 [INFO] Initializing position manager...
+2025-12-29T00:42:33 [INFO] PositionManager initialized
+2025-12-29T00:42:33 [INFO] RiskEvaluator initialized with runtime dependencies
+2025-12-29T00:42:33 [INFO] Initializing position lifecycle...
+2025-12-29T00:42:33 [INFO] External trade adoption ENABLED (log_only: False)
+2025-12-29T00:42:33 [INFO] Initializing strategy...
+2025-12-29T00:42:33 [INFO] SMA Crossover initialized: short=10, long=30, atr=14
+2025-12-29T00:42:33 [INFO] Strategy initialized: SmaCrossover
+2025-12-29T00:42:33 [INFO] Initializing metrics collector...
+2025-12-29T00:42:33 [INFO] Loaded 0 historical trades from database
+2025-12-29T00:42:33 [INFO] Starting TradeMonitor
+2025-12-29T00:42:33 [INFO] TradeMonitor started (poll_interval=5.0s)
+2025-12-29T00:42:33 [INFO] System bootstrap complete
+2025-12-29T00:42:33 [INFO] System bootstrap complete
+2025-12-29T00:42:33 [INFO] Phase 2: Initializing trading loop...
+2025-12-29T00:42:33 [INFO] Trading loop initialized
+2025-12-29T00:42:33 [INFO] Phase 3: Starting trading loop...
+2025-12-29T00:42:33 [INFO] Press Ctrl+C to stop
+2025-12-29T00:42:33 [INFO] Starting autonomous trading loop...
+2025-12-29T00:42:33 [INFO] Press Ctrl+C to shutdown gracefully
+2025-12-29T00:42:33 [INFO] Using MT5 login from environment
+2025-12-29T00:42:33 [INFO] Using MT5 password from environment
+2025-12-29T00:42:33 [INFO] Using MT5 server from environment
+2025-12-29T00:42:33 [INFO] Connecting to MT5 (attempt 1/3)...
+2025-12-29T00:42:33 [INFO] Initializing MT5 with credentials...
+2025-12-29T00:42:34 [INFO] Connected to XMGlobal-MT5 6 (account: ****0069)
+2025-12-29T00:42:34 [INFO] Balance: $1030.62, Trade allowed: True
+2025-12-29T00:42:34 [INFO] Added 1 runtime indicators: ['ATR']
+2025-12-29T00:56:04 [INFO] Signal generated: SHORT BTCUSD# (confidence: 0.70)
+2025-12-29T00:56:04 [INFO] Risk rejected: Approval error: 'dict' object has no attribute 'balance'
+--- End context ---\n
+\n## 2025-12-29T00:56:04.5959424+05:00 - Error detected
+2025-12-29T00:56:04 [INFO] Risk rejected: Approval error: 'dict' object has no attribute 'balance'
+\n## 2025-12-29T00:56:04.6028594+05:00 - Context (last 200 lines)
+2025-12-29T00:16:04 [INFO] MLDataCollector initialized
+2025-12-29T00:16:04 [INFO] Initializing execution engine...
+2025-12-29T00:16:04 [INFO] Initializing database...
+2025-12-29T00:16:05 [INFO] Database initialized: Cthulu.db
+2025-12-29T00:16:05 [INFO] Initializing position tracker...
+2025-12-29T00:16:05 [INFO] Initializing position manager...
+2025-12-29T00:16:05 [INFO] PositionManager initialized
+2025-12-29T00:16:05 [INFO] RiskEvaluator initialized with runtime dependencies
+2025-12-29T00:16:05 [INFO] Initializing position lifecycle...
+2025-12-29T00:16:05 [INFO] External trade adoption ENABLED (log_only: False)
+2025-12-29T00:16:05 [INFO] Initializing strategy...
+2025-12-29T00:16:05 [INFO] SMA Crossover initialized: short=10, long=30, atr=14
+2025-12-29T00:16:05 [INFO] Strategy initialized: SmaCrossover
+2025-12-29T00:16:05 [INFO] Initializing metrics collector...
+2025-12-29T00:16:05 [INFO] Loaded 0 historical trades from database
+2025-12-29T00:16:05 [INFO] Starting TradeMonitor
+2025-12-29T00:16:05 [INFO] TradeMonitor started (poll_interval=5.0s)
+2025-12-29T00:16:05 [INFO] System bootstrap complete
+2025-12-29T00:16:05 [INFO] System bootstrap complete
+2025-12-29T00:16:05 [INFO] Phase 2: Initializing trading loop...
+2025-12-29T00:16:05 [INFO] Trading loop initialized
+2025-12-29T00:16:05 [INFO] Phase 3: Starting trading loop...
+2025-12-29T00:16:05 [INFO] Press Ctrl+C to stop
+2025-12-29T00:16:05 [INFO] Starting autonomous trading loop...
+2025-12-29T00:16:05 [INFO] Press Ctrl+C to shutdown gracefully
+2025-12-29T00:16:05 [INFO] Using MT5 login from environment
+2025-12-29T00:16:05 [INFO] Using MT5 password from environment
+2025-12-29T00:16:05 [INFO] Using MT5 server from environment
+2025-12-29T00:16:05 [INFO] Connecting to MT5 (attempt 1/3)...
+2025-12-29T00:16:05 [INFO] Initializing MT5 with credentials...
+2025-12-29T00:16:10 [INFO] Connected to XMGlobal-MT5 6 (account: ****0069)
+2025-12-29T00:16:10 [INFO] Balance: $1030.62, Trade allowed: True
+2025-12-29T00:16:10 [INFO] Added 2 runtime indicators: ['ATR', 'BollingerBands']
+2025-12-29T00:16:16 [INFO] Keyboard interrupt received
+2025-12-29T00:16:16 [INFO] Keyboard interrupt received
+2025-12-29T00:16:16 [INFO] Phase 4: Initiating graceful shutdown...
+2025-12-29T00:16:16 [INFO] Initiating graceful shutdown...
+2025-12-29T00:16:16 [INFO] Checking for open positions during shutdown
+2025-12-29T00:16:16 [INFO] MT5 positions query returned 0 positions
+2025-12-29T00:16:16 [INFO] Total positions found: 0 (tracked: 0, MT5: 0)
+2025-12-29T00:16:16 [INFO] No open positions to handle
+2025-12-29T00:16:16 [INFO] Final performance metrics:
+2025-12-29T00:16:16 [INFO] Disconnected from MT5
+2025-12-29T00:16:16 [INFO] Disconnected from MT5
+2025-12-29T00:16:16 [INFO] MLDataCollector closed
+2025-12-29T00:16:16 [INFO] Stopping TradeMonitor
+2025-12-29T00:16:16 [INFO] TradeMonitor stopped
+2025-12-29T00:16:16 [INFO] ======================================================================
+2025-12-29T00:16:16 [INFO] Cthulu Autonomous Trading System - Stopped
+2025-12-29T00:16:16 [INFO] ======================================================================
+2025-12-29T00:16:16 [INFO] Graceful shutdown complete
+2025-12-29T00:16:16 [INFO] ================================================================================
+2025-12-29T00:16:16 [INFO] Cthulu shutdown complete
+2025-12-29T00:16:16 [INFO] ================================================================================
+2025-12-29T00:32:53 [INFO] ================================================================================
+2025-12-29T00:32:53 [INFO] Cthulu Autonomous Trading System v5.0.1
+2025-12-29T00:32:53 [INFO] ================================================================================
+2025-12-29T00:32:53 [INFO] Configuration: config.json
+2025-12-29T00:32:53 [INFO] Mindset: default
+2025-12-29T00:32:53 [INFO] Mode: Live
+2025-12-29T00:32:53 [INFO] ================================================================================
+2025-12-29T00:32:53 [INFO] Phase 1: Bootstrapping system...
+2025-12-29T00:32:53 [INFO] Configuration loaded from config.json
+2025-12-29T00:32:53 [INFO] Initializing MT5 connector...
+2025-12-29T00:32:53 [INFO] Initializing data layer...
+2025-12-29T00:32:53 [INFO] Initializing risk evaluator...
+2025-12-29T00:32:53 [INFO] MLDataCollector initialized
+2025-12-29T00:32:53 [INFO] Initializing execution engine...
+2025-12-29T00:32:53 [INFO] Initializing database...
+2025-12-29T00:32:53 [INFO] Database initialized: Cthulu.db
+2025-12-29T00:32:53 [INFO] Initializing position tracker...
+2025-12-29T00:32:53 [INFO] Initializing position manager...
+2025-12-29T00:32:53 [INFO] PositionManager initialized
+2025-12-29T00:32:53 [INFO] RiskEvaluator initialized with runtime dependencies
+2025-12-29T00:32:53 [INFO] Initializing position lifecycle...
+2025-12-29T00:32:53 [INFO] External trade adoption ENABLED (log_only: False)
+2025-12-29T00:32:53 [INFO] Initializing strategy...
+2025-12-29T00:32:53 [INFO] SMA Crossover initialized: short=10, long=30, atr=14
+2025-12-29T00:32:53 [INFO] Strategy initialized: SmaCrossover
+2025-12-29T00:32:53 [INFO] Initializing metrics collector...
+2025-12-29T00:32:53 [INFO] Loaded 0 historical trades from database
+2025-12-29T00:32:53 [INFO] Starting TradeMonitor
+2025-12-29T00:32:53 [INFO] TradeMonitor started (poll_interval=5.0s)
+2025-12-29T00:32:53 [INFO] System bootstrap complete
+2025-12-29T00:32:53 [INFO] System bootstrap complete
+2025-12-29T00:32:53 [INFO] Phase 2: Initializing trading loop...
+2025-12-29T00:32:53 [INFO] Trading loop initialized
+2025-12-29T00:32:53 [INFO] Phase 3: Starting trading loop...
+2025-12-29T00:32:53 [INFO] Press Ctrl+C to stop
+2025-12-29T00:32:53 [INFO] Starting autonomous trading loop...
+2025-12-29T00:32:53 [INFO] Press Ctrl+C to shutdown gracefully
+2025-12-29T00:32:53 [INFO] Using MT5 login from environment
+2025-12-29T00:32:53 [INFO] Using MT5 password from environment
+2025-12-29T00:32:53 [INFO] Using MT5 server from environment
+2025-12-29T00:32:53 [INFO] Connecting to MT5 (attempt 1/3)...
+2025-12-29T00:32:53 [INFO] Initializing MT5 with credentials...
+2025-12-29T00:32:56 [INFO] Connected to XMGlobal-MT5 6 (account: ****0069)
+2025-12-29T00:32:56 [INFO] Balance: $1030.62, Trade allowed: True
+2025-12-29T00:32:56 [INFO] Added 1 runtime indicators: ['ATR']
+2025-12-29T00:33:23 [INFO] Signal generated: SHORT BTCUSD# (confidence: 0.70)
+2025-12-29T00:33:23 [ERROR] Order execution error: 'RiskEvaluator' object has no attribute 'approve'
+Traceback (most recent call last):
+  File "C:\workspace\cthulu\core\trading_loop.py", line 944, in _process_entry_signal
+    approved, reason, position_size = self.ctx.risk_manager.approve(
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RiskEvaluator' object has no attribute 'approve'
+2025-12-29T00:34:57 [INFO] ================================================================================
+2025-12-29T00:34:57 [INFO] Cthulu Autonomous Trading System v5.0.1
+2025-12-29T00:34:57 [INFO] ================================================================================
+2025-12-29T00:34:57 [INFO] Configuration: config.json
+2025-12-29T00:34:57 [INFO] Mindset: default
+2025-12-29T00:34:57 [INFO] Mode: Live
+2025-12-29T00:34:57 [INFO] ================================================================================
+2025-12-29T00:34:57 [INFO] Phase 1: Bootstrapping system...
+2025-12-29T00:34:57 [INFO] Configuration loaded from config.json
+2025-12-29T00:34:57 [INFO] Initializing MT5 connector...
+2025-12-29T00:34:57 [INFO] Initializing data layer...
+2025-12-29T00:34:57 [INFO] Initializing risk evaluator...
+2025-12-29T00:34:57 [INFO] MLDataCollector initialized
+2025-12-29T00:34:57 [INFO] Initializing execution engine...
+2025-12-29T00:34:57 [INFO] Initializing database...
+2025-12-29T00:34:57 [INFO] Database initialized: Cthulu.db
+2025-12-29T00:34:57 [INFO] Initializing position tracker...
+2025-12-29T00:34:57 [INFO] Initializing position manager...
+2025-12-29T00:34:57 [INFO] PositionManager initialized
+2025-12-29T00:34:57 [INFO] RiskEvaluator initialized with runtime dependencies
+2025-12-29T00:34:57 [INFO] Initializing position lifecycle...
+2025-12-29T00:34:57 [INFO] External trade adoption ENABLED (log_only: False)
+2025-12-29T00:34:57 [INFO] Initializing strategy...
+2025-12-29T00:34:57 [INFO] SMA Crossover initialized: short=10, long=30, atr=14
+2025-12-29T00:34:57 [INFO] Strategy initialized: SmaCrossover
+2025-12-29T00:34:57 [INFO] Initializing metrics collector...
+2025-12-29T00:34:57 [INFO] Loaded 0 historical trades from database
+2025-12-29T00:34:57 [INFO] Starting TradeMonitor
+2025-12-29T00:34:57 [INFO] TradeMonitor started (poll_interval=5.0s)
+2025-12-29T00:34:57 [INFO] System bootstrap complete
+2025-12-29T00:34:57 [INFO] System bootstrap complete
+2025-12-29T00:34:57 [INFO] Phase 2: Initializing trading loop...
+2025-12-29T00:34:57 [INFO] Trading loop initialized
+2025-12-29T00:34:57 [INFO] Phase 3: Starting trading loop...
+2025-12-29T00:34:57 [INFO] Press Ctrl+C to stop
+2025-12-29T00:34:57 [INFO] Starting autonomous trading loop...
+2025-12-29T00:34:57 [INFO] Press Ctrl+C to shutdown gracefully
+2025-12-29T00:34:57 [INFO] Using MT5 login from environment
+2025-12-29T00:34:57 [INFO] Using MT5 password from environment
+\n## 2025-12-29T00:56:05.3470073+05:00 - Action
+Killed PIDs: 4368
+\n## 2025-12-29T00:56:08.3522330+05:00 - Action
+Starting Cthulu instance (auto-restart)
+Started new Cthulu PID: 19728
+\n## 2025-12-29T00:56:13.3940543+05:00 - Action
+Restarted (PID 19728) - monitor will continue

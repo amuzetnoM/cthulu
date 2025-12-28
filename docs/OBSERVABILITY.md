@@ -36,36 +36,65 @@ Important fields available in `PerformanceMetrics` (snapshot returned by `Metric
 - `positions_opened_total`, `active_positions`
 - `symbol_aggregates` (mapping symbol -> realized_pnl, unrealized_pnl, open_positions, exposure, rr summary)
 
-## Prometheus exporter
 
-Cthulu includes a lightweight Prometheus exporter (`Cthulu.observability.prometheus.PrometheusExporter`) that can be enabled via configuration and will expose the following metric families (prefix configurable via `prefix`):
+### Prometheus exporter
 
-- `<prefix>_trades_total`
-- `<prefix>_trades_won`
-- `<prefix>_trades_lost`
-- `<prefix>_pnl_total`, `<prefix>_profit_total`, `<prefix>_loss_total`
-- `<prefix>_win_rate`, `<prefix>_profit_factor`
-- `<prefix>_drawdown_percent`, `<prefix>_drawdown_abs`
-- `<prefix>_drawdown_duration_seconds`, `<prefix>_current_drawdown_duration_seconds`
-- `<prefix>_avg_rr`, `<prefix>_median_rr`, `<prefix>_rr_count`
-- `<prefix>_expectancy`
-- `<prefix>_sharpe`, `<prefix>_rolling_sharpe`
-- Per-symbol: `<prefix>_symbol_realized_pnl{symbol}`, `<prefix>_symbol_unrealized_pnl{symbol}`, `<prefix>_symbol_open_positions{symbol}`, `<prefix>_symbol_exposure{symbol}`
+Cthulu includes a lightweight Prometheus exporter (`cthulu.observability.prometheus.PrometheusExporter`) that ships with the project and can be enabled via configuration. The exporter exposes the following metric families (prefix configurable via `prefix`):
 
-### How to enable
+- `cthulu_trades_total`
+- `cthulu_trades_won`
+- `cthulu_trades_lost`
+- `cthulu_pnl_total`, `cthulu_profit_total`, `cthulu_loss_total`
+- `cthulu_win_rate`, `cthulu_profit_factor`
+- `cthulu_drawdown_percent`, `cthulu_drawdown_abs`
+- `cthulu_drawdown_duration_seconds`, `cthulu_current_drawdown_duration_seconds`
+- `cthulu_avg_rr`, `cthulu_median_rr`, `cthulu_rr_count`
+- `cthulu_expectancy`
+- `cthulu_sharpe`, `cthulu_rolling_sharpe`
+- Per-symbol: `cthulu_symbol_realized_pnl{symbol="EURUSD"}`, `cthulu_symbol_unrealized_pnl{symbol}`, `cthulu_symbol_open_positions{symbol}`, `cthulu_symbol_exposure{symbol}`
 
-Add the following to your config JSON under `observability`:
+Notes and recommendations:
+
+- Metric names should be lowercase with underscores (Prometheus best practice). The exporter defaults to the `Cthulu` prefix historically; prefer `cthulu` lowercase in config to match Prometheus conventions.
+- Use labels for cardinality control: `symbol`, `strategy`, `mindset`, `env`, and `instance`.
+- Use counters for totals and gauges for current state values. Expose histograms for latencies (e.g., `order_latency_seconds_bucket`).
+
+### How to enable (recommended)
+
+Add or update the following to your config JSON under `observability`:
 
 ```json
 "observability": {
   "prometheus": {
     "enabled": true,
-    "prefix": "Cthulu"
+    "prefix": "cthulu",
+    "mode": "http",        
+    "http_port": 8181       
   }
 }
 ```
 
-Then run Cthulu normally. The exporter is updated automatically during the main loop (on the scheduled performance summary sync) and can be written to a textfile (for Node Exporter's textfile collector) or extended to serve via HTTP if required.
+Recommended behaviour:
+
+- Expose an HTTP `/metrics` endpoint from the trading app (preferred). This enables direct Prometheus scraping and avoids textfile sync delays.
+- If continuing to use Node Exporter's textfile collector, write metrics to a known path (example: `/var/lib/node_exporter/textfile_collectors/cthulu.prom`).
+
+Docker-compose notes (what I added to the repository):
+
+- `docker-compose.yml` now includes `prometheus`, `grafana`, and `node_exporter` services. Prometheus config `monitoring/prometheus.yml` includes a `node_exporter` scrape job and a `rule_files` entry for alerting/recording rules.
+- Grafana provisioning files are in `monitoring/grafana/`: `datasource.yml`, `dashboards.yml`, and an initial `dashboards/cthulu_overview.json`.
+
+### Best practices
+
+- Use `cthulu_<domain>_<metric>` naming (lowercase). Example: `cthulu_trades_total`, `cthulu_symbol_realized_pnl{symbol="EURUSD"}`.
+- Keep label cardinality low: avoid labels with high unique values (user IDs, timestamps).
+- Add recording rules for heavy aggregations (rolling win_rate, per-minute/net PnL) and alerting rules for critical conditions (`cthulu_mt5_connected == 0`, `cthulu_drawdown_percent > 0.2`, `order_latency_seconds` spikes).
+
+### Troubleshooting & notes
+
+- Metrics rely on accurate trade recording in the database. Ensure the database is persisted between runs for historical metrics to be meaningful.
+- If you observe `UNKNOWN` symbols in metrics, check your strategy config to ensure `config['strategy']['params']['symbol']` is set.
+- Tests: see `tests/unit/test_metrics_improved.py` and `tests/unit/test_metrics_prometheus_integration.py` for example coverage.
 
 ## Best practices
 

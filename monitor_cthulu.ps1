@@ -52,7 +52,8 @@ function Update-SystemReport {
         $content = Get-Content $reportPath -Raw
         if ($content -match "(?s)(### Live Monitoring Status.*?)\n\n") {
             $content = $content -replace "(?s)### Live Monitoring Status.*?\n\n", $statusSection
-        } else {
+        }
+        else {
             $insertPoint = $content.IndexOf("### Next Steps")
             if ($insertPoint -gt 0) {
                 $content = $content.Insert($insertPoint, $statusSection)
@@ -76,7 +77,7 @@ while (((Get-Date) - $startTime).TotalMinutes -lt $DurationMinutes) {
     
     if ($proc) {
         $cpu = [math]::Round($proc.CPU, 2)
-        $mem = [math]::Round($proc.WorkingSet/1MB, 2)
+        $mem = [math]::Round($proc.WorkingSet / 1MB, 2)
         Write-Host "  ✅ Process Running (PID: $ProcessId)" -ForegroundColor Green
         Write-Host "     CPU: ${cpu}s | Memory: ${mem} MB" -ForegroundColor Cyan
         
@@ -96,20 +97,23 @@ while (((Get-Date) - $startTime).TotalMinutes -lt $DurationMinutes) {
                     Write-Host "`n  🛑 ERRORS FOUND - STOPPING MONITORING..." -ForegroundColor Red
                     $crashDetected = $true
                     break
-                } elseif ($warnings) {
+                }
+                elseif ($warnings) {
                     Write-Host "  ⚠️  Warnings:" -ForegroundColor Yellow
                     $warnings | ForEach-Object {
                         Write-Host "     $_" -ForegroundColor Yellow
                         $warningCount++
                     }
-                } else {
+                }
+                else {
                     Write-Host "  ✅ No issues in logs" -ForegroundColor Green
                 }
                 
                 $lastLogPosition = $currentLogSize
             }
         }
-    } else {
+    }
+    else {
         Write-Host "  🔴 PROCESS NOT FOUND!" -ForegroundColor Red
         $crashDetected = $true
         break
@@ -139,11 +143,13 @@ if ($crashDetected) {
     Write-Host "`n  STATUS: 🔴 ISSUES DETECTED" -ForegroundColor Red
     Update-SystemReport -Status "Stopped (issues)" -Errors $errorCount -Warnings $warningCount -Checks $checkCount -Start $startTime
     exit 1
-} elseif ($errorCount -eq 0 -and $totalDuration -ge $DurationMinutes) {
+}
+elseif ($errorCount -eq 0 -and $totalDuration -ge $DurationMinutes) {
     Write-Host "`n  STATUS: ✅ SUCCESS - 60 minutes error-free!" -ForegroundColor Green
     Update-SystemReport -Status "Completed successfully" -Errors $errorCount -Warnings $warningCount -Checks $checkCount -Start $startTime
     exit 0
-} else {
+}
+else {
     Write-Host "`n  STATUS: ⚠️  INCOMPLETE" -ForegroundColor Yellow
     Update-SystemReport -Status "Incomplete" -Errors $errorCount -Warnings $warningCount -Checks $checkCount -Start $startTime
     exit 2
