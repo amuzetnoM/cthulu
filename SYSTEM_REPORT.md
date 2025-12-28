@@ -69,6 +69,63 @@ The fix was already present in C:\workspace\cthulu\risk\evaluator.py but the run
 3. ⏳ Wait for real market conditions that trigger a signal
 4. Alternative: Could switch to more aggressive scalping strategy for testing
 
+---
+
+## Prometheus Verification (live check)
+
+- Metrics file path checked: C:\workspace\cthulu\metrics\Cthulu_metrics.prom — RESULT: MISSING
+- HTTP endpoint checked: http://127.0.0.1:8181/metrics — RESULT: CONNECTION REFUSED
+
+Diagnosis:
+- The Prometheus exporter instance was not observed to expose the HTTP endpoint nor write the textfile. This can happen if bootstrap did not initialize the exporter (check logs for "Prometheus exporter initialized") or if the internal HTTP server failed to start.
+
+Actionable steps (do not change without consent):
+1. Check the runtime logs for "Prometheus exporter initialized" or startup exceptions (logs/Cthulu.log).
+2. Ensure config.json contains the observability.prometheus.enabled=true and http_port set (already added).
+3. Restart Cthulu to pick up the config change and watch logs for exporter startup messages.
+4. If HTTP server still not running, ensure port 8181 is free and not blocked by firewall.
+5. As a fallback, the exporter writes a textfile to C:\workspace\cthulu\metrics\Cthulu_metrics.prom which can be consumed by Prometheus node_textfile collector.
+
+How to verify once exporter starts:
+- Metrics file: type C:\workspace\cthulu\metrics\Cthulu_metrics.prom (or Get-Content -Tail 200 in PowerShell).
+- HTTP: curl http://127.0.0.1:8181/metrics or open in browser.
+- Prometheus: add scrape job in prometheus.yml pointing to http://<host>:8181/metrics or to the node_textfile collector directory.
+
+Quick Prometheus scrape job snippet (monitoring/prometheus.yml):
+
+- job_name: 'cthulu'
+  static_configs:
+    - targets: ['cthulu:8181']
+
+Grafana:
+- Import or create a dashboard with panels for: cthulu_pnl_total, cthulu_trades_total, cthulu_win_rate, cthulu_uptime_seconds, cthulu_open_positions
+
+---
+
+## Spread Rejection Analysis
+
+Event observed:
+- 2025-12-29T02:32:11 [INFO] Signal generated: LONG BTCUSD# (confidence: 0.70)
+- 2025-12-29T02:32:11 [INFO] Risk rejected: Spread 2250.0 exceeds limit 10.0
+
+Explanation:
+- The RiskEvaluator compares the connector-reported spread (in points or price units) against RiskLimits.max_spread_points (default 10). For instruments like BTCUSD# the raw spread value can be large (2250) and thus exceed a conservative threshold intended for FX pairs.
+
+Recommendations (surgical options):
+- Option A (recommended for ultra_aggressive): increase risk.max_spread_points in config.json (e.g., to 1000 or more) or switch to a relative spread check (spread/price percent). This is a configuration change only.
+- Option B: Modify RiskEvaluator to use relative spread percentage: spread_pct = spread / symbol_price; compare to a max_spread_pct threshold. This is a code change and should be reviewed.
+
+Note: No changes applied automatically. Confirm which option to apply and desired thresholds and I will implement and re-run the system.
+
+Action taken (2025-12-29): Implemented both remediation options as requested:
+- Increased `ultra_aggressive` mindset limits: `risk.max_spread_points` set to 2000 and `risk.max_spread_pct` set to 0.02.
+- Implemented relative-spread check in RiskEvaluator.check_spread() that compares spread both to absolute points and to a percent-of-midprice threshold.
+
+System was restarted to pick up changes (see logs). Monitoring will continue and any further spread rejections will now use the new dual-threshold logic.
+
+---
+
+
 ### Issues Fixed This Session
 1. ✅ Merge conflict in risk/evaluator.py (lines 140-149) - Resolved
 2. ✅ Account info format handling - Using robust getattr method

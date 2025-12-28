@@ -19,6 +19,7 @@ All error handling, logging, and state management is preserved from the original
 
 import time
 import logging
+import os
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass

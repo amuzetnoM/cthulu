@@ -15,8 +15,10 @@ _________   __  .__          .__
 ---
 
 <p align="center">
-  <img src="./assets/cthulu-black.png" alt="Cthulu logo" width="480" />
+  <img src="/docs/assets/cthulu-black.png" alt="Cthulu logo" width="480" />
 </p>
+
+
 
 
 <a href="https://artifact-virtual.gitbook.io/Cthulu"><img alt="Version" src="https://img.shields.io/badge/version-5.0.1-blue?style=flat-square" /></a> 

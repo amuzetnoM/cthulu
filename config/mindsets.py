@@ -152,8 +152,10 @@ ULTRA_AGGRESSIVE = {
         "use_kelly_sizing": True,
         "emergency_stop_loss_pct": 12.0,
         "circuit_breaker_enabled": True,
-        "circuit_breaker_threshold_pct": 7.0
-    },
+        "circuit_breaker_threshold_pct": 7.0,
+        "max_spread_points": 2000.0,
+        "max_spread_pct": 0.02
+    }, 
     # Provide a full strategy replacement for dynamic mode
     "strategy_full": {
         "type": "dynamic",

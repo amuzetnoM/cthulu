@@ -50,6 +50,7 @@ class RiskLimits:
     
     # Spread limits
     max_spread_points: float = 10.0  # Max spread in points
+    max_spread_pct: float = 0.01     # Max spread as fraction of price (e.g., 0.01 = 1%)
     
     # Confidence
     min_confidence: float = 0.0  # Minimum signal confidence (0.0 = no filter)
@@ -419,6 +420,9 @@ class RiskEvaluator:
         """
         Check if current spread is acceptable.
         
+        Uses both absolute point thresholds and relative spread percentage vs mid-price
+        so the system behaves sensibly across FX and non-FX instruments (e.g., BTCUSD).
+        
         Args:
             symbol: Trading symbol
             
@@ -427,10 +431,31 @@ class RiskEvaluator:
         """
         try:
             spread = self.connector.get_spread(symbol)
-            
+            # If connector could not provide spread, skip the check
+            if spread is None:
+                return True, "Spread unknown; check skipped"
+
+            # Absolute threshold check (legacy)
             if spread > self.limits.max_spread_points:
                 return False, f"Spread {spread} exceeds limit {self.limits.max_spread_points}"
-            
+
+            # Relative threshold check (new): compare spread to mid-price
+            try:
+                info = self.connector.get_symbol_info(symbol)
+                if info and info.get('bid') is not None and info.get('ask') is not None:
+                    bid = float(info.get('bid'))
+                    ask = float(info.get('ask'))
+                    mid = (bid + ask) / 2.0 if (bid is not None and ask is not None) else None
+                else:
+                    mid = None
+            except Exception:
+                mid = None
+
+            if mid and getattr(self.limits, 'max_spread_pct', None):
+                spread_pct = float(spread) / float(mid) if mid and mid != 0 else None
+                if spread_pct is not None and spread_pct > self.limits.max_spread_pct:
+                    return False, f"Spread {spread} ({spread_pct:.4f} fraction) exceeds relative limit {self.limits.max_spread_pct}"
+
             return True, f"Spread {spread} acceptable"
             
         except Exception as e:
