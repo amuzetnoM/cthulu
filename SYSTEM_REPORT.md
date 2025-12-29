@@ -40,6 +40,7 @@
 | Time | Issue | Fix | Impact |
 |------|-------|-----|--------|
 | 20:36 UTC | TradeMonitor `AttributeError: 'PositionInfo' object has no attribute 'stop_loss'` | Used `getattr()` for flexible attribute access | Non-fatal, log spam eliminated |
+| 20:37 UTC | Database `NOT NULL constraint failed: positions.current_price` | Added `current_price` param to `save_position()` | Non-fatal, position persistence fixed |
 
 ### Objectives Progress
 1. ✅ Zero fatal errors - **ACHIEVED**
