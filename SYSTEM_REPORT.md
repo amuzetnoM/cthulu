@@ -14,12 +14,16 @@
 
 ### Live Update: Phase 1 - Conservative
 - **Started:** 19:06 UTC
-- **Status:** Running smoothly
-- **Loops completed:** 5+
+- **Status:** ✅ Running smoothly - 39 min elapsed
+- **Loops completed:** 39+
 - **Strategy:** SMA Crossover (20/50)
 - **Poll interval:** 60 seconds
-- **Open positions (legacy):** 50
-- **Current drawdown:** ~2.5%
+- **Open positions:** 42 (down from 50)
+- **Current equity:** $821.67
+- **Floating P&L:** +$104.61 🔥
+- **Peak equity:** $852.24
+- **Max drawdown:** 4.43%
+- **Errors:** 0
 
 ### Test Phases
 
