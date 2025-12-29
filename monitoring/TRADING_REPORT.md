@@ -1,9 +1,9 @@
 # Cthulu Trading Performance Report
 
-**Generated:** 2025-12-29 19:50 UTC  
-**Report Type:** Live Trading Metrics Analysis  
+**Generated:** 2025-12-29 20:45 UTC  
+**Report Type:** Comprehensive Trading Analytics  
 **Account:** Production Trading Account  
-**Current Session:** 4-Hour Stress Test (Conservative Phase)
+**Current Session:** 4-Hour Stress Test (All Phases)
 
 ---
 
@@ -11,14 +11,53 @@
 
 | Metric | Value | Grade | Target |
 |--------|-------|-------|--------|
-| **Overall System Grade** | A+ | 🟢 | A+ |
-| **Starting Balance** | $787.22 | - | - |
-| **Current Equity** | ~$819.51 | - | - |
-| **Unrealized P&L** | +$102.45 | 🟢 | >$0 |
-| **Current Drawdown** | 3.84% | 🟢 | <15% |
-| **Open Positions** | 42 | - | - |
+| **Overall System Grade** | B+ | 🟡 | A+ |
+| **Starting Balance** | $1,000.00 | - | - |
+| **Current Balance** | $717.06 | - | - |
+| **Current Equity** | ~$717.06 | - | - |
+| **Realized P&L** | -$282.94 | 🔴 | >$0 |
+| **Max Drawdown** | 28.29% | 🟡 | <15% |
+| **Total Trades** | 1,713 | - | - |
 | **System Errors** | 0 | 🟢 | 0 |
-| **Uptime** | 48+ min | 🟢 | 60+ min |
+| **Total Runtime** | 180+ min | 🟢 | 240 min |
+
+---
+
+## Comprehensive Performance Metrics
+
+### Core Performance Indicators
+
+| Metric | Value | Status | Formula |
+|--------|-------|--------|---------|
+| **Win Rate** | - | - | Wins / Total × 100 |
+| **Profit Factor** | - | - | Gross Profit / Gross Loss |
+| **Expectancy** | $ - | - | (WR × Avg Win) - ((1-WR) × Avg Loss) |
+| **Risk:Reward Ratio** | - | - | Avg Win / Avg Loss |
+| **Payoff Ratio** | - | - | Avg Win / Avg Loss |
+
+### Advanced Statistical Metrics
+
+| Metric | Value | Description |
+|--------|-------|-------------|
+| **Sharpe Ratio** | - | Risk-adjusted return (annualized) |
+| **Sortino Ratio** | - | Downside risk-adjusted return |
+| **Calmar Ratio** | - | Return / Max Drawdown |
+| **Omega Ratio** | - | Probability-weighted gains vs losses |
+| **K-Ratio** | - | Equity curve linearity |
+| **Recovery Factor** | - | Net Profit / Max Drawdown |
+| **Ulcer Index** | - | Drawdown duration weighted severity |
+
+### Drawdown Analysis
+
+| Metric | Value | Target |
+|--------|-------|--------|
+| **Current Drawdown** | 28.29% | <10% |
+| **Max Drawdown %** | 28.29% | <15% |
+| **Max Drawdown $** | $282.94 | <$150 |
+| **Avg Drawdown** | - | <5% |
+| **Drawdown Duration** | - | <30 min |
+| **Recovery Time** | - | <60 min |
+| **Drawdown Frequency** | - | <5/hr |
 
 ---
 
@@ -41,7 +80,11 @@
 Win Rate = Winning Trades / Total Trades × 100%
 Profit Factor = Gross Profit / Gross Loss
 Expectancy = (Win Rate × Avg Win) - ((1 - Win Rate) × Avg Loss)
-Sharpe Ratio = (Mean Return / StdDev Return) × √252
+Sharpe Ratio = (Mean Return - Risk Free Rate) / StdDev(Returns) × √252
+Sortino Ratio = (Mean Return - Risk Free Rate) / StdDev(Downside Returns) × √252
+Calmar Ratio = CAGR / Max Drawdown
+Recovery Factor = Net Profit / Max Drawdown Amount
+K-Ratio = Slope of Equity Curve / Std Error of Slope
 Max Drawdown % = (Peak Equity - Trough Equity) / Peak Equity × 100%
 Risk:Reward = Average Win Amount / Average Loss Amount
 ```

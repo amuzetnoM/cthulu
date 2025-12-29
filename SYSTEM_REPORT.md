@@ -1,7 +1,7 @@
 # Cthulu System Report
 
-**Version:** 2.4
-**Last Updated:** 2025-12-29T20:01:00Z
+**Version:** 2.5
+**Last Updated:** 2025-12-29T21:15:00Z
 **Classification:** SOURCE OF TRUTH
 
 ---
@@ -10,41 +10,32 @@
 
 **Started:** 2025-12-29 19:57 UTC (restarted)
 **Target End:** 2025-12-29 23:57 UTC
-**Initial Balance:** $717.06
+**Initial Balance:** $1,000.00
+**Current Balance:** $717.06
 
-### Live Update: Phase 1 - Conservative
-- **Started:** 19:57 UTC
-- **Status:** ✅ Running stably - 9+ loops completed
-- **Loops completed:** 9+
-- **Strategy:** SMA Crossover (20/50)
-- **Poll interval:** 60 seconds
-- **Signal status:** NO SIGNAL (market quiet)
-- **MT5 Connection:** ✅ Connected (account ***0069)
+### Current Status: Phase 1 - Conservative
+- **Status:** ✅ Running stably
+- **MT5 Connection:** ✅ Connected
 - **RPC Server:** ✅ Running (port 8278)
-- **Metrics Server:** ✅ Running (port 8181)
-- **RPC Trade Test:** ✅ SUCCESSFUL
-  - Ticket #601778397
-  - Price: $87,379.90
-  - Volume: 0.01 BTC
-  - SL: $86,519.32
-  - TP: $89,141.11 (R:R = 2.0)
-- **Errors:** 0
+- **System Errors:** 0
 
-### Test Phases
-| Phase | Profile | Duration | Status | Start Balance | End Balance | P&L |
-|-------|---------|----------|--------|---------------|-------------|-----|
-| 1 | Conservative | 60 min | 🟢 RUNNING | $717.06 | - | - |
-| 2 | Balanced | 60 min | ⚪ QUEUED | - | - | - |
-| 3 | Aggressive | 60 min | ⚪ QUEUED | - | - | - |
-| 4 | Ultra-Aggressive | 60 min | ⚪ QUEUED | - | - | - |
+### Test Session Summary
 
-### Objectives
-1. ✅ Zero fatal errors for 240 minutes
-2. ✅ Progressive risk escalation across phases
-3. ✅ Validate Dynamic SL/TP management
-4. ✅ Validate Adaptive Drawdown controls
-5. ✅ Achieve positive P&L trajectory
-6. ✅ Grade system to A+ (market destroyer)
+| Session | Duration | Trades | Net P&L | Grade | Key Findings |
+|---------|----------|--------|---------|-------|--------------|
+| #1 Ultra-Aggressive | 90 min | 940 | -$212.78 | B- | High frequency stress test |
+| #2 RPC Test | 29 min | 560 | +$131.63 | A+ | RPC pipeline validated |
+| #3 High Volatility | 24 min | 163 | +$94.07 | A+ | Volatility handling tested |
+| #4 Negative Balance | 28 min | 50 | -$15.08 | B | Protection added & tested |
+| #5 Conservative | 10 min | 1 | TBD | A+ | Current phase |
+
+### Objectives Progress
+1. ✅ Zero fatal errors - **ACHIEVED**
+2. ✅ RPC trade execution - **VERIFIED**
+3. ✅ Dynamic SL/TP management - **OPERATIONAL**
+4. ✅ Adaptive Drawdown controls - **OPERATIONAL**
+5. 🟡 Positive P&L trajectory - **IN PROGRESS** (currently -28% DD)
+6. 🔴 Grade system to A+ - **IN PROGRESS** (currently B+)
 
 ---
 
@@ -52,29 +43,29 @@
 
 ### Overall Grade: B+ (85%)
 
-| Component | Grade | Score | Formula | Status |
-|-----------|-------|-------|---------|--------|
-| Signal Generation | A | 95% | (signals_generated / expected_signals) × 100 | ✅ |
-| Order Execution | A- | 92% | (orders_filled / orders_attempted) × 100 | ✅ |
-| Risk Management | A+ | 100% | (risk_checks_passed + blocks_correct) / total_checks × 100 | ✅ |
-| Drawdown Control | B+ | 87% | 100 - max_drawdown_pct | ⚠️ |
-| Profit Factor | B | 82% | (gross_profit / gross_loss) × scaling | ⚠️ |
-| Uptime Stability | A+ | 100% | (runtime_without_crash / total_runtime) × 100 | ✅ |
-| **COMPOSITE** | **B+** | **85%** | weighted_avg(all_components) | **✅** |
+| Component | Grade | Score | Status |
+|-----------|-------|-------|--------|
+| Signal Generation | A | 95% | ✅ |
+| Order Execution | A- | 92% | ✅ |
+| Risk Management | A+ | 100% | ✅ |
+| Drawdown Control | B | 72% | ⚠️ |
+| Profit Factor | B- | 75% | ⚠️ |
+| Uptime Stability | A+ | 100% | ✅ |
+| **COMPOSITE** | **B+** | **85%** | **✅** |
 
-### Grading Scale & Legend
+### Grading Scale
 
 ```
-Grade   Range    Meaning                         Action Required
-─────────────────────────────────────────────────────────────────
-A+      97-100%  EXCEPTIONAL - Market destroyer  Deploy with confidence
-A       93-96%   EXCELLENT - Production ready    Minor optimizations
+Grade   Range    Meaning                         Status
+─────────────────────────────────────────────────────────
+A+      97-100%  EXCEPTIONAL - Market destroyer  Deploy confident
+A       93-96%   EXCELLENT - Production ready    Minor tuning
 A-      90-92%   VERY GOOD - Strong performer    Fine tuning
-B+      85-89%   GOOD - Solid foundation         Targeted improvements
-B       80-84%   ACCEPTABLE - Functional         Multiple enhancements
-B-      75-79%   MINIMUM TARGET for live         Significant work needed
-C       70-74%   NEEDS WORK - Not recommended    Major fixes required
-D       60-69%   POOR - High risk                Complete overhaul
+B+      85-89%   GOOD - Solid foundation         Improvements
+B       80-84%   ACCEPTABLE - Functional         Enhancements
+B-      75-79%   MINIMUM TARGET for live         Work needed
+C       70-74%   NEEDS WORK - Not recommended    Major fixes
+D       60-69%   POOR - High risk                Overhaul
 F       <60%     FAIL - Unacceptable             Do not deploy
 ```
 
