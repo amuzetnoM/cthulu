@@ -149,7 +149,7 @@ class CthuluBootstrap:
             config: System configuration
             
         Returns:
-            Initialized RiskEvaluator instance
+            RiskLimits configuration object
         """
         self.logger.info("Initializing risk evaluator...")
         risk_config = config.get('risk', {})
@@ -161,8 +161,8 @@ class CthuluBootstrap:
             max_daily_loss=risk_config.get('max_daily_loss', 500.0),
             max_positions_per_symbol=risk_config.get('max_positions_per_symbol', 3),
             min_risk_reward_ratio=risk_config.get('min_risk_reward_ratio', 1.5),
-            max_spread_points=risk_config.get('max_spread_points', 10.0),
-            max_spread_pct=risk_config.get('max_spread_pct', 0.01),
+            max_spread_points=risk_config.get('max_spread_points', 5000.0),
+            max_spread_pct=risk_config.get('max_spread_pct', 0.05),
             min_confidence=risk_config.get('min_confidence', 0.0),
             emergency_shutdown_enabled=risk_config.get('emergency_shutdown_enabled', True)
         )

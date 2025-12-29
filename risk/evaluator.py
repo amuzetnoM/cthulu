@@ -49,8 +49,8 @@ class RiskLimits:
     min_risk_reward_ratio: float = 1.5  # Minimum R:R ratio
     
     # Spread limits
-    max_spread_points: float = 10.0  # Max spread in points
-    max_spread_pct: float = 0.01     # Max spread as fraction of price (e.g., 0.01 = 1%)
+    max_spread_points: float = 5000.0  # Max spread in points (for crypto/CFDs)
+    max_spread_pct: float = 0.05       # Max spread as fraction of price (e.g., 0.05 = 5%)
     
     # Confidence
     min_confidence: float = 0.0  # Minimum signal confidence (0.0 = no filter)
@@ -123,7 +123,7 @@ class RiskEvaluator:
         self.daily_tracker = DailyRiskTracker()
         self.emergency_shutdown_triggered = False
         
-        logger.info("RiskEvaluator initialized")
+        logger.info(f"RiskEvaluator initialized (max_spread_points={self.limits.max_spread_points})")
     
     def approve(self, signal, account_info, current_positions) -> tuple[bool, str, float]:
         """

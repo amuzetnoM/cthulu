@@ -44,7 +44,9 @@ class RiskConfig(BaseModel):
     max_positions_per_symbol: int = 1
     max_total_positions: int = 3
     min_risk_reward_ratio: float = 1.0
-    max_spread_pips: float = 50.0
+    max_spread_pips: float = 50.0  # Legacy field for FX
+    max_spread_points: float = 5000.0  # Absolute spread threshold in points
+    max_spread_pct: float = 0.05  # Relative spread threshold as fraction of price
     volatility_scaling: bool = True
     # SL/TP adaptive knobs
     emergency_stop_loss_pct: float = 8.0  # default emergency stop when adopting external trades (percent)
