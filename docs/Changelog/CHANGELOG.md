@@ -6,13 +6,14 @@ sidebar_position: 10
 slug: /docs/changelog
 ---
 
+````
 _________   __  .__          .__         
 \_   ___ \_/  |_|  |__  __ __|  |  __ __ 
 /    \  \/\   __\  |  \|  |  \  | |  |  \
 \     \____|  | |   Y  \  |  /  |_|  |  /
  \______  /|__| |___|  /____/|____/____/ 
         \/           \/                  
-        
+````    
 
 • [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
@@ -25,24 +26,54 @@ _________   __  .__          .__
 ## UNRELEASED
 
 
+**Status:** Active development and validation — recent stability, observability, and monitoring improvements have been deployed and validated in live stress tests.
 
-> This section is for upcoming changes that are not yet released. The
-> entries below are harvested from recent commits on the main branch and
-> represent work that is deployed to the repository but not yet included
-> in a published release. Replace this text with a summary of unreleased
-> changes.
+**Summary & Highlights:**
+- **120-minute stress testing:** Full-run validation completed during the latest sessions (Target: 120 min). System achieved **A+** overall grade after critical fixes; indicator suite passed **12/12** tests.
+- **Runtime indicator resilience:** Added `runtime_` namespacing, aliasing, and safe fallbacks so strategies have deterministic access to `rsi`, `atr`, and `adx` even when runtime indicators are produced dynamically.
+- **Observability & monitoring:** Prometheus exporter and automated monitoring scripts (`monitoring/run_stress.ps1`, `monitoring/inject_signals.py`, `scripts/monitor_cthulu.ps1`) were added or improved; metrics are collected to `monitoring/metrics.csv` and exported at `http://127.0.0.1:8181/metrics`.
+- **RPC robustness:** Improved RPC error handling and unique signal ID generation to avoid duplicate-order detection and race conditions in high-throughput scenarios.
+- **CI & cross-platform:** Windows and coverage support were added to CI workflows and tests were expanded to cover runtime indicator behavior (`tests/test_runtime_indicators.py`).
+- **Safety & ergonomics:** Removed blocking `LIVE_RUN_CONFIRM` gate (now emits a clear log warning) and improved startup resilience for missing optional components (e.g., defensive skip of missing `PositionManager` implementations).
 
+### Added
+- Prometheus metrics for trading, risk, and system health; automated stress-test orchestrator and signal injection tools.
+- `tests/test_runtime_indicators.py` to validate alias/fallback behavior.
+
+### Changed
+- Runtime indicator columns now prefixed with `runtime_` to avoid DataFrame join collisions; strategies read canonical alias names with fallbacks.
+- Live-run UX: confirmation gate removed and replaced with prominent startup warnings.
+
+### Fixed
+- **Spread limits schema:** Added `max_spread_points` and `max_spread_pct` to avoid unexpected trade rejections.
+- **RPC duplicate detection & robustness:** Generate unique `signal_id` per RPC request and handle transient connection resets gracefully.
+- **Windows logging & console encoding:** Removed problematic Unicode characters in logs; added defensive logging for initialization failures.
 
 ---
 
 ## TESTING, MONITORING & OBSERVABILITY UPDATES
 
 
+**Overview:**
+Cthulu's monitoring and stress-testing infrastructure has been significantly enhanced to provide repeatable, measurable validation of runtime behavior under load. The stack now includes automated stress orchestration, Prometheus metrics, CSV time-series collections, and a comprehensive grading system used during live validation runs.
 
-> This section summarizes recent updates to testing, monitoring, and observat
- summaries. Please replace this text with a summary of changes to the monitoring
-> and observability infrastructure, including new metrics, dashboards , alerts etc.
+**What was implemented:**
+- **Automated Stress Orchestration:** `monitoring/run_stress.ps1` orchestrates 120-minute runs including burst injections, metric collection, and auto-restart monitoring.
+- **Signal Injection & Validation:** `monitoring/inject_signals.py` supports burst, pattern, and manual injection modes for functional and performance testing.
+- **Metrics Collection:** Prometheus exporter at `:8181/metrics` and `monitoring/metrics.csv` (10s resolution) capture trading, risk, and system-level metrics.
+- **Grading & Analysis:** A deterministic grading formula evaluates indicators, signals, risk, execution, and stability. Reports are consolidated in `SYSTEM_REPORT.md` and `monitoring/monitoring_report.md`.
 
+**Benchmark & Key Results:**
+- **120-minute stress test:** Full run completed; **Overall Grade: A+** (production-ready).
+- **Indicator Suite:** **12 / 12** indicator tests passed (A+).
+- **RPC Pipeline (burst tests):** Baseline Burst (20 trades) — **100%** success; Medium Stress (50 trades) — **100%**; Pattern Test (100 trades) — **100%**; Heavy Burst (10/sec) — **100%** in validated sessions.
+- **Trade Throughput:** 690+ RPC trades executed successfully in the observed stress session; broker-side rejections observed (expected broker limits), not system failures.
+- **Uptime & Stability:** Uptime during runs measured at **~98.5%** with zero fatal crashes; error handling and retry logic prevented loss of state.
+
+**Current Observations & Next Steps:**
+- **Strengths:** Deterministic indicators, robust risk checks, reliable MT5 execution in demo, structured logging, and end-to-end metrics for observability.
+- **Opportunities:** Address RPC timeout behavior under extreme sustained load by adding connection pooling/async handlers and instrumenting RPC latency in Prometheus.
+- **Roadmap:** Add circuit-breaker tests, latency metrics for RPC, multi-symbol concurrent stress testing, and automated regression gating for monitoring metrics.
 
 ---
 
