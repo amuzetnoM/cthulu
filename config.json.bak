@@ -1,4 +1,5 @@
 {
+  "_comment": "Ultra-Aggressive profile with dynamic strategy selection - Cutting-edge trading",
   "mt5": {
     "login": "${MT5_LOGIN}",
     "password": "${MT5_PASSWORD}",
@@ -9,29 +10,28 @@
   "risk": {
     "max_position_size": 2.0,
     "default_position_size": 0.1,
-    "max_daily_loss": 100.0,
-    "max_positions_per_symbol": 2,
-    "max_total_positions": 5,
-    "position_size_pct": 5.0,
-    "use_kelly_sizing": false,
-    "emergency_stop_loss_pct": 8.0,
+    "max_daily_loss": 500.0,
+    "max_positions_per_symbol": 3,
+    "max_total_positions": 10,
+    "position_size_pct": 15.0,
+    "use_kelly_sizing": true,
+    "emergency_stop_loss_pct": 12.0,
     "circuit_breaker_enabled": true,
-    "circuit_breaker_threshold_pct": 5.0
+    "circuit_breaker_threshold_pct": 7.0
   },
   "trading": {
-    "symbol": "BTCUSD#",
-    "timeframe": "TIMEFRAME_M1",
-    "poll_interval": 30,
-    "lookback_bars": 300
+    "symbol": "EURUSD",
+    "timeframe": "TIMEFRAME_M15",
+    "poll_interval": 15,
+    "lookback_bars": 500,
+    "enable_tick_data": true,
+    "enable_scalping": true
   },
   "strategy": {
-    "type": "sma_crossover",
+    "type": "dynamic",
     "dynamic_selection": {
-      "regime_detection_enabled": true,
-      "performance_tracking_enabled": true,
-      "min_confidence_threshold": 0.6,
-      "switch_cooldown_bars": 10,
-      "regime_check_interval": 300,
+      "enabled": true,
+      "regime_check_interval": 180,
       "min_strategy_signals": 3,
       "performance_weight": 0.4,
       "regime_weight": 0.4,
@@ -39,23 +39,14 @@
     },
     "strategies": [
       {
-        "type": "sma_crossover",
-        "params": {
-          "fast_period": 5,
-          "slow_period": 13,
-          "atr_period": 10,
-          "atr_multiplier": 1.2,
-          "risk_reward_ratio": 2.5
-        }
-      },
-      {
         "type": "ema_crossover",
         "params": {
           "fast_period": 8,
           "slow_period": 21,
           "atr_period": 14,
-          "atr_multiplier": 1.5,
-          "risk_reward_ratio": 2.5
+          "atr_multiplier": 1.2,
+          "risk_reward_ratio": 3.0,
+          "symbol": "EURUSD"
         }
       },
       {
@@ -64,8 +55,9 @@
           "lookback_period": 15,
           "rsi_threshold": 50,
           "atr_multiplier": 1.3,
-          "volume_multiplier": 1.2,
-          "risk_reward_ratio": 3.0
+          "volume_multiplier": 1.3,
+          "risk_reward_ratio": 3.5,
+          "symbol": "EURUSD"
         }
       },
       {
@@ -74,50 +66,82 @@
           "fast_ema": 5,
           "slow_ema": 10,
           "rsi_period": 7,
-          "rsi_oversold": 25,
-          "rsi_overbought": 75,
-          "rsi_long_max": 65,
-          "rsi_short_min": 35,
+          "rsi_oversold": 20,
+          "rsi_overbought": 80,
           "atr_multiplier": 0.8,
-          "risk_reward_ratio": 2.0
+          "risk_reward_ratio": 2.5,
+          "spread_limit_pips": 2.0,
+          "symbol": "EURUSD"
         }
       },
       {
-        "type": "mean_reversion",
+        "type": "sma_crossover",
         "params": {
-          "ma_period": 20,
-          "bb_std": 2.0,
-          "rsi_period": 14,
-          "rsi_oversold": 30,
-          "rsi_overbought": 70,
+          "fast_period": 5,
+          "slow_period": 13,
+          "atr_period": 14,
           "atr_multiplier": 1.5,
-          "risk_reward_ratio": 2.0
-        }
-      },
-      {
-        "type": "trend_following",
-        "params": {
-          "fast_ma": 20,
-          "slow_ma": 50,
-          "adx_period": 14,
-          "adx_threshold": 25,
-          "atr_multiplier": 2.0,
-          "risk_reward_ratio": 3.0
+          "risk_reward_ratio": 2.5,
+          "symbol": "EURUSD"
         }
       }
-    ],
-    "params": {
-      "fast_period": 10,
-      "slow_period": 30
-    }
+    ]
   },
+  "confidence_threshold": 0.25,
+  "exit_strategies": [
+    {
+      "type": "adverse_movement",
+      "enabled": true,
+      "params": {
+        "movement_threshold_pct": 0.5,
+        "time_window_seconds": 30
+      }
+    },
+    {
+      "type": "time_based",
+      "enabled": true,
+      "params": {
+        "max_hold_hours": 8.0,
+        "close_before_weekend": true
+      }
+    },
+    {
+      "type": "profit_target",
+      "enabled": true,
+      "params": {
+        "target_pct": 1.5,
+        "partial_close_enabled": true,
+        "partial_close_pct": 50.0
+      }
+    },
+    {
+      "type": "trailing_stop",
+      "enabled": true,
+      "params": {
+        "atr_multiplier": 1.5,
+        "activation_pct": 0.5
+      }
+    }
+  ],
   "indicators": [
     {
       "type": "rsi",
       "params": {
-        "period": 14,
-        "overbought": 70,
-        "oversold": 30
+        "period": 14
+      }
+    },
+    {
+      "type": "rsi",
+      "params": {
+        "period": 7
+      }
+    },
+    {
+      "type": "macd",
+      "params": {
+        "fast_period": 12,
+        "slow_period": 26,
+        "signal_period": 9
       }
     },
     {
@@ -132,64 +156,41 @@
       "params": {
         "period": 14
       }
-    }
-  ],
-  "exit_strategies": [
+    },
     {
-      "type": "adverse_movement",
-      "enabled": true,
+      "type": "supertrend",
       "params": {
-        "movement_threshold_pct": 1.0,
-        "time_window_seconds": 60,
-        "consecutive_moves_required": 3
+        "period": 10,
+        "multiplier": 3.0
       }
     },
     {
-      "type": "time_based",
-      "enabled": true,
+      "type": "vwap",
       "params": {
-        "max_hold_hours": 24.0,
-        "weekend_protection": true,
-        "friday_close_time": "16:00",
-        "day_trading_mode": false
-      }
-    },
-    {
-      "type": "profit_target",
-      "enabled": true,
-      "params": {
-        "target_pct": 2.0,
-        "partial_close_enabled": false,
-        "risk_reward_ratio": 2.0
-      }
-    },
-    {
-      "type": "trailing_stop",
-      "enabled": true,
-      "params": {
-        "atr_multiplier": 2.0,
-        "activation_profit_pct": 0.5,
-        "min_stop_distance_pips": 10.0
+        "std_dev_multiplier": 2.0
       }
     }
   ],
   "database": {
-    "path": "${DATABASE_PATH}"
+    "path": "Cthulu_ultra_aggressive.db"
   },
-  "runtime": {
-    "dry_run": false
-  },
-  "orphan_trades": {
+  "rpc": {
     "enabled": true,
-    "adopt_symbols": [],
-    "ignore_symbols": [],
-    "apply_exit_strategies": true,
-    "max_adoption_age_hours": 1.0,
-    "log_only": false
+    "host": "127.0.0.1",
+    "port": 8278,
+    "token": null
   },
-  "cache_enabled": true
+  "observability": {
+    "prometheus": {
+      "enabled": true,
+      "prefix": "Cthulu",
+      "textfile_path": "C:\\workspace\\cthulu\\metrics\\Cthulu_metrics.prom",
+      "http_port": 8181
+    }
+  },
+  "features": {
+    "ml_enabled": true,
+    "adaptive_parameters": true,
+    "multi_timeframe_analysis": true
+  }
 }
-
-
-
-

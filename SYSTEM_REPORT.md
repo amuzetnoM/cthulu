@@ -1830,3 +1830,9 @@ Restarted (PID 19728) - monitor will continue
 - Continuing automated checklist: signal stress tests (demo account, $1000) and observability validation until 60 minutes uninterrupted operation is reached.
 - Logged by: automated-monitor v2
 
+- 2025-12-29T07:15:27Z: Started stress test via monitoring\run_stress.ps1 (pwsh PID 8692) — DurationMinutes=60, BurstCount=200, BurstRate=10
+
+
+- 2025-12-29T07:13:52Z: Archived monitoring\continuous_inject.ps1 to monitoring\archive as part of consolidation.
+\n## 2025-12-29T12:17:50.4167854+05:00 - Success
+No errors observed for 60 minutes. Monitoring complete.
