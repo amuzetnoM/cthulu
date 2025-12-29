@@ -34,7 +34,12 @@
 | #2 RPC Test | 29 min | 560 | +$131.63 | A+ | RPC pipeline validated |
 | #3 High Volatility | 24 min | 163 | +$94.07 | A+ | Volatility handling tested |
 | #4 Negative Balance | 28 min | 50 | -$15.08 | B | Protection added & tested |
-| #5 Conservative | 10 min | 1 | TBD | A+ | Current phase |
+| #5 Conservative | 15 min | 1 | TBD | A- | TradeMonitor bug found & fixed |
+
+### Bug Fixes During Session
+| Time | Issue | Fix | Impact |
+|------|-------|-----|--------|
+| 20:36 UTC | TradeMonitor `AttributeError: 'PositionInfo' object has no attribute 'stop_loss'` | Used `getattr()` for flexible attribute access | Non-fatal, log spam eliminated |
 
 ### Objectives Progress
 1. ✅ Zero fatal errors - **ACHIEVED**

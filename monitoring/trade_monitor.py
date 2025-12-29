@@ -51,17 +51,17 @@ class TradeMonitor:
         # Iterate positions and check SL/TP verification and state
         for ticket, pos in list(self.position_manager._positions.items()):
             try:
-                # Read back values from MT5 where possible (PositionManager keeps cached values)
-                sl = pos.stop_loss
-                tp = pos.take_profit
-                unrealized = pos.unrealized_pnl
+                # Read back values - handle both PositionInfo objects and raw MT5 positions
+                sl = getattr(pos, 'stop_loss', None) or getattr(pos, 'sl', None) or 0.0
+                tp = getattr(pos, 'take_profit', None) or getattr(pos, 'tp', None) or 0.0
+                unrealized = getattr(pos, 'unrealized_pnl', 0.0) if hasattr(pos, 'unrealized_pnl') else getattr(pos, 'profit', 0.0)
                 # Record an ML event for position snapshot
                 try:
                     if self.ml_collector:
                         payload = {
                             'ticket': ticket,
-                            'symbol': pos.symbol,
-                            'volume': pos.volume,
+                            'symbol': getattr(pos, 'symbol', 'UNKNOWN'),
+                            'volume': getattr(pos, 'volume', 0.0),
                             'sl': sl,
                             'tp': tp,
                             'unrealized_pnl': unrealized,
