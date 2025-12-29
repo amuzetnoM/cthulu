@@ -57,6 +57,12 @@ class RiskLimits:
     
     # Emergency
     emergency_shutdown_enabled: bool = True
+    
+    # Negative Balance Protection
+    min_balance_threshold: float = 10.0  # Minimum balance to allow trading
+    margin_call_threshold: float = 0.5   # Stop trading if equity/margin ratio falls below this
+    drawdown_halt_percent: float = 50.0  # Halt trading if drawdown exceeds this %
+    negative_balance_action: str = "halt"  # "halt", "close_all", "reduce"
 
 
 class DailyRiskTracker:
@@ -123,7 +129,133 @@ class RiskEvaluator:
         self.daily_tracker = DailyRiskTracker()
         self.emergency_shutdown_triggered = False
         
+        # Negative balance protection tracking
+        self.initial_balance: Optional[float] = None
+        self.peak_balance: float = 0.0
+        self.negative_balance_triggered = False
+        self.margin_call_triggered = False
+        
         logger.info(f"RiskEvaluator initialized (max_spread_points={self.limits.max_spread_points})")
+    
+    def check_balance_protection(self, account_info) -> tuple[bool, str]:
+        """
+        Comprehensive negative balance and drawdown protection.
+        
+        Handles special cases:
+        - Negative balance: immediate halt
+        - Near-zero balance: halt with warning
+        - Excessive drawdown: halt or reduce exposure
+        - Margin call conditions: close positions or halt
+        
+        Args:
+            account_info: MT5 account info (dict or object)
+            
+        Returns:
+            tuple: (safe_to_trade: bool, reason: str)
+        """
+        try:
+            # Extract account metrics
+            if isinstance(account_info, dict):
+                balance = float(account_info.get('balance') or account_info.get('Balance') or 0.0)
+                equity = float(account_info.get('equity') or account_info.get('Equity') or balance)
+                margin = float(account_info.get('margin') or account_info.get('Margin') or 0.0)
+                free_margin = float(account_info.get('margin_free') or account_info.get('FreeMargin') or equity)
+            else:
+                balance = float(getattr(account_info, 'balance', getattr(account_info, 'Balance', 0.0)))
+                equity = float(getattr(account_info, 'equity', getattr(account_info, 'Equity', balance)))
+                margin = float(getattr(account_info, 'margin', getattr(account_info, 'Margin', 0.0)))
+                free_margin = float(getattr(account_info, 'margin_free', getattr(account_info, 'FreeMargin', equity)))
+            
+            # Track initial and peak balance for drawdown calculation
+            if self.initial_balance is None:
+                self.initial_balance = balance
+                self.peak_balance = balance
+                logger.info(f"Initial balance recorded: ${balance:.2f}")
+            
+            if balance > self.peak_balance:
+                self.peak_balance = balance
+            
+            # CASE 1: Negative balance - CRITICAL
+            if balance < 0:
+                self.negative_balance_triggered = True
+                logger.critical(f"NEGATIVE BALANCE DETECTED: ${balance:.2f} - ALL TRADING HALTED")
+                if self.limits.negative_balance_action == "close_all":
+                    self._emergency_close_all_positions()
+                return False, f"CRITICAL: Negative balance (${balance:.2f}) - trading halted"
+            
+            # CASE 2: Balance below minimum threshold
+            if balance < self.limits.min_balance_threshold:
+                logger.error(f"Balance ${balance:.2f} below minimum threshold ${self.limits.min_balance_threshold}")
+                return False, f"Balance (${balance:.2f}) below minimum ${self.limits.min_balance_threshold}"
+            
+            # CASE 3: Negative equity (floating losses exceed balance)
+            if equity < 0:
+                logger.critical(f"NEGATIVE EQUITY: ${equity:.2f} - emergency action required")
+                self._emergency_close_all_positions()
+                return False, f"CRITICAL: Negative equity (${equity:.2f}) - positions closed"
+            
+            # CASE 4: Margin call condition
+            if margin > 0:
+                margin_level = equity / margin
+                if margin_level < self.limits.margin_call_threshold:
+                    self.margin_call_triggered = True
+                    logger.error(f"MARGIN CALL: Level {margin_level:.2%} below threshold {self.limits.margin_call_threshold:.2%}")
+                    if self.limits.negative_balance_action == "close_all":
+                        self._emergency_close_all_positions()
+                    elif self.limits.negative_balance_action == "reduce":
+                        self._reduce_exposure()
+                    return False, f"Margin call triggered (level: {margin_level:.2%})"
+            
+            # CASE 5: Excessive drawdown from peak
+            if self.peak_balance > 0:
+                drawdown_percent = ((self.peak_balance - balance) / self.peak_balance) * 100
+                if drawdown_percent >= self.limits.drawdown_halt_percent:
+                    logger.error(f"DRAWDOWN HALT: {drawdown_percent:.1f}% exceeds limit {self.limits.drawdown_halt_percent}%")
+                    return False, f"Drawdown {drawdown_percent:.1f}% exceeds limit {self.limits.drawdown_halt_percent}%"
+            
+            # CASE 6: Free margin too low for new positions
+            if free_margin < self.limits.min_balance_threshold:
+                logger.warning(f"Free margin ${free_margin:.2f} too low for new positions")
+                return False, f"Insufficient free margin (${free_margin:.2f})"
+            
+            # All checks passed
+            return True, "Balance protection checks passed"
+            
+        except Exception as e:
+            logger.error(f"Error in balance protection check: {e}", exc_info=True)
+            # Fail safe - block trading on error
+            return False, f"Balance check error: {str(e)}"
+    
+    def _emergency_close_all_positions(self):
+        """Emergency closure of all open positions."""
+        try:
+            logger.critical("EMERGENCY: Closing all positions due to balance protection trigger")
+            positions = self.tracker.get_all_positions()
+            for pos in positions:
+                try:
+                    self.connector.close_position(pos.ticket)
+                    logger.info(f"Emergency closed position {pos.ticket}")
+                except Exception as e:
+                    logger.error(f"Failed to close position {pos.ticket}: {e}")
+        except Exception as e:
+            logger.error(f"Error in emergency position closure: {e}")
+    
+    def _reduce_exposure(self):
+        """Reduce exposure by closing largest positions."""
+        try:
+            logger.warning("Reducing exposure due to margin pressure")
+            positions = sorted(self.tracker.get_all_positions(), 
+                             key=lambda p: p.volume, reverse=True)
+            # Close the largest 50% of positions
+            to_close = positions[:max(1, len(positions) // 2)]
+            for pos in to_close:
+                try:
+                    self.connector.close_position(pos.ticket)
+                    logger.info(f"Reduced exposure: closed position {pos.ticket}")
+                except Exception as e:
+                    logger.error(f"Failed to close position {pos.ticket}: {e}")
+        except Exception as e:
+            logger.error(f"Error reducing exposure: {e}")
     
     def approve(self, signal, account_info, current_positions) -> tuple[bool, str, float]:
         """
@@ -138,11 +270,20 @@ class RiskEvaluator:
             tuple: (approved: bool, reason: str, position_size: float)
         """
         try:
+            # COMPREHENSIVE BALANCE PROTECTION CHECK
+            balance_safe, balance_reason = self.check_balance_protection(account_info)
+            if not balance_safe:
+                return False, balance_reason, 0.0
+            
             # Handle both dict and object formats for account_info
             if isinstance(account_info, dict):
                 balance = account_info.get('balance') or account_info.get('Balance') or 0.0
             else:
                 balance = getattr(account_info, 'balance', getattr(account_info, 'Balance', 0.0))
+            
+            # CRITICAL: Block trading if balance is negative or zero (redundant but safe)
+            if balance <= 0:
+                return False, f"Account balance is non-positive (${balance:.2f}) - trading blocked", 0.0
             symbol = signal.symbol
             
             # Calculate position size
@@ -492,7 +633,34 @@ class RiskEvaluator:
             'total_exposure': self.tracker.calculate_total_exposure(),
             'position_count': self.tracker.get_position_count(),
             'emergency_shutdown': self.emergency_shutdown_triggered,
-            'exposure_by_symbol': self.tracker.get_exposure_by_symbol()
+            'exposure_by_symbol': self.tracker.get_exposure_by_symbol(),
+            # Balance protection metrics
+            'initial_balance': self.initial_balance,
+            'peak_balance': self.peak_balance,
+            'negative_balance_triggered': self.negative_balance_triggered,
+            'margin_call_triggered': self.margin_call_triggered
+        }
+    
+    def get_balance_protection_status(self) -> Dict[str, Any]:
+        """
+        Get detailed balance protection status for monitoring.
+        
+        Returns:
+            Dict with balance protection metrics and status
+        """
+        return {
+            'initial_balance': self.initial_balance,
+            'peak_balance': self.peak_balance,
+            'negative_balance_triggered': self.negative_balance_triggered,
+            'margin_call_triggered': self.margin_call_triggered,
+            'min_balance_threshold': self.limits.min_balance_threshold,
+            'margin_call_threshold': self.limits.margin_call_threshold,
+            'drawdown_halt_percent': self.limits.drawdown_halt_percent,
+            'negative_balance_action': self.limits.negative_balance_action,
+            'drawdown_from_peak': (
+                ((self.peak_balance - (self.initial_balance or 0)) / self.peak_balance * 100)
+                if self.peak_balance > 0 else 0.0
+            )
         }
     
     def suggest_sl_adjustment(self, balance: float, timeframe: str = "M5") -> float:

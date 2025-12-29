@@ -39,6 +39,14 @@ _________   __  .__          .__
 ### Added
 - Prometheus metrics for trading, risk, and system health; automated stress-test orchestrator and signal injection tools.
 - `tests/test_runtime_indicators.py` to validate alias/fallback behavior.
+- **Negative Balance Protection (Critical):** Comprehensive balance protection system including:
+  - Negative balance detection with immediate trading halt
+  - Minimum balance threshold enforcement ($10 default)
+  - Negative equity detection with emergency position closure
+  - Margin call condition monitoring (50% equity/margin ratio threshold)
+  - Peak balance tracking with drawdown halt (50% drawdown limit)
+  - Free margin validation before new positions
+  - Configurable actions: "halt", "close_all", or "reduce" exposure
 
 ### Changed
 - Runtime indicator columns now prefixed with `runtime_` to avoid DataFrame join collisions; strategies read canonical alias names with fallbacks.
