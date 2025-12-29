@@ -110,6 +110,29 @@ Docker-compose notes (what I added to the repository):
 
 ---
 
+## RPC Interface
+
+Cthulu includes an RPC server for programmatic control. This enables external monitoring tools and scripts to inject trades and query system state.
+
+**Default Endpoints:**
+- `POST http://127.0.0.1:8278/trade` - Submit trade orders
+- `GET http://127.0.0.1:8278/provenance` - Query order audit trail
+
+**Configuration:**
+```json
+{
+  "rpc": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 8278
+  }
+}
+```
+
+For complete RPC documentation, see [development_log/rpc.md](development_log/rpc.md).
+
+---
+
 For examples and more details, see `docs/changelog/CHANGELOG.md` and the tests (`tests/unit/test_metrics_improved.py`, `tests/unit/test_metrics_prometheus_integration.py`).
 
 

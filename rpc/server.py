@@ -93,8 +93,12 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
             return
 
         order_type = OrderType.MARKET if not price else OrderType.LIMIT
+        # Generate unique signal_id per request to avoid duplicate detection
+        import uuid
+        import time
+        unique_signal_id = payload.get('signal_id') or f"rpc_{int(time.time()*1000)}_{uuid.uuid4().hex[:8]}"
         order_req = OrderRequest(
-            signal_id='rpc_manual',
+            signal_id=unique_signal_id,
             symbol=symbol,
             side=side,
             volume=volume,

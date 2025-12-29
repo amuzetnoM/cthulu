@@ -24,66 +24,32 @@ _________   __  .__          .__
 
 ## UNRELEASED
 
+
+
 > This section is for upcoming changes that are not yet released. The
 > entries below are harvested from recent commits on the main branch and
 > represent work that is deployed to the repository but not yet included
-> in a published release.
+> in a published release. Replace this text with a summary of unreleased
+> changes.
 
-### Recent commits (most recent first)
 
-- 5b982b2 fix: Update evaluator.py to use get_all_positions() for total exposure calculation (amuzetnoM, 2025-12-29)
-- 5f247f2 fix: Enhance safe joining of indicator data to prevent column overlap errors (amuzetnoM, 2025-12-29)
-- 2a7d656 ci: add ghcr build workflow; fix Dockerfile CMD; monitor script (amuzetnoM, 2025-12-29)
-- d45e91b fix: Update SYSTEM_REPORT.md to reflect accurate monitoring session results and live monitoring status (amuzetnoM, 2025-12-29)
-- fd1ff02 fix: Refactor account_info handling in approve method to streamline support for dict and object formats (amuzetnoM, 2025-12-29)
-- 5798256 fix: Improve handling of account_info in approve_trade method to support both dict and object formats (amuzetnoM, 2025-12-29)
-- edddfe0 Enhance observability and monitoring features (amuzetnoM, 2025-12-29)
-- 0f1d547 feat: Implement comprehensive monitoring and observability enhancements, including Grafana dashboards, Prometheus configuration, and stability monitoring script (amuzetnoM, 2025-12-29)
-- febc36d feat: Add trading signal approval method to RiskEvaluator for position size calculation and limit checks (amuzetnoM, 2025-12-29)
-- 9b12eae fix: Correct casing of 'CthuluBootstrap' and update log/database file references to 'cthulu.log' and 'cthulu.db' in README.md (amuzetnoM, 2025-12-29)
-- 4b86179 Refactor imports and update package name from 'cthulhu' to 'cthulu' across test files and UI components (amuzetnoM, 2025-12-29)
-- 2fcc849 chore: Update README.md to improve formatting and add Cthulhu logo (amuzetnoM, 2025-12-28)
-- e89613d Refactor trading bot configuration and scripts to rename from "Herald" to "Cthulu" (amuzetnoM, 2025-12-28)
-- 3b69def feat: Implement lazy imports and compatibility shims for legacy package names; enhance indicator validation and runtime flexibility (amuzetnoM, 2025-12-28)
-- 813c8f2 fix: Update test badge to reflect 185 passing tests in README.md (amuzetnoM, 2025-12-28)
-- d5d9e94 feat: Add comprehensive CHANGELOG and release notes for versions 1.0.0 to 5.0.1 (amuzetnoM, 2025-12-28)
-- 803c521 Update wizard.py to reflect branding change from Herald to Cthulhu (amuzetnoM, 2025-12-28)
-- 3c55c85 Fix formatting and improve readability in README.md (amuzetnoM, 2025-12-28)
-- c43ace7 Merge pull request #6 from amuzetnoM/copilot/update-branding-to-cthulu (Ali Shakil, 2025-12-28)
-- 957bd09 Add mermaid diagrams to docs and fix remaining version references (copilot-swe-agent[bot], 2025-12-28)
-- 2721604 Update docs: version 5.0.1, improved roadmap, add privacy/terms pages (copilot-swe-agent[bot], 2025-12-28)
-- d85d93d Add comprehensive testing summary - all requirements met (copilot-swe-agent[bot], 2025-12-28)
-- 38a23ff Add release instructions and draft release body for v5.0.1 (copilot-swe-agent[bot], 2025-12-28)
-- 15b5534 Bump version to 5.0.1 and add GitHub Actions CI workflow (copilot-swe-agent[bot], 2025-12-28)
-- e6d96ba Fix unit tests after rebranding: update mock paths and test expectations (copilot-swe-agent[bot], 2025-12-28)
-- ca7fb65 Final polish: Update remaining comments and test references to Cthulhu (copilot-swe-agent[bot], 2025-12-28)
-- 75b7b9f Polish: Update deployment docs and remaining Herald references (copilot-swe-agent[bot], 2025-12-28)
-- 90d9c95 Complete rebranding: Update HTML files and remaining references (copilot-swe-agent[bot], 2025-12-28)
-- 29b2789 Final cleanup: Update remaining Herald references to Cthulhu (copilot-swe-agent[bot], 2025-12-28)
-- 4df62c4 Complete Herald to Cthulu rebranding in code comments and docstrings (copilot-swe-agent[bot], 2025-12-28)
-- 3981f42 Update documentation and config files: Herald to Cthulu rebranding (copilot-swe-agent[bot], 2025-12-28)
-- 942c0aa Update Python source files: Herald to Cthulu rebranding (copilot-swe-agent[bot], 2025-12-28)
-- fc8e9cf Initial plan (copilot-swe-agent[bot], 2025-12-28)
-- c1b2d95 feat: Add version badge to documentation files and update titles for consistency (amuzetnoM, 2025-12-28)
-- c6a4f54 Remove obsolete MQL5 handbook files and scripts (amuzetnoM, 2025-12-28)
-- ae71cc6 feat: Enhance shutdown handler with configuration support and improved position management logging (amuzetnoM, 2025-12-28)
-- 8236d72 fix: Enhance shutdown signal handling and add input timeout for user prompts (amuzetnoM, 2025-12-28)
-- 4245c98 feat: Implement positions tracking in database with CRUD operations and update position lifecycle management (amuzetnoM, 2025-12-28)
-- 9955ba4 feat: Add method to retrieve open positions from MT5 and enhance trade adoption policy with logging option (amuzetnoM, 2025-12-28)
-- 6a55173 fix: Clean up README and improve clarity; refactor force_trade.py for better structure and readability (amuzetnoM, 2025-12-28)
-- cd60ddd fix: Remove redundant section header for improved clarity in README (amuzetnoM, 2025-12-28)
-- 74cab71 fix: Add spacing before "Adaptive Trading Intelligence" section in README for improved readability (amuzetnoM, 2025-12-28)
-- 615186b fix: Update Quick Start Guide and README for version 5.0.0; correct changelog reference (amuzetnoM, 2025-12-28)
-- cf5f14c fix: Update README title and versioning details for clarity; enhance changelog format (amuzetnoM, 2025-12-28)
-- 8a0af52 feat: Complete architectural overhaul, expand strategies and indicators; release v5.0.0 (amuzetnoM, 2025-12-28)
-- 39bbb75 feat: Update Docker build version to 5.0.0 in deployment guide (amuzetnoM, 2025-12-28)
-- aed3192 feat: Enhance setup wizard with progress indicators and improved option styling; add new indicators and strategies (amuzetnoM, 2025-12-28)
-- 439215e feat(release): Add release notes for versions 1.0.0 to 5.0.0 with highlights, key changes, and migration guides (amuzetnoM, 2025-12-28)
-- 2a8eab5 feat: Add price levels and volume analysis for momentum breakout strategy in trading loop (amuzetnoM, 2025-12-28)
-- 2a69a74 feat: Update indicator selection in setup wizard to allow skipping and adding all indicators (amuzetnoM, 2025-12-28)
 ---
 
-## **5.0.1 — 2025-12-27**
+## TESTING, MONITORING & OBSERVABILITY UPDATES
+
+
+
+> This section summarizes recent updates to testing, monitoring, and observat
+ summaries. Please replace this text with a summary of changes to the monitoring
+> and observability infrastructure, including new metrics, dashboards , alerts etc.
+
+
+---
+
+## LATEST RELEASE
+
+## **5.0.1** 
+> *2025-12-27*
 
 ### Summary
 **MAJOR RELEASE**: Architecture upgrade and live-run stability fixes.
@@ -109,457 +75,19 @@ This release advances Cthulu from v4.0.0 to v5.0.1 with a major architecture cha
 
 ---
 
----
+## TABLE OF RELEASES
+| Version | Date | Description |
+|---------|------|-------------|
+| [v5.0.1](v5.0.1.md) | 2025-12-28 | Minor branding & stability patch: runtime indicator fixes, monitoring enhancements, Windows/CI improvements. |
+| [v5.0.0](v5.0.0.md) | 2025-12-27 | Major architecture & runtime stability release; runtime namespacing and indicator fallbacks; CI and testing improvements. |
+| [v4.0.0](v4.0.0.md) | 2026-12-25 | MAJOR: Multi-strategy framework, next-gen indicators, GUI and metrics enhancements. |
+| [v3.3.1](v3.3.1.md) | (see file) | Advisory & news ingestion features, ML instrumentation improvements, and documentation updates. |
+| [v3.2.1](v3.2.1.md) | 2025-12-17 | Operational reliability improvements: SL/TP verification, retry queue, and observability/metrics additions. |
+| [v3.1.0](v3.1.0.md) | 2025-12-07 | Trade adoption, `Cthulu-trade` CLI, Pydantic config validation, health & Prometheus metrics. |
+| [v3.0.0](v3.0.0.md) | 2024-12-07 | Production-ready release with ATR and indicator suite refinements, CI, and robust testing. |
+| [v2.0.0](v2.0.0.md) | 2024-12-06 | Autonomous trading loop, core indicators, position management, and exit strategies. |
+| [v1.0.0](v1.0.0.md) | 2024-11-15 | Foundation release: core architecture, persistence, MT5 connector, and strategy scaffolding. |
 
-# RELEASE HISTORY
-
-
-## Table of contents
- - [5.0.1 — 2025-12-28](#501---2025-12-28)
- - [5.0.0 — 2025-12-27](#500---2025-12-27)
- - [4.0.0 — 2025-12-26](#400---2025-12-26)
- - [3.3.1 — 2025-12-24](#331---2025-12-24)
- - [3.2.0 — 2025-12-17](#320---2025-12-17)
- - [3.1.0 — 2025-12-07](#310---2025-12-07)
- - [3.0.0 — 2024-12-07](#300---2024-12-07)
- - [2.0.0 — 2024-12-06](#200---2024-12-06)
- - [1.0.0 — 2024-11-15](#100---2024-11-15)
- - [Release Template](#release-template-use-for-future-releases)
-
- ---
-
-## **4.0.0 — 2025-12-26**
-
-## **5.0.0 — 2025-12-27**
-
-### Summary
-Major architecture and runtime stability release following live validation. This release addresses issues found during live runs, hardens runtime indicator handling, removes a blocking live-run safety gate in favor of a warning, and adds CI improvements (Windows + coverage).
-
-For full details see the release notes: `docs/Changelog/v5.0.0.md`.
-
-
-### Summary
-**MAJOR RELEASE**: Multi-Strategy Trading System with Dynamic Selection and Next-Generation Indicators
-
-This is a transformative release that upgrades Cthulu from a single-strategy system to a cutting-edge multi-strategy autonomous trading platform with intelligent strategy selection, institutional-grade indicators, and enhanced GUI monitoring.
-
-### Added
-
-#### Multi-Strategy Framework
-- **4 New Advanced Trading Strategies**:
-  - **EMA Crossover** (`strategy/ema_crossover.py`): Fast day trading strategy with 15% faster signals than SMA, optimized for M15-H1 timeframes
-  - **Momentum Breakout** (`strategy/momentum_breakout.py`): Captures explosive moves with volume + RSI confirmation, 3.0x risk-reward ratio
-  - **Scalping Strategy** (`strategy/scalping.py`): Ultra-fast M1/M5 trading with 1.0x ATR stops, spread filters (<2 pips), RSI oversold/overbought recovery
-  - **Enhanced SMA Crossover**: Original strategy improved with tighter stops and better integration
-
-#### Dynamic Strategy Selection
-- **StrategySelector** (`strategy/strategy_selector.py`): Autonomous strategy switching engine
-  - **Market Regime Detection**: Identifies 5 regimes (trending up/down, ranging, volatile, consolidating) using ADX, ATR ratio, Bollinger Band width, and price returns
-  - **Performance Tracking**: Win rate, profit factor, recent performance per strategy (50-trade window)
-  - **Strategy Affinity Mapping**: Each strategy mapped to optimal market regimes with weighted scoring
-  - **Adaptive Learning**: Adjusts strategy selection based on real-time performance outcomes
-  - **Weighted Algorithm**: Score = Performance(40%) + Regime_Affinity(40%) + Confidence(20%)
-
-#### Next-Generation Indicators
-- **Supertrend** (`indicators/supertrend.py`): ATR-based dynamic support/resistance with clear directional signals, vectorized calculation for performance
-- **VWAP** (`indicators/vwap.py`): Volume Weighted Average Price with standard deviation bands, institutional-grade price analysis
-- **Anchored VWAP**: Event-based VWAP calculation from specific anchor points (earnings, news, session opens)
-- **Enhanced RSI**: Multi-period support with unique column names (`rsi_7`, `rsi_14`) to avoid conflicts
-
-#### Data Layer & Infrastructure
-- **Unified Data Layer** (`data/layer.py`): OHLCV processing with EMA, SMA, ATR, volume analysis, and price level detection
-- **Strategy-Specific Data Preparation**: Automatic indicator calculation based on strategy requirements
-- **Multi-Indicator Support**: Handles multiple instances of same indicator type (e.g., RSI with different periods)
-
-#### Enhanced GUI
-- **Desktop GUI** (`ui/desktop.py`): Tkinter-based monitoring interface with auto-launch
-- **Strategy Information Display**: Shows active strategy and market regime with color coding
-  - Green for trending_up, Red for trending_down, Yellow for volatile, Blue for ranging
-- **Enhanced Metrics**: Displays Total Trades, Win Rate, Net Profit, Profit Factor, Max Drawdown, Active Positions, Sharpe Ratio, Expectancy
-- **Manual Trade Interface**: Place trades directly from GUI with symbol, side, volume, SL, TP controls
-- **Live Trade Monitoring**: Real-time trade and history tracking
-- **Auto-Summary Persistence**: Strategy info persisted to `logs/strategy_info.txt` for GUI consumption
-
-#### Configuration & Modes
-- **Ultra-Aggressive Config** (`config_ultra_aggressive.json`): Deployment-hardened aggressive trading configuration
-  - 15% position sizing (vs 10% standard)
-  - 10 max concurrent positions (vs 6)
-  - 0.25 confidence threshold (vs 0.35)
-  - 15-second poll intervals (vs 30)
-  - 4 concurrent strategies with dynamic selection
-  - Aggressive exit strategies: 0.5% adverse movement, 8-hour max hold
-
-#### Metrics & Observability
-- **Improved MetricsCollector** (`observability/metrics.py`): Updated from main branch with bug fixes
-  - Risk:reward tracking (per-trade and per-symbol)
-  - Expectancy calculation (E = win_rate*avg_win - (1-win_rate)*avg_loss)
-  - Drawdown durations tracking
-  - Rolling Sharpe ratio
-  - Per-symbol aggregates and exposures
-
-### Changed
-- **Version Bumped**: 3.3.1 → 4.0.0 (major release)
-- **Main Orchestrator** (`__main__.py`): 
-  - Integrated GUI auto-launch with subprocess monitoring
-  - Added strategy selector support in load_strategy()
-  - Added summary persistence with strategy info
-  - Improved indicator loading with new indicators
-- **Performance**: 2x faster execution (30s → 15s poll intervals in aggressive mode)
-- **Risk Control**: 50% tighter stops (0.8-1.5x ATR vs 2.0x ATR)
-
-### Testing
-- **27+ Comprehensive Tests**:
-  - `tests/unit/test_advanced_strategies.py`: 15+ tests for EMA, Momentum, Scalping, StrategySelector
-  - `tests/unit/test_next_gen_indicators.py`: 12+ tests for Supertrend, VWAP, Anchored VWAP
-  - Full coverage of bullish/bearish scenarios, breakouts, scalping conditions, regime detection, performance tracking
-
-### Documentation
-- **UPGRADE_GUIDE.md** (15KB): Complete usage guide with strategy descriptions, configuration examples, best practices, troubleshooting
-- **IMPLEMENTATION_SUMMARY.md** (14KB): Technical architecture, performance metrics, migration guide, before/after comparisons
-- **Updated README**: Version 4.0.0, Phase 4 badge, new feature highlights
-
-### Performance Impact
-- **2x Faster Execution**: 15-second poll intervals (vs 30s)
-- **50% Tighter Risk Control**: 0.8-1.5x ATR stops (vs 2.0x)
-- **4x Strategy Diversity**: 4 strategies with autonomous switching
-- **7-21% Higher Confidence**: Signals range from 0.75-0.85 (vs 0.70)
-- **Expected Win Rate Improvement**: +10-15% in trending markets, +15-20% in ranging, +20-25% in volatile
-
-### Migration Path
-1. **Week 1**: Test in dry-run mode with individual strategies
-2. **Week 2**: Enable dynamic strategy selection
-3. **Week 3**: Integrate GUI monitoring
-4. **Week 4**: Deploy with ultra-aggressive configuration
-
-### Breaking Changes
-- **Major version bump** (3.x → 4.0): Signifies substantial architectural changes
-- **New dependencies**: None (all features use existing dependencies)
-- **Configuration**: New strategy types available, old configs remain compatible
-
----
-
-## **3.3.1 — 2025-12-24**
-
-### Summary
-Small maintenance release to tidy documentation and operational defaults. Highlights:
-- RPC server is now documented as enabled by default (binds to `127.0.0.1:8181`).
-- Documentation clarified for Linux MT5 integration (recommend `mt5linux` or Docker bridge).
-
-### Changed
-- Documentation: updated `docs/rpc.md`, `Cthulu/.env`, and README to reflect default RPC behavior and Linux MT5 options.
-
-### Fixed
-- Changelog and release notes tidied for consistency.
-
-
-## **3.2.0 — 2025-12-17**
-
-### Summary
-Release focused on robust trade adoption, SL/TP reliability, and operational hygiene. Also includes scripting utilities for testing and improved observability.
-
-### Added
-- **SL/TP verification & retry queue**: After applying SL/TP Cthulu verifies broker acceptance and queues failed updates for scheduled retries; emits Prometheus metric `Cthulu_sl_tp_failure_total` on failures.
-- **Exponential backoff retry scheduling**: SL/TP and other retriable operations now use capped exponential backoff scheduling to reduce retry storms.
-- **Close flow improvements**: Use IOC filling for closes, sanitize comments to avoid broker rejections, and retry fallback without comments when needed.
-- **Metrics on close and SL/TP events**: Instrumented execution flows to record metrics for closed trades and SL/TP events for performance summaries.
-- **Test & diagnostic tools archived**: Moved ad-hoc diagnostic scripts into `Cthulu/.archive/` and added `.archive/README.md` for provenance.
-- **Backup snapshot**: Created a full repository snapshot at `C:\workspace\_dev\_backup\herald` for recoverability and audits.
-- **System mapping docs**: Updated `Cthulu/docs/system_mapping.md` to reflect archive, backup, and component mapping.
-
-### Changed
-- **Adoption & retry behavior**: improved adoption flow to aggressively apply SL/TP then fallback to scheduled retries; pending operations persist in memory until successful.
-- **Symbol matching**: enhanced MT5 symbol matching to normalize variants and avoid mis-selection errors (e.g., `GOLDm#` vs `GOLD#m`).
-- **Execution engine**: added optional `ml_collector` parameter and non-blocking instrumentation calls for orders and closes.
-- **Tests**: removed mocked-only instrumentation unit test in favor of a gated live integration test for end-to-end ML instrumentation validation.
-
-### Fixed
-- Fixed intermittent failures when applying SL/TP due to rounding/filling behavior by introducing digit-aware tolerances and read-back verification.
-- Addressed unsupported filling mode errors for close orders by switching to IOC filling and retrying without comments if broker rejects the request.
-
-
-## **3.1.0 — 2025-12-07**
-
-### Summary
-Enhances trade management capabilities, adds CLI tooling, improves configuration validation, and introduces observability endpoints.
-
-### Added
-- External trade adoption (`position/trade_manager.py`) — Detect and manage externally created trades with configurable adoption policies.
-- Command-line trade management (`scripts/trade_cli.py`) — Place, list and close positions from the CLI with optional dry-run.
-- Predefined risk profiles (`config/mindsets.py`) — Quick presets for aggressive, balanced, and conservative trading.
-- Pydantic-based configuration validation (`config_schema.py`) — Strongly-typed configuration models and environment variable overrides.
-- Observability endpoints: `observability/health.py` and `observability/prometheus.py`.
-
-### Changed
-- Position reconciliation at startup now detects and tracks pre-existing positions across sessions.
-- Exit strategies: return types and priority semantics standardized across implementations.
-
-### Fixed
-- Normalized return types and priority semantics for exit strategies.
-- Reconciled `get_pnl_pips()` defaults and updated callers.
-
-### Security
-- Pre-commit hooks configured with `detect-secrets` and a `.secrets.baseline` file for secret scanning.
-
-## **3.0.0 — 2024-12-07**
-
-### Summary
-Stable system release with full MT5 integration, comprehensive testing, and CI automation.
-
-### Added
-- ATR indicator and enhancements to indicators (RSI, MACD, Bollinger, Stochastic, ADX).
-- Exit Manager and exit strategies for stop loss, take profit, trailing and time-based exit.
-- GitHub Actions-based CI with tests, linting, and coverage reporting.
-
-### Changed
-- Integration tests refactored to use pytest fixtures; improved lifecycle handling.
-
-### Fixed
-- MT5 connection handling, market data compatibility, and test edge cases.
-
-
-## **2.0.0 — 2024-12-06**
-
-### Summary
-First public release marking baseline Phase 2 completion with autonomous trading and expanded indicators and execution machinery.
-
-### Added
-- Indicator set (RSI, MACD, Bollinger, Stochastic, ADX) and a base indicator library.
-
-
-## **1.0.0 — 2024-11-15**
-
-### Added - Phase 1: Foundation Infrastructure
-
-#### Core Architecture
-- **Project Structure**
-  - Modular architecture with clear separation of concerns
-  - Single responsibility principle throughout
-  - Event-driven design pattern
-  - Pluggable component architecture
-
-#### MT5 Connector (`connector/`)
-- **MT5Connector Class** (`mt5_connector.py`)
-  - Connection management with automatic reconnection
-  - Session health monitoring
-  - Rate limiting to prevent API throttling
-  - Retry logic with exponential backoff
-  - Account information retrieval
-  - Market data fetching (OHLCV bars)
-  - Order placement and management
-  - Position querying
-  - Exception handling and error consolidation
-
-- **ConnectionConfig Dataclass**
-  - Login, password, server configuration
-  - Timeout settings
-  - MT5 installation path
-  - Comprehensive validation
-
-#### Data Layer (`data/`)
-- **DataLayer Class** (`layer.py`)
-  - OHLCV data normalization to pandas DataFrame
-  - Timestamp indexing
-  - Data validation and cleaning
-  - Caching layer for backtesting efficiency
-  - Resampling capabilities
-  - Symbol metadata management
-
-- **BarData Dataclass**
-  - Standardized OHLCV structure
-  - Timestamp, symbol, timeframe
-  - Volume and tick volume
-  - Spread information
-
-#### Strategy Engine (`strategy/`)
-- **Base Strategy Interface** (`base.py`)
-  - Abstract `Strategy` class
-  - `on_bar()` and `on_tick()` event handlers
-  - Signal generation interface
-  - Strategy configuration and state management
-  - Pluggable strategy architecture
-
-- **Signal Dataclass**
-  - Signal ID, timestamp, symbol
-  - Signal type (LONG, SHORT, CLOSE, NEUTRAL)
-  - Confidence level (0.0 to 1.0)
-  - Stop loss and take profit levels
-  - Signal reason and metadata
-
-- **SignalType Enum**
-  - LONG, SHORT, CLOSE, NEUTRAL states
-
-- **SMA Crossover Strategy** (`sma_crossover.py`)
-  - Fast and slow SMA calculation
-  - Crossover detection (golden cross, death cross)
-  - Signal generation with confidence scoring
-  - Configurable periods (default: 10/30)
-  - Example implementation for testing
-
-#### Execution Engine (`execution/`)
-- **ExecutionEngine Class** (`engine.py`)
-  - Market and limit order support
-  - Idempotent order submission
-  - Partial fill handling
-  - Order status tracking
-  - Integration with MT5Connector
-  - External order reconciliation
-  - Comprehensive error handling
-
-- **OrderRequest Dataclass**
-  - Signal ID, symbol, side (BUY/SELL)
-  - Volume, order type (MARKET/LIMIT)
-  - Price, stop loss, take profit
-  - Deviation tolerance
-  - Magic number for order identification
-  - Comment field
-
-- **ExecutionResult Dataclass**
-  - Order ID, status (PLACED, FILLED, REJECTED, etc.)
-  - Fill price, filled volume
-  - Request and fill timestamps
-  - Commission and swap
-  - Message and error details
-
-- **OrderStatus Enum**
-  - PLACED, FILLED, PARTIALLY_FILLED, REJECTED, CANCELLED, ERROR
-
-- **OrderType Enum**
-  - MARKET, LIMIT, STOP, STOP_LIMIT
-
-#### Risk Management (`risk/`)
-- **RiskManager Class** (`manager.py`)
-  - Position sizing (fixed lots, percentage-based, Kelly criterion)
-  - Maximum position size enforcement
-  - Per-symbol position limits
-  - Total position limits
-  - Daily loss tracking with auto-reset
-  - Emergency stop loss percentage
-  - Circuit breaker mechanism
-  - Daily P&L monitoring
-  - Trade result recording
-
-- **RiskLimits Dataclass**
-  - Maximum position size
-  - Default position size
-  - Maximum daily loss
-  - Max positions per symbol
-  - Max total positions
-  - Position size percentage
-  - Kelly sizing option
-  - Emergency stop loss percentage
-  - Circuit breaker settings
-
-#### Persistence Layer (`persistence/`)
-- **Database Class** (`database.py`)
-  - SQLite database with full schema
-  - Trades table with entry/exit tracking
-  - Signals table with execution status
-  - Metrics table for performance tracking
-  - Indexed queries for fast lookups
-  - Connection pooling
-  - Transaction management
-
-- **TradeRecord Dataclass**
-  - 15 fields including signal_id, order_id
-  - Symbol, side, entry/exit prices
-  - Volume, stop loss, take profit
-  - Timestamps (entry, exit)
-  - P&L (profit, commission, swap)
-  - Exit reason, metadata
-
-- **SignalRecord Dataclass**
-  - 13 fields including timestamp, symbol, side
-  - Confidence, price, stop loss, take profit
-  - Strategy name, metadata
-  - Execution status and timestamp
-  - Rejection reason
-
-#### Observability (`observability/`)
-- **Logger Module** (`logger.py`)
-  - Structured logging setup
-  - JSON and human-readable formats
-  - Console and file handlers
-  - Configurable log levels
-  - Log rotation support
-  - Context-rich log messages
-
-- **Metrics Collector** (`metrics.py`)
-  - Performance metrics tracking
-  - Win rate calculation
-  - Profit factor computation
-  - Sharpe ratio calculation
-  - Maximum drawdown tracking (absolute and percentage)
-  - Equity curve tracking
-  - Average win/loss statistics
-  - Trade count and distribution
-
-- **PerformanceMetrics Dataclass**
-  - 15+ fields for comprehensive performance analysis
-  - Total trades, profitable trades, losing trades
-  - Win rate, profit factor
-  - Sharpe ratio, Sortino ratio
-  - Max drawdown (absolute and percentage)
-  - Average win, average loss
-  - Total profit, total loss
-  - Risk/reward ratio
-
-#### Testing Infrastructure (`tests/`)
-- **Unit Test Structure**
-  - `tests/unit/` directory created
-  - Test framework setup (pytest)
-  - Mock fixtures for MT5 API
-  - Sample test files for core modules
-
-- **Integration Test Structure**
-  - `tests/integration/` directory created
-  - End-to-end workflow tests
-  - Database integration tests
-  - MT5 connection tests
-
-#### Configuration
-- **Example Configuration** (`.env.example`, `config.example.yaml`)
-  - MT5 credentials template
-  - Risk parameters
-  - Trading configuration
-  - Logging settings
-  - Database configuration
-
-#### Documentation
-  - Phase 1 specifications and verification
-  - Phase 2-5 planning
-  - Architecture diagrams
-  - Data flow documentation
-  - Integration contracts
-
-- **Architecture Documentation** (`docs/ARCHITECTURE.md`)
-  - System architecture overview
-  - Component responsibilities
-  - Data flow diagrams
-  - Integration points
-  - Design patterns
-
-- **Guide** (`docs/GUIDE.md`)
-  - Getting started guide
-  - Installation instructions
-  - Configuration walkthrough
-  - Usage examples
-  - Best practices
-
-- **README** (`README.md`)
-  - Project overview
-  - Features list
-  - Quick start guide
-  - Architecture summary
-  - Development guidelines
-
-- **HTML Documentation** (`docs/index.html`)
-  - Interactive documentation website
-  - Feature showcase
-  - Code examples
-  - API reference
-  - Deployment guide
-
----
 
 ## Quality Standards
 - Single responsibility principle
@@ -572,19 +100,6 @@ First public release marking baseline Phase 2 completion with autonomous trading
 
 ---
 
-### Development Tools
-- **Requirements Files**
-  - `requirements.txt` - Production dependencies
-  - `requirements-dev.txt` - Development dependencies
-  - Version pinning for reproducibility
-
-- **Git Configuration**
-  - `.gitignore` - Comprehensive exclusion rules
-  - `.env.example` - Environment variable template
-  - Repository structure
-
----
-
 ## Technical Specifications
 - **Python Version**: 3.10 - 3.13
 - **Key Dependencies**: 
@@ -594,7 +109,7 @@ First public release marking baseline Phase 2 completion with autonomous trading
   - sqlite3 (persistence)
 - **Database**: SQLite with full schema and indexes
 - **Logging**: Structured logging with JSON support
-- **Testing**: pytest framework with fixtures
+- **Testing**: pytest framework with fixtures and harnesses
 
 ---
 
@@ -606,58 +121,18 @@ First public release marking baseline Phase 2 completion with autonomous trading
 
 ---
 
-  ## Release Template (Use for future releases)
-  - Use Keep a Changelog conventions (https://keepachangelog.com) and Semantic Versioning (https://semver.org).
-  - Prefer concise, one-sentence bullets grouped by Added / Changed / Fixed / Security / Deprecated / Removed.
-  - Reference files and PRs where relevant.
-
-  ---
-
-  ## Contributing
-  See [CONTRIBUTING.md](../CONTRIBUTING.md) for details on our development process and how to submit pull requests.
-
-  ---
-
-  This file is the canonical changelog location for Cthulu. For past release notes, prefer GitHub releases.
-
-- **Configuration Requirements** (`config.example.json`)
-  - Complete JSON configuration template
-  - MT5 connection settings
-  - Risk management parameters
-  - Trading configuration (symbol, timeframe, polling)
-  - Indicator configurations (all 5 indicators)
-  - Exit strategy configurations (all 4 strategies)
-  - Database and cache settings
-
-#### Build Plan Updates
-- Phase 2 marked as **COMPLETE**
-- Comprehensive implementation checklist
-- Verification details for all components
-- Integration status confirmed
-- Quality standards verification
-
-### Technical Details
-- **Total Lines of Code**: ~4,130 lines (Phase 2 only)
-- **New Modules**: 17 files created
-- **Updated Modules**: 2 files modified
-- **Data Flow**: Complete end-to-end autonomous trading pipeline
-- **Quality**: Hardened, no stubs or placeholders
-
-
----
-
 ## Contributing
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for details on our development process, coding standards, and how to submit pull requests.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+This project is licensed under the AGPL 3.0. See the [LICENSE](../LICENSE) file for details.
 
 ---
 
-**Cthulu** - Adaptive Trading Intelligence  
-*The future of algorithmic trading.*
+>    **Cthulu** 
+> *The future of algorithmic trading.*
 
 
 
