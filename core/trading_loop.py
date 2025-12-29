@@ -1055,11 +1055,15 @@ class TradingLoop:
                 price=result.fill_price,
                 stop_loss=signal.stop_loss,
                 take_profit=signal.take_profit,
-                strategy_name=self.ctx.strategy.__class__.__name__,
                 metadata=signal.metadata,
                 executed=True,
                 execution_timestamp=datetime.now()
             )
+            # compatibility: set strategy_name after construction in case dataclass signature differs
+            try:
+                signal_record.strategy_name = self.ctx.strategy.__class__.__name__
+            except Exception:
+                pass
             self.ctx.database.record_signal(signal_record)
             
             trade_record = TradeRecord(
@@ -1091,10 +1095,14 @@ class TradingLoop:
             price=None,
             stop_loss=signal.stop_loss,
             take_profit=signal.take_profit,
-            strategy_name=self.ctx.strategy.__class__.__name__,
             metadata={**signal.metadata, 'advisory': True},
             executed=False
         )
+        # compatibility: set strategy_name after construction
+        try:
+            signal_record.strategy_name = self.ctx.strategy.__class__.__name__
+        except Exception:
+            pass
         self.ctx.database.record_signal(signal_record)
     
     def _record_ghost_signal(self, signal, result):
@@ -1108,7 +1116,6 @@ class TradingLoop:
             price=getattr(result, 'fill_price', None) if result else None,
             stop_loss=signal.stop_loss,
             take_profit=signal.take_profit,
-            strategy_name=self.ctx.strategy.__class__.__name__,
             metadata={
                 **signal.metadata,
                 'advisory': 'ghost',
@@ -1116,6 +1123,11 @@ class TradingLoop:
             },
             executed=False
         )
+        # compatibility: set strategy_name after construction
+        try:
+            signal_record.strategy_name = self.ctx.strategy.__class__.__name__
+        except Exception:
+            pass
         self.ctx.database.record_signal(signal_record)
     
     def _adopt_external_trades(self):
