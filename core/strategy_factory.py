@@ -13,6 +13,8 @@ from cthulu.strategy.sma_crossover import SmaCrossover
 from cthulu.strategy.ema_crossover import EmaCrossover
 from cthulu.strategy.momentum_breakout import MomentumBreakout
 from cthulu.strategy.scalping import ScalpingStrategy
+from cthulu.strategy.trend_following import TrendFollowingStrategy
+from cthulu.strategy.mean_reversion import MeanReversionStrategy
 from cthulu.strategy.strategy_selector import StrategySelector
 
 
@@ -21,7 +23,9 @@ STRATEGY_REGISTRY = {
     'sma_crossover': SmaCrossover,
     'ema_crossover': EmaCrossover,
     'momentum_breakout': MomentumBreakout,
-    'scalping': ScalpingStrategy
+    'scalping': ScalpingStrategy,
+    'trend_following': TrendFollowingStrategy,
+    'mean_reversion': MeanReversionStrategy
 }
 
 

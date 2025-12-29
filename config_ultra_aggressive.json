@@ -185,6 +185,11 @@
   "database": {
     "path": "Cthulu_ultra_aggressive.db"
   },
+  "rpc": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 8278
+  },
   "features": {
     "ml_enabled": true,
     "adaptive_parameters": true,
