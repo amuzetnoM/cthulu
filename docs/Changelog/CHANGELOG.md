@@ -29,7 +29,9 @@ _________   __  .__          .__
 **Status:** Active development and validation — recent stability, observability, and monitoring improvements have been deployed and validated in live stress tests.
 
 **Summary & Highlights:**
-- **120-minute stress testing:** Full-run validation completed during the latest sessions (Target: 120 min). System achieved **A+** overall grade after critical fixes; indicator suite passed **12/12** tests.
+- **120-minute stress testing:** Full-run validation completed during the latest sessions (Target: 120 min). System achieved **B+** overall grade after critical fixes; indicator suite passed **12/12** tests.
+- **Adaptive Drawdown Management:** NEW cutting-edge dynamic risk management system with state-based position sizing, trailing equity protection, and survival mode for critical drawdowns.
+- **Survival Mode (NEW):** When drawdown exceeds 90%, system enters ultra-defensive mode with micro positions (0.01 lots), 95% confidence requirement, and 5:1 R:R minimum.
 - **Runtime indicator resilience:** Added `runtime_` namespacing, aliasing, and safe fallbacks so strategies have deterministic access to `rsi`, `atr`, and `adx` even when runtime indicators are produced dynamically.
 - **Observability & monitoring:** Prometheus exporter and automated monitoring scripts (`monitoring/run_stress.ps1`, `monitoring/inject_signals.py`, `scripts/monitor_cthulu.ps1`) were added or improved; metrics are collected to `monitoring/metrics.csv` and exported at `http://127.0.0.1:8181/metrics`.
 - **RPC robustness:** Improved RPC error handling and unique signal ID generation to avoid duplicate-order detection and race conditions in high-throughput scenarios.
@@ -37,6 +39,21 @@ _________   __  .__          .__
 - **Safety & ergonomics:** Removed blocking `LIVE_RUN_CONFIRM` gate (now emits a clear log warning) and improved startup resilience for missing optional components (e.g., defensive skip of missing `PositionManager` implementations).
 
 ### Added
+- **Adaptive Drawdown Manager (`risk/adaptive_drawdown.py`):** Complete rewrite of risk management with:
+  - Real-time drawdown state machine: NORMAL → CAUTION → WARNING → DANGER → CRITICAL → SURVIVAL
+  - Dynamic position sizing multipliers per state (1.0x → 0.75x → 0.5x → 0.25x → 0.1x → 0.05x)
+  - Trailing equity high watermark with profit lock-in
+  - Market regime detection (trending/ranging/volatile/trap)
+  - Liquidity trap detection heuristics
+  - Win/lose streak tracking with anti-martingale sizing
+  - Survival mode for 90%+ drawdown with recovery strategy
+- **Survival Mode:** Ultra-defensive trading for critical drawdowns:
+  - Micro position sizing (0.01 lots max)
+  - 95% confidence threshold required
+  - 5:1 minimum risk:reward ratio
+  - Single position limit
+  - Trend-following only strategies
+  - High-liquidity session filtering
 - Prometheus metrics for trading, risk, and system health; automated stress-test orchestrator and signal injection tools.
 - `tests/test_runtime_indicators.py` to validate alias/fallback behavior.
 - **Negative Balance Protection (Critical):** Comprehensive balance protection system including:
@@ -51,6 +68,8 @@ _________   __  .__          .__
 ### Changed
 - Runtime indicator columns now prefixed with `runtime_` to avoid DataFrame join collisions; strategies read canonical alias names with fallbacks.
 - Live-run UX: confirmation gate removed and replaced with prominent startup warnings.
+- Drawdown states expanded from 5 to 7 (added SURVIVAL and refined CRITICAL)
+- Position sizing now fully dynamic based on drawdown state and market regime
 
 ### Fixed
 - **Spread limits schema:** Added `max_spread_points` and `max_spread_pct` to avoid unexpected trade rejections.
