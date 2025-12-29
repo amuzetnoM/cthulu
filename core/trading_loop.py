@@ -79,6 +79,8 @@ class TradingLoopContext:
     position_manager: Optional[Any] = None
     summary_path: Optional[Any] = None
     persist_summary_fn: Optional[Any] = None
+    dynamic_sltp_manager: Optional[Any] = None  # Dynamic SL/TP management
+    adaptive_drawdown_manager: Optional[Any] = None  # Adaptive drawdown management
     
     # CLI args
     args: Optional[Any] = None
@@ -1143,6 +1145,7 @@ class TradingLoop:
     def _monitor_positions(self, df: pd.DataFrame):
         """
         Monitor open positions and check exit strategies.
+        Also applies dynamic SL/TP management.
         
         Args:
             df: Market data DataFrame with indicators
@@ -1160,15 +1163,25 @@ class TradingLoop:
             # Get account info for exit strategies
             account_info = self.ctx.connector.get_account_info()
             
+            # Get ATR for dynamic SL/TP
+            atr_value = df['atr'].iloc[-1] if 'atr' in df.columns else None
+            
             # Check each position against exit strategies
             for position in positions:
+                # DYNAMIC SL/TP MANAGEMENT
+                if self.ctx.dynamic_sltp_manager and atr_value and account_info:
+                    try:
+                        self._apply_dynamic_sltp(position, atr_value, account_info, df)
+                    except Exception as e:
+                        self.ctx.logger.error(f"Dynamic SL/TP error for {position.ticket}: {e}")
+                
                 # Prepare market data for exit strategies
                 exit_data = {
                     'current_price': position.current_price,
                     'current_data': df.iloc[-1],
                     'account_info': account_info,
                     'indicators': {
-                        'atr': df['atr'].iloc[-1] if 'atr' in df.columns else None
+                        'atr': atr_value
                     }
                 }
                 
@@ -1186,6 +1199,82 @@ class TradingLoop:
         
         except Exception as e:
             self.ctx.logger.error(f"Position monitoring error: {e}", exc_info=True)
+    
+    def _apply_dynamic_sltp(self, position, atr_value: float, account_info: dict, df: pd.DataFrame):
+        """
+        Apply dynamic SL/TP management to a position.
+        
+        Args:
+            position: Position to manage
+            atr_value: Current ATR value
+            account_info: Account information
+            df: Market data DataFrame
+        """
+        try:
+            # Get account metrics
+            if isinstance(account_info, dict):
+                balance = float(account_info.get('balance') or account_info.get('Balance') or 0.0)
+                equity = float(account_info.get('equity') or account_info.get('Equity') or balance)
+            else:
+                balance = float(getattr(account_info, 'balance', 0.0))
+                equity = float(getattr(account_info, 'equity', balance))
+            
+            # Calculate drawdown
+            initial_balance = self.ctx.dynamic_sltp_manager.positions_managed.get(
+                'initial_balance', balance
+            )
+            if 'initial_balance' not in self.ctx.dynamic_sltp_manager.positions_managed:
+                self.ctx.dynamic_sltp_manager.positions_managed['initial_balance'] = balance
+            
+            peak_balance = max(balance, self.ctx.dynamic_sltp_manager.positions_managed.get('peak_balance', balance))
+            self.ctx.dynamic_sltp_manager.positions_managed['peak_balance'] = peak_balance
+            
+            drawdown_pct = ((peak_balance - balance) / peak_balance * 100) if peak_balance > 0 else 0
+            
+            # Get position details
+            entry_price = position.open_price
+            current_price = position.current_price
+            side = position.side
+            current_sl = getattr(position, 'stop_loss', None)
+            current_tp = getattr(position, 'take_profit', None)
+            
+            # Get update recommendation
+            update = self.ctx.dynamic_sltp_manager.update_position_sltp(
+                ticket=position.ticket,
+                entry_price=entry_price,
+                current_price=current_price,
+                side=side,
+                current_sl=current_sl,
+                current_tp=current_tp,
+                atr=atr_value,
+                balance=balance,
+                equity=equity,
+                drawdown_pct=drawdown_pct,
+                initial_balance=initial_balance
+            )
+            
+            # Apply updates if needed
+            if update['update_sl'] or update['update_tp']:
+                new_sl = update['new_sl'] if update['update_sl'] else current_sl
+                new_tp = update['new_tp'] if update['update_tp'] else current_tp
+                
+                # Modify position via execution engine
+                success = self.ctx.position_lifecycle.modify_position(
+                    position.ticket, sl=new_sl, tp=new_tp
+                )
+                
+                if success:
+                    self.ctx.logger.info(
+                        f"Dynamic SL/TP: {update['action']} - Position {position.ticket} "
+                        f"SL: {current_sl} -> {new_sl}, TP: {current_tp} -> {new_tp}"
+                    )
+                else:
+                    self.ctx.logger.warning(
+                        f"Failed to apply dynamic SL/TP to position {position.ticket}"
+                    )
+        
+        except Exception as e:
+            self.ctx.logger.error(f"Error applying dynamic SL/TP: {e}", exc_info=True)
     
     def _process_exit_signal(self, position, exit_signal):
         """

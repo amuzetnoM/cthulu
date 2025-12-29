@@ -117,6 +117,14 @@ class Config(BaseModel):
     logging: Dict[str, Any] = Field(default_factory=dict)
     # RPC configuration (optional runtime HTTP control)
     rpc: Dict[str, Any] = Field(default_factory=dict)
+    # Dynamic SL/TP management (cutting-edge position management)
+    dynamic_sltp: Dict[str, Any] = Field(default_factory=lambda: {"enabled": False})
+    # Adaptive drawdown management (dynamic risk management)
+    adaptive_drawdown: Dict[str, Any] = Field(default_factory=lambda: {"enabled": False})
+    # Features configuration
+    features: Dict[str, Any] = Field(default_factory=dict)
+    # Confidence threshold for signal filtering
+    confidence_threshold: float = 0.5
 
     @staticmethod
     def _map_legacy_keys(raw: Dict[str, Any]) -> Dict[str, Any]:

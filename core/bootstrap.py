@@ -58,6 +58,10 @@ class SystemComponents:
     advisory_manager: Any = None
     monitor: Any = None
     exporter: Any = None
+    
+    # Dynamic SL/TP and Adaptive Drawdown (cutting-edge risk management)
+    dynamic_sltp_manager: Any = None
+    adaptive_drawdown_manager: Any = None
 
 
 class CthuluBootstrap:
@@ -479,6 +483,60 @@ class CthuluBootstrap:
         
         return monitor
     
+    def initialize_dynamic_sltp_manager(self, config: Dict[str, Any]) -> Optional[Any]:
+        """Initialize dynamic SL/TP manager for cutting-edge position management.
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            DynamicSLTPManager instance or None if disabled
+        """
+        try:
+            sltp_config = config.get('dynamic_sltp', {})
+            if not sltp_config.get('enabled', False):
+                self.logger.info("Dynamic SL/TP management disabled")
+                return None
+            
+            from cthulu.risk.dynamic_sltp import DynamicSLTPManager
+            manager = DynamicSLTPManager(sltp_config)
+            self.logger.info(
+                f"DynamicSLTPManager initialized: "
+                f"base_sl_atr={sltp_config.get('base_sl_atr_mult', 2.0)}, "
+                f"base_tp_atr={sltp_config.get('base_tp_atr_mult', 4.0)}"
+            )
+            return manager
+        except Exception:
+            self.logger.exception("Failed to initialize DynamicSLTPManager")
+            return None
+    
+    def initialize_adaptive_drawdown_manager(self, config: Dict[str, Any]) -> Optional[Any]:
+        """Initialize adaptive drawdown manager for dynamic risk management.
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            AdaptiveDrawdownManager instance or None if disabled
+        """
+        try:
+            dd_config = config.get('adaptive_drawdown', {})
+            if not dd_config.get('enabled', False):
+                self.logger.info("Adaptive drawdown management disabled")
+                return None
+            
+            from cthulu.risk.adaptive_drawdown import AdaptiveDrawdownManager
+            manager = AdaptiveDrawdownManager(dd_config)
+            self.logger.info(
+                f"AdaptiveDrawdownManager initialized: "
+                f"trailing_lock={dd_config.get('trailing_lock_pct', 0.5)}, "
+                f"survival_threshold={dd_config.get('survival_threshold_pct', 50.0)}%"
+            )
+            return manager
+        except Exception:
+            self.logger.exception("Failed to initialize AdaptiveDrawdownManager")
+            return None
+    
     def bootstrap(self, config_path: str, args: Any) -> SystemComponents:
         """Bootstrap the entire Cthulu system.
         
@@ -549,6 +607,10 @@ class CthuluBootstrap:
         exporter = self.initialize_prometheus_exporter(config)
         monitor = self.initialize_trade_monitor(position_tracker, position_lifecycle, trade_adoption_manager, config, ml_collector)
         
+        # Initialize cutting-edge risk management components
+        dynamic_sltp_manager = self.initialize_dynamic_sltp_manager(config)
+        adaptive_drawdown_manager = self.initialize_adaptive_drawdown_manager(config)
+        
         # Create components container
         components = SystemComponents(
             config=config,
@@ -567,7 +629,9 @@ class CthuluBootstrap:
             advisory_manager=advisory_manager,
             monitor=monitor,
             exporter=exporter,
-            strategy=strategy
+            strategy=strategy,
+            dynamic_sltp_manager=dynamic_sltp_manager,
+            adaptive_drawdown_manager=adaptive_drawdown_manager
         )
         # Expose trade_adoption_policy for convenience
         try:

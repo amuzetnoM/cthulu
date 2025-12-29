@@ -194,5 +194,24 @@
     "ml_enabled": true,
     "adaptive_parameters": true,
     "multi_timeframe_analysis": true
+  },
+  "dynamic_sltp": {
+    "enabled": true,
+    "base_sl_atr_mult": 2.0,
+    "base_tp_atr_mult": 4.0,
+    "breakeven_activation_pct": 0.5,
+    "breakeven_buffer_pct": 0.1,
+    "partial_tp_enabled": true,
+    "partial_tp_1_pct": 0.33,
+    "partial_tp_2_pct": 0.66,
+    "trail_activation_pct": 0.7,
+    "trail_distance_atr_mult": 1.5
+  },
+  "adaptive_drawdown": {
+    "enabled": true,
+    "trailing_lock_pct": 0.5,
+    "survival_threshold_pct": 50.0,
+    "critical_threshold_pct": 35.0,
+    "danger_threshold_pct": 20.0
   }
 }

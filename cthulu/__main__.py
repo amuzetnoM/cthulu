@@ -252,6 +252,8 @@ def main():
             ml_collector=components.ml_collector,
             advisory_manager=components.advisory_manager,
             exporter=components.exporter,
+            dynamic_sltp_manager=components.dynamic_sltp_manager,
+            adaptive_drawdown_manager=components.adaptive_drawdown_manager,
         )
         
         trading_loop = TradingLoop(trading_context)
