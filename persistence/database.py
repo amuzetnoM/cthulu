@@ -486,6 +486,7 @@ class Database:
         type: str,
         volume: float,
         open_price: float,
+        current_price: Optional[float] = None,
         sl: Optional[float] = None,
         tp: Optional[float] = None,
         open_time: Optional[datetime] = None,
@@ -515,18 +516,23 @@ class Database:
         try:
             cursor = self.conn.cursor()
             
+            # Default current_price to open_price if not provided
+            if current_price is None:
+                current_price = open_price
+            
             # Use INSERT OR REPLACE to handle updates
             cursor.execute("""
                 INSERT OR REPLACE INTO positions (
-                    ticket, symbol, type, volume, open_price, sl, tp,
+                    ticket, symbol, type, volume, open_price, current_price, sl, tp,
                     open_time, magic_number, comment, strategy_name, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 ticket,
                 symbol,
                 type,
                 volume,
                 open_price,
+                current_price,
                 sl,
                 tp,
                 self._normalize_timestamp(open_time or datetime.now()),

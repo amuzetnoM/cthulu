@@ -381,12 +381,16 @@ class PositionLifecycle:
             position: PositionInfo object to persist
         """
         try:
+            # Get current_price, defaulting to open_price if not available
+            current_price = getattr(position, 'current_price', None) or getattr(position, 'price_current', None) or position.open_price
+            
             self.db.save_position(
                 ticket=position.ticket,
                 symbol=position.symbol,
                 type=position.type,
                 volume=position.volume,
                 open_price=position.open_price,
+                current_price=current_price,
                 sl=position.sl,
                 tp=position.tp,
                 open_time=position.open_time,
