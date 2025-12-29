@@ -3,7 +3,8 @@ param(
     [int]$DurationMinutes = 90,
     [string]$LogPath = "logs\cthulu.log",
     [string]$ReportPath = "SYSTEM_REPORT.md",
-    [string]$CsvPath = "monitoring\metrics.csv"
+    [string]$CsvPath = "monitoring\metrics.csv",
+    [string]$PrometheusUrl = "http://127.0.0.1:8181/metrics"
 )
 
 $endTime = (Get-Date).AddMinutes($DurationMinutes)
@@ -11,11 +12,6 @@ if (-not (Test-Path (Split-Path $CsvPath -Parent))) { New-Item -ItemType Directo
 if (-not (Test-Path $CsvPath)) {
     "timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_total,prom_trades_total,prom_pnl_total,prom_uptime_seconds,restarts_total,log_bytes" | Out-File -FilePath $CsvPath -Encoding utf8
 }
-
-# Prometheus endpoint (if enabled in config)
-param(
-    [string]$PrometheusUrl = "http://127.0.0.1:8181/metrics"
-)
 
 function Get-PromMetric([string]$name) {
     try {
@@ -64,7 +60,7 @@ while ((Get-Date) -lt $endTime) {
     $ts = (Get-Date).ToString("o")
     # find cthulu python process(es)
     $procs = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and ($_.CommandLine -match '\-m\s+cthulu') }
-    $pids = $procs | ForEach-Object { $_.ProcessId } | Sort-Object | ForEach-Object { $_ } -join ";"
+    $pids = ($procs | ForEach-Object { $_.ProcessId } | Sort-Object) -join ";"
 
     $cpuDeltaTotal = 0.0
     $memTotalMb = 0

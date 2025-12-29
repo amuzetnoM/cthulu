@@ -16,7 +16,10 @@ import urllib.request
 import urllib.error
 import os
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
+
+def get_utc_now():
+    return datetime.now(timezone.utc)
 
 def post_trade(url, payload, token=None, timeout=5.0):
     data = json.dumps(payload).encode('utf-8')
@@ -44,7 +47,7 @@ def simulate_local_trade(cthulu_dir: str, payload: dict):
     log_path = os.path.join(cthulu_dir, 'logs', 'cthulu.log')
 
     # Create synthetic identifiers and prices
-    ts = datetime.utcnow().isoformat()
+    ts = get_utc_now().isoformat()
     signal_id = f"inject_{int(time.time())}_{random.randint(1000,9999)}"
     fill_price = round(100.0 + random.random() * 1000.0, 5)
     ticket = random.randint(500000000, 999999999)
@@ -69,7 +72,7 @@ def simulate_local_trade(cthulu_dir: str, payload: dict):
     try:
         conn = sqlite3.connect(db_path, timeout=5)
         cur = conn.cursor()
-        now = datetime.utcnow().isoformat()
+        now = get_utc_now().isoformat()
         # Insert a minimal signal row
         try:
             cur.execute("INSERT OR IGNORE INTO signals (signal_id, timestamp, symbol, timeframe, side, action, confidence, price, stop_loss, take_profit, reason, executed, execution_timestamp, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -91,9 +94,23 @@ def simulate_local_trade(cthulu_dir: str, payload: dict):
     return {'simulated': True, 'signal_id': signal_id, 'ticket': ticket, 'price': fill_price}
 
 
+INJECT_LOG = os.path.join(os.path.dirname(__file__), '..', 'logs', 'inject.log')
+
+def log_inject(msg):
+    ts = get_utc_now().isoformat()
+    line = f"{ts} [INJECT] {msg}"
+    print(line)
+    try:
+        os.makedirs(os.path.dirname(INJECT_LOG), exist_ok=True)
+        with open(INJECT_LOG, 'a', encoding='utf-8') as f:
+            f.write(line + '\n')
+    except:
+        pass
+
 def burst_mode(url, count=100, rate=5, symbol='BTCUSD#', token=None, simulate_dir='.'):
     delay = 1.0 / rate if rate > 0 else 0
     results = {'ok': 0, 'rejected': 0, 'errors': 0, 'simulated': 0}
+    log_inject(f"Burst start: count={count} rate={rate} symbol={symbol}")
     for i in range(count):
         side = random.choice(['BUY', 'SELL'])
         volume = round(random.uniform(0.01, 0.2), 4)
@@ -101,43 +118,55 @@ def burst_mode(url, count=100, rate=5, symbol='BTCUSD#', token=None, simulate_di
         body, status = post_trade(url, payload, token)
         if status == 200:
             results['ok'] += 1
+            log_inject(f"#{i+1} {side} {volume} -> OK")
         elif status == 403:
             results['rejected'] += 1
+            log_inject(f"#{i+1} {side} {volume} -> REJECTED (risk)")
         elif status is None:
             # RPC unreachable -> fallback to local simulation
             sim = simulate_local_trade(simulate_dir, payload)
             results['simulated'] += 1
+            log_inject(f"#{i+1} {side} {volume} -> SIMULATED (RPC down)")
         else:
             results['errors'] += 1
+            log_inject(f"#{i+1} {side} {volume} -> ERROR status={status}")
         if delay:
             time.sleep(delay)
+    log_inject(f"Burst complete: {results}")
     return results
 
 
 def pattern_mode(url, pattern: str, repeat: int, symbol='BTCUSD#', token=None, simulate_dir='.'):
     seq = [p.strip().upper() for p in pattern.split(',') if p.strip()]
     results = {'ok': 0, 'rejected': 0, 'errors': 0, 'simulated': 0}
-    for _ in range(repeat):
-        for p in seq:
+    log_inject(f"Pattern start: pattern={pattern} repeat={repeat} symbol={symbol}")
+    for r in range(repeat):
+        for idx, p in enumerate(seq):
             if p not in ('BUY', 'SELL'):
                 continue
             payload = {'symbol': symbol, 'side': p, 'volume': 0.01}
             body, status = post_trade(url, payload, token)
             if status == 200:
                 results['ok'] += 1
+                log_inject(f"R{r+1}/{idx+1} {p} 0.01 -> OK")
             elif status == 403:
                 results['rejected'] += 1
+                log_inject(f"R{r+1}/{idx+1} {p} 0.01 -> REJECTED")
             elif status is None:
                 sim = simulate_local_trade(simulate_dir, payload)
                 results['simulated'] += 1
+                log_inject(f"R{r+1}/{idx+1} {p} 0.01 -> SIMULATED")
             else:
                 results['errors'] += 1
+                log_inject(f"R{r+1}/{idx+1} {p} 0.01 -> ERROR {status}")
             time.sleep(0.2)
+    log_inject(f"Pattern complete: {results}")
     return results
 
 
 def manual_order(url, side, volume, symbol='BTCUSD#', token=None):
     payload = {'symbol': symbol, 'side': side, 'volume': volume}
+    log_inject(f"Manual order: {side} {volume} {symbol}")
     return post_trade(url, payload, token)
 
 

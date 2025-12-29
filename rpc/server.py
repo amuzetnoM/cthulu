@@ -23,11 +23,15 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
 
     def _send_json(self, status_code: int, payload: dict):
         body = json.dumps(payload).encode('utf-8')
-        self.send_response(status_code)
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Content-Length', str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(status_code)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except (ConnectionResetError, BrokenPipeError):
+            # Client disconnected early; silently ignore
+            pass
 
     def _unauthorized(self, msg='Unauthorized'):
         self._send_json(401, {'error': msg})

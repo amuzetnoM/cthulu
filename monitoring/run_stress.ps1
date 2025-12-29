@@ -1,5 +1,5 @@
 param(
-    [int]$DurationMinutes = 60,
+    [int]$DurationMinutes = 120,
     [string]$MindsetConfig = "config_ultra_aggressive.json",
     [string]$CthuluDir = "C:\workspace\cthulu",
     [string]$PythonExe = "python",
@@ -25,7 +25,7 @@ Stop-Cthulu
 Start-Sleep -Seconds 2
 
 # Start Cthulu
-$proc = Start-Process -FilePath $PythonExe -ArgumentList "-m cthulu --config config.json --enable-rpc --rpc-port 8278" -WorkingDirectory $CthuluDir -PassThru
+$proc = Start-Process -FilePath $PythonExe -ArgumentList "-m cthulu --config config.json --mindset ultra_aggressive --skip-setup" -WorkingDirectory $CthuluDir -PassThru
 Write-Host "Started Cthulu (PID $($proc.Id)) with mindset $MindsetConfig (RPC enabled)"
 Start-Sleep -Seconds 6
 
@@ -47,5 +47,5 @@ Start-Sleep -Seconds ($DurationMinutes * 60)
 Copy-Item $backup $cfg -Force
 Stop-Cthulu
 Start-Sleep -Seconds 2
-Start-Process -FilePath $PythonExe -ArgumentList "-m cthulu --config config.json --enable-rpc --rpc-port 8278" -WorkingDirectory $CthuluDir -PassThru | Out-Null
+Start-Process -FilePath $PythonExe -ArgumentList "-m cthulu --config config.json --skip-setup" -WorkingDirectory $CthuluDir -PassThru | Out-Null
 Write-Host "Stress test finished; config restored and system restarted (RPC enabled). Artifacts: monitoring/metrics.csv and SYSTEM_REPORT.md"

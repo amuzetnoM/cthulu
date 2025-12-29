@@ -153,8 +153,8 @@ ULTRA_AGGRESSIVE = {
         "emergency_stop_loss_pct": 12.0,
         "circuit_breaker_enabled": True,
         "circuit_breaker_threshold_pct": 7.0,
-        "max_spread_points": 2000.0,
-        "max_spread_pct": 0.02
+        "max_spread_points": 5000.0,
+        "max_spread_pct": 0.05
     }, 
     # Provide a full strategy replacement for dynamic mode
     "strategy_full": {
