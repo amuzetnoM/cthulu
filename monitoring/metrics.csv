@@ -626,3 +626,4 @@ timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_
 2025-12-29T20:01:29,4,Conservative,717.06,stable,0_errors,PID=22044,uptime=4min
 2025-12-29T20:04:47,8,Conservative,717.06,stable,0_errors,uptime=8min,NO_SIGNAL
 2025-12-29T20:06:01,9,Conservative,717.06,rpc_trade_executed,ticket=601778397,price=87379.90,status=FILLED
+2025-12-29T20:08:51,12,Conservative,717.06,stable,open_positions=1,uptime=12min,0_errors

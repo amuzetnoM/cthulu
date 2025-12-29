@@ -39,7 +39,9 @@
   "confidence_threshold": 0.55,
   "orphan_trades": {
     "enabled": true,
-    "adopt_symbols": ["BTCUSD#"],
+    "adopt_symbols": [
+      "BTCUSD#"
+    ],
     "ignore_symbols": [],
     "apply_exit_strategies": true,
     "max_adoption_age_hours": 0,
@@ -73,10 +75,33 @@
     }
   ],
   "indicators": [
-    {"type": "rsi", "params": {"period": 14}},
-    {"type": "macd", "params": {"fast_period": 12, "slow_period": 26, "signal_period": 9}},
-    {"type": "bollinger", "params": {"period": 20, "std_dev": 2.0}},
-    {"type": "adx", "params": {"period": 14}}
+    {
+      "type": "rsi",
+      "params": {
+        "period": 14
+      }
+    },
+    {
+      "type": "macd",
+      "params": {
+        "fast_period": 12,
+        "slow_period": 26,
+        "signal_period": 9
+      }
+    },
+    {
+      "type": "bollinger",
+      "params": {
+        "period": 20,
+        "std_dev": 2.0
+      }
+    },
+    {
+      "type": "adx",
+      "params": {
+        "period": 14
+      }
+    }
   ],
   "database": {
     "path": "cthulu_balanced.db"
@@ -106,7 +131,3 @@
     "danger_threshold_pct": 15.0
   }
 }
-
-
-
-

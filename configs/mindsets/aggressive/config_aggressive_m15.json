@@ -27,7 +27,9 @@
   },
   "orphan_trades": {
     "enabled": true,
-    "adopt_symbols": ["BTCUSD#"],
+    "adopt_symbols": [
+      "BTCUSD#"
+    ],
     "ignore_symbols": [],
     "apply_exit_strategies": true,
     "max_adoption_age_hours": 0,
@@ -116,12 +118,46 @@
     }
   ],
   "indicators": [
-    {"type": "rsi", "params": {"period": 14}},
-    {"type": "rsi", "params": {"period": 9}},
-    {"type": "macd", "params": {"fast_period": 12, "slow_period": 26, "signal_period": 9}},
-    {"type": "bollinger", "params": {"period": 20, "std_dev": 2.0}},
-    {"type": "adx", "params": {"period": 14}},
-    {"type": "supertrend", "params": {"period": 10, "multiplier": 3.0}}
+    {
+      "type": "rsi",
+      "params": {
+        "period": 14
+      }
+    },
+    {
+      "type": "rsi",
+      "params": {
+        "period": 9
+      }
+    },
+    {
+      "type": "macd",
+      "params": {
+        "fast_period": 12,
+        "slow_period": 26,
+        "signal_period": 9
+      }
+    },
+    {
+      "type": "bollinger",
+      "params": {
+        "period": 20,
+        "std_dev": 2.0
+      }
+    },
+    {
+      "type": "adx",
+      "params": {
+        "period": 14
+      }
+    },
+    {
+      "type": "supertrend",
+      "params": {
+        "period": 10,
+        "multiplier": 3.0
+      }
+    }
   ],
   "database": {
     "path": "cthulu_aggressive.db"
@@ -151,7 +187,3 @@
     "danger_threshold_pct": 18.0
   }
 }
-
-
-
-
