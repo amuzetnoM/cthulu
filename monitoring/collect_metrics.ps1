@@ -9,7 +9,30 @@ param(
 $endTime = (Get-Date).AddMinutes($DurationMinutes)
 if (-not (Test-Path (Split-Path $CsvPath -Parent))) { New-Item -ItemType Directory -Path (Split-Path $CsvPath -Parent) | Out-Null }
 if (-not (Test-Path $CsvPath)) {
-    "timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_total,restarts_total,log_bytes" | Out-File -FilePath $CsvPath -Encoding utf8
+    "timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_total,prom_trades_total,prom_pnl_total,prom_uptime_seconds,restarts_total,log_bytes" | Out-File -FilePath $CsvPath -Encoding utf8
+}
+
+# Prometheus endpoint (if enabled in config)
+param(
+    [string]$PrometheusUrl = "http://127.0.0.1:8181/metrics"
+)
+
+function Get-PromMetric([string]$name) {
+    try {
+        $resp = Invoke-RestMethod -Uri $PrometheusUrl -Method Get -TimeoutSec 3 -ErrorAction Stop
+        # resp is a string; parse lines
+        $lines = $resp -split "`n"
+        foreach ($l in $lines) {
+            $t = $l.Trim()
+            if ($t -match "^$name\s+([0-9eE+\.-]+)$") {
+                return [double]$Matches[1]
+            }
+        }
+        return $null
+    }
+    catch {
+        return $null
+    }
 }
 
 $lastErrorTotal = 0
