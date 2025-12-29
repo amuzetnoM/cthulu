@@ -25,8 +25,8 @@ Stop-Cthulu
 Start-Sleep -Seconds 2
 
 # Start Cthulu
-$proc = Start-Process -FilePath $PythonExe -ArgumentList "-m cthulu --config config.json" -WorkingDirectory $CthuluDir -PassThru
-Write-Host "Started Cthulu (PID $($proc.Id)) with mindset $MindsetConfig"
+$proc = Start-Process -FilePath $PythonExe -ArgumentList "-m cthulu --config config.json --enable-rpc --rpc-port 8278" -WorkingDirectory $CthuluDir -PassThru
+Write-Host "Started Cthulu (PID $($proc.Id)) with mindset $MindsetConfig (RPC enabled)"
 Start-Sleep -Seconds 6
 
 # Kick off collector and monitor if not running
@@ -47,5 +47,5 @@ Start-Sleep -Seconds ($DurationMinutes * 60)
 Copy-Item $backup $cfg -Force
 Stop-Cthulu
 Start-Sleep -Seconds 2
-Start-Process -FilePath $PythonExe -ArgumentList "-m cthulu --config config.json" -WorkingDirectory $CthuluDir -PassThru | Out-Null
-Write-Host "Stress test finished; config restored and system restarted. Artifacts: monitoring/metrics.csv and SYSTEM_REPORT.md"
+Start-Process -FilePath $PythonExe -ArgumentList "-m cthulu --config config.json --enable-rpc --rpc-port 8278" -WorkingDirectory $CthuluDir -PassThru | Out-Null
+Write-Host "Stress test finished; config restored and system restarted (RPC enabled). Artifacts: monitoring/metrics.csv and SYSTEM_REPORT.md"
