@@ -624,3 +624,5 @@ timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_
 2025-12-29T19:56:55,restart,Conservative,717.06,restarted_after_crash,PID=6400
 2025-12-29T19:58:58,2,Conservative,717.06,running,0,PID=async,uptime=2min
 2025-12-29T20:01:29,4,Conservative,717.06,stable,0_errors,PID=22044,uptime=4min
+2025-12-29T20:04:47,8,Conservative,717.06,stable,0_errors,uptime=8min,NO_SIGNAL
+2025-12-29T20:06:01,9,Conservative,717.06,rpc_trade_executed,ticket=601778397,price=87379.90,status=FILLED
