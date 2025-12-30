@@ -30,6 +30,7 @@ from config.mindsets import apply_mindset
 
 
 @dataclass
+@dataclass
 class SystemComponents:
     """Container for all initialized system components."""
     
@@ -62,6 +63,11 @@ class SystemComponents:
     # Dynamic SL/TP and Adaptive Drawdown (cutting-edge risk management)
     dynamic_sltp_manager: Any = None
     adaptive_drawdown_manager: Any = None
+    
+    # Observability collectors (in-process instances for real-time data feeding)
+    indicator_collector: Any = None
+    system_health_collector: Any = None
+    comprehensive_collector: Any = None
 
 
 class CthuluBootstrap:
