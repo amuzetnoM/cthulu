@@ -1,7 +1,7 @@
 # Cthulu System Report
 
-**Version:** 3.1
-**Last Updated:** 2025-12-30T22:15:00Z
+**Version:** 3.2
+**Last Updated:** 2025-12-31T03:20:00Z
 **Classification:** SOURCE OF TRUTH
 
 ---
@@ -13,6 +13,11 @@
 - Surgical precision in signal generation and execution
 - Dynamic equity/balance protection at all market conditions
 - Profit maximization with minimal drawdown
+
+**Observability Suite:** ✅ OPERATIONAL (All 3 services running)
+- Trading Metrics CSV: `observability/reporting/comprehensive_metrics.csv` (173 fields)
+- Indicator Metrics CSV: `monitoring/indicator_metrics.csv` (78 fields + scoring)
+- System Health CSV: `monitoring/system_health.csv` (80+ fields)
 
 **Phase 4:** Ultra-Aggressive ✅ COMPLETED (60+ min, 219 loops, +$291.48)
 **Phase 3:** Aggressive ✅ COMPLETED (60+ min, 121 loops, 0 errors)
