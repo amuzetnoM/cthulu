@@ -3,6 +3,10 @@ Observability Integration
 
 Provides integration hooks for starting/stopping the observability service
 as part of the Cthulu bootstrap process.
+
+SIMPLIFIED FLOW:
+Trading System → ComprehensiveCollector → CSV Export
+                                       → Prometheus Export (OPTIONAL)
 """
 
 import logging
@@ -13,9 +17,10 @@ from typing import Optional
 
 def start_observability_service(
     csv_path: Optional[str] = None,
+    update_interval: float = 1.0,
+    enable_prometheus: bool = False,
     prom_path: Optional[str] = None,
-    http_port: Optional[int] = None,
-    update_interval: float = 1.0
+    http_port: Optional[int] = None
 ) -> Optional[multiprocessing.Process]:
     """
     Start observability service as separate process during bootstrap.
@@ -23,11 +28,15 @@ def start_observability_service(
     This starts comprehensive metrics collection in a separate process
     that won't block the main trading loop.
     
+    CORE FEATURE: Real-time CSV export to comprehensive_metrics.csv
+    OPTIONAL: Prometheus export (only if enable_prometheus=True)
+    
     Args:
         csv_path: Path to CSV metrics file (default: observability/comprehensive_metrics.csv)
-        prom_path: Path to Prometheus metrics file (default: auto-detected)
-        http_port: Optional HTTP port for metrics endpoint (e.g., 8181)
-        update_interval: Seconds between metric updates
+        update_interval: Seconds between metric updates (default: 1.0)
+        enable_prometheus: Enable Prometheus export (default: False)
+        prom_path: Path to Prometheus metrics file (only if enable_prometheus=True)
+        http_port: Optional HTTP port for metrics endpoint
         
     Returns:
         Process object if started successfully, None otherwise
@@ -42,8 +51,8 @@ def start_observability_service(
             base_dir = Path(__file__).parent.parent / "observability"
             csv_path = str(base_dir / "comprehensive_metrics.csv")
         
-        if prom_path is None:
-            # Auto-detect based on OS
+        if prom_path is None and enable_prometheus:
+            # Auto-detect based on OS (only if Prometheus enabled)
             import os
             if os.name == 'nt':
                 prom_path = r"C:\workspace\cthulu\metrics\cthulu_metrics.prom"
@@ -52,7 +61,10 @@ def start_observability_service(
         
         logger.info("Starting observability service...")
         logger.info(f"  CSV: {csv_path}")
-        logger.info(f"  Prometheus: {prom_path}")
+        if enable_prometheus:
+            logger.info(f"  Prometheus: ENABLED → {prom_path}")
+        else:
+            logger.info(f"  Prometheus: DISABLED (use enable_prometheus=True to enable)")
         if http_port:
             logger.info(f"  HTTP: port {http_port}")
         
@@ -61,7 +73,8 @@ def start_observability_service(
             csv_path=csv_path,
             prom_path=prom_path,
             update_interval=update_interval,
-            http_port=http_port
+            http_port=http_port,
+            enable_prometheus=enable_prometheus
         )
         
         logger.info(f"Observability service started (PID: {process.pid})")

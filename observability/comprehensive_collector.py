@@ -350,64 +350,75 @@ class ComprehensiveMetricsCollector:
         except Exception as e:
             self.logger.error(f"Error writing to CSV: {e}")
     
-    def update_from_metrics_collector(self, metrics_collector):
+    def record_trade_completed(self, is_win: bool, pnl: float, duration_seconds: float):
         """
-        Update comprehensive metrics from existing MetricsCollector.
+        Record a completed trade.
         
         Args:
-            metrics_collector: Instance of observability.metrics.MetricsCollector
+            is_win: Whether the trade was profitable
+            pnl: Profit/loss amount
+            duration_seconds: Trade duration in seconds
         """
-        try:
-            with self.lock:
-                # Get performance metrics
-                perf = metrics_collector.get_metrics()
-                perf_dict = perf.to_dict()
-                
-                # Core trade statistics
-                self.current.total_trades = perf_dict.get('total_trades', 0)
-                self.current.winning_trades = perf_dict.get('winning_trades', 0)
-                self.current.losing_trades = perf_dict.get('losing_trades', 0)
-                self.current.active_positions = perf_dict.get('active_positions', 0)
-                self.current.positions_opened_total = perf_dict.get('positions_opened_total', 0)
-                
-                # P&L
-                self.current.gross_profit = perf_dict.get('gross_profit', 0.0)
-                self.current.gross_loss = perf_dict.get('gross_loss', 0.0)
-                self.current.net_profit = perf_dict.get('net_profit', 0.0)
-                self.current.realized_pnl = perf_dict.get('net_profit', 0.0)
-                self.current.avg_win = perf_dict.get('avg_win', 0.0)
-                self.current.avg_loss = perf_dict.get('avg_loss', 0.0)
-                
-                # Performance metrics
-                self.current.win_rate = perf_dict.get('win_rate', 0.0)
-                self.current.profit_factor = perf_dict.get('profit_factor', 0.0) or 0.0
-                self.current.expectancy = perf_dict.get('expectancy', 0.0) or 0.0
-                self.current.sharpe_ratio = perf_dict.get('sharpe_ratio', 0.0)
-                self.current.rolling_sharpe_50 = perf_dict.get('rolling_sharpe', 0.0) or 0.0
-                
-                # Risk metrics
-                self.current.max_drawdown_pct = perf_dict.get('max_drawdown_pct', 0.0)
-                self.current.max_drawdown_abs = perf_dict.get('max_drawdown_abs', 0.0)
-                self.current.max_drawdown_duration_seconds = perf_dict.get('max_drawdown_duration_seconds', 0.0)
-                self.current.current_drawdown_duration_seconds = perf_dict.get('current_drawdown_duration_seconds', 0.0)
-                
-                # Risk/reward
-                self.current.risk_reward_ratio = perf_dict.get('avg_risk_reward', 0.0) or 0.0
-                self.current.median_risk_reward = perf_dict.get('median_risk_reward', 0.0) or 0.0
-                self.current.rr_count = perf_dict.get('rr_count', 0)
-                
-                # Per-symbol aggregates (first symbol)
-                symbol_agg = perf_dict.get('symbol_aggregates', {})
-                if symbol_agg:
-                    first_symbol = list(symbol_agg.keys())[0]
-                    sym_data = symbol_agg[first_symbol]
-                    self.current.symbol_realized_pnl = sym_data.get('realized_pnl', 0.0)
-                    self.current.symbol_unrealized_pnl = sym_data.get('unrealized_pnl', 0.0)
-                    self.current.symbol_open_positions = sym_data.get('open_positions', 0)
-                    self.current.symbol_exposure_usd = sym_data.get('exposure', 0.0)
-                
-        except Exception as e:
-            self.logger.error(f"Error updating from MetricsCollector: {e}")
+        with self.lock:
+            # Update counts
+            self.current.total_trades += 1
+            if is_win:
+                self.current.winning_trades += 1
+                self.current.gross_profit += pnl
+            elif pnl < 0:
+                self.current.losing_trades += 1
+                self.current.gross_loss += abs(pnl)
+            else:
+                self.current.breakeven_trades += 1
+            
+            # Update P&L
+            self.current.net_profit = self.current.gross_profit - self.current.gross_loss
+            self.current.realized_pnl = self.current.net_profit
+            
+            # Update averages
+            if self.current.winning_trades > 0:
+                self.current.avg_win = self.current.gross_profit / self.current.winning_trades
+            if self.current.losing_trades > 0:
+                self.current.avg_loss = self.current.gross_loss / self.current.losing_trades
+            
+            # Win rate and profit factor
+            if self.current.total_trades > 0:
+                self.current.win_rate = self.current.winning_trades / self.current.total_trades
+            if self.current.gross_loss > 0:
+                self.current.profit_factor = self.current.gross_profit / self.current.gross_loss
+            
+            # Expectancy
+            if self.current.total_trades > 0:
+                avg_win = self.current.avg_win
+                avg_loss = self.current.avg_loss
+                win_rate = self.current.win_rate
+                self.current.expectancy = (win_rate * avg_win) - ((1 - win_rate) * avg_loss)
+            
+            # Trade duration
+            self.trade_durations.append(duration_seconds)
+            if self.trade_durations:
+                self.current.avg_trade_duration = sum(self.trade_durations) / len(self.trade_durations)
+                self.current.median_trade_duration = sorted(self.trade_durations)[len(self.trade_durations) // 2]
+                self.current.shortest_trade = min(self.trade_durations)
+                self.current.longest_trade = max(self.trade_durations)
+            
+            # Largest win/loss
+            if pnl > self.current.largest_win:
+                self.current.largest_win = pnl
+            if pnl < 0 and abs(pnl) > abs(self.current.largest_loss):
+                self.current.largest_loss = pnl
+    
+    def update_position_count(self, active_positions: int, long_count: int = 0, short_count: int = 0):
+        """Update position counts"""
+        with self.lock:
+            self.current.active_positions = active_positions
+            self.current.open_positions_count = active_positions
+            self.current.long_positions_count = long_count
+            self.current.short_positions_count = short_count
+            
+            # Track max concurrent
+            if active_positions > self.current.max_concurrent_positions:
+                self.current.max_concurrent_positions = active_positions
     
     def record_execution(self, execution_time_ms: float, slippage_pips: float = 0.0):
         """Record order execution metrics"""

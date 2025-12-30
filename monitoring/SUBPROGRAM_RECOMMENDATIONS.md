@@ -2,7 +2,9 @@
 
 ## Executive Summary
 
-This document identifies potential subprograms and utilities that would benefit Cthulu's daily operations. These recommendations focus on minimal code changes while providing maximum operational value.
+This document identifies potential subprograms and utilities that would benefit Cthulu's daily operations with the new simplified observability architecture. These recommendations focus on minimal code changes while leveraging the comprehensive CSV metrics as the single source of truth.
+
+**Updated for Observability System 2.0** - Direct integration with ComprehensiveMetricsCollector
 
 ---
 
@@ -20,9 +22,22 @@ This document identifies potential subprograms and utilities that would benefit 
 
 **Integration:**
 ```python
-# Minimal integration - read from existing state
-from cthulu.observability.metrics import MetricsCollector
-health = MetricsCollector.get_health_status()
+# Direct integration with ComprehensiveMetricsCollector
+from observability.comprehensive_collector import ComprehensiveMetricsCollector
+
+collector = ComprehensiveMetricsCollector()
+snapshot = collector.get_current_snapshot()
+
+# Access metrics directly
+health = {
+    'balance': snapshot.account_balance,
+    'equity': snapshot.account_equity,
+    'active_positions': snapshot.active_positions,
+    'mt5_connected': snapshot.mt5_connected,
+    'total_trades': snapshot.total_trades,
+    'win_rate': snapshot.win_rate,
+    'errors': snapshot.errors_total
+}
 ```
 
 **Benefit:** Quick troubleshooting and monitoring without opening full dashboard
@@ -31,20 +46,21 @@ health = MetricsCollector.get_health_status()
 
 ### 2. Trade Analysis Report Generator
 
-**Purpose:** Generate detailed post-mortem reports for trading sessions
+**Purpose:** Generate detailed post-mortem reports from comprehensive CSV
 
 **Features:**
-- Analyze win/loss patterns
-- Identify best/worst performing hours
+- Analyze win/loss patterns from comprehensive_metrics.csv
+- Identify best/worst performing hours/sessions
 - Calculate risk-adjusted returns
 - Export to PDF/HTML
 
 **Integration:**
 ```python
-# Uses existing persistence layer
-from cthulu.persistence.trade_history import TradeHistoryDB
-trades = TradeHistoryDB.get_session_trades(session_id)
-analyzer = TradeAnalyzer(trades)
+# Read from comprehensive CSV - single source of truth
+import pandas as pd
+
+df = pd.read_csv('observability/comprehensive_metrics.csv')
+analyzer = TradeAnalyzer(df)
 report = analyzer.generate_report()
 ```
 
