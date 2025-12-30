@@ -1,10 +1,22 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 5s
+  evaluation_interval: 5s
 
 scrape_configs:
   - job_name: 'cthulu'
     static_configs:
-      - targets: ['host.docker.internal:8181']
+      - targets: ['localhost:8181']
+        labels:
+          env: 'production'
+          app: 'cthulu'
+
+  - job_name: 'cthulu_textfile'
+    static_configs:
+      - targets: ['localhost:9100']
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'cthulu_.*'
+        action: keep
 
   - job_name: 'prometheus'
     static_configs:
@@ -12,4 +24,4 @@ scrape_configs:
 
   - job_name: 'node_exporter'
     static_configs:
-      - targets: ['node_exporter:9100']
+      - targets: ['localhost:9100']
