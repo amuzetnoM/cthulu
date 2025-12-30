@@ -52,7 +52,8 @@ for ($i = 0; $i -lt $maxRetries; $i++) {
             Write-Host "RPC server is ready!"
             break
         }
-    } catch {
+    }
+    catch {
         Write-Host "Waiting for RPC server... (attempt $($i + 1)/$maxRetries)"
         Start-Sleep -Seconds 3
     }
@@ -98,7 +99,8 @@ switch ($InjectionMode) {
         $remainingMinutes = $DurationMinutes - 15  # Assume indicator tests take ~15 min
         if ($remainingMinutes -gt 0) {
             $injectorArgs = "monitoring\inject_signals.py --mode realistic --duration $remainingMinutes --intensity $Intensity --symbol BTCUSD#"
-        } else {
+        }
+        else {
             $injectorArgs = $null
         }
     }

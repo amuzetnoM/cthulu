@@ -192,7 +192,8 @@ function Run-PhaseMonitoring {
                 Write-Log "WARNING: Drawdown exceeds 30%! Triggering defensive mode." "WARN"
             }
             
-        } catch {
+        }
+        catch {
             Write-Log "Error getting metrics: $_" "ERROR"
             $errorCount++
         }
@@ -200,9 +201,9 @@ function Run-PhaseMonitoring {
         # Every 5 minutes, update system report
         if ([math]::Round(((Get-Date) - $startTime).TotalMinutes) % 5 -eq 0) {
             $metricsHash = @{
-                balance = $metrics.balance
-                equity = $metrics.equity
-                positions = $metrics.positions
+                balance      = $metrics.balance
+                equity       = $metrics.equity
+                positions    = $metrics.positions
                 floating_pnl = $metrics.floating_pnl
                 margin_level = $metrics.margin_level
             }
@@ -213,9 +214,9 @@ function Run-PhaseMonitoring {
     # Phase complete
     $finalMetrics = Get-AccountMetrics
     $metricsHash = @{
-        balance = $finalMetrics.balance
-        equity = $finalMetrics.equity
-        positions = $finalMetrics.positions
+        balance      = $finalMetrics.balance
+        equity       = $finalMetrics.equity
+        positions    = $finalMetrics.positions
         floating_pnl = $finalMetrics.floating_pnl
         margin_level = $finalMetrics.margin_level
     }
@@ -226,8 +227,8 @@ function Run-PhaseMonitoring {
     return @{
         FinalBalance = $finalMetrics.balance
         PeakDrawdown = $peakDrawdown
-        ErrorCount = $errorCount
-        Process = $CthuluProcess
+        ErrorCount   = $errorCount
+        Process      = $CthuluProcess
     }
 }
 
