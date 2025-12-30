@@ -1,6 +1,6 @@
 # Cthulu System Report
 
-**Version:** 3.3
+****Version:** 3.3
 **Last Updated:** 2025-12-30T22:45:00Z
 **Classification:** SOURCE OF TRUTH
 
@@ -61,131 +61,7 @@ The observability suite has been fully integrated into the main Cthulu bootstrap
 - Run 30-minute test to verify all CSV files collect data properly
 - Ensure main trading loop fires up observability automatically
 - Continue precision tuning toward A+ grade
-
----
-
-## 📊 OVERALL SYSTEM GRADE
-
-### Current Grade: B+ (85%)
-
-| Component | Grade | Score | Status |
-|-----------|-------|-------|--------|
-| Signal Generation | A | 95% | ✅ |
-| Order Execution | A- | 92% | ✅ |
-| Risk Management | A+ | 100% | ✅ |
-| Drawdown Control | B+ | 85% | ✅ IMPROVED |
-| Equity Protection | A- | 90% | ✅ NEW |
-| Profit Factor | B | 80% | ⚠️ |
-| Uptime Stability | A+ | 100% | ✅ |
-| **COMPOSITE** | **B+** | **85%** | **TARGET: A+** |
-
-````
-### GRADING LEGEND
-
-Grade   Range    Meaning                         Deploy Status
-─────────────────────────────────────────────────────────────────
-A+      97-100%  EXCEPTIONAL - Market destroyer  ✅ Full confidence
-A       93-96%   EXCELLENT - Production ready    ✅ Minor tuning
-A-      90-92%   VERY GOOD - Strong performer    ✅ Fine tuning
-B+      85-89%   GOOD - Solid foundation         ⚠️ Improvements needed
-B       80-84%   ACCEPTABLE - Functional         ⚠️ Enhancements needed
-B-      75-79%   MINIMUM for live trading        🔴 Work required
-C       70-74%   NEEDS WORK                      🔴 Major fixes
-D       60-69%   POOR                            🔴 Overhaul
-F       <60%     CRITICAL                        🔴 Do not deploy
-
-````
-
----
-
-## 🔥 4-HOUR PRECISION TUNING TEST
-
-### Test Timeline
-
-| Phase | Mindset | Duration | Status | Key Metric |
-|-------|---------|----------|--------|------------|
-| 1 | Conservative | 60 min | ✅ COMPLETE | 0 errors |
-| 2 | Balanced | 60 min | ✅ COMPLETE | 81 loops, +$172 floating, 0 errors |
-| 3 | Aggressive | 60 min | ✅ COMPLETE | 121 loops, +$204 floating, 0 errors |
-| 4 | Ultra-Aggressive | 60 min | ✅ COMPLETE | 219 loops, +$291 floating, 1 minor error |
-
-### Phase 4 Summary (Ultra-Aggressive) - FINAL
-- **Duration:** 60+ minutes
-- **Starting Balance:** $597.46
-- **Final Balance:** $600.72 (+$3.26 realized)
-- **Peak Equity:** $892.20 (+$291.48)
-- **Loop Count:** 219
-- **Errors:** 1 (minor TradeRecord parameter issue)
-- **Positions:** 31 (all profitable)
-- **NEW TRADE PLACED:** ✅ Yes - and closed in profit!
-- **Grade:** A (one minor fixable error)
-
-### 🏆 4-HOUR STRESS TEST COMPLETE
-- **Total Runtime:** 240+ minutes
-- **Total Loops:** 400+
-- **Fatal Errors:** 0
-- **Balance Growth:** +$3.26 realized
-- **Peak Floating:** +$291.48
-- **System Grade:** A+
-
-### Phase 1 Summary (Conservative)
-- **Duration:** 60+ minutes
-- **Balance Change:** Starting from $717.06
-- **Errors:** 0
-- **Signals Generated:** Limited (conservative criteria)
-- **RPC Test:** ✅ Order #601872264 filled
-- **Grade:** A- (stable but conservative)
-
----
-
-## 🛡️ IMPLEMENTED PROTECTIONS
-
-### 1. Equity Curve Management (NEW)
-- **File:** 
-isk/equity_curve_manager.py
-- **Features:**
-  - Real-time balance/equity monitoring
-  - Trailing equity protection (locks profits)
-  - Velocity-based stop tightening
-  - State detection: ASCENDING, DESCENDING, BREAKDOWN, RECOVERY
-  - Emergency close-all at critical levels
-
-### 2. Adaptive Drawdown Management
-- **File:** 
-isk/adaptive_drawdown.py
-- **States:** NORMAL → CAUTION → WARNING → DANGER → CRITICAL → SURVIVAL
-- **Survival Mode:** Activates at 50%+ drawdown
-
-### 3. Dynamic SL/TP Management
-- **File:** 
-isk/dynamic_sltp.py
-- **Features:**
-  - ATR-based stop placement
-  - Breakeven activation
-  - Trailing stops
-  - Partial take-profit
-
-### 4. Negative Balance Protection
-- **Location:** 
-isk/evaluator.py
-- **Behavior:** Blocks all trades if balance ≤ 0
-
----
-
-## 📈 PERFORMANCE METRICS
-
-### Financial Summary
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| Starting Balance | $1,000.00 | - | Baseline |
-| Current Balance | $717.06 | >$1,000 | 🔴 -28.3% |
-| Peak Balance | $2,018.00 | - | +101.8% |
-| Max Drawdown | 65.3% | <20% | 🔴 Too high |
-
-### Key Ratios (To Be Updated)
-| Metric | Value | Grade |
-|--------|-------|-------|
-| Win Rate | TBD | - |
+TBD | - |
 | Profit Factor | TBD | - |
 | Sharpe Ratio | TBD | - |
 | Sortino Ratio | TBD | - |
@@ -307,30 +183,7 @@ Three canonical CSV outputs - single sources of truth:
 | monitoring/indicator_collector.py | Indicator metrics with scoring |
 | monitoring/system_health_collector.py | System health metrics |
 | monitoring/indicator_config.json | Extensible indicator configuration |
-
----
-
-*Last updated: 2025-12-30T11:42:29Z*
-*System: Cthulu v2.5*
-
----
-
-## 🔄 PHASE 2 LIVE SESSION
-
-**Started:** 2025-12-30T11:45:23Z
-**Mindset:** Balanced (M15)
-**Initial Balance:** $707.85
-**Adopted Trades:** 43
-**MT5 Account:** ****0069
-
-### System Status
-| Component | Status | Details |
-|-----------|--------|---------|
-| MT5 Connection | ✅ | XMGlobal-MT5 6 |
-| RPC Server | ✅ | Port 8278 |
-| Metrics Server | ✅ | Port 8181 |
-| DynamicSLTP | ✅ | 2.5 ATR SL, 5.0 ATR TP |
-| AdaptiveDrawdown | ✅ | 40% survival threshold |
+Drawdown | ✅ | 40% survival threshold |
 | TradeMonitor | ✅ | 5s poll interval |
 | Strategy | ✅ | EMA Crossover (9/21) |
 

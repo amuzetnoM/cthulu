@@ -657,37 +657,6 @@ class CthuluBootstrap:
         except Exception:
             self.logger.debug('RPC configuration parsing failed; skipping RPC startup')
 
-        # Start observability suite (decoupled monitoring/metrics collection)
-        try:
-            obs_cfg = config.get('observability', {}) if isinstance(config, dict) else {}
-            # By default, start observability unless explicitly disabled
-            if obs_cfg.get('enabled', True):
-                try:
-                    from observability.integration import start_observability_service
-                    from monitoring.service import start_monitoring_services
-                    
-                    # Start comprehensive observability service (trading metrics)
-                    obs_process = start_observability_service(
-                        enable_prometheus=obs_cfg.get('prometheus', {}).get('enabled', False)
-                    )
-                    if obs_process:
-                        components.observability_process = obs_process
-                        self.logger.info(f"Observability service started (PID: {obs_process.pid})")
-                    
-                    # Start monitoring services (indicators + system health)
-                    mon_processes = start_monitoring_services()
-                    if mon_processes:
-                        components.monitoring_processes = mon_processes
-                        self.logger.info(f"Monitoring services started: {len(mon_processes)} processes")
-                        
-                except Exception as e:
-                    self.logger.warning(f'Failed to start observability suite: {e}')
-                    self.logger.info('Continuing without observability suite')
-            else:
-                self.logger.info('Observability suite disabled via config')
-        except Exception:
-            self.logger.debug('Observability configuration parsing failed; skipping observability startup')
-
         self.components = components
         self.logger.info("System bootstrap complete")
         
