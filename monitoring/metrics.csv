@@ -659,3 +659,15 @@ timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_
 2025-12-30 18:38:55,,,,,,,aggressive,phase3_loop101
 2025-12-30 18:43:55,,,,,,,aggressive,phase3_loop111
 2025-12-30 18:48:55,,,,,,,aggressive,phase3_loop121
+2025-12-30 18:55:04,,,,,,,ultra_aggressive,phase4_loop22
+2025-12-30 19:00:04,,,,,,,ultra_aggressive,phase4_loop42
+2025-12-30 19:05:04,,,,,,,ultra_aggressive,phase4_loop62
+2025-12-30 19:10:05,,,,,,,ultra_aggressive,phase4_loop82
+2025-12-30 19:15:05,,,,,,,ultra_aggressive,phase4_loop102
+2025-12-30 19:20:05,,,,,,,ultra_aggressive,phase4_loop122
+2025-12-30 19:25:05,,,,,,,ultra_aggressive,phase4_loop142
+2025-12-30 19:30:05,,,,,,,ultra_aggressive,phase4_loop162
+2025-12-30 19:35:05,,,,,,,ultra_aggressive,phase4_loop180
+2025-12-30 19:40:06,,,,,,,ultra_aggressive,phase4_loop195
+2025-12-30 19:45:06,,,,,,,ultra_aggressive,phase4_loop207
+2025-12-30 19:50:06,,,,,,,ultra_aggressive,phase4_loop219
