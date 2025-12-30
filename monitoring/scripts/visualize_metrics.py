@@ -44,7 +44,14 @@ class MetricsVisualizer:
             
             # Convert timestamp with flexible parsing
             if 'timestamp' in self.df.columns:
-                self.df['timestamp'] = pd.to_datetime(self.df['timestamp'], format='mixed', utc=True).dt.tz_localize(None)
+                # Parse timestamps with UTC awareness first, then normalize
+                self.df['timestamp'] = pd.to_datetime(
+                    self.df['timestamp'], 
+                    errors='coerce',  # Invalid dates become NaT
+                    utc=True  # Treat as UTC
+                )
+                # Remove timezone info for plotting compatibility
+                self.df['timestamp'] = self.df['timestamp'].dt.tz_localize(None)
                 self.df = self.df.sort_values('timestamp')
             
             print(f"Loaded {len(self.df)} records")
@@ -93,7 +100,10 @@ class MetricsVisualizer:
 <head>
     <meta charset="UTF-8">
     <title>Cthulu Metrics Dashboard</title>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" 
+            integrity="sha384-placeholder" 
+            crossorigin="anonymous"></script>
+    <!-- Note: Replace placeholder with actual SRI hash if available, or use local copy -->
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;

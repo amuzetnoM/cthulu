@@ -28,7 +28,9 @@ class MetricsProcessor:
         self.clean_df = None
         self.summary_df = None
         self.trading_sessions = []
-        
+        self.skipped_lines = 0
+        self.parse_errors = 0
+    
     def load_metrics(self):
         """Load and parse the raw metrics CSV"""
         print(f"Loading metrics from {self.input_file}...")
@@ -92,11 +94,19 @@ class MetricsProcessor:
                     records.append(record)
                     
             except Exception as e:
-                # Silently continue on parse errors
+                # Count parse errors for visibility
+                self.parse_errors += 1
+                if self.parse_errors <= 5:  # Log first few errors
+                    print(f"  Warning: Could not parse row {idx}: {e}")
                 continue
         
         self.clean_df = pd.DataFrame(records)
+        
+        # Report parsing statistics
         print(f"Parsed {len(self.clean_df)} valid records")
+        if self.parse_errors > 0:
+            print(f"  Skipped {self.parse_errors} rows due to parse errors")
+        
         return True
     
     def _parse_timestamp(self, timestamp_str):
@@ -213,6 +223,13 @@ class MetricsProcessor:
         except:
             return 0.0
     
+    def _normalize_timestamp(self, timestamps):
+        """Normalize timestamps to timezone-naive for comparison"""
+        # Convert to datetime if needed
+        ts = pd.to_datetime(timestamps, errors='coerce', utc=True)
+        # Remove timezone info for Excel/comparison compatibility
+        return ts.dt.tz_localize(None)
+    
     def create_summary(self):
         """Create summary statistics"""
         print("Creating summary statistics...")
@@ -237,8 +254,8 @@ class MetricsProcessor:
         # Time range
         if 'timestamp' in metrics_df.columns:
             timestamps = metrics_df['timestamp'].dropna()
-            # Remove timezone info for comparison
-            timestamps = pd.to_datetime(timestamps, utc=True).dt.tz_localize(None)
+            # Normalize timestamps for comparison
+            timestamps = self._normalize_timestamp(timestamps)
             if len(timestamps) > 0:
                 summary['Metric'].append('Time Range Start')
                 summary['Value'].append(timestamps.min())
@@ -330,7 +347,7 @@ class MetricsProcessor:
                     # Convert timestamp columns to timezone-naive
                     for col in summary_copy.columns:
                         if summary_copy[col].dtype == 'datetime64[ns, UTC]':
-                            summary_copy[col] = summary_copy[col].dt.tz_localize(None)
+                            summary_copy[col] = self._normalize_timestamp(summary_copy[col])
                     summary_copy.to_excel(writer, sheet_name='Summary', index=False)
                 
                 # Clean metrics
@@ -342,7 +359,7 @@ class MetricsProcessor:
                     # Remove timezone from timestamp columns
                     for df in [metrics, events]:
                         if len(df) > 0 and 'timestamp' in df.columns:
-                            df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True).dt.tz_localize(None)
+                            df['timestamp'] = self._normalize_timestamp(df['timestamp'])
                     
                     if len(metrics) > 0:
                         metrics.to_excel(writer, sheet_name='Metrics', index=False)
