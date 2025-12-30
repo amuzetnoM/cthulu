@@ -663,6 +663,57 @@ class CthuluBootstrap:
         except Exception:
             self.logger.debug('RPC configuration parsing failed; skipping RPC startup')
 
+<<<<<<< Updated upstream
+=======
+        # Start observability suite (decoupled monitoring/metrics collection)
+        try:
+            obs_cfg = config.get('observability', {}) if isinstance(config, dict) else {}
+            # By default, start observability unless explicitly disabled
+            if obs_cfg.get('enabled', True):
+                try:
+                    from observability.integration import start_observability_service
+                    
+                    # Start comprehensive observability service (trading metrics) as separate process
+                    obs_process = start_observability_service(
+                        enable_prometheus=obs_cfg.get('prometheus', {}).get('enabled', False)
+                    )
+                    if obs_process:
+                        components.observability_process = obs_process
+                        self.logger.info(f"Observability service started (PID: {obs_process.pid})")
+                    
+                    # NOTE: We use IN-PROCESS collectors instead of separate processes
+                    # This allows the trading loop to feed real-time data to the collectors
+                    # The separate process collectors don't have access to trading loop data
+                    
+                    # Create in-process indicator collector for real-time data feeding from trading loop
+                    try:
+                        from monitoring.indicator_collector import IndicatorMetricsCollector
+                        indicator_collector = IndicatorMetricsCollector(update_interval=1.0)
+                        indicator_collector.start()
+                        components.indicator_collector = indicator_collector
+                        self.logger.info("In-process indicator collector started for real-time data")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to start in-process indicator collector: {e}")
+                    
+                    # Create in-process system health collector for real-time data feeding
+                    try:
+                        from monitoring.system_health_collector import SystemHealthCollector
+                        system_health_collector = SystemHealthCollector(update_interval=5.0)
+                        system_health_collector.start()
+                        components.system_health_collector = system_health_collector
+                        self.logger.info("In-process system health collector started for real-time data")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to start in-process system health collector: {e}")
+                        
+                except Exception as e:
+                    self.logger.warning(f'Failed to start observability suite: {e}')
+                    self.logger.info('Continuing without observability suite')
+            else:
+                self.logger.info('Observability suite disabled via config')
+        except Exception:
+            self.logger.debug('Observability configuration parsing failed; skipping observability startup')
+
+>>>>>>> Stashed changes
         self.components = components
         self.logger.info("System bootstrap complete")
         
