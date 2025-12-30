@@ -73,16 +73,30 @@ Runs as independent process to avoid blocking main trading loop.
 
 ### Standalone Usage
 
+**Simplified CLI:**
+
 ```bash
-# CSV only (recommended for most use cases)
+# CSV only (writes to observability/reporting/)
+python -m observability.service --csv
+
+# CSV + Prometheus on port 8181 (auto-enabled, writes to prometheus/tmp/)
+python -m observability.service --csv --8181
+
+# CSV + Prometheus + custom prometheus output
+python -m observability.service --csv --prom --8181
+
+# Other port options
+python -m observability.service --csv --8182  # Port 8182
+python -m observability.service --csv --8183  # Port 8183
+```
+
+**Legacy CLI (still supported):**
+
+```bash
+# CSV with explicit path
 python -m observability.service --csv observability/comprehensive_metrics.csv
 
-# CSV + Prometheus (if you need Grafana dashboards)
-python -m observability.service --csv observability/comprehensive_metrics.csv \
-                                 --prometheus /tmp/cthulu_metrics.prom \
-                                 --enable-prometheus
-
-# CSV + Prometheus + HTTP endpoint
+# CSV + Prometheus with explicit paths
 python -m observability.service --csv observability/comprehensive_metrics.csv \
                                  --prometheus /tmp/cthulu_metrics.prom \
                                  --enable-prometheus \

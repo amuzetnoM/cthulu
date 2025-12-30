@@ -222,23 +222,66 @@ def start_observability_process(csv_path: str = None, prom_path: str = None,
 
 def main():
     """Main entry point for standalone execution"""
-    parser = argparse.ArgumentParser(description='Cthulu Observability Service')
-    parser.add_argument('--csv', help='CSV metrics file path')
-    parser.add_argument('--prometheus', help='Prometheus metrics file path')
-    parser.add_argument('--interval', type=float, default=1.0, help='Update interval (seconds)')
-    parser.add_argument('--http-port', type=int, help='HTTP metrics endpoint port')
-    parser.add_argument('--enable-prometheus', action='store_true', 
-                       help='Enable Prometheus export (default: disabled)')
+    parser = argparse.ArgumentParser(
+        description='Cthulu Observability Service - Simplified CLI',
+        epilog="""
+Examples:
+  python -m observability.service --csv
+    (CSV only, writes to observability/reporting/)
+  
+  python -m observability.service --csv --8181
+    (CSV + Prometheus on port 8181)
+  
+  python -m observability.service --csv --prom --8181
+    (CSV + Prometheus with custom paths)
+        """
+    )
+    parser.add_argument('--csv', action='store_true', 
+                       help='Enable CSV export (auto-path: observability/reporting/)')
+    parser.add_argument('--prom', action='store_true',
+                       help='Enable Prometheus export (auto-path: prometheus/tmp/)')
+    parser.add_argument('--interval', type=float, default=1.0, 
+                       help='Update interval in seconds (default: 1.0)')
+    
+    # Port-based flags for Prometheus endpoints
+    parser.add_argument('--8181', action='store_const', const=8181, dest='port',
+                       help='Enable Prometheus on port 8181')
+    parser.add_argument('--8182', action='store_const', const=8182, dest='port',
+                       help='Enable Prometheus on port 8182')
+    parser.add_argument('--8183', action='store_const', const=8183, dest='port',
+                       help='Enable Prometheus on port 8183')
     
     args = parser.parse_args()
     
+    # Determine paths
+    csv_path = None
+    prom_path = None
+    enable_prometheus = False
+    http_port = args.port
+    
+    if args.csv:
+        # Auto-path for CSV in observability/reporting/
+        reporting_dir = Path(__file__).parent / "reporting"
+        reporting_dir.mkdir(exist_ok=True)
+        csv_path = str(reporting_dir / "comprehensive_metrics.csv")
+    
+    if args.prom or args.port:
+        # Auto-path for Prometheus in prometheus/tmp/
+        prom_dir = Path(__file__).parent.parent / "prometheus" / "tmp"
+        prom_dir.mkdir(parents=True, exist_ok=True)
+        prom_path = str(prom_dir / "cthulu_metrics.prom")
+        enable_prometheus = True
+    
+    if not args.csv and not args.prom and not args.port:
+        parser.error("At least one of --csv, --prom, or a port flag (--8181) must be specified")
+    
     # Create service
     service = ObservabilityService(
-        csv_path=args.csv,
-        prom_path=args.prometheus,
+        csv_path=csv_path,
+        prom_path=prom_path,
         update_interval=args.interval,
-        http_port=args.http_port,
-        enable_prometheus=args.enable_prometheus
+        http_port=http_port,
+        enable_prometheus=enable_prometheus
     )
     
     # Run

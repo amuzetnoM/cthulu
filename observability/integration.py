@@ -46,18 +46,18 @@ def start_observability_service(
     try:
         from observability.service import start_observability_process
         
-        # Set defaults
+        # Set defaults with simplified paths
         if csv_path is None:
-            base_dir = Path(__file__).parent.parent / "observability"
-            csv_path = str(base_dir / "comprehensive_metrics.csv")
+            # Auto-path: observability/reporting/
+            reporting_dir = Path(__file__).parent / "reporting"
+            reporting_dir.mkdir(exist_ok=True)
+            csv_path = str(reporting_dir / "comprehensive_metrics.csv")
         
         if prom_path is None and enable_prometheus:
-            # Auto-detect based on OS (only if Prometheus enabled)
-            import os
-            if os.name == 'nt':
-                prom_path = r"C:\workspace\cthulu\metrics\cthulu_metrics.prom"
-            else:
-                prom_path = "/tmp/cthulu_metrics.prom"
+            # Auto-path: prometheus/tmp/ (only if Prometheus enabled)
+            prom_dir = Path(__file__).parent.parent / "prometheus" / "tmp"
+            prom_dir.mkdir(parents=True, exist_ok=True)
+            prom_path = str(prom_dir / "cthulu_metrics.prom")
         
         logger.info("Starting observability service...")
         logger.info(f"  CSV: {csv_path}")
