@@ -656,3 +656,6 @@ timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_
 2025-12-30 18:23:54,,,,,,,aggressive,phase3_loop71
 2025-12-30 18:28:54,,,,,,,aggressive,phase3_loop81
 2025-12-30 18:33:55,,,,,,,aggressive,phase3_loop91
+2025-12-30 18:38:55,,,,,,,aggressive,phase3_loop101
+2025-12-30 18:43:55,,,,,,,aggressive,phase3_loop111
+2025-12-30 18:48:55,,,,,,,aggressive,phase3_loop121
