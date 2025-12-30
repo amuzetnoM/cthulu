@@ -664,9 +664,8 @@ class CthuluBootstrap:
             if obs_cfg.get('enabled', True):
                 try:
                     from observability.integration import start_observability_service
-                    from monitoring.service import start_monitoring_services
                     
-                    # Start comprehensive observability service (trading metrics)
+                    # Start comprehensive observability service (trading metrics) as separate process
                     obs_process = start_observability_service(
                         enable_prometheus=obs_cfg.get('prometheus', {}).get('enabled', False)
                     )
@@ -674,11 +673,28 @@ class CthuluBootstrap:
                         components.observability_process = obs_process
                         self.logger.info(f"Observability service started (PID: {obs_process.pid})")
                     
-                    # Start monitoring services (indicators + system health)
-                    mon_processes = start_monitoring_services()
-                    if mon_processes:
-                        components.monitoring_processes = mon_processes
-                        self.logger.info(f"Monitoring services started: {len(mon_processes)} processes")
+                    # NOTE: We use IN-PROCESS collectors instead of separate processes
+                    # This allows the trading loop to feed real-time data to the collectors
+                    
+                    # Create in-process indicator collector for real-time data feeding
+                    try:
+                        from monitoring.indicator_collector import IndicatorMetricsCollector
+                        indicator_collector = IndicatorMetricsCollector(update_interval=1.0)
+                        indicator_collector.start()
+                        components.indicator_collector = indicator_collector
+                        self.logger.info("In-process indicator collector started for real-time data")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to start in-process indicator collector: {e}")
+                    
+                    # Create in-process system health collector for real-time data feeding
+                    try:
+                        from monitoring.system_health_collector import SystemHealthCollector
+                        system_health_collector = SystemHealthCollector(update_interval=5.0)
+                        system_health_collector.start()
+                        components.system_health_collector = system_health_collector
+                        self.logger.info("In-process system health collector started for real-time data")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to start in-process system health collector: {e}")
                         
                 except Exception as e:
                     self.logger.warning(f'Failed to start observability suite: {e}')

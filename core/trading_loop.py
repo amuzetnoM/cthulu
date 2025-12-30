@@ -82,6 +82,10 @@ class TradingLoopContext:
     dynamic_sltp_manager: Optional[Any] = None  # Dynamic SL/TP management
     adaptive_drawdown_manager: Optional[Any] = None  # Adaptive drawdown management
     
+    # Observability collectors (in-process for real-time data)
+    indicator_collector: Optional[Any] = None
+    system_health_collector: Optional[Any] = None
+    
     # CLI args
     args: Optional[Any] = None
 
@@ -769,6 +773,10 @@ class TradingLoop:
                 self.ctx.logger.debug(f"Indicator-related columns: {indicator_cols}")
             except Exception:
                 pass
+            
+            # Feed indicator data to in-process collector for real-time monitoring
+            self._update_indicator_collector(df)
+            
             return df
         
         except Exception as e:
@@ -1428,7 +1436,49 @@ class TradingLoop:
                 self.ctx.logger.exception('Failed to sync position summary into metrics')
             
             self.ctx.logger.info(f"Position stats: {stats}")
-
-
-
+    
+    def _update_indicator_collector(self, df: pd.DataFrame):
+        """Update the indicator collector with real-time indicator data."""
+        if not self.ctx.indicator_collector:
+            return
+        
+        try:
+            current_bar = df.iloc[-1]
+            updates = {
+                'symbol': self.ctx.symbol,
+                'timeframe': str(self.ctx.timeframe),
+                'price_current': float(current_bar.get('close', 0)),
+            }
+            
+            # RSI
+            for col in df.columns:
+                if 'rsi' in col.lower():
+                    val = current_bar.get(col)
+                    if val is not None and not pd.isna(val):
+                        updates['rsi_value'] = float(val)
+                        updates['rsi_overbought'] = float(val) >= 70
+                        updates['rsi_oversold'] = float(val) <= 30
+                    break
+            
+            # ADX
+            adx_val = current_bar.get('adx') or current_bar.get('runtime_adx')
+            if adx_val is not None and not pd.isna(adx_val):
+                updates['adx_value'] = float(adx_val)
+                updates['adx_trend_strength'] = 'strong' if float(adx_val) >= 50 else ('moderate' if float(adx_val) >= 25 else 'weak')
+            
+            # ATR
+            atr_val = current_bar.get('atr') or current_bar.get('runtime_atr')
+            if atr_val is not None and not pd.isna(atr_val):
+                updates['atr_value'] = float(atr_val)
+            
+            # Volume
+            volume = current_bar.get('volume') or current_bar.get('tick_volume')
+            if volume is not None and not pd.isna(volume):
+                updates['volume_current'] = float(volume)
+            
+            self.ctx.indicator_collector.update_snapshot(**updates)
+            self.ctx.logger.info(f"Indicator collector updated: RSI={updates.get('rsi_value', 0):.1f}, ADX={updates.get('adx_value', 0):.1f}")
+            
+        except Exception as e:
+            self.ctx.logger.warning(f"Error updating indicator collector: {e}")
 
