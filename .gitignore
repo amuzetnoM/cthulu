@@ -85,6 +85,11 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Benchmarks
+indicator_metrics.csv
+system_health.csv
+comprehensive_metrics.csv
+
 # Documentation builds
 docs/_build/
 site/
