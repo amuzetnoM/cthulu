@@ -64,10 +64,20 @@ class SystemComponents:
     dynamic_sltp_manager: Any = None
     adaptive_drawdown_manager: Any = None
     
+<<<<<<< Updated upstream
     # Observability collectors (in-process instances for real-time data feeding)
     indicator_collector: Any = None
     system_health_collector: Any = None
     comprehensive_collector: Any = None
+=======
+    # Observability collectors (in-process for real-time data feeding)
+    indicator_collector: Any = None
+    system_health_collector: Any = None
+    
+    # Separate processes
+    observability_process: Any = None
+    monitoring_processes: list = None
+>>>>>>> Stashed changes
 
 
 class CthuluBootstrap:
