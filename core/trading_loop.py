@@ -83,9 +83,15 @@ class TradingLoopContext:
     adaptive_drawdown_manager: Optional[Any] = None  # Adaptive drawdown management
     
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     # Observability collectors (for real-time data feeding)
     indicator_collector: Optional[Any] = None  # IndicatorMetricsCollector instance
     system_health_collector: Optional[Any] = None  # SystemHealthCollector instance
+=======
+    # Observability collectors (in-process for real-time data)
+    indicator_collector: Optional[Any] = None
+    system_health_collector: Optional[Any] = None
+>>>>>>> Stashed changes
 =======
     # Observability collectors (in-process for real-time data)
     indicator_collector: Optional[Any] = None
@@ -785,9 +791,13 @@ class TradingLoop:
                 pass
             
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             # Feed indicator data to the indicator collector for real-time monitoring
 =======
             # Feed indicator data to the in-process indicator collector for real-time monitoring
+>>>>>>> Stashed changes
+=======
+            # Feed indicator data to in-process collector for real-time monitoring
 >>>>>>> Stashed changes
             self._update_indicator_collector(df)
             
@@ -1572,6 +1582,7 @@ class TradingLoop:
             
             self.ctx.logger.info(f"Position stats: {stats}")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             
             # Update system health collector with performance metrics
             self._update_system_health_collector()
@@ -1594,12 +1605,21 @@ class TradingLoop:
 =======
             self.ctx.logger.debug("No indicator_collector in context, skipping update")
 >>>>>>> Stashed changes
+=======
+    
+    def _update_indicator_collector(self, df: pd.DataFrame):
+        """Update the indicator collector with real-time indicator data."""
+        if not self.ctx.indicator_collector:
+>>>>>>> Stashed changes
             return
         
         try:
             current_bar = df.iloc[-1]
+<<<<<<< Updated upstream
             
             # Collect indicator updates
+=======
+>>>>>>> Stashed changes
             updates = {
                 'symbol': self.ctx.symbol,
                 'timeframe': str(self.ctx.timeframe),
@@ -1607,6 +1627,7 @@ class TradingLoop:
             }
             
             # RSI
+<<<<<<< Updated upstream
             rsi_col = None
             for col in df.columns:
                 if 'rsi' in col.lower():
@@ -1641,15 +1662,29 @@ class TradingLoop:
                 updates['bb_middle'] = float(bb_middle)
             if bb_lower is not None and not pd.isna(bb_lower):
                 updates['bb_lower'] = float(bb_lower)
+=======
+            for col in df.columns:
+                if 'rsi' in col.lower():
+                    val = current_bar.get(col)
+                    if val is not None and not pd.isna(val):
+                        updates['rsi_value'] = float(val)
+                        updates['rsi_overbought'] = float(val) >= 70
+                        updates['rsi_oversold'] = float(val) <= 30
+                    break
+>>>>>>> Stashed changes
             
             # ADX
             adx_val = current_bar.get('adx') or current_bar.get('runtime_adx')
             if adx_val is not None and not pd.isna(adx_val):
                 updates['adx_value'] = float(adx_val)
+<<<<<<< Updated upstream
                 if float(adx_val) >= 25:
                     updates['adx_trend_strength'] = 'strong' if float(adx_val) >= 50 else 'moderate'
                 else:
                     updates['adx_trend_strength'] = 'weak'
+=======
+                updates['adx_trend_strength'] = 'strong' if float(adx_val) >= 50 else ('moderate' if float(adx_val) >= 25 else 'weak')
+>>>>>>> Stashed changes
             
             # ATR
             atr_val = current_bar.get('atr') or current_bar.get('runtime_atr')
@@ -1660,6 +1695,7 @@ class TradingLoop:
             volume = current_bar.get('volume') or current_bar.get('tick_volume')
             if volume is not None and not pd.isna(volume):
                 updates['volume_current'] = float(volume)
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                 # Calculate relative volume if we have historical data
 =======
@@ -1772,6 +1808,14 @@ class TradingLoop:
 
 =======
             self.ctx.logger.info(f"Updated indicator collector: RSI={updates.get('rsi_value', 'N/A'):.1f}, ADX={updates.get('adx_value', 'N/A')}, Price={updates.get('price_current', 0):.2f}")
+            
+        except Exception as e:
+            self.ctx.logger.warning(f"Error updating indicator collector: {e}")
+>>>>>>> Stashed changes
+=======
+            
+            self.ctx.indicator_collector.update_snapshot(**updates)
+            self.ctx.logger.info(f"Indicator collector updated: RSI={updates.get('rsi_value', 0):.1f}, ADX={updates.get('adx_value', 0):.1f}")
             
         except Exception as e:
             self.ctx.logger.warning(f"Error updating indicator collector: {e}")

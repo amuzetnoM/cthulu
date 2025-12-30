@@ -693,9 +693,14 @@ class CthuluBootstrap:
                     
                     # NOTE: We use IN-PROCESS collectors instead of separate processes
                     # This allows the trading loop to feed real-time data to the collectors
+<<<<<<< Updated upstream
                     # The separate process collectors don't have access to trading loop data
                     
                     # Create in-process indicator collector for real-time data feeding from trading loop
+=======
+                    
+                    # Create in-process indicator collector for real-time data feeding
+>>>>>>> Stashed changes
                     try:
                         from monitoring.indicator_collector import IndicatorMetricsCollector
                         indicator_collector = IndicatorMetricsCollector(update_interval=1.0)
