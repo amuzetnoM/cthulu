@@ -15,7 +15,7 @@ import logging
 import threading
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Optional
 from dataclasses import dataclass, asdict
 
 

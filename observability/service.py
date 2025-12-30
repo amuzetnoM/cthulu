@@ -273,7 +273,7 @@ Examples:
         enable_prometheus = True
     
     if not args.csv and not args.prom and not args.port:
-        parser.error("At least one of --csv, --prom, or a port flag (--8181) must be specified")
+        parser.error("At least one of --csv, --prom, or a port flag must be specified")
     
     # Create service
     service = ObservabilityService(

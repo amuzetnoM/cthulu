@@ -16,7 +16,7 @@ import threading
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 
 
 @dataclass

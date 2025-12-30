@@ -5,6 +5,7 @@ Runs indicator and system health collectors as separate processes.
 """
 
 import sys
+import time
 import logging
 import argparse
 import multiprocessing
@@ -33,7 +34,6 @@ def run_indicator_service(config_path: str = None, update_interval: float = 1.0)
         logger.info("Indicator service running. Press Ctrl+C to stop.")
         
         # Keep running
-        import time
         while True:
             time.sleep(1)
             
@@ -55,7 +55,6 @@ def run_system_health_service(update_interval: float = 5.0):
         logger.info("System health service running. Press Ctrl+C to stop.")
         
         # Keep running
-        import time
         while True:
             time.sleep(1)
             
@@ -131,7 +130,6 @@ Examples:
         logger.info("Press Ctrl+C to stop all services.")
         
         try:
-            import time
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
