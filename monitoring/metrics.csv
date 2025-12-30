@@ -632,3 +632,5 @@ timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_
 2025-12-30T12:05:09Z,PHASE2,20.8,28,0,balanced,stable
 2025-12-30 16:44:14,597.46,749.75,152.29,31,31,0,1384.3,balanced,phase2
 2025-12-30 16:48:20,597.46,LIVE,31,0,balanced,phase2_active
+2025-12-30 16:50:42,597.46,745.41,147.95,31,31,0,balanced,phase2_running
+2025-12-30 16:53:13,597.46,726.42,128.96,31,31,0,balanced,loop9
