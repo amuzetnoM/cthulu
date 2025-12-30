@@ -129,6 +129,70 @@ def start_system_health_process(update_interval: float = 5.0):
     return process
 
 
+def start_monitoring_services(indicator_interval: float = 1.0, 
+                               system_interval: float = 5.0,
+                               config_path: str = None):
+    """
+    Start both monitoring services as separate processes.
+    
+    Called by bootstrap to automatically start monitoring when Cthulu starts.
+    
+    Args:
+        indicator_interval: Update interval for indicator metrics (default: 1.0s)
+        system_interval: Update interval for system health (default: 5.0s)
+        config_path: Optional path to indicator config JSON
+        
+    Returns:
+        List of started processes, or empty list on failure
+    """
+    processes = []
+    logger = logging.getLogger("cthulu.monitoring")
+    
+    try:
+        indicator_proc = start_indicator_process(
+            config_path=config_path,
+            update_interval=indicator_interval
+        )
+        if indicator_proc:
+            processes.append(indicator_proc)
+            logger.info(f"Indicator service started (PID: {indicator_proc.pid})")
+    except Exception as e:
+        logger.warning(f"Failed to start indicator service: {e}")
+    
+    try:
+        system_proc = start_system_health_process(update_interval=system_interval)
+        if system_proc:
+            processes.append(system_proc)
+            logger.info(f"System health service started (PID: {system_proc.pid})")
+    except Exception as e:
+        logger.warning(f"Failed to start system health service: {e}")
+    
+    return processes
+
+
+def stop_monitoring_services(processes):
+    """
+    Stop monitoring service processes.
+    
+    Args:
+        processes: List of process objects from start_monitoring_services
+    """
+    logger = logging.getLogger("cthulu.monitoring")
+    
+    for proc in processes:
+        try:
+            if proc.is_alive():
+                proc.terminate()
+                proc.join(timeout=5.0)
+                if proc.is_alive():
+                    proc.kill()
+                    proc.join(timeout=2.0)
+        except Exception as e:
+            logger.warning(f"Error stopping process {proc.pid}: {e}")
+    
+    logger.info("Monitoring services stopped")
+
+
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(

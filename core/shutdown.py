@@ -49,7 +49,9 @@ class ShutdownHandler:
         news_ingestor: Optional[Any] = None,
         ml_collector: Optional[Any] = None,
         trade_monitor: Optional[Any] = None,
-        gui_process: Optional[Any] = None
+        gui_process: Optional[Any] = None,
+        observability_process: Optional[Any] = None,
+        monitoring_processes: Optional[list] = None
     ):
         """
         Initialize the shutdown handler.
@@ -68,6 +70,8 @@ class ShutdownHandler:
             ml_collector: ML data collector instance (optional)
             trade_monitor: Trade monitor instance (optional)
             gui_process: GUI subprocess (optional)
+            observability_process: Observability service process (optional)
+            monitoring_processes: List of monitoring service processes (optional)
         """
         self.position_manager = position_manager
         self.connector = connector
@@ -82,6 +86,8 @@ class ShutdownHandler:
         self.ml_collector = ml_collector
         self.trade_monitor = trade_monitor
         self.gui_process = gui_process
+        self.observability_process = observability_process
+        self.monitoring_processes = monitoring_processes or []
     
     def shutdown(self):
         """
@@ -297,7 +303,7 @@ class ShutdownHandler:
             self.logger.error(f"Error disconnecting from MT5: {e}", exc_info=True)
     
     def _stop_optional_components(self):
-        """Stop optional components (News, ML, Monitor, GUI)."""
+        """Stop optional components (News, ML, Monitor, GUI, Observability)."""
         # Stop NewsIngestor if it was started
         if self.news_ingestor:
             try:
@@ -322,6 +328,24 @@ class ShutdownHandler:
                     self.logger.info('TradeMonitor stopped')
             except Exception:
                 self.logger.exception('Failed to stop TradeMonitor')
+        
+        # Stop observability service process
+        if self.observability_process:
+            try:
+                from observability.integration import stop_observability_service
+                stop_observability_service(self.observability_process)
+                self.logger.info('Observability service stopped')
+            except Exception:
+                self.logger.exception('Failed to stop observability service')
+        
+        # Stop monitoring service processes
+        if self.monitoring_processes:
+            try:
+                from monitoring.service import stop_monitoring_services
+                stop_monitoring_services(self.monitoring_processes)
+                self.logger.info('Monitoring services stopped')
+            except Exception:
+                self.logger.exception('Failed to stop monitoring services')
         
         # Terminate GUI process if running
         if self.gui_process:

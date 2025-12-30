@@ -254,19 +254,35 @@ class ComprehensiveMetricsCollector:
         self.logger.info(f"Comprehensive metrics collector initialized: {self.csv_path}")
     
     def _initialize_csv(self):
-        """Initialize CSV file with headers if it doesn't exist"""
+        """Initialize CSV file with headers - always ensures header row exists"""
         try:
             # Create directory if needed
             self.csv_path.parent.mkdir(parents=True, exist_ok=True)
             
-            # Write header if file doesn't exist
-            if not self.csv_path.exists():
+            fieldnames = list(asdict(self.current).keys())
+            
+            # Check if file exists and has valid header
+            needs_header = True
+            if self.csv_path.exists():
+                try:
+                    with open(self.csv_path, 'r', newline='') as f:
+                        import csv as csv_reader
+                        reader = csv_reader.reader(f)
+                        first_row = next(reader, None)
+                        # Check if first row is our expected header
+                        if first_row and first_row[0] == 'timestamp':
+                            needs_header = False
+                except Exception:
+                    needs_header = True
+            
+            if needs_header:
+                # Write fresh file with headers
                 with open(self.csv_path, 'w', newline='') as f:
-                    writer = csv.DictWriter(f, fieldnames=list(asdict(self.current).keys()))
+                    writer = csv.DictWriter(f, fieldnames=fieldnames)
                     writer.writeheader()
-                self.logger.info(f"Created new CSV file: {self.csv_path}")
+                self.logger.info(f"Created/reset CSV file with headers: {self.csv_path}")
             else:
-                self.logger.info(f"Using existing CSV file: {self.csv_path}")
+                self.logger.info(f"CSV file exists with valid headers: {self.csv_path}")
                 
         except Exception as e:
             self.logger.error(f"Failed to initialize CSV: {e}")

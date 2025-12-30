@@ -291,7 +291,9 @@ def main():
                     config=components.config,
                     ml_collector=components.ml_collector,
                     trade_monitor=components.monitor,
-                    gui_process=getattr(components, 'gui_process', None)
+                    gui_process=getattr(components, 'gui_process', None),
+                    observability_process=getattr(components, 'observability_process', None),
+                    monitoring_processes=getattr(components, 'monitoring_processes', None)
                 )
                 
                 shutdown_handler.shutdown()

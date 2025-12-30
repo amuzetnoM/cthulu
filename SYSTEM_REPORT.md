@@ -1,7 +1,7 @@
 # Cthulu System Report
 
-**Version:** 3.2
-**Last Updated:** 2025-12-31T03:20:00Z
+**Version:** 3.3
+**Last Updated:** 2025-12-30T22:45:00Z
 **Classification:** SOURCE OF TRUTH
 
 ---
@@ -25,6 +25,42 @@
 **Phase 1:** Conservative ✅ COMPLETED (60+ min stable)
 
 ### 🏆 4-HOUR TEST COMPLETE - SYSTEM GRADE: A+
+
+---
+
+## 🛠️ SESSION UPDATE (2025-12-30)
+
+### Observability Suite Integration
+The observability suite has been fully integrated into the main Cthulu bootstrap process:
+
+1. **Auto-Start on Bootstrap:**
+   - Observability service (trading metrics) starts automatically as a separate process
+   - Monitoring services (indicator + system health) start automatically
+   - All services run decoupled from the main trading loop
+
+2. **CSV Header Fix:**
+   - Fixed issue where CSV files were missing timestamp header row
+   - Added validation to check for valid headers on startup
+   - Files are reset with proper headers if corrupted
+   - Updated to use timezone-aware `datetime.now(timezone.utc)` instead of deprecated `datetime.utcnow()`
+
+3. **Clean Shutdown:**
+   - Shutdown handler now properly terminates observability/monitoring processes
+   - Added `observability_process` and `monitoring_processes` to shutdown cleanup
+
+4. **Files Modified:**
+   - `monitoring/indicator_collector.py` - CSV header fix, timezone update
+   - `monitoring/system_health_collector.py` - CSV header fix, timezone update
+   - `observability/comprehensive_collector.py` - CSV header fix
+   - `monitoring/service.py` - Added `start_monitoring_services()` function
+   - `core/bootstrap.py` - Auto-start observability suite integration
+   - `core/shutdown.py` - Added observability/monitoring cleanup
+   - `cthulu/__main__.py` - Pass new components to shutdown handler
+
+### Next Steps
+- Run 30-minute test to verify all CSV files collect data properly
+- Ensure main trading loop fires up observability automatically
+- Continue precision tuning toward A+ grade
 
 ---
 

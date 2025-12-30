@@ -14,7 +14,7 @@ import psutil
 import logging
 import threading
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from dataclasses import dataclass, asdict
 
@@ -178,20 +178,35 @@ class SystemHealthCollector:
         self.logger.info(f"  Update Interval: {self.update_interval}s")
     
     def _initialize_csv(self):
-        """Initialize CSV file with headers"""
+        """Initialize CSV file with headers - always ensures header row exists"""
         try:
             # Create directory if needed
             Path(self.csv_path).parent.mkdir(parents=True, exist_ok=True)
             
-            # Check if file exists
-            file_exists = os.path.exists(self.csv_path)
+            fieldnames = list(asdict(SystemHealthSnapshot()).keys())
             
-            if not file_exists:
-                # Write headers
+            # Check if file exists and has valid header
+            needs_header = True
+            if os.path.exists(self.csv_path):
+                try:
+                    with open(self.csv_path, 'r', newline='') as f:
+                        reader = csv.reader(f)
+                        first_row = next(reader, None)
+                        # Check if first row is our expected header
+                        if first_row and first_row[0] == 'timestamp':
+                            needs_header = False
+                except Exception:
+                    needs_header = True
+            
+            if needs_header:
+                # Write fresh file with headers
                 with open(self.csv_path, 'w', newline='') as f:
-                    writer = csv.DictWriter(f, fieldnames=list(asdict(SystemHealthSnapshot()).keys()))
+                    writer = csv.DictWriter(f, fieldnames=fieldnames)
                     writer.writeheader()
-                self.logger.info(f"Created CSV file: {self.csv_path}")
+                self.logger.info(f"Created/reset CSV file with headers: {self.csv_path}")
+            else:
+                self.logger.info(f"CSV file exists with valid headers: {self.csv_path}")
+                
         except Exception as e:
             self.logger.error(f"Failed to initialize CSV: {e}")
     
@@ -237,8 +252,8 @@ class SystemHealthCollector:
             with self._lock:
                 snapshot = self.current_snapshot
                 
-                # Timestamp
-                snapshot.timestamp = datetime.utcnow().isoformat()
+                # Timestamp (using timezone-aware UTC)
+                snapshot.timestamp = datetime.now(timezone.utc).isoformat()
                 
                 # Process info
                 snapshot.process_pid = self.process.pid
