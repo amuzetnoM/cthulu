@@ -100,10 +100,8 @@ class MetricsVisualizer:
 <head>
     <meta charset="UTF-8">
     <title>Cthulu Metrics Dashboard</title>
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" 
-            integrity="sha384-placeholder" 
-            crossorigin="anonymous"></script>
-    <!-- Note: Replace placeholder with actual SRI hash if available, or use local copy -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- Note: For production, consider using local copy or adding SRI hash -->
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;

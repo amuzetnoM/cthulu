@@ -142,7 +142,7 @@ class MetricsProcessor:
             try:
                 if pd.notna(val) and (isinstance(val, (int, float)) or str(val).replace('.', '').replace('-', '').isdigit()):
                     numeric_count += 1
-            except:
+            except (ValueError, TypeError, AttributeError):
                 continue
         return numeric_count >= 2
     
@@ -211,7 +211,7 @@ class MetricsProcessor:
             if pd.isna(val):
                 return 0
             return int(float(val))
-        except:
+        except (ValueError, TypeError):
             return 0
     
     def _safe_float(self, val):
@@ -220,7 +220,7 @@ class MetricsProcessor:
             if pd.isna(val):
                 return 0.0
             return float(val)
-        except:
+        except (ValueError, TypeError):
             return 0.0
     
     def _normalize_timestamp(self, timestamps):
