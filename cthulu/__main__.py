@@ -254,6 +254,8 @@ def main():
             exporter=components.exporter,
             dynamic_sltp_manager=components.dynamic_sltp_manager,
             adaptive_drawdown_manager=components.adaptive_drawdown_manager,
+            indicator_collector=getattr(components, 'indicator_collector', None),
+            system_health_collector=getattr(components, 'system_health_collector', None),
         )
         
         trading_loop = TradingLoop(trading_context)

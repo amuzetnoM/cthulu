@@ -82,9 +82,15 @@ class TradingLoopContext:
     dynamic_sltp_manager: Optional[Any] = None  # Dynamic SL/TP management
     adaptive_drawdown_manager: Optional[Any] = None  # Adaptive drawdown management
     
+<<<<<<< Updated upstream
     # Observability collectors (for real-time data feeding)
     indicator_collector: Optional[Any] = None  # IndicatorMetricsCollector instance
     system_health_collector: Optional[Any] = None  # SystemHealthCollector instance
+=======
+    # Observability collectors (in-process for real-time data)
+    indicator_collector: Optional[Any] = None
+    system_health_collector: Optional[Any] = None
+>>>>>>> Stashed changes
     
     # CLI args
     args: Optional[Any] = None
@@ -778,7 +784,11 @@ class TradingLoop:
             except Exception:
                 pass
             
+<<<<<<< Updated upstream
             # Feed indicator data to the indicator collector for real-time monitoring
+=======
+            # Feed indicator data to the in-process indicator collector for real-time monitoring
+>>>>>>> Stashed changes
             self._update_indicator_collector(df)
             
             return df
@@ -1561,6 +1571,7 @@ class TradingLoop:
                 self.ctx.logger.exception('Failed to sync position summary into metrics')
             
             self.ctx.logger.info(f"Position stats: {stats}")
+<<<<<<< Updated upstream
             
             # Update system health collector with performance metrics
             self._update_system_health_collector()
@@ -1568,11 +1579,21 @@ class TradingLoop:
     def _update_indicator_collector(self, df: pd.DataFrame):
         """
         Update the indicator collector with real-time indicator data.
+=======
+    
+    def _update_indicator_collector(self, df: pd.DataFrame):
+        """
+        Update the indicator collector with real-time indicator data from the trading loop.
+>>>>>>> Stashed changes
         
         Args:
             df: DataFrame with calculated indicator columns
         """
         if not self.ctx.indicator_collector:
+<<<<<<< Updated upstream
+=======
+            self.ctx.logger.debug("No indicator_collector in context, skipping update")
+>>>>>>> Stashed changes
             return
         
         try:
@@ -1639,7 +1660,10 @@ class TradingLoop:
             volume = current_bar.get('volume') or current_bar.get('tick_volume')
             if volume is not None and not pd.isna(volume):
                 updates['volume_current'] = float(volume)
+<<<<<<< Updated upstream
                 # Calculate relative volume if we have historical data
+=======
+>>>>>>> Stashed changes
                 if len(df) >= 20:
                     vol_col = 'volume' if 'volume' in df.columns else 'tick_volume'
                     if vol_col in df.columns:
@@ -1659,21 +1683,31 @@ class TradingLoop:
             bullish_count = 0
             bearish_count = 0
             
+<<<<<<< Updated upstream
             # RSI signals
+=======
+>>>>>>> Stashed changes
             if updates.get('rsi_oversold'):
                 bullish_count += 1
             elif updates.get('rsi_overbought'):
                 bearish_count += 1
             
+<<<<<<< Updated upstream
             # MACD signals
+=======
+>>>>>>> Stashed changes
             if updates.get('macd_crossover') == 'bullish':
                 bullish_count += 1
             elif updates.get('macd_crossover') == 'bearish':
                 bearish_count += 1
             
+<<<<<<< Updated upstream
             # ADX trend
             if updates.get('adx_trend_strength') in ('moderate', 'strong'):
                 # Use price trend to determine direction
+=======
+            if updates.get('adx_trend_strength') in ('moderate', 'strong'):
+>>>>>>> Stashed changes
                 if updates.get('price_change_pct', 0) > 0:
                     bullish_count += 1
                 else:
@@ -1685,6 +1719,7 @@ class TradingLoop:
             
             # Apply updates to indicator collector
             self.ctx.indicator_collector.update_snapshot(**updates)
+<<<<<<< Updated upstream
             
         except Exception as e:
             self.ctx.logger.debug(f"Error updating indicator collector: {e}")
@@ -1735,4 +1770,10 @@ class TradingLoop:
 
 
 
+=======
+            self.ctx.logger.info(f"Updated indicator collector: RSI={updates.get('rsi_value', 'N/A'):.1f}, ADX={updates.get('adx_value', 'N/A')}, Price={updates.get('price_current', 0):.2f}")
+            
+        except Exception as e:
+            self.ctx.logger.warning(f"Error updating indicator collector: {e}")
+>>>>>>> Stashed changes
 
