@@ -188,6 +188,22 @@ class ObservabilityService:
             self.logger.error(f"Failed to start HTTP server: {e}")
 
 
+def _run_observability_service(csv_path: str, prom_path: str, 
+                               update_interval: float, http_port: int,
+                               enable_prometheus: bool):
+    """
+    Target function for subprocess. Must be module-level for Windows spawn.
+    """
+    service = ObservabilityService(
+        csv_path=csv_path,
+        prom_path=prom_path,
+        update_interval=update_interval,
+        http_port=http_port,
+        enable_prometheus=enable_prometheus
+    )
+    service.start()
+
+
 def start_observability_process(csv_path: str = None, prom_path: str = None, 
                                update_interval: float = 1.0, http_port: int = None,
                                enable_prometheus: bool = False):
@@ -204,17 +220,12 @@ def start_observability_process(csv_path: str = None, prom_path: str = None,
     Returns:
         Process object
     """
-    def run_service():
-        service = ObservabilityService(
-            csv_path=csv_path,
-            prom_path=prom_path,
-            update_interval=update_interval,
-            http_port=http_port,
-            enable_prometheus=enable_prometheus
-        )
-        service.start()
-    
-    process = multiprocessing.Process(target=run_service, daemon=False)
+    # Use module-level function for Windows compatibility (spawn method)
+    process = multiprocessing.Process(
+        target=_run_observability_service,
+        args=(csv_path, prom_path, update_interval, http_port, enable_prometheus),
+        daemon=False
+    )
     process.start()
     
     return process

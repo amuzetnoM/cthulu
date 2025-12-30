@@ -1,7 +1,7 @@
 # Cthulu System Report
 
-**Version:** 3.0
-**Last Updated:** 2025-12-30T11:42:29Z
+**Version:** 3.1
+**Last Updated:** 2025-12-30T22:15:00Z
 **Classification:** SOURCE OF TRUTH
 
 ---
@@ -199,11 +199,42 @@ isk/evaluator.py
 
 ## 🎯 NEXT STEPS
 
-1. **Start Phase 2** - Balanced mode (60 minutes)
-2. **Monitor metrics** - Track all performance indicators
-3. **Fine-tune parameters** - Based on balanced mode behavior
-4. **Update reports** - Keep all documentation current
-5. **Push to remote** - Sync changes for remote monitoring
+1. ~~Start Phase 2~~ ✅ COMPLETED
+2. ~~Start Phase 3~~ ✅ COMPLETED  
+3. ~~Start Phase 4~~ ✅ COMPLETED
+4. **Run observability suite** - `python -m observability.suit --csv`
+5. **Populate trading metrics** - Use comprehensive_metrics.csv
+6. **Fine-tune all mindset profiles** - Conservative → Ultra-Aggressive gradient
+7. **Push to remote** - Sync changes for remote monitoring
+
+---
+
+## 🧹 OBSERVABILITY CLEANUP (2025-12-30)
+
+### Legacy Files Removed
+- `metrics/Cthulu_metrics.prom` - Legacy Prometheus file
+- `metrics/` directory - Empty, removed
+- All legacy monitoring scripts (*.ps1, *.bat)
+- Legacy visualization files (grafana, dashboards)
+
+### New System Retained
+The observability suite has been cleaned to retain only essential files:
+
+**Observability Directory:**
+- ✅ comprehensive_collector.py
+- ✅ service.py
+- ✅ suit.py
+- ✅ integration.py
+- ✅ prometheus.py (optional export)
+- ✅ logger.py, metrics.py, telemetry.py
+- ✅ README.md, DOCS.md, OBSERVABILITY_GUIDE.md
+
+**Monitoring Directory:**
+- ✅ indicator_collector.py
+- ✅ system_health_collector.py  
+- ✅ service.py
+- ✅ indicator_config.json
+- ✅ README.md, SUBPROGRAM_RECOMMENDATIONS.md
 
 ---
 
@@ -212,11 +243,29 @@ isk/evaluator.py
 | File | Purpose |
 |------|---------|
 | SYSTEM_REPORT.md | Source of truth (this file) |
-| monitoring/TRADING_REPORT.md | Trading metrics |
-| monitoring/signal_checklist.md | Test matrix |
-| monitoring/observability_guide.md | How-to guide |
-| monitoring/monitoring_report.md | Analysis |
+| observability_suit_summary.md | Observability suite overview |
 | _dev/_build/cthulu/ai_dev.md | AI development notes |
+
+### 📊 Observability Suite (NEW)
+Three canonical CSV outputs - single sources of truth:
+
+| CSV File | Fields | Purpose |
+|----------|--------|---------|
+| `observability/reporting/comprehensive_metrics.csv` | 173 | Trading metrics (account, trades, risk, execution) |
+| `monitoring/indicator_metrics.csv` | 78 | Indicator/signal data with confidence scoring |
+| `monitoring/system_health.csv` | 80+ | System health & performance |
+
+**Run Command:** `python -m observability.suit --csv`
+
+### 📂 Core Observability Files
+| File | Purpose |
+|------|---------|
+| observability/comprehensive_collector.py | Trading metrics collector |
+| observability/service.py | Main observability service |
+| observability/suit.py | Unified service runner |
+| monitoring/indicator_collector.py | Indicator metrics with scoring |
+| monitoring/system_health_collector.py | System health metrics |
+| monitoring/indicator_config.json | Extensible indicator configuration |
 
 ---
 

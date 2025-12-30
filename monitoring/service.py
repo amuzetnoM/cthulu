@@ -64,10 +64,53 @@ def run_system_health_service(update_interval: float = 5.0):
         collector.stop()
 
 
+def _run_indicator_service(config_path: str, update_interval: float):
+    """Target function for subprocess - must be module-level for Windows spawn"""
+    logger = setup_logger("cthulu.indicator_service", level=logging.INFO)
+    logger.info("Starting Indicator Monitoring Service...")
+    
+    collector = IndicatorMetricsCollector(
+        config_path=config_path,
+        update_interval=update_interval
+    )
+    
+    try:
+        collector.start()
+        logger.info("Indicator service running. Press Ctrl+C to stop.")
+        
+        while True:
+            time.sleep(1)
+            
+    except KeyboardInterrupt:
+        logger.info("Shutting down...")
+    finally:
+        collector.stop()
+
+
+def _run_system_health_service(update_interval: float):
+    """Target function for subprocess - must be module-level for Windows spawn"""
+    logger = setup_logger("cthulu.system_health_service", level=logging.INFO)
+    logger.info("Starting System Health Monitoring Service...")
+    
+    collector = SystemHealthCollector(update_interval=update_interval)
+    
+    try:
+        collector.start()
+        logger.info("System health service running. Press Ctrl+C to stop.")
+        
+        while True:
+            time.sleep(1)
+            
+    except KeyboardInterrupt:
+        logger.info("Shutting down...")
+    finally:
+        collector.stop()
+
+
 def start_indicator_process(config_path: str = None, update_interval: float = 1.0):
     """Start indicator service as subprocess"""
     process = multiprocessing.Process(
-        target=run_indicator_service,
+        target=_run_indicator_service,
         args=(config_path, update_interval),
         daemon=False
     )
@@ -78,7 +121,7 @@ def start_indicator_process(config_path: str = None, update_interval: float = 1.
 def start_system_health_process(update_interval: float = 5.0):
     """Start system health service as subprocess"""
     process = multiprocessing.Process(
-        target=run_system_health_service,
+        target=_run_system_health_service,
         args=(update_interval,),
         daemon=False
     )

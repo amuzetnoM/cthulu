@@ -306,4 +306,6 @@ Output Files (3 Canonical CSVs):
 
 
 if __name__ == '__main__':
+    # Required for Windows multiprocessing
+    multiprocessing.freeze_support()
     sys.exit(main())
