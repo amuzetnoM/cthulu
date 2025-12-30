@@ -639,3 +639,11 @@ timestamp,pids,cpu_delta_s,mem_mb,errors_delta,errors_total,trades_delta,trades_
 2025-12-30 17:02:58,,,,,balanced,phase2
 2025-12-30 17:04:58,,,,,balanced,phase2
 2025-12-30 17:06:58,,,,,balanced,phase2
+2025-12-30 17:12:32,,,,,,,balanced,phase2_loop35
+2025-12-30 17:17:33,,,,,,,balanced,phase2_loop41
+2025-12-30 17:22:33,,,,,,,balanced,phase2_loop48
+2025-12-30 17:27:33,,,,,,,balanced,phase2_loop55
+2025-12-30 17:32:33,,,,,,,balanced,phase2_loop61
+2025-12-30 17:37:33,,,,,,,balanced,phase2_loop68
+2025-12-30 17:42:33,,,,,,,balanced,phase2_loop75
+2025-12-30 17:47:34,,,,,,,balanced,phase2_loop81
