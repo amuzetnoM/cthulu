@@ -201,14 +201,19 @@ class IndicatorMetricsCollector:
                     with open(self.csv_path, 'r', newline='') as f:
                         reader = csv.reader(f)
                         first_row = next(reader, None)
-                        # Check if first row is our expected header
-                        if first_row and first_row[0] == 'timestamp':
+                        # Check if first row is our expected header (must have 'timestamp' as first column)
+                        if first_row and len(first_row) > 0 and first_row[0] == 'timestamp':
                             needs_header = False
-                except Exception:
+                        else:
+                            # Invalid header detected - file needs reset
+                            self.logger.warning(f"Invalid CSV header detected, resetting file")
+                            needs_header = True
+                except Exception as e:
+                    self.logger.warning(f"Error reading CSV header: {e}")
                     needs_header = True
             
             if needs_header:
-                # Write fresh file with headers
+                # Write fresh file with headers (overwrite any invalid data)
                 with open(self.csv_path, 'w', newline='') as f:
                     writer = csv.DictWriter(f, fieldnames=fieldnames)
                     writer.writeheader()
