@@ -5,6 +5,7 @@ Exports trading metrics in Prometheus format for monitoring and alerting.
 Can be served via HTTP or written to a file for node_exporter textfile collector.
 """
 
+import os
 import logging
 import time
 from typing import Dict, Any, Optional, List
@@ -335,6 +336,122 @@ class PrometheusExporter:
         """
         metrics = self.get_all_metrics()
         return {m.name: m.value for m in metrics}
+    
+    def update_from_comprehensive_metrics(self, comprehensive_snapshot):
+        """
+        Update Prometheus metrics from ComprehensiveMetricsSnapshot.
+        
+        Exports all 173 comprehensive metrics to Prometheus format.
+        
+        Args:
+            comprehensive_snapshot: Instance of ComprehensiveMetricsSnapshot
+        """
+        try:
+            # Convert snapshot to dict
+            if hasattr(comprehensive_snapshot, '__dict__'):
+                data = vars(comprehensive_snapshot)
+            else:
+                data = comprehensive_snapshot
+            
+            # Core Account Metrics
+            self._update_metric(f"{self.prefix}_account_balance", data.get('account_balance', 0.0), 'gauge', 'Account balance')
+            self._update_metric(f"{self.prefix}_account_equity", data.get('account_equity', 0.0), 'gauge', 'Account equity')
+            self._update_metric(f"{self.prefix}_account_margin", data.get('account_margin', 0.0), 'gauge', 'Used margin')
+            self._update_metric(f"{self.prefix}_account_free_margin", data.get('account_free_margin', 0.0), 'gauge', 'Free margin')
+            self._update_metric(f"{self.prefix}_account_margin_level", data.get('account_margin_level', 0.0), 'gauge', 'Margin level percent')
+            self._update_metric(f"{self.prefix}_realized_pnl", data.get('realized_pnl', 0.0), 'gauge', 'Realized P&L')
+            self._update_metric(f"{self.prefix}_unrealized_pnl", data.get('unrealized_pnl', 0.0), 'gauge', 'Unrealized P&L')
+            self._update_metric(f"{self.prefix}_total_pnl", data.get('total_pnl', 0.0), 'gauge', 'Total P&L')
+            
+            # Trade Statistics
+            self._update_metric(f"{self.prefix}_total_trades", data.get('total_trades', 0), 'counter', 'Total trades')
+            self._update_metric(f"{self.prefix}_winning_trades", data.get('winning_trades', 0), 'counter', 'Winning trades')
+            self._update_metric(f"{self.prefix}_losing_trades", data.get('losing_trades', 0), 'counter', 'Losing trades')
+            self._update_metric(f"{self.prefix}_breakeven_trades", data.get('breakeven_trades', 0), 'counter', 'Breakeven trades')
+            self._update_metric(f"{self.prefix}_active_positions", data.get('active_positions', 0), 'gauge', 'Active positions')
+            self._update_metric(f"{self.prefix}_gross_profit", data.get('gross_profit', 0.0), 'counter', 'Gross profit')
+            self._update_metric(f"{self.prefix}_gross_loss", data.get('gross_loss', 0.0), 'counter', 'Gross loss')
+            self._update_metric(f"{self.prefix}_net_profit", data.get('net_profit', 0.0), 'gauge', 'Net profit')
+            self._update_metric(f"{self.prefix}_avg_win", data.get('avg_win', 0.0), 'gauge', 'Average win')
+            self._update_metric(f"{self.prefix}_avg_loss", data.get('avg_loss', 0.0), 'gauge', 'Average loss')
+            self._update_metric(f"{self.prefix}_largest_win", data.get('largest_win', 0.0), 'gauge', 'Largest win')
+            self._update_metric(f"{self.prefix}_largest_loss", data.get('largest_loss', 0.0), 'gauge', 'Largest loss')
+            self._update_metric(f"{self.prefix}_win_rate_pct", data.get('win_rate', 0.0) * 100, 'gauge', 'Win rate percent')
+            self._update_metric(f"{self.prefix}_profit_factor", data.get('profit_factor', 0.0), 'gauge', 'Profit factor')
+            self._update_metric(f"{self.prefix}_expectancy", data.get('expectancy', 0.0), 'gauge', 'Expectancy')
+            self._update_metric(f"{self.prefix}_avg_trade_duration_seconds", data.get('avg_trade_duration', 0.0), 'gauge', 'Average trade duration')
+            self._update_metric(f"{self.prefix}_median_trade_duration_seconds", data.get('median_trade_duration', 0.0), 'gauge', 'Median trade duration')
+            self._update_metric(f"{self.prefix}_trades_per_hour", data.get('trades_per_hour', 0.0), 'gauge', 'Trades per hour')
+            self._update_metric(f"{self.prefix}_trades_today", data.get('trades_today', 0), 'counter', 'Trades today')
+            self._update_metric(f"{self.prefix}_daily_pnl", data.get('daily_pnl', 0.0), 'gauge', 'Daily P&L')
+            self._update_metric(f"{self.prefix}_weekly_pnl", data.get('weekly_pnl', 0.0), 'gauge', 'Weekly P&L')
+            self._update_metric(f"{self.prefix}_monthly_pnl", data.get('monthly_pnl', 0.0), 'gauge', 'Monthly P&L')
+            
+            # Risk & Drawdown
+            self._update_metric(f"{self.prefix}_max_drawdown_pct", data.get('max_drawdown_pct', 0.0) * 100, 'gauge', 'Max drawdown percent')
+            self._update_metric(f"{self.prefix}_max_drawdown_abs", data.get('max_drawdown_abs', 0.0), 'gauge', 'Max drawdown absolute')
+            self._update_metric(f"{self.prefix}_current_drawdown_pct", data.get('current_drawdown_pct', 0.0) * 100, 'gauge', 'Current drawdown percent')
+            self._update_metric(f"{self.prefix}_current_drawdown_abs", data.get('current_drawdown_abs', 0.0), 'gauge', 'Current drawdown absolute')
+            self._update_metric(f"{self.prefix}_drawdown_duration_seconds", data.get('max_drawdown_duration_seconds', 0.0), 'gauge', 'Max drawdown duration')
+            self._update_metric(f"{self.prefix}_current_drawdown_duration_seconds", data.get('current_drawdown_duration_seconds', 0.0), 'gauge', 'Current drawdown duration')
+            self._update_metric(f"{self.prefix}_peak_equity", data.get('peak_equity', 0.0), 'gauge', 'Peak equity')
+            self._update_metric(f"{self.prefix}_trough_equity", data.get('trough_equity', 0.0), 'gauge', 'Trough equity')
+            self._update_metric(f"{self.prefix}_risk_reward_ratio", data.get('risk_reward_ratio', 0.0), 'gauge', 'Average risk:reward ratio')
+            
+            # Advanced Statistics
+            self._update_metric(f"{self.prefix}_sharpe_ratio", data.get('sharpe_ratio', 0.0), 'gauge', 'Sharpe ratio')
+            self._update_metric(f"{self.prefix}_sortino_ratio", data.get('sortino_ratio', 0.0), 'gauge', 'Sortino ratio')
+            self._update_metric(f"{self.prefix}_calmar_ratio", data.get('calmar_ratio', 0.0), 'gauge', 'Calmar ratio')
+            self._update_metric(f"{self.prefix}_recovery_factor", data.get('recovery_factor', 0.0), 'gauge', 'Recovery factor')
+            self._update_metric(f"{self.prefix}_rolling_sharpe_50", data.get('rolling_sharpe_50', 0.0), 'gauge', 'Rolling Sharpe 50')
+            self._update_metric(f"{self.prefix}_rolling_sharpe_100", data.get('rolling_sharpe_100', 0.0), 'gauge', 'Rolling Sharpe 100')
+            
+            # Execution Quality
+            self._update_metric(f"{self.prefix}_avg_slippage_pips", data.get('avg_slippage_pips', 0.0), 'gauge', 'Average slippage pips')
+            self._update_metric(f"{self.prefix}_median_slippage_pips", data.get('median_slippage_pips', 0.0), 'gauge', 'Median slippage pips')
+            self._update_metric(f"{self.prefix}_max_slippage_pips", data.get('max_slippage_pips', 0.0), 'gauge', 'Max slippage pips')
+            self._update_metric(f"{self.prefix}_avg_execution_time_ms", data.get('avg_execution_time_ms', 0.0), 'gauge', 'Average execution time ms')
+            self._update_metric(f"{self.prefix}_median_execution_time_ms", data.get('median_execution_time_ms', 0.0), 'gauge', 'Median execution time ms')
+            self._update_metric(f"{self.prefix}_fill_rate_pct", data.get('fill_rate_pct', 0.0), 'gauge', 'Fill rate percent')
+            self._update_metric(f"{self.prefix}_order_rejection_rate_pct", data.get('order_rejection_rate_pct', 0.0), 'gauge', 'Order rejection rate')
+            self._update_metric(f"{self.prefix}_orders_total", data.get('orders_total', 0), 'counter', 'Total orders')
+            self._update_metric(f"{self.prefix}_orders_filled", data.get('orders_filled', 0), 'counter', 'Orders filled')
+            
+            # Signals & Strategy
+            self._update_metric(f"{self.prefix}_signals_generated", data.get('signals_generated_total', 0), 'counter', 'Signals generated')
+            self._update_metric(f"{self.prefix}_signals_approved", data.get('signals_approved_total', 0), 'counter', 'Signals approved')
+            self._update_metric(f"{self.prefix}_signals_rejected", data.get('signals_rejected_total', 0), 'counter', 'Signals rejected')
+            self._update_metric(f"{self.prefix}_signal_approval_rate_pct", data.get('signal_approval_rate_pct', 0.0), 'gauge', 'Signal approval rate')
+            self._update_metric(f"{self.prefix}_spread_rejections", data.get('spread_rejections', 0), 'counter', 'Spread rejections')
+            self._update_metric(f"{self.prefix}_position_limit_rejections", data.get('position_limit_rejections', 0), 'counter', 'Position limit rejections')
+            self._update_metric(f"{self.prefix}_drawdown_limit_rejections", data.get('drawdown_limit_rejections', 0), 'counter', 'Drawdown limit rejections')
+            self._update_metric(f"{self.prefix}_exit_tp_count", data.get('exit_tp_count', 0), 'counter', 'Take profit exits')
+            self._update_metric(f"{self.prefix}_exit_sl_count", data.get('exit_sl_count', 0), 'counter', 'Stop loss exits')
+            
+            # Position & Exposure
+            self._update_metric(f"{self.prefix}_open_positions_volume", data.get('open_positions_volume', 0.0), 'gauge', 'Open positions volume')
+            self._update_metric(f"{self.prefix}_long_positions", data.get('long_positions_count', 0), 'gauge', 'Long positions')
+            self._update_metric(f"{self.prefix}_short_positions", data.get('short_positions_count', 0), 'gauge', 'Short positions')
+            self._update_metric(f"{self.prefix}_long_exposure", data.get('long_exposure_usd', 0.0), 'gauge', 'Long exposure USD')
+            self._update_metric(f"{self.prefix}_short_exposure", data.get('short_exposure_usd', 0.0), 'gauge', 'Short exposure USD')
+            self._update_metric(f"{self.prefix}_net_exposure", data.get('net_exposure_usd', 0.0), 'gauge', 'Net exposure USD')
+            
+            # System Health
+            self._update_metric(f"{self.prefix}_system_uptime_seconds", data.get('system_uptime_seconds', 0.0), 'counter', 'System uptime')
+            self._update_metric(f"{self.prefix}_mt5_connected", data.get('mt5_connected', 0), 'gauge', 'MT5 connected')
+            self._update_metric(f"{self.prefix}_cpu_usage_pct", data.get('cpu_usage_pct', 0.0), 'gauge', 'CPU usage percent')
+            self._update_metric(f"{self.prefix}_memory_usage_mb", data.get('memory_usage_mb', 0.0), 'gauge', 'Memory usage MB')
+            self._update_metric(f"{self.prefix}_memory_usage_pct", data.get('memory_usage_pct', 0.0), 'gauge', 'Memory usage percent')
+            self._update_metric(f"{self.prefix}_errors_total", data.get('errors_total', 0), 'counter', 'Total errors')
+            self._update_metric(f"{self.prefix}_warnings_total", data.get('warnings_total', 0), 'counter', 'Total warnings')
+            
+            # Session metrics
+            self._update_metric(f"{self.prefix}_session_asian_trades", data.get('session_asian_trades', 0), 'counter', 'Asian session trades')
+            self._update_metric(f"{self.prefix}_session_european_trades", data.get('session_european_trades', 0), 'counter', 'European session trades')
+            self._update_metric(f"{self.prefix}_session_us_trades", data.get('session_us_trades', 0), 'counter', 'US session trades')
+            
+        except Exception as e:
+            self.logger.exception(f"Failed to update from comprehensive metrics: {e}")
 
 
 

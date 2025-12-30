@@ -322,3 +322,148 @@ Risk:Reward = Average Win Amount / Average Loss Amount
 
 *This report auto-updates from Cthulu's MetricsCollector and PerformanceMetrics modules.*
 *Source: `cthulu.observability.metrics.MetricsCollector`*
+
+---
+
+## Account Margin Metrics
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| **Used Margin** | $ - | 🟢/🟡/🔴 |
+| **Free Margin** | $ - | Available capital |
+| **Margin Level** | - % | Health indicator |
+| **Margin Call Level** | 100% | Warning threshold |
+| **Stop Out Level** | 50% | Critical threshold |
+
+---
+
+## Trade Duration Statistics
+
+| Metric | Value | Unit |
+|--------|-------|------|
+| **Avg Trade Duration** | - | seconds |
+| **Median Trade Duration** | - | seconds |
+| **Shortest Trade** | - | seconds |
+| **Longest Trade** | - | seconds |
+| **< 1 min** | - | count |
+| **1-5 min** | - | count |
+| **5-30 min** | - | count |
+| **> 30 min** | - | count |
+
+---
+
+## Enhanced Execution Metrics
+
+| Metric | Value | Target |
+|--------|-------|--------|
+| **Median Slippage** | - pips | <0.5 |
+| **Max Slippage** | - pips | <2.0 |
+| **Median Execution Time** | - ms | <100 |
+| **Max Execution Time** | - ms | <500 |
+| **Partial Fills** | - | 0 |
+| **Requotes** | - | 0 |
+
+---
+
+## System Resource Monitoring
+
+| Metric | Current | Average | Peak |
+|--------|---------|---------|------|
+| **CPU Usage** | - % | - % | - % |
+| **Memory Usage** | - MB | - MB | - MB |
+| **Disk Usage** | - GB | - GB | - GB |
+| **Network Latency** | - ms | - ms | - ms |
+| **API Calls/Min** | - | - | - |
+
+---
+
+## Advanced Risk Metrics
+
+| Metric | Value | Description |
+|--------|-------|-------------|
+| **Sortino Ratio** | - | Downside deviation focus |
+| **Calmar Ratio** | - | Return / max drawdown |
+| **Omega Ratio** | - | Probability-weighted gains |
+| **K-Ratio** | - | Equity curve linearity |
+| **VaR (95%)** | $ - | Value at Risk |
+| **Rolling Sharpe (50)** | - | Recent 50-trade Sharpe |
+| **Rolling Sharpe (100)** | - | Recent 100-trade Sharpe |
+
+---
+
+## Adaptive System State
+
+| Component | Status | Value |
+|-----------|--------|-------|
+| **Drawdown State** | normal/warning/critical | - |
+| **Position Sizing Factor** | - | Current multiplier |
+| **Adaptive SL Distance** | - pips | Dynamic stop |
+| **Adaptive TP Distance** | - pips | Dynamic target |
+| **Trailing Stop** | active/inactive | On/Off |
+| **Breakeven Stop** | active/inactive | On/Off |
+| **Survival Mode** | active/inactive | Emergency protocol |
+| **Recovery Mode** | active/inactive | Rebuilding capital |
+
+---
+
+## Performance Grades by Category
+
+| Category | Grade | Status | Recommendation |
+|----------|-------|--------|----------------|
+| **Win Rate** | - | 🟢/🟡/🔴 | - |
+| **Profit Factor** | - | 🟢/🟡/🔴 | - |
+| **Drawdown** | - | 🟢/🟡/🔴 | - |
+| **Sharpe Ratio** | - | 🟢/🟡/🔴 | - |
+| **Overall System** | - | 🟢/🟡/🔴 | - |
+
+---
+
+## Equity Curve Analysis
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| **Equity Curve Slope** | - | Trend direction |
+| **Peak Equity** | $ - | All-time high |
+| **Trough Equity** | $ - | All-time low |
+| **Current vs Peak** | - % | Distance from ATH |
+| **Days Since Peak** | - | Underwater period |
+
+---
+
+## Time-Based P&L
+
+| Period | P&L | Trades | Win Rate |
+|--------|-----|--------|----------|
+| **Today** | $ - | - | - % |
+| **This Week** | $ - | - | - % |
+| **This Month** | $ - | - | - % |
+| **Last 7 Days** | $ - | - | - % |
+| **Last 30 Days** | $ - | - | - % |
+
+---
+
+## Missing Metrics Added
+
+The following 20 metric categories have been added to the comprehensive monitoring system:
+
+1. **Account Margin Metrics** - Margin health and risk levels
+2. **Trade Duration Statistics** - Time-in-trade analysis
+3. **Enhanced Execution Metrics** - Detailed slippage and timing
+4. **System Resource Monitoring** - CPU, memory, disk, network
+5. **Advanced Risk Metrics** - Sortino, Calmar, Omega, K-Ratio, VaR
+6. **Adaptive System State** - Dynamic risk management status
+7. **Performance Grades** - Category-specific grading
+8. **Equity Curve Analysis** - Trend and peak analysis
+9. **Time-Based P&L** - Daily, weekly, monthly breakdowns
+10. **Hourly Trading Distribution** - Peak activity times
+11. **Session-Based Trading** - Asian/European/US performance
+12. **Signal Type Breakdown** - Per-indicator performance
+13. **Rejection Reason Analysis** - Why signals fail
+14. **Exit Type Analysis** - How positions close
+15. **Position Exposure Metrics** - Long/short/net exposure
+16. **Concurrent Position Tracking** - Max simultaneous trades
+17. **Error Classification** - Errors vs warnings vs critical
+18. **Network Performance** - Latency and API calls
+19. **Drawdown Frequency** - How often drawdowns occur
+20. **Recovery Time Metrics** - How fast equity recovers
+
