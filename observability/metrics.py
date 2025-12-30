@@ -598,9 +598,203 @@ class MetricsCollector:
                 )
 
         self.logger.info("============================================================")
+
+
+@dataclass
+class ArgmaxMetrics:
+    """
+    Metrics for argmax-based optimization components.
+    
+    Tracks performance of:
+    - BanditSelector (strategy selection)
+    - SignalAggregator (indicator consensus)
+    - PositionSizingOptimizer (size selection)
+    - DynamicExitSelector (exit timing)
+    """
+    timestamp: datetime
+    
+    # Bandit Selector Metrics
+    bandit_algorithm: str = "ucb"
+    bandit_total_pulls: int = 0
+    bandit_total_reward: float = 0.0
+    best_strategy: str = "none"
+    best_strategy_reward: float = 0.0
+    best_strategy_pulls: int = 0
+    exploration_rate: float = 0.0  # Current epsilon or temperature
+    
+    # Signal Aggregator Metrics
+    signal_aggregations: int = 0
+    best_indicator: str = "none"
+    best_indicator_accuracy: float = 0.0
+    aggregation_method: str = "argmax_weighted"
+    consensus_signals: int = 0
+    
+    # Position Sizer Metrics
+    kelly_fraction: float = 0.0
+    avg_position_size: float = 0.0
+    position_sizer_win_rate: float = 0.0
+    most_used_size: float = 0.0
+    
+    # Exit Selector Metrics
+    exit_evaluations: int = 0
+    best_exit_strategy: str = "none"
+    best_exit_utility: float = 0.0
+    exits_triggered: int = 0
+    avg_exit_utility: float = 0.0
+    
+    # Overall Decision Metrics
+    total_decisions: int = 0
+    decisions_per_minute: float = 0.0
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return {
+            'timestamp': self.timestamp.isoformat(),
+            'bandit_algorithm': self.bandit_algorithm,
+            'bandit_total_pulls': self.bandit_total_pulls,
+            'bandit_total_reward': self.bandit_total_reward,
+            'best_strategy': self.best_strategy,
+            'best_strategy_reward': self.best_strategy_reward,
+            'best_strategy_pulls': self.best_strategy_pulls,
+            'exploration_rate': self.exploration_rate,
+            'signal_aggregations': self.signal_aggregations,
+            'best_indicator': self.best_indicator,
+            'best_indicator_accuracy': self.best_indicator_accuracy,
+            'aggregation_method': self.aggregation_method,
+            'consensus_signals': self.consensus_signals,
+            'kelly_fraction': self.kelly_fraction,
+            'avg_position_size': self.avg_position_size,
+            'position_sizer_win_rate': self.position_sizer_win_rate,
+            'most_used_size': self.most_used_size,
+            'exit_evaluations': self.exit_evaluations,
+            'best_exit_strategy': self.best_exit_strategy,
+            'best_exit_utility': self.best_exit_utility,
+            'exits_triggered': self.exits_triggered,
+            'avg_exit_utility': self.avg_exit_utility,
+            'total_decisions': self.total_decisions,
+            'decisions_per_minute': self.decisions_per_minute
+        }
+
+
+class ArgmaxMetricsCollector:
+    """
+    Collector for argmax component metrics.
+    
+    Integrates with ArgmaxTradingEngine to track optimization performance.
+    """
+    
+    def __init__(self):
+        """Initialize argmax metrics collector."""
+        self.logger = logging.getLogger("Cthulu.argmax_metrics")
+        self.start_time = datetime.now()
+        self.last_update = datetime.now()
         
-
-
+        # Initialize tracking
+        self.strategy_selections = {}
+        self.indicator_performances = {}
+        self.position_sizes_used = []
+        self.exit_utilities = []
+        self.total_decisions = 0
+        
+        self.logger.info("ArgmaxMetricsCollector initialized")
+    
+    def update_from_engine(self, engine) -> ArgmaxMetrics:
+        """
+        Update metrics from ArgmaxTradingEngine.
+        
+        Args:
+            engine: ArgmaxTradingEngine instance
+            
+        Returns:
+            ArgmaxMetrics snapshot
+        """
+        now = datetime.now()
+        comprehensive = engine.get_comprehensive_metrics()
+        
+        # Extract bandit metrics
+        bandit_stats = comprehensive['bandit_selector']
+        best_strat, best_reward = engine.strategy_selector.get_best_strategy()
+        
+        # Extract signal aggregator metrics
+        signal_report = comprehensive['signal_aggregator']
+        indicator_rankings = engine.signal_aggregator.get_indicator_rankings()
+        best_indicator = indicator_rankings[0][0] if indicator_rankings else 'none'
+        best_ind_acc = indicator_rankings[0][1] if indicator_rankings else 0.0
+        
+        # Extract position sizer metrics
+        sizer_report = comprehensive['position_sizer']
+        kelly = sizer_report['current_parameters']['kelly_fraction']
+        
+        # Extract exit selector metrics
+        exit_report = comprehensive['exit_selector']
+        exit_rankings = []
+        for strategy_name, perf in exit_report.items():
+            if strategy_name not in ['total_evaluations']:
+                success_rate = perf.get('success_rate', 0.0)
+                exit_rankings.append((strategy_name, success_rate))
+        exit_rankings.sort(key=lambda x: x[1], reverse=True)
+        best_exit = exit_rankings[0][0] if exit_rankings else 'none'
+        
+        # Calculate decisions per minute
+        elapsed = (now - self.start_time).total_seconds() / 60.0
+        decisions_per_min = self.total_decisions / elapsed if elapsed > 0 else 0.0
+        
+        metrics = ArgmaxMetrics(
+            timestamp=now,
+            bandit_algorithm=bandit_stats['algorithm'],
+            bandit_total_pulls=bandit_stats['total_pulls'],
+            bandit_total_reward=bandit_stats['total_reward'],
+            best_strategy=best_strat or 'none',
+            best_strategy_reward=best_reward,
+            kelly_fraction=kelly,
+            avg_position_size=comprehensive['engine']['avg_position_size'],
+            signal_aggregations=comprehensive['engine']['signal_aggregations'],
+            best_indicator=best_indicator,
+            best_indicator_accuracy=best_ind_acc,
+            total_decisions=self.total_decisions,
+            decisions_per_minute=decisions_per_min,
+            best_exit_strategy=best_exit
+        )
+        
+        self.last_update = now
+        return metrics
+    
+    def log_report(self, metrics: ArgmaxMetrics):
+        """
+        Log comprehensive argmax metrics report.
+        
+        Args:
+            metrics: ArgmaxMetrics to log
+        """
+        self.logger.info("==================== ARGMAX METRICS ====================")
+        self.logger.info(f"Timestamp: {metrics.timestamp}")
+        self.logger.info("")
+        self.logger.info("STRATEGY SELECTION (Multi-Armed Bandit):")
+        self.logger.info(f"  Algorithm       : {metrics.bandit_algorithm.upper()}")
+        self.logger.info(f"  Total Pulls     : {metrics.bandit_total_pulls}")
+        self.logger.info(f"  Total Reward    : {metrics.bandit_total_reward:.2f}")
+        self.logger.info(f"  Best Strategy   : {metrics.best_strategy}")
+        self.logger.info(f"  Best Reward     : {metrics.best_strategy_reward:.2f}")
+        self.logger.info("")
+        self.logger.info("SIGNAL AGGREGATION:")
+        self.logger.info(f"  Method          : {metrics.aggregation_method}")
+        self.logger.info(f"  Aggregations    : {metrics.signal_aggregations}")
+        self.logger.info(f"  Best Indicator  : {metrics.best_indicator}")
+        self.logger.info(f"  Best Accuracy   : {metrics.best_indicator_accuracy:.2%}")
+        self.logger.info("")
+        self.logger.info("POSITION SIZING:")
+        self.logger.info(f"  Kelly Fraction  : {metrics.kelly_fraction:.3f}")
+        self.logger.info(f"  Avg Size        : {metrics.avg_position_size:.2%}")
+        self.logger.info("")
+        self.logger.info("EXIT MANAGEMENT:")
+        self.logger.info(f"  Best Exit       : {metrics.best_exit_strategy}")
+        self.logger.info(f"  Evaluations     : {metrics.exit_evaluations}")
+        self.logger.info(f"  Exits Triggered : {metrics.exits_triggered}")
+        self.logger.info("")
+        self.logger.info("OVERALL:")
+        self.logger.info(f"  Total Decisions : {metrics.total_decisions}")
+        self.logger.info(f"  Decisions/Min   : {metrics.decisions_per_minute:.2f}")
+        self.logger.info("========================================================")
 
 
 
