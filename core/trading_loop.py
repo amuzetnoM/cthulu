@@ -82,21 +82,9 @@ class TradingLoopContext:
     dynamic_sltp_manager: Optional[Any] = None  # Dynamic SL/TP management
     adaptive_drawdown_manager: Optional[Any] = None  # Adaptive drawdown management
     
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    # Observability collectors (for real-time data feeding)
-    indicator_collector: Optional[Any] = None  # IndicatorMetricsCollector instance
-    system_health_collector: Optional[Any] = None  # SystemHealthCollector instance
-=======
     # Observability collectors (in-process for real-time data)
     indicator_collector: Optional[Any] = None
     system_health_collector: Optional[Any] = None
->>>>>>> Stashed changes
-=======
-    # Observability collectors (in-process for real-time data)
-    indicator_collector: Optional[Any] = None
-    system_health_collector: Optional[Any] = None
->>>>>>> Stashed changes
     
     # CLI args
     args: Optional[Any] = None
@@ -781,24 +769,12 @@ class TradingLoop:
             self.ctx.logger.debug(f"Calculated SMA, ATR, and {len(self.ctx.indicators)} additional indicators")
             # Debug: log indicator columns for easy troubleshooting
             try:
-            
-            # Feed indicator data to the indicator collector for real-time monitoring
-            self._update_indicator_collector(df)
-            
                 indicator_cols = [c for c in df.columns if any(k in c.lower() for k in ('rsi', 'atr', 'adx'))]
                 self.ctx.logger.debug(f"Indicator-related columns: {indicator_cols}")
             except Exception:
                 pass
             
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-            # Feed indicator data to the indicator collector for real-time monitoring
-=======
-            # Feed indicator data to the in-process indicator collector for real-time monitoring
->>>>>>> Stashed changes
-=======
             # Feed indicator data to in-process collector for real-time monitoring
->>>>>>> Stashed changes
             self._update_indicator_collector(df)
             
             return df
@@ -1109,8 +1085,7 @@ class TradingLoop:
                 volume=result.filled_volume,
                 stop_loss=signal.stop_loss,
                 take_profit=signal.take_profit,
-                entry_time=datetime.now(),
-                commission=result.commission
+                entry_time=datetime.now()
             )
             self.ctx.database.record_trade(trade_record)
         else:
@@ -1452,174 +1427,22 @@ class TradingLoop:
                         try:
                             fp = getattr(self.ctx.exporter, '_file_path', None)
                             self.ctx.exporter.write_to_file(fp)
-                            except Exception:
-    def _update_indicator_collector(self, df: pd.DataFrame):
-        """
-        Update the indicator collector with real-time indicator data.
-        
-        Args:
-            df: DataFrame with calculated indicator columns
-        """
-        if not self.ctx.indicator_collector:
-            return
-        
-        try:
-            current_bar = df.iloc[-1]
-            
-            # Collect indicator updates
-            updates = {
-                'symbol': self.ctx.symbol,
-                'timeframe': str(self.ctx.timeframe),
-                'price_current': float(current_bar.get('close', 0)),
-            }
-            
-            # RSI
-            rsi_col = None
-            for col in df.columns:
-                if 'rsi' in col.lower():
-                    rsi_col = col
-                    break
-            if rsi_col and not pd.isna(current_bar.get(rsi_col)):
-                rsi_val = float(current_bar[rsi_col])
-                updates['rsi_value'] = rsi_val
-                updates['rsi_overbought'] = rsi_val >= 70
-                updates['rsi_oversold'] = rsi_val <= 30
-            
-            # MACD
-            macd_val = current_bar.get('macd') or current_bar.get('runtime_macd')
-            signal_val = current_bar.get('macd_signal') or current_bar.get('runtime_macd_signal')
-            hist_val = current_bar.get('macd_histogram') or current_bar.get('runtime_macd_histogram')
-            if macd_val is not None and not pd.isna(macd_val):
-                updates['macd_value'] = float(macd_val)
-            if signal_val is not None and not pd.isna(signal_val):
-                updates['macd_signal'] = float(signal_val)
-            if hist_val is not None and not pd.isna(hist_val):
-                updates['macd_histogram'] = float(hist_val)
-                if macd_val is not None:
-                    updates['macd_crossover'] = 'bullish' if float(hist_val) > 0 else 'bearish'
-            
-            # Bollinger Bands
-            bb_upper = current_bar.get('bb_upper') or current_bar.get('runtime_bollinger_upper')
-            bb_middle = current_bar.get('bb_middle') or current_bar.get('runtime_bollinger_middle')
-            bb_lower = current_bar.get('bb_lower') or current_bar.get('runtime_bollinger_lower')
-            if bb_upper is not None and not pd.isna(bb_upper):
-                updates['bb_upper'] = float(bb_upper)
-            if bb_middle is not None and not pd.isna(bb_middle):
-                updates['bb_middle'] = float(bb_middle)
-            if bb_lower is not None and not pd.isna(bb_lower):
-                updates['bb_lower'] = float(bb_lower)
-            
-            # ADX
-            adx_val = current_bar.get('adx') or current_bar.get('runtime_adx')
-            if adx_val is not None and not pd.isna(adx_val):
-                updates['adx_value'] = float(adx_val)
-                if float(adx_val) >= 25:
-                    updates['adx_trend_strength'] = 'strong' if float(adx_val) >= 50 else 'moderate'
-                else:
-                    updates['adx_trend_strength'] = 'weak'
-            
-            # ATR
-            atr_val = current_bar.get('atr') or current_bar.get('runtime_atr')
-            if atr_val is not None and not pd.isna(atr_val):
-                updates['atr_value'] = float(atr_val)
-            
-            # Volume
-            volume = current_bar.get('volume') or current_bar.get('tick_volume')
-            if volume is not None and not pd.isna(volume):
-                updates['volume_current'] = float(volume)
-                # Calculate relative volume if we have historical data
-                if len(df) >= 20:
-                    vol_col = 'volume' if 'volume' in df.columns else 'tick_volume'
-                    if vol_col in df.columns:
-                        avg_vol = df[vol_col].iloc[-20:].mean()
-                        if avg_vol > 0:
-                            updates['volume_avg'] = float(avg_vol)
-                            updates['volume_relative'] = float(volume) / float(avg_vol)
-            
-            # Price change
-            if len(df) >= 2:
-                prev_close = df['close'].iloc[-2]
-                curr_close = df['close'].iloc[-1]
-                if prev_close > 0:
-                    updates['price_change_pct'] = ((curr_close - prev_close) / prev_close) * 100
-            
-            # Count signal directions for confluence
-            bullish_count = 0
-            bearish_count = 0
-            
-            # RSI signals
-            if updates.get('rsi_oversold'):
-                bullish_count += 1
-            elif updates.get('rsi_overbought'):
-                bearish_count += 1
-            
-            # MACD signals
-            if updates.get('macd_crossover') == 'bullish':
-                bullish_count += 1
-            elif updates.get('macd_crossover') == 'bearish':
-                bearish_count += 1
-            
-            # ADX trend
-            if updates.get('adx_trend_strength') in ('moderate', 'strong'):
-                # Use price trend to determine direction
-                if updates.get('price_change_pct', 0) > 0:
-                    bullish_count += 1
-                else:
-                    bearish_count += 1
-            
-            updates['signal_count_bullish'] = bullish_count
-            updates['signal_count_bearish'] = bearish_count
-            updates['signal_count_neutral'] = 3 - bullish_count - bearish_count
-            
-            # Apply updates to indicator collector
-            self.ctx.indicator_collector.update_snapshot(**updates)
-            
-        except Exception as e:
-            self.ctx.logger.debug(f"Error updating indicator collector: {e}")                    except Exception:
+                        except Exception:
+                            self.ctx.logger.debug('Failed to write Prometheus metrics to file')
+                    except Exception:
                         self.ctx.logger.debug('Failed to publish metrics to Prometheus exporter')
             except Exception:
                 self.ctx.logger.exception('Failed to sync position summary into metrics')
             
             self.ctx.logger.info(f"Position stats: {stats}")
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-            
-            # Update system health collector with performance metrics
-            self._update_system_health_collector()
-    
-    def _update_indicator_collector(self, df: pd.DataFrame):
-        """
-        Update the indicator collector with real-time indicator data.
-=======
-    
-    def _update_indicator_collector(self, df: pd.DataFrame):
-        """
-        Update the indicator collector with real-time indicator data from the trading loop.
->>>>>>> Stashed changes
-        
-        Args:
-            df: DataFrame with calculated indicator columns
-        """
-        if not self.ctx.indicator_collector:
-<<<<<<< Updated upstream
-=======
-            self.ctx.logger.debug("No indicator_collector in context, skipping update")
->>>>>>> Stashed changes
-=======
     
     def _update_indicator_collector(self, df: pd.DataFrame):
         """Update the indicator collector with real-time indicator data."""
         if not self.ctx.indicator_collector:
->>>>>>> Stashed changes
             return
         
         try:
             current_bar = df.iloc[-1]
-<<<<<<< Updated upstream
-            
-            # Collect indicator updates
-=======
->>>>>>> Stashed changes
             updates = {
                 'symbol': self.ctx.symbol,
                 'timeframe': str(self.ctx.timeframe),
@@ -1627,42 +1450,6 @@ class TradingLoop:
             }
             
             # RSI
-<<<<<<< Updated upstream
-            rsi_col = None
-            for col in df.columns:
-                if 'rsi' in col.lower():
-                    rsi_col = col
-                    break
-            if rsi_col and not pd.isna(current_bar.get(rsi_col)):
-                rsi_val = float(current_bar[rsi_col])
-                updates['rsi_value'] = rsi_val
-                updates['rsi_overbought'] = rsi_val >= 70
-                updates['rsi_oversold'] = rsi_val <= 30
-            
-            # MACD
-            macd_val = current_bar.get('macd') or current_bar.get('runtime_macd')
-            signal_val = current_bar.get('macd_signal') or current_bar.get('runtime_macd_signal')
-            hist_val = current_bar.get('macd_histogram') or current_bar.get('runtime_macd_histogram')
-            if macd_val is not None and not pd.isna(macd_val):
-                updates['macd_value'] = float(macd_val)
-            if signal_val is not None and not pd.isna(signal_val):
-                updates['macd_signal'] = float(signal_val)
-            if hist_val is not None and not pd.isna(hist_val):
-                updates['macd_histogram'] = float(hist_val)
-                if macd_val is not None:
-                    updates['macd_crossover'] = 'bullish' if float(hist_val) > 0 else 'bearish'
-            
-            # Bollinger Bands
-            bb_upper = current_bar.get('bb_upper') or current_bar.get('runtime_bollinger_upper')
-            bb_middle = current_bar.get('bb_middle') or current_bar.get('runtime_bollinger_middle')
-            bb_lower = current_bar.get('bb_lower') or current_bar.get('runtime_bollinger_lower')
-            if bb_upper is not None and not pd.isna(bb_upper):
-                updates['bb_upper'] = float(bb_upper)
-            if bb_middle is not None and not pd.isna(bb_middle):
-                updates['bb_middle'] = float(bb_middle)
-            if bb_lower is not None and not pd.isna(bb_lower):
-                updates['bb_lower'] = float(bb_lower)
-=======
             for col in df.columns:
                 if 'rsi' in col.lower():
                     val = current_bar.get(col)
@@ -1671,20 +1458,12 @@ class TradingLoop:
                         updates['rsi_overbought'] = float(val) >= 70
                         updates['rsi_oversold'] = float(val) <= 30
                     break
->>>>>>> Stashed changes
             
             # ADX
             adx_val = current_bar.get('adx') or current_bar.get('runtime_adx')
             if adx_val is not None and not pd.isna(adx_val):
                 updates['adx_value'] = float(adx_val)
-<<<<<<< Updated upstream
-                if float(adx_val) >= 25:
-                    updates['adx_trend_strength'] = 'strong' if float(adx_val) >= 50 else 'moderate'
-                else:
-                    updates['adx_trend_strength'] = 'weak'
-=======
                 updates['adx_trend_strength'] = 'strong' if float(adx_val) >= 50 else ('moderate' if float(adx_val) >= 25 else 'weak')
->>>>>>> Stashed changes
             
             # ATR
             atr_val = current_bar.get('atr') or current_bar.get('runtime_atr')
@@ -1695,129 +1474,10 @@ class TradingLoop:
             volume = current_bar.get('volume') or current_bar.get('tick_volume')
             if volume is not None and not pd.isna(volume):
                 updates['volume_current'] = float(volume)
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                # Calculate relative volume if we have historical data
-=======
->>>>>>> Stashed changes
-                if len(df) >= 20:
-                    vol_col = 'volume' if 'volume' in df.columns else 'tick_volume'
-                    if vol_col in df.columns:
-                        avg_vol = df[vol_col].iloc[-20:].mean()
-                        if avg_vol > 0:
-                            updates['volume_avg'] = float(avg_vol)
-                            updates['volume_relative'] = float(volume) / float(avg_vol)
-            
-            # Price change
-            if len(df) >= 2:
-                prev_close = df['close'].iloc[-2]
-                curr_close = df['close'].iloc[-1]
-                if prev_close > 0:
-                    updates['price_change_pct'] = ((curr_close - prev_close) / prev_close) * 100
-            
-            # Count signal directions for confluence
-            bullish_count = 0
-            bearish_count = 0
-            
-<<<<<<< Updated upstream
-            # RSI signals
-=======
->>>>>>> Stashed changes
-            if updates.get('rsi_oversold'):
-                bullish_count += 1
-            elif updates.get('rsi_overbought'):
-                bearish_count += 1
-            
-<<<<<<< Updated upstream
-            # MACD signals
-=======
->>>>>>> Stashed changes
-            if updates.get('macd_crossover') == 'bullish':
-                bullish_count += 1
-            elif updates.get('macd_crossover') == 'bearish':
-                bearish_count += 1
-            
-<<<<<<< Updated upstream
-            # ADX trend
-            if updates.get('adx_trend_strength') in ('moderate', 'strong'):
-                # Use price trend to determine direction
-=======
-            if updates.get('adx_trend_strength') in ('moderate', 'strong'):
->>>>>>> Stashed changes
-                if updates.get('price_change_pct', 0) > 0:
-                    bullish_count += 1
-                else:
-                    bearish_count += 1
-            
-            updates['signal_count_bullish'] = bullish_count
-            updates['signal_count_bearish'] = bearish_count
-            updates['signal_count_neutral'] = 3 - bullish_count - bearish_count
-            
-            # Apply updates to indicator collector
-            self.ctx.indicator_collector.update_snapshot(**updates)
-<<<<<<< Updated upstream
-            
-        except Exception as e:
-            self.ctx.logger.debug(f"Error updating indicator collector: {e}")
-    
-    def _update_system_health_collector(self):
-        """
-        Update the system health collector with trading loop performance data.
-        """
-        if not self.ctx.system_health_collector:
-            return
-        
-        try:
-            # Calculate loop performance
-            loop_rate_hz = self.loop_count / max(1, (time.time() - getattr(self, '_start_time', time.time())))
-            
-            # Update workload metrics
-            try:
-                positions = self.ctx.position_manager.get_all_positions() if self.ctx.position_manager else []
-                self.ctx.system_health_collector.update_workload(
-                    pending=0,
-                    running=len(positions),
-                    completed=self.loop_count,
-                    queue_size=0
-                )
-            except Exception:
-                pass
-            
-            # Update performance metrics
-            self.ctx.system_health_collector.update_performance(
-                loop_rate_hz=loop_rate_hz,
-                avg_loop_ms=self.ctx.poll_interval * 1000 / max(1, self.loop_count),
-                max_loop_ms=self.ctx.poll_interval * 1000
-            )
-            
-            # Update API metrics
-            try:
-                is_connected = self.ctx.connector.is_connected() if self.ctx.connector else False
-                self.ctx.system_health_collector.update_api(
-                    mt5_connected=is_connected,
-                    latency_ms=0.0,
-                    rate_limit=100
-                )
-            except Exception:
-                pass
-            
-        except Exception as e:
-            self.ctx.logger.debug(f"Error updating system health collector: {e}")
-
-
-
-=======
-            self.ctx.logger.info(f"Updated indicator collector: RSI={updates.get('rsi_value', 'N/A'):.1f}, ADX={updates.get('adx_value', 'N/A')}, Price={updates.get('price_current', 0):.2f}")
-            
-        except Exception as e:
-            self.ctx.logger.warning(f"Error updating indicator collector: {e}")
->>>>>>> Stashed changes
-=======
             
             self.ctx.indicator_collector.update_snapshot(**updates)
             self.ctx.logger.info(f"Indicator collector updated: RSI={updates.get('rsi_value', 0):.1f}, ADX={updates.get('adx_value', 0):.1f}")
             
         except Exception as e:
             self.ctx.logger.warning(f"Error updating indicator collector: {e}")
->>>>>>> Stashed changes
 
