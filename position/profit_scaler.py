@@ -6,6 +6,7 @@ Implements intelligent profit scaling for micro and standard accounts:
 - Dynamic trailing stop adjustment
 - Balance-aware scaling thresholds
 - Runner protection with breakeven stops
+- ML-powered tier optimization (learns from outcomes)
 
 This is critical for SPARTA mode (micro account battle testing).
 """
@@ -17,6 +18,14 @@ import logging
 import math
 
 logger = logging.getLogger('Cthulu.profit_scaler')
+
+# ML Tier Optimizer integration
+try:
+    from cthulu.ML_RL.tier_optimizer import get_tier_optimizer, record_scaling_outcome
+    ML_OPTIMIZER_AVAILABLE = True
+except ImportError:
+    ML_OPTIMIZER_AVAILABLE = False
+    logger.info("ML Tier Optimizer not available, using static tiers")
 
 
 @dataclass
@@ -83,9 +92,11 @@ class ProfitScaler:
     
     Automatically takes partial profits and adjusts stops to lock gains.
     Designed for both micro accounts (SPARTA mode) and standard accounts.
+    Now with ML-powered tier optimization for adaptive learning.
     """
     
-    def __init__(self, connector, execution_engine, config: Optional[ScalingConfig] = None):
+    def __init__(self, connector, execution_engine, config: Optional[ScalingConfig] = None, 
+                 use_ml_optimizer: bool = True):
         """
         Initialize profit scaler.
         
@@ -93,15 +104,41 @@ class ProfitScaler:
             connector: MT5Connector instance
             execution_engine: ExecutionEngine for order management
             config: Scaling configuration
+            use_ml_optimizer: Whether to use ML-based tier optimization
         """
         self.connector = connector
         self.execution_engine = execution_engine
         self.config = config or ScalingConfig()
         self._position_states: Dict[int, PositionScalingState] = {}
         self._scaling_log: List[Dict[str, Any]] = []
+        self.use_ml_optimizer = use_ml_optimizer and ML_OPTIMIZER_AVAILABLE
+        
+        if self.use_ml_optimizer:
+            logger.info("ProfitScaler initialized with ML tier optimization enabled")
         
     def get_active_tiers(self, balance: float) -> List[ScalingTier]:
-        """Get appropriate tiers based on account balance"""
+        """Get appropriate tiers based on account balance, optionally ML-optimized"""
+        # Try ML-optimized tiers first
+        if self.use_ml_optimizer:
+            try:
+                optimizer = get_tier_optimizer()
+                ml_tiers = optimizer.get_optimized_tiers(balance)
+                
+                if ml_tiers and len(ml_tiers) >= 3:
+                    # Convert ML tier format to ScalingTier objects
+                    return [
+                        ScalingTier(
+                            profit_threshold_pct=t['profit_threshold_pct'] / 100,  # Convert from % to ratio
+                            close_pct=t['close_pct'] / 100,  # Convert from % to ratio
+                            move_sl_to_entry=True,
+                            trail_pct=0.50 + (i * 0.10)  # Progressive trailing
+                        )
+                        for i, t in enumerate(ml_tiers)
+                    ]
+            except Exception as e:
+                logger.warning(f"ML tier optimization failed, using defaults: {e}")
+                
+        # Fallback to static tiers
         if balance < self.config.micro_account_threshold:
             return self.config.micro_tiers
         return self.config.tiers
@@ -235,12 +272,13 @@ class ProfitScaler:
         
         return actions
     
-    def execute_actions(self, actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def execute_actions(self, actions: List[Dict[str, Any]], balance: float = 0.0) -> List[Dict[str, Any]]:
         """
         Execute scaling actions.
         
         Args:
             actions: List of actions from evaluate_position
+            balance: Current account balance for ML learning
             
         Returns:
             List of execution results
@@ -255,12 +293,31 @@ class ProfitScaler:
                 if action['type'] == 'close_partial':
                     result = self._execute_partial_close(ticket, action['volume'])
                     if result.get('success'):
+                        profit_captured = result.get('profit', 0)
                         if state:
                             state.current_volume -= action['volume']
-                            state.total_profit_taken += result.get('profit', 0)
+                            state.total_profit_taken += profit_captured
                             if 'tier' in action and action['tier'] >= 0:
                                 state.tiers_executed.append(action['tier'])
                             state.last_updated = datetime.now(timezone.utc)
+                            
+                            # Record outcome for ML optimization
+                            if self.use_ml_optimizer and 'tier' in action:
+                                try:
+                                    tier_name = f"tier_{action['tier']+1}" if action['tier'] >= 0 else "emergency"
+                                    record_scaling_outcome(
+                                        ticket=ticket,
+                                        tier=tier_name,
+                                        profit_threshold_triggered=action.get('profit_pct', 0),
+                                        close_pct=action['volume'] / state.initial_volume * 100 if state.initial_volume > 0 else 0,
+                                        profit_captured=profit_captured,
+                                        remaining_profit=0,  # Will be updated when position fully closes
+                                        account_balance=balance,
+                                        symbol=state.symbol
+                                    )
+                                except Exception as ml_err:
+                                    logger.debug(f"ML outcome recording failed: {ml_err}")
+                                    
                         self._log_scaling_action(action, result)
                     results.append(result)
                     
@@ -412,12 +469,45 @@ class ProfitScaler:
                 )
                 
                 if actions:
-                    results = self.execute_actions(actions)
+                    # Pass balance for ML learning
+                    results = self.execute_actions(actions, balance=balance)
                     all_results.extend(results)
                     
         except Exception as e:
             logger.exception("Scaling cycle error")
             all_results.append({'success': False, 'error': str(e), 'cycle_error': True})
+            
+        return all_results
+    
+    def run_ml_optimization(self) -> Dict[str, Any]:
+        """
+        Trigger ML tier optimization based on collected outcomes.
+        
+        Returns:
+            Optimization results summary
+        """
+        if not self.use_ml_optimizer:
+            return {'error': 'ML optimizer not available'}
+            
+        try:
+            from cthulu.ML_RL.tier_optimizer import run_tier_optimization
+            return run_tier_optimization("all")
+        except Exception as e:
+            logger.exception("ML optimization failed")
+            return {'error': str(e)}
+    
+    def get_ml_stats(self) -> Dict[str, Any]:
+        """Get ML optimizer statistics"""
+        if not self.use_ml_optimizer:
+            return {'available': False}
+            
+        try:
+            optimizer = get_tier_optimizer()
+            stats = optimizer.get_stats()
+            stats['available'] = True
+            return stats
+        except Exception as e:
+            return {'available': False, 'error': str(e)}
             
         return all_results
 

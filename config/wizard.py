@@ -425,24 +425,26 @@ def configure_indicators(current_indicators: List[Dict[str, Any]] = None) -> Lis
 
 
 def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
-    """Configure strategy-specific settings."""
-    print_section("STEP 5: Strategy Settings", 5, 7)
+    """Configure strategy-specific settings.
+    
+    UPDATED: Based on user feedback - Dynamic mode auto-selects all strategies/indicators.
+    Single mode allows manual selection.
+    """
+    print_section("STEP 5: Strategy Mode", 5, 7)
     
     strategy = deepcopy(current_strategy)
     params = strategy.get('params', {})
     
-    strategy_type = strategy.get('type', 'sma_crossover')
-    
     # Ask if user wants dynamic strategy selection
     print("  Choose strategy mode:\n")
-    print_option("1", "Single Strategy", "Use one strategy for all trades")
-    print_option("2", "Dynamic Selection", "Automatically switch between strategies based on market regime")
+    print_option("1", "Single Strategy", "Use one strategy - YOU choose indicators")
+    print_option("2", "Dynamic (Recommended)", "Auto-adapts to market - ALL strategies & indicators auto-selected")
     print()
     
-    mode_choice = get_input("Strategy mode (1-2)", "1")
+    mode_choice = get_input("Strategy mode (1-2)", "2")
     
     if mode_choice == "2":
-        # Dynamic strategy mode
+        # Dynamic strategy mode - AUTO-SELECT everything
         strategy['type'] = 'dynamic'
         strategy['dynamic_selection'] = {
             'regime_detection_enabled': True,
@@ -451,70 +453,27 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
             'switch_cooldown_bars': 10
         }
         
-        # Configure which strategies to include
-        print()
-        print("  Select strategies to include (comma-separated):\n")
-        print_option("1", "SMA Crossover", "Simple Moving Average crossover")
-        print_option("2", "EMA Crossover", "Exponential Moving Average crossover")
-        print_option("3", "Momentum Breakout", "Price momentum and breakout detection")
-        print_option("4", "Scalping", "Fast scalping with tight stops")
-        print_option("5", "Mean Reversion", "Bollinger Band bounce strategy")
-        print_option("6", "Trend Following", "ADX-confirmed trend following")
-        print()
+        # Auto-include ALL strategies for dynamic mode
+        strategy['strategies'] = [
+            {'type': 'sma_crossover', 'params': {'fast_period': 10, 'slow_period': 30}},
+            {'type': 'ema_crossover', 'params': {'fast_period': 12, 'slow_period': 26}},
+            {'type': 'momentum_breakout', 'params': {'lookback_period': 20, 'breakout_threshold': 1.5}},
+            {'type': 'scalping', 'params': {'quick_period': 5, 'trend_period': 20}},
+            {'type': 'mean_reversion', 'params': {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}},
+            {'type': 'trend_following', 'params': {'adx_period': 14, 'adx_threshold': 25, 'supertrend_period': 10}},
+            {'type': 'rsi_reversal', 'params': {'rsi_overbought': 75, 'rsi_oversold': 25}}
+        ]
         
-        strategies_choice = get_input("Select strategies (1-6, e.g., 1,2)", "1,2")
-        strategies_list = []
+        # Auto-include ALL indicators for dynamic mode
+        strategy['auto_indicators'] = True  # Flag for bootstrap to add all indicators
         
-        for choice in strategies_choice.split(','):
-            choice = choice.strip()
-            if not choice:
-                continue
-            if choice == "1":
-                strategies_list.append({
-                    'type': 'sma_crossover',
-                    'params': {'fast_period': 10, 'slow_period': 30}
-                })
-            elif choice == "2":
-                strategies_list.append({
-                    'type': 'ema_crossover',
-                    'params': {'fast_period': 12, 'slow_period': 26}
-                })
-            elif choice == "3":
-                strategies_list.append({
-                    'type': 'momentum_breakout',
-                    'params': {'lookback_period': 20, 'breakout_threshold': 1.5}
-                })
-            elif choice == "4":
-                strategies_list.append({
-                    'type': 'scalping',
-                    'params': {'quick_period': 5, 'trend_period': 20}
-                })
-            elif choice == "5":
-                strategies_list.append({
-                    'type': 'mean_reversion',
-                    'params': {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}
-                })
-            elif choice == "6":
-                strategies_list.append({
-                    'type': 'trend_following',
-                    'params': {'adx_period': 14, 'adx_threshold': 25, 'supertrend_period': 10}
-                })
-        
-        # Ensure at least two strategies are present for dynamic mode (safe defaults)
-        if not strategies_list:
-            strategies_list = [
-                {'type': 'sma_crossover', 'params': {'fast_period': 10, 'slow_period': 30}},
-                {'type': 'ema_crossover', 'params': {'fast_period': 12, 'slow_period': 26}}
-            ]
-            print_warning("No strategies selected. Defaulting to SMA Crossover and EMA Crossover")
-
-        strategy['strategies'] = strategies_list
-        print_success(f"Dynamic mode with {len(strategies_list)} strategies enabled")
+        print_success("Dynamic mode enabled - ALL strategies and indicators auto-selected")
+        print_info("System will automatically adapt to market conditions")
         
     else:
-        # Single strategy mode
+        # Single strategy mode - user selects manually
         print()
-        print("  Choose strategy type:\n")
+        print("  Choose your strategy:\n")
         print_option("1", "SMA Crossover", "Simple Moving Average crossover (recommended)")
         print_option("2", "EMA Crossover", "Exponential Moving Average crossover")
         print_option("3", "Momentum Breakout", "Price momentum and breakout detection")

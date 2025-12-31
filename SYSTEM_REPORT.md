@@ -1,7 +1,7 @@
 # Cthulu System Report
 
-**Version:** 5.1.0 - APEX
-**Last Updated:** 2025-01-01T00:15:00Z
+**Version:** 5.1.0 - APEX  
+**Last Updated:** 2025-01-01T00:25:00Z  
 **Classification:** SOURCE OF TRUTH
 
 ## 🎆 HAPPY NEW YEAR 2025! 🎆
@@ -13,7 +13,7 @@
 | **Balance** | $5.00 | $30.01 | **+500.2%** |
 | Total Trades | 0 | 10+ | Profitable |
 | Max Drawdown | - | -$2.50 | Recovered |
-| Session Duration | - | 60 min | Continuous |
+| Session Duration | - | 120+ min | Continuous |
 | Fatal Errors | - | 0 | Perfect |
 
 **SPARTA MODE: MISSION ACCOMPLISHED** 🎯
@@ -27,8 +27,35 @@
 | Balance | $30.01 | 🟢 **+500%** from $5 start |
 | Open Positions | 0 | 🟢 Profits locked |
 | System Status | Ready | 🟢 Operational |
-| Observability | Active | 🟢 3 services running |
+| Observability | Active | 🟢 All services running |
 | Dashboard | Live | 🟢 [dashboard.html](observability/reporting/dashboard.html) |
+
+---
+
+## 🧠 ML TIER OPTIMIZER (NEW - 2025-01-01)
+
+**Just Implemented:** Machine Learning-based profit tier optimization
+
+### Features:
+- **Adaptive Learning:** Learns optimal profit-taking tiers from historical outcomes
+- **Account-Size Aware:** Different optimizations for micro (<$100), small (<$500), standard
+- **Conservative Updates:** Maximum 10% change per optimization cycle
+- **Persistence:** State saved to `ML_RL/data/tier_optimizer/optimizer_state.json`
+
+### Files Added:
+- `ML_RL/tier_optimizer.py` - Core optimizer with gradient-free search
+- `position/profit_scaler.py` - Integrated with ML optimizer
+
+### Usage:
+```python
+from cthulu.ML_RL.tier_optimizer import get_tier_optimizer, run_tier_optimization
+
+# Get optimized tiers for account balance
+tiers = get_tier_optimizer().get_optimized_tiers(balance=30.0)
+
+# Run optimization after collecting outcomes
+results = run_tier_optimization("all")
+```
 
 ---
 
@@ -40,6 +67,7 @@
 - ✅ Dynamic equity/balance protection at all market conditions
 - ✅ Intelligent profit scaling - lock gains while letting winners run
 - ✅ Profit maximization with minimal drawdown
+- ✅ ML-powered tier optimization (NEW!)
 
 **SAFE: Set And Forget Engine** - The ultimate autonomous trading system.
 
