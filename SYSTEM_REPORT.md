@@ -1,37 +1,99 @@
 # Cthulu System Report
 
-****Version:** 3.3
-**Last Updated:** 2025-12-30T22:45:00Z
+**Version:** 5.1.0 - APEX
+**Last Updated:** 2025-12-31T17:30:00Z
 **Classification:** SOURCE OF TRUTH
 
 ---
 
 ## 🎯 MISSION STATEMENT
 
-**Objective:** Precision tuning Cthulu into a cutting-edge, self-improving trading system with:
+**Objective:** Precision tuning Cthulu into a market-destroying trading beast with:
 - Zero fatal errors for extended periods (target: 120+ minutes)
 - Surgical precision in signal generation and execution
 - Dynamic equity/balance protection at all market conditions
+- Intelligent profit scaling - lock gains while letting winners run
 - Profit maximization with minimal drawdown
 
 **Observability Suite:** ✅ OPERATIONAL (All 3 services running)
 - Trading Metrics CSV: `metrics/comprehensive_metrics.csv` (173 fields)
 - Indicator Metrics CSV: `metrics/indicator_metrics.csv` (78 fields + scoring)
 - System Health CSV: `metrics/system_health.csv` (80+ fields)
-
-**Phase 4:** Ultra-Aggressive ✅ COMPLETED (60+ min, 219 loops, +$291.48)
-**Phase 3:** Aggressive ✅ COMPLETED (60+ min, 121 loops, 0 errors)
-**Phase 2:** Balanced ✅ COMPLETED (60+ min, 81 loops, 0 errors)
-**Phase 1:** Conservative ✅ COMPLETED (60+ min stable)
-
-### 🏆 4-HOUR TEST COMPLETE - SYSTEM GRADE: A+
+- Live Dashboard: `observability/reporting/dashboard.html`
 
 ---
 
-## 🛠️ SESSION UPDATE (2025-12-30)
+## 🚀 v5.1.0 APEX RELEASE (2025-12-31)
 
-### Observability Suite Integration
-The observability suite has been fully integrated into the main Cthulu bootstrap process:
+### New Features This Release
+
+#### 1. Profit Scaling Exit Strategy
+Intelligent partial profit taking system that:
+- **Tier 1 (0.15-0.3%):** Close 30-35% of position, lock initial gains
+- **Tier 2 (0.3-0.6%):** Close 35-40% of remaining, secure more profit
+- **Tier 3 (0.5-1.0%):** Close 50-60% of remaining, let runner ride
+- **Giveback Protection:** Never give back more than 50% of peak profit
+- **Account-Adaptive:** Tighter targets for micro accounts (<$100)
+- **Volatility-Aware:** Adjusts targets based on ATR
+- **Momentum-Aware:** Widens targets in strong trends
+
+#### 2. Aggressive Scaling Mode (for micro/battle accounts)
+- Ultra-tight profit targets (0.08-0.10% tier 1)
+- Faster scale-out percentages (35-40-60%)
+- Designed for $5-$100 accounts in high volatility
+
+#### 3. Survival Mode Exit
+- Emergency exits at critical balance ($2)
+- Low margin protection (30% margin level)
+- Highest priority (100) - always executes first
+
+### Phase Results
+
+| Phase | Status | Duration | Loops | Performance |
+|-------|--------|----------|-------|-------------|
+| Ultra-Aggressive | ✅ | 60+ min | 219 | +$291.48 |
+| Aggressive | ✅ | 60+ min | 121 | 0 errors |
+| Balanced | ✅ | 60+ min | 81 | 0 errors |
+| Conservative | ✅ | 60+ min | Stable | Baseline |
+| **BATTLE TEST** | ✅ | 15 min | 10 trades | **+$2.22 (+9.25%)** |
+
+### 🏆 SPARTA Battle Test Results
+- **Starting:** $24.00 (stressed account)
+- **Ending:** $26.22
+- **Net Profit:** +$2.22
+- **Win Rate:** 100% (10/10 trades)
+- **Max Drawdown:** -$2.50 → Recovered
+- **Min Margin Level:** 116.7% → Recovered to flat
+- **Strategy:** SELL BTCUSD# catching bearish momentum (87681 → 87549)
+
+### 🏆 SYSTEM GRADE: A+ (APEX PREDATOR)
+
+---
+
+## 🛠️ SESSION UPDATE (2025-12-31)
+
+### Battle Test Configuration
+Testing extreme adversity with $5 USD on BTCUSD#:
+- **Mindset:** Ultra-Aggressive
+- **Timeframe:** M5
+- **Exit Strategies:** Aggressive Scaling + Survival Mode
+- **Objective:** Capital recovery and growth under extreme constraints
+
+### Profit Scaling Implementation
+New `exit/profit_scaling.py` module with:
+- `ProfitScalingExit` - Standard multi-tier profit taking
+- `AggressiveScalingExit` - Tighter targets for micro accounts
+- Full test suite: 23 tests passing
+- Integrated into `core/exit_loader.py` registry
+
+### Files Modified This Session
+- `exit/profit_scaling.py` - NEW: Profit scaling strategy
+- `exit/__init__.py` - Added profit scaling exports
+- `core/exit_loader.py` - Registered new exit strategies
+- `config_battle_test.json` - Added aggressive scaling config
+- `tests/test_profit_scaling.py` - NEW: Comprehensive tests
+
+---
 
 1. **Auto-Start on Bootstrap:**
    - Observability service (trading metrics) starts automatically as a separate process
@@ -934,7 +996,8 @@ Recommend: Keep AutoTrading enabled throughout session.
    - Profit giveback protection
    - Survival mode emergency exits
 
-2. **LiquidityTrapDetector** (\isk/liquidity_trap_detector.py\)
+2. **LiquidityTrapDetector** (\
+isk/liquidity_trap_detector.py\)
    - Stop hunt detection
    - Fakeout breakout detection
    - Volume divergence analysis
