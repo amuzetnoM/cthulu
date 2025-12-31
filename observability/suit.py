@@ -90,7 +90,7 @@ class ObservabilitySuite:
             if obs_process:
                 self.processes.append(("Observability", obs_process))
                 self.logger.info("  ✓ Observability Service started (PID: {})".format(obs_process.pid))
-                self.logger.info("    Output: observability/reporting/comprehensive_metrics.csv")
+                self.logger.info("    Output: metrics/comprehensive_metrics.csv")
             else:
                 self.logger.warning("  ✗ Failed to start Observability Service")
             
@@ -103,7 +103,7 @@ class ObservabilitySuite:
                 if ind_process:
                     self.processes.append(("Indicator", ind_process))
                     self.logger.info("  ✓ Indicator Service started (PID: {})".format(ind_process.pid))
-                    self.logger.info("    Output: monitoring/indicator_metrics.csv")
+                    self.logger.info("    Output: metrics/indicator_metrics.csv")
                 else:
                     self.logger.warning("  ✗ Failed to start Indicator Service")
                 
@@ -115,7 +115,7 @@ class ObservabilitySuite:
                 if sys_process:
                     self.processes.append(("System Health", sys_process))
                     self.logger.info("  ✓ System Health Service started (PID: {})".format(sys_process.pid))
-                    self.logger.info("    Output: monitoring/system_health.csv")
+                    self.logger.info("    Output: metrics/system_health.csv")
                 else:
                     self.logger.warning("  ✗ Failed to start System Health Service")
             else:
@@ -130,11 +130,11 @@ class ObservabilitySuite:
                 self.logger.info("OBSERVABILITY SERVICE RUNNING")
             self.logger.info("=" * 60)
             self.logger.info("")
-            self.logger.info("Canonical Output Files:")
-            self.logger.info("  1. observability/reporting/comprehensive_metrics.csv (173 fields)")
+            self.logger.info("Canonical Output Files (centralized in metrics/):")
+            self.logger.info("  1. metrics/comprehensive_metrics.csv (173 fields)")
             if MONITORING_AVAILABLE:
-                self.logger.info("  2. monitoring/indicator_metrics.csv (78 fields + scoring)")
-                self.logger.info("  3. monitoring/system_health.csv (80+ fields)")
+                self.logger.info("  2. metrics/indicator_metrics.csv (78 fields + scoring)")
+                self.logger.info("  3. metrics/system_health.csv (80+ fields)")
             self.logger.info("")
             
             if enable_prometheus and http_port:
@@ -243,10 +243,10 @@ Examples:
   # Run all with CSV + Prometheus + custom port
   python -m observability.suit --csv --prom --9090
 
-Output Files (3 Canonical CSVs):
-  1. observability/reporting/comprehensive_metrics.csv (173 trading metrics)
-  2. monitoring/indicator_metrics.csv (78 indicator/signal fields + scoring)
-  3. monitoring/system_health.csv (80+ system health/performance fields)
+Output Files (3 Canonical CSVs - centralized in metrics/):
+  1. metrics/comprehensive_metrics.csv (173 trading metrics)
+  2. metrics/indicator_metrics.csv (78 indicator/signal fields + scoring)
+  3. metrics/system_health.csv (80+ system health/performance fields)
         """
     )
     

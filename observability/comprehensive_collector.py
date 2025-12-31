@@ -220,16 +220,18 @@ class ComprehensiveMetricsCollector:
         Initialize metrics collector.
         
         Args:
-            csv_path: Path to CSV file (default: observability/reporting/comprehensive_metrics.csv)
+            csv_path: Path to CSV file (default: metrics/comprehensive_metrics.csv)
             update_interval: Seconds between metric updates
             enable_prometheus: Whether to enable Prometheus export
         """
         self.logger = logging.getLogger("cthulu.comprehensive_metrics")
         
-        # Determine CSV path
+        # Determine CSV path - centralized in metrics/ directory
         if csv_path is None:
-            base_dir = Path(__file__).parent
-            csv_path = base_dir / "reporting" / "comprehensive_metrics.csv"
+            base_dir = Path(__file__).parent.parent  # Go up to cthulu root
+            metrics_dir = base_dir / "metrics"
+            metrics_dir.mkdir(parents=True, exist_ok=True)
+            csv_path = metrics_dir / "comprehensive_metrics.csv"
         self.csv_path = Path(csv_path)
         
         self.update_interval = update_interval

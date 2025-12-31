@@ -199,3 +199,4 @@ The dashboard calculates grades based on:
 
 For examples and more details, see `docs/Changelog/CHANGELOG.md` and the tests (`tests/unit/test_metrics_improved.py`, `tests/unit/test_metrics_prometheus_integration.py`).
 
+

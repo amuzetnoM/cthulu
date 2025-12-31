@@ -271,10 +271,10 @@ Examples:
     http_port = args.port
     
     if args.csv:
-        # Auto-path for CSV in observability/reporting/
-        reporting_dir = Path(__file__).parent / "reporting"
-        reporting_dir.mkdir(exist_ok=True)
-        csv_path = str(reporting_dir / "comprehensive_metrics.csv")
+        # Auto-path for CSV in centralized metrics/ directory
+        metrics_dir = Path(__file__).parent.parent / "metrics"
+        metrics_dir.mkdir(exist_ok=True)
+        csv_path = str(metrics_dir / "comprehensive_metrics.csv")
     
     if args.prom or args.port:
         # Auto-path for Prometheus in prometheus/tmp/

@@ -4,7 +4,7 @@ Indicator & Signal Monitoring Collector
 Real-time collection of all indicator values, signals, and calculated scores.
 Creates comprehensive CSV output for signal optimization and analysis.
 
-Output: monitoring/indicator_metrics.csv
+Output: metrics/indicator_metrics.csv
 """
 
 import os
@@ -128,16 +128,18 @@ class IndicatorMetricsCollector:
         Initialize collector.
         
         Args:
-            csv_path: Path to output CSV (default: monitoring/indicator_metrics.csv)
+            csv_path: Path to output CSV (default: metrics/indicator_metrics.csv)
             config_path: Path to JSON config (default: monitoring/indicator_config.json)
             update_interval: Seconds between CSV writes
         """
         self.logger = logging.getLogger("cthulu.indicator_collector")
         
-        # Set paths
+        # Set paths - CSV goes to centralized metrics/ directory
         if csv_path is None:
-            monitoring_dir = Path(__file__).parent
-            csv_path = str(monitoring_dir / "indicator_metrics.csv")
+            cthulu_root = Path(__file__).parent.parent
+            metrics_dir = cthulu_root / "metrics"
+            metrics_dir.mkdir(parents=True, exist_ok=True)
+            csv_path = str(metrics_dir / "indicator_metrics.csv")
         if config_path is None:
             monitoring_dir = Path(__file__).parent
             config_path = str(monitoring_dir / "indicator_config.json")

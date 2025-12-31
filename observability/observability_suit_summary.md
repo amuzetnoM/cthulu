@@ -20,26 +20,26 @@ Three independent services providing complete observability:
 Cthulu Trading System
 │
 ├─→ Observability Service (separate process)
-│   └─→ observability/reporting/comprehensive_metrics.csv (173 trading metrics)
+│   └─→ metrics/comprehensive_metrics.csv (173 trading metrics)
 │
 └─→ Monitoring Services (2 separate processes)
-    ├─→ Indicator Monitoring → monitoring/indicator_metrics.csv (78 fields + scoring)
-    └─→ System Health → monitoring/system_health.csv (80+ fields)
+    ├─→ Indicator Monitoring → metrics/indicator_metrics.csv (78 fields + scoring)
+    └─→ System Health → metrics/system_health.csv (80+ fields)
 ```
 
 ## Three Canonical CSV Files
 
 These are the single sources of truth for Cthulu's performance analysis:
 
-1. **observability/reporting/comprehensive_metrics.csv** - Trading metrics (173 fields)
-2. **monitoring/indicator_metrics.csv** - Indicator/signal data with confidence scoring (78 fields)
-3. **monitoring/system_health.csv** - System health & performance (80+ fields)
+1. **metrics/comprehensive_metrics.csv** - Trading metrics (173 fields)
+2. **metrics/indicator_metrics.csv** - Indicator/signal data with confidence scoring (78 fields)
+3. **metrics/system_health.csv** - System health & performance (80+ fields)
 
 ---
 
 ## 1. Observability Service
 
-**Output:** `observability/reporting/comprehensive_metrics.csv`
+**Output:** `metrics/comprehensive_metrics.csv`
 
 ### Simplified CLI
 
@@ -100,7 +100,7 @@ process = start_observability_service(enable_prometheus=False)
 
 ## 2. Indicator Monitoring Service
 
-**Output:** `monitoring/indicator_metrics.csv` (78 fields)
+**Output:** `metrics/indicator_metrics.csv` (78 fields)
 
 ### Features
 
@@ -217,7 +217,7 @@ python -m monitoring.service indicator
 
 ## 3. System Health Monitoring Service
 
-**Output:** `monitoring/system_health.csv` (80+ fields)
+**Output:** `metrics/system_health.csv` (80+ fields)
 
 ### Features
 
@@ -320,17 +320,17 @@ Trading System
     │
     ├─→ ComprehensiveMetricsCollector → observability.service
     │                                         ↓
-    │                         observability/reporting/comprehensive_metrics.csv
+    │                         metrics/comprehensive_metrics.csv
     │                                         ↓
     │                                   (optional: Prometheus → Grafana)
     │
     ├─→ IndicatorMetricsCollector → monitoring.service (indicator)
     │                                         ↓
-    │                           monitoring/indicator_metrics.csv
+    │                           metrics/indicator_metrics.csv
     │
     └─→ SystemHealthCollector → monitoring.service (system)
                                               ↓
-                                monitoring/system_health.csv
+                                metrics/system_health.csv
 ```
 
 ---
@@ -374,7 +374,7 @@ Use comprehensive metrics to optimize system performance:
 ```python
 # Read system health CSV
 import pandas as pd
-health_df = pd.read_csv('monitoring/system_health.csv')
+health_df = pd.read_csv('metrics/system_health.csv')
 
 # Identify performance issues
 slow_loops = health_df[health_df['performance_loop_rate_hz'] < 40]
@@ -392,7 +392,7 @@ Use observability metrics for detailed trade analysis:
 
 ```python
 # Read comprehensive metrics CSV
-metrics_df = pd.read_csv('observability/reporting/comprehensive_metrics.csv')
+metrics_df = pd.read_csv('metrics/comprehensive_metrics.csv')
 
 # Analyze execution quality
 avg_slippage = metrics_df['execution_avg_slippage_pips'].mean()
@@ -513,3 +513,4 @@ python -m observability.suit --csv
 ```
 
 All services run as separate processes with zero impact on trading performance. CSV files are continuously updated in real-time, providing comprehensive data for analysis, optimization, and decision-making.
+

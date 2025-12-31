@@ -4,7 +4,7 @@ System Health Monitoring Collector
 Tracks system-level metrics: processes, workloads, resources, performance.
 Does NOT track trading metrics - purely system operations.
 
-Output: monitoring/system_health.csv
+Output: metrics/system_health.csv
 """
 
 import os
@@ -140,15 +140,17 @@ class SystemHealthCollector:
         Initialize collector.
         
         Args:
-            csv_path: Path to output CSV (default: monitoring/system_health.csv)
+            csv_path: Path to output CSV (default: metrics/system_health.csv)
             update_interval: Seconds between CSV writes (default: 5.0)
         """
         self.logger = logging.getLogger("cthulu.system_health_collector")
         
-        # Set path
+        # Set path - CSV goes to centralized metrics/ directory
         if csv_path is None:
-            monitoring_dir = Path(__file__).parent
-            csv_path = str(monitoring_dir / "system_health.csv")
+            cthulu_root = Path(__file__).parent.parent
+            metrics_dir = cthulu_root / "metrics"
+            metrics_dir.mkdir(parents=True, exist_ok=True)
+            csv_path = str(metrics_dir / "system_health.csv")
         
         self.csv_path = csv_path
         self.update_interval = update_interval

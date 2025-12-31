@@ -46,12 +46,12 @@ def start_observability_service(
     try:
         from observability.service import start_observability_process
         
-        # Set defaults with simplified paths
+        # Set defaults with centralized metrics/ directory
         if csv_path is None:
-            # Auto-path: observability/reporting/
-            reporting_dir = Path(__file__).parent / "reporting"
-            reporting_dir.mkdir(exist_ok=True)
-            csv_path = str(reporting_dir / "comprehensive_metrics.csv")
+            # Auto-path: metrics/ (centralized)
+            metrics_dir = Path(__file__).parent.parent / "metrics"
+            metrics_dir.mkdir(exist_ok=True)
+            csv_path = str(metrics_dir / "comprehensive_metrics.csv")
         
         if prom_path is None and enable_prometheus:
             # Auto-path: prometheus/tmp/ (only if Prometheus enabled)

@@ -23,9 +23,9 @@ Three specialized monitoring services that create comprehensive CSV outputs:
 
 ```
 Cthulu Trading System v5.1 "Apex"
-    ├─→ Indicator Collector → monitoring/indicator_metrics.csv
-    ├─→ System Health Collector → monitoring/system_health.csv
-    └─→ Comprehensive Collector → observability/reporting/comprehensive_metrics.csv
+    ├─→ Indicator Collector → metrics/indicator_metrics.csv
+    ├─→ System Health Collector → metrics/system_health.csv
+    └─→ Comprehensive Collector → metrics/comprehensive_metrics.csv
                                         │
                                         ↓
                               Dashboard (dashboard.html)
@@ -36,14 +36,14 @@ Cthulu Trading System v5.1 "Apex"
 ```
 
 **3 Canonical CSV Files:**
-1. `monitoring/indicator_metrics.csv` - Indicator/signal data with scoring
-2. `monitoring/system_health.csv` - System health metrics  
-3. `observability/reporting/comprehensive_metrics.csv` - Trading metrics
+1. `metrics/indicator_metrics.csv` - Indicator/signal data with scoring
+2. `metrics/system_health.csv` - System health metrics  
+3. `metrics/comprehensive_metrics.csv` - Trading metrics
 
 ## 1. Indicator Monitoring Service
 
 **File:** `monitoring/indicator_collector.py`  
-**Output:** `monitoring/indicator_metrics.csv`  
+**Output:** `metrics/indicator_metrics.csv`  
 **Purpose:** Monitor all indicators and strategies with automatic confidence/confluence scoring
 
 ### Features
@@ -140,7 +140,7 @@ from monitoring.indicator_collector import IndicatorMetricsCollector
 
 # Create collector
 collector = IndicatorMetricsCollector(
-    csv_path="monitoring/indicator_metrics.csv",  # Optional
+    csv_path="metrics/indicator_metrics.csv",  # Optional
     config_path="monitoring/indicator_config.json",  # Optional
     update_interval=1.0  # Seconds between CSV writes
 )
@@ -183,7 +183,7 @@ python -m monitoring.service indicator --config my_config.json
 ## 2. System Health Monitoring Service
 
 **File:** `monitoring/system_health_collector.py`  
-**Output:** `monitoring/system_health.csv`  
+**Output:** `metrics/system_health.csv`  
 **Purpose:** Track system-level operations, NOT trading metrics
 
 ### Features
@@ -248,7 +248,7 @@ from monitoring.system_health_collector import SystemHealthCollector
 
 # Create collector
 collector = SystemHealthCollector(
-    csv_path="monitoring/system_health.csv",  # Optional
+    csv_path="metrics/system_health.csv",  # Optional
     update_interval=5.0  # Seconds between collections
 )
 
@@ -352,8 +352,8 @@ system_collector.update_performance(loop_rate, avg_time, max_time)
 - `monitoring/indicator_config.json` - Indicator configuration
 
 **Outputs:**
-- `monitoring/indicator_metrics.csv` - Indicator data (1-second updates)
-- `monitoring/system_health.csv` - System health (5-second updates)
+- `metrics/indicator_metrics.csv` - Indicator data (1-second updates)
+- `metrics/system_health.csv` - System health (5-second updates)
 
 **Configuration:**
 - `monitoring/indicator_config.json` - Extensible indicator/strategy config
@@ -417,3 +417,4 @@ pip install psutil  # For system health monitoring
 **Outputs:** 2 canonical CSV files  
 **Design:** Extensible, JSON-configured, with automatic scoring  
 **Integration:** Direct integration with trading loop
+

@@ -6,7 +6,11 @@ slug: /docs/features
 sidebar_position: 2
 ---
 
+<<<<<<< Updated upstream
 ![version-badge](https://img.shields.io/badge/version-5.1.0_Apex-blue)
+=======
+![version-badge](https://img.shields.io/badge/version-5.1.0-indigo.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
+>>>>>>> Stashed changes
 
 ## Overview
 

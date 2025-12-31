@@ -15,9 +15,9 @@
 - Profit maximization with minimal drawdown
 
 **Observability Suite:** ✅ OPERATIONAL (All 3 services running)
-- Trading Metrics CSV: `observability/reporting/comprehensive_metrics.csv` (173 fields)
-- Indicator Metrics CSV: `monitoring/indicator_metrics.csv` (78 fields + scoring)
-- System Health CSV: `monitoring/system_health.csv` (80+ fields)
+- Trading Metrics CSV: `metrics/comprehensive_metrics.csv` (173 fields)
+- Indicator Metrics CSV: `metrics/indicator_metrics.csv` (78 fields + scoring)
+- System Health CSV: `metrics/system_health.csv` (80+ fields)
 
 **Phase 4:** Ultra-Aggressive ✅ COMPLETED (60+ min, 219 loops, +$291.48)
 **Phase 3:** Aggressive ✅ COMPLETED (60+ min, 121 loops, 0 errors)
@@ -168,9 +168,9 @@ Three canonical CSV outputs - single sources of truth:
 
 | CSV File | Fields | Purpose |
 |----------|--------|---------|
-| `observability/reporting/comprehensive_metrics.csv` | 173 | Trading metrics (account, trades, risk, execution) |
-| `monitoring/indicator_metrics.csv` | 78 | Indicator/signal data with confidence scoring |
-| `monitoring/system_health.csv` | 80+ | System health & performance |
+| `metrics/comprehensive_metrics.csv` | 173 | Trading metrics (account, trades, risk, execution) |
+| `metrics/indicator_metrics.csv` | 78 | Indicator/signal data with confidence scoring |
+| `metrics/system_health.csv` | 80+ | System health & performance |
 
 **Run Command:** `python -m observability.suit --csv`
 
@@ -833,4 +833,5 @@ BTC is in extreme overbought territory (RSI>85). System is correctly:
 **System is FULLY AUTONOMOUS and will continue trading.**
 
 **Safe travels! 🛫**
+
 

@@ -55,8 +55,8 @@
 
 <body>
   <h1>Cthulu Observability Dashboard</h1>
-  <div class="small">Auto-refresh every 5s · Data sources: comprehensive_metrics.csv, indicator_metrics.csv,
-    system_health.csv</div>
+  <div class="small">Auto-refresh every 5s · Data sources: metrics/comprehensive_metrics.csv, metrics/indicator_metrics.csv,
+    metrics/system_health.csv</div>
   <div class="grid">
     <div class="card">
       <h3>Account Balance</h3><canvas id="balanceChart" class="chart"></canvas>
@@ -74,10 +74,10 @@
   <div class="card" style="margin-top:16px">
     <h3>Raw Files</h3>
     <ul>
-      <li><a href="/observability/reporting/comprehensive_metrics.csv" target="_blank">comprehensive_metrics.csv</a>
+      <li><a href="/metrics/comprehensive_metrics.csv" target="_blank">comprehensive_metrics.csv</a>
       </li>
-      <li><a href="/monitoring/indicator_metrics.csv" target="_blank">indicator_metrics.csv</a></li>
-      <li><a href="/monitoring/system_health.csv" target="_blank">system_health.csv</a></li>
+      <li><a href="/metrics/indicator_metrics.csv" target="_blank">indicator_metrics.csv</a></li>
+      <li><a href="/metrics/system_health.csv" target="_blank">system_health.csv</a></li>
     </ul>
   </div>
   <script>
@@ -113,7 +113,7 @@
     }
     async function refresh() {
       try {
-        const comp = await loadCSV('/observability/reporting/comprehensive_metrics.csv');
+        const comp = await loadCSV('/metrics/comprehensive_metrics.csv');
         const ti = comp.header.indexOf('timestamp');
         const balIdx = comp.header.indexOf('account_balance');
         const wrIdx = comp.header.indexOf('win_rate');
@@ -122,13 +122,13 @@
         drawLine('balanceChart', balanceSeries, '#0a84ff');
         drawLine('winRateChart', winRateSeries, '#2ecc71');
 
-        const ind = await loadCSV('/monitoring/indicator_metrics.csv');
+        const ind = await loadCSV('/metrics/indicator_metrics.csv');
         const rsiIdx = ind.header.indexOf('rsi_value');
         const its = ind.header.indexOf('timestamp');
         const rsiSeries = ind.rows.map(r => ({ x: r[its], y: parseFloat(r[rsiIdx] || 0) }));
         drawLine('rsiChart', rsiSeries, '#e67e22');
 
-        const sys = await loadCSV('/monitoring/system_health.csv');
+        const sys = await loadCSV('/metrics/system_health.csv');
         const cpuIdx = sys.header.indexOf('system_cpu_percent');
         const stsIdx = sys.header.indexOf('timestamp');
         const cpuSeries = sys.rows.map(r => ({ x: r[stsIdx], y: parseFloat(r[cpuIdx] || 0) }));
@@ -159,9 +159,9 @@ function addKpi(grid, name, value, pct, spark){
   grid.appendChild(card);
 }
 async function computeBenchmarks(){
-  const comp = await loadCSV('/observability/reporting/comprehensive_metrics.csv');
-  const ind  = await loadCSV('/monitoring/indicator_metrics.csv');
-  const sys  = await loadCSV('/monitoring/system_health.csv');
+  const comp = await loadCSV('/metrics/comprehensive_metrics.csv');
+  const ind  = await loadCSV('/metrics/indicator_metrics.csv');
+  const sys  = await loadCSV('/metrics/system_health.csv');
   const H=comp.header,R=comp.rows; if(H.length===0||R.length<2){return}
   function idx(nameList){for(const n of nameList){const i=H.indexOf(n); if(i!==-1) return i;} return -1}
   const eqIdx=idx(['account_equity','equity']); const balIdx=idx(['account_balance','balance']);
@@ -214,9 +214,9 @@ async function genCharts(url, containerId){
   });
 }
 async function refreshAll(){
-  await genCharts('/observability/reporting/comprehensive_metrics.csv','compCharts');
-  await genCharts('/monitoring/indicator_metrics.csv','indCharts');
-  await genCharts('/monitoring/system_health.csv','sysCharts');
+  await genCharts('/metrics/comprehensive_metrics.csv','compCharts');
+  await genCharts('/metrics/indicator_metrics.csv','indCharts');
+  await genCharts('/metrics/system_health.csv','sysCharts');
 }
 setInterval(refreshAll, 5000);
 refreshAll();
