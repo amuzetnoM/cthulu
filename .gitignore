@@ -103,3 +103,8 @@ config.json.bak
 
 # Ignore Prometheus metrics textfile
 metrics/
+
+# Observability CSV files (contain runtime data)
+monitoring/*.csv
+observability/**/*.csv
+*.csv

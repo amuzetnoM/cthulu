@@ -199,6 +199,10 @@ class ComprehensiveMetricsSnapshot:
     profit_factor_grade: str = ""
     drawdown_grade: str = ""
     sharpe_grade: str = ""
+    
+    # Current Price Data (2)
+    current_price: float = 0.0
+    current_symbol: str = ""
 
 
 class ComprehensiveMetricsCollector:
@@ -211,23 +215,25 @@ class ComprehensiveMetricsCollector:
     - In-memory for API access
     """
     
-    def __init__(self, csv_path: str = None, update_interval: float = 1.0):
+    def __init__(self, csv_path: str = None, update_interval: float = 1.0, enable_prometheus: bool = False):
         """
         Initialize metrics collector.
         
         Args:
-            csv_path: Path to CSV file (default: observability/comprehensive_metrics.csv)
+            csv_path: Path to CSV file (default: observability/reporting/comprehensive_metrics.csv)
             update_interval: Seconds between metric updates
+            enable_prometheus: Whether to enable Prometheus export
         """
         self.logger = logging.getLogger("cthulu.comprehensive_metrics")
         
         # Determine CSV path
         if csv_path is None:
             base_dir = Path(__file__).parent
-            csv_path = base_dir / "comprehensive_metrics.csv"
+            csv_path = base_dir / "reporting" / "comprehensive_metrics.csv"
         self.csv_path = Path(csv_path)
         
         self.update_interval = update_interval
+        self.enable_prometheus = enable_prometheus
         self.running = False
         self.thread = None
         
@@ -525,6 +531,46 @@ class ComprehensiveMetricsCollector:
                 self.current.exposure_limit_rejections += 1
             elif 'daily' in reason_lower or 'loss' in reason_lower:
                 self.current.daily_loss_limit_rejections += 1
+    
+    def update_account_metrics(self, balance: float = None, equity: float = None, 
+                               margin: float = None, free_margin: float = None,
+                               margin_level: float = None):
+        """Update account metrics from trading loop"""
+        with self.lock:
+            if balance is not None:
+                self.current.account_balance = balance
+            if equity is not None:
+                self.current.account_equity = equity
+                if equity > self.current.peak_equity:
+                    self.current.peak_equity = equity
+                if self.current.trough_equity == 0 or equity < self.current.trough_equity:
+                    self.current.trough_equity = equity
+            if margin is not None:
+                self.current.account_margin = margin
+            if free_margin is not None:
+                self.current.account_free_margin = free_margin
+            if margin_level is not None:
+                self.current.account_margin_level = margin_level
+    
+    def update_position_metrics(self, active_positions: int = None, unrealized_pnl: float = None):
+        """Update position metrics from trading loop"""
+        with self.lock:
+            if active_positions is not None:
+                self.current.active_positions = active_positions
+                self.current.open_positions_count = active_positions
+                if active_positions > self.current.max_concurrent_positions:
+                    self.current.max_concurrent_positions = active_positions
+            if unrealized_pnl is not None:
+                self.current.unrealized_pnl = unrealized_pnl
+                self.current.total_pnl = self.current.realized_pnl + unrealized_pnl
+    
+    def update_price_metrics(self, current_price: float = None, symbol: str = None):
+        """Update price metrics from trading loop"""
+        with self.lock:
+            if current_price is not None:
+                self.current.current_price = current_price
+            if symbol is not None:
+                self.current.current_symbol = symbol
     
     def get_current_snapshot(self) -> ComprehensiveMetricsSnapshot:
         """Get current metrics snapshot"""

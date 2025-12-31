@@ -254,7 +254,17 @@ def main():
             exporter=components.exporter,
             dynamic_sltp_manager=components.dynamic_sltp_manager,
             adaptive_drawdown_manager=components.adaptive_drawdown_manager,
+            indicator_collector=getattr(components, 'indicator_collector', None),
+            system_health_collector=getattr(components, 'system_health_collector', None),
+            comprehensive_collector=getattr(components, 'comprehensive_collector', None),
         )
+        
+        # Log collector status
+        logger.info(f"Context collectors: indicator={trading_context.indicator_collector is not None}, "
+                   f"comprehensive={trading_context.comprehensive_collector is not None}, "
+                   f"system_health={trading_context.system_health_collector is not None}")
+        logger.info(f"Components collectors: indicator={getattr(components, 'indicator_collector', None) is not None}, "
+                   f"comprehensive={getattr(components, 'comprehensive_collector', None) is not None}")
         
         trading_loop = TradingLoop(trading_context)
         logger.info("Trading loop initialized")

@@ -85,6 +85,7 @@ class TradingLoopContext:
     # Observability collectors (in-process for real-time data)
     indicator_collector: Optional[Any] = None
     system_health_collector: Optional[Any] = None
+    comprehensive_collector: Optional[Any] = None
     
     # CLI args
     args: Optional[Any] = None
@@ -366,6 +367,11 @@ class TradingLoop:
         """
         self.ctx.logger.info("Starting autonomous trading loop...")
         self.ctx.logger.info("Press Ctrl+C to shutdown gracefully")
+        
+        # Log collector status
+        self.ctx.logger.info(f"Collectors: indicator={self.ctx.indicator_collector is not None}, "
+                            f"comprehensive={self.ctx.comprehensive_collector is not None}, "
+                            f"system_health={self.ctx.system_health_collector is not None}")
         
         try:
             while not self._shutdown_requested:
@@ -776,6 +782,9 @@ class TradingLoop:
             
             # Feed indicator data to in-process collector for real-time monitoring
             self._update_indicator_collector(df)
+            
+            # Feed comprehensive metrics with current data
+            self._update_comprehensive_collector(df)
             
             return df
         
@@ -1480,4 +1489,54 @@ class TradingLoop:
             
         except Exception as e:
             self.ctx.logger.warning(f"Error updating indicator collector: {e}")
+    
+    def _update_comprehensive_collector(self, df: pd.DataFrame = None):
+        """Update the comprehensive collector with real-time trading data."""
+        if not self.ctx.comprehensive_collector:
+            self.ctx.logger.debug("Comprehensive collector not available")
+            return
+        
+        try:
+            # Get account info from connector
+            if self.ctx.connector and self.ctx.connector.connected:
+                try:
+                    import MetaTrader5 as mt5
+                    account_info = mt5.account_info()
+                    if account_info:
+                        self.ctx.comprehensive_collector.update_account_metrics(
+                            balance=account_info.balance,
+                            equity=account_info.equity,
+                            margin=account_info.margin,
+                            free_margin=account_info.margin_free,
+                            margin_level=account_info.margin_level if account_info.margin_level else 0.0
+                        )
+                except Exception as e:
+                    self.ctx.logger.debug(f"Failed to get MT5 account info: {e}")
+            
+            # Get position info
+            try:
+                positions = self.ctx.position_tracker.get_all_positions() if self.ctx.position_tracker else []
+                open_count = len(positions)
+                unrealized_pnl = sum(getattr(p, 'unrealized_pnl', 0) or 0 for p in positions)
+                self.ctx.comprehensive_collector.update_position_metrics(
+                    active_positions=open_count,
+                    unrealized_pnl=unrealized_pnl
+                )
+            except Exception as e:
+                self.ctx.logger.debug(f"Failed to get position info: {e}")
+            
+            # Update price data if df provided
+            if df is not None and len(df) > 0:
+                try:
+                    current_bar = df.iloc[-1]
+                    self.ctx.comprehensive_collector.update_price_metrics(
+                        current_price=float(current_bar.get('close', 0)),
+                        symbol=self.ctx.symbol
+                    )
+                except Exception as e:
+                    self.ctx.logger.debug(f"Failed to update price metrics: {e}")
+                    
+        except Exception as e:
+            self.ctx.logger.warning(f"Error updating comprehensive collector: {e}")
+
 

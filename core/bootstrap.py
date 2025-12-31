@@ -62,6 +62,11 @@ class SystemComponents:
     # Dynamic SL/TP and Adaptive Drawdown (cutting-edge risk management)
     dynamic_sltp_manager: Any = None
     adaptive_drawdown_manager: Any = None
+    
+    # In-process observability collectors
+    indicator_collector: Any = None
+    system_health_collector: Any = None
+    comprehensive_collector: Any = None
 
 
 class CthuluBootstrap:
@@ -663,18 +668,21 @@ class CthuluBootstrap:
             # By default, start observability unless explicitly disabled
             if obs_cfg.get('enabled', True):
                 try:
-                    from observability.integration import start_observability_service
-                    
-                    # Start comprehensive observability service (trading metrics) as separate process
-                    obs_process = start_observability_service(
-                        enable_prometheus=obs_cfg.get('prometheus', {}).get('enabled', False)
-                    )
-                    if obs_process:
-                        components.observability_process = obs_process
-                        self.logger.info(f"Observability service started (PID: {obs_process.pid})")
-                    
                     # NOTE: We use IN-PROCESS collectors instead of separate processes
                     # This allows the trading loop to feed real-time data to the collectors
+                    
+                    # Create in-process comprehensive collector for real-time trading data
+                    try:
+                        from observability.comprehensive_collector import ComprehensiveMetricsCollector
+                        comprehensive_collector = ComprehensiveMetricsCollector(
+                            update_interval=1.0,
+                            enable_prometheus=obs_cfg.get('prometheus', {}).get('enabled', False)
+                        )
+                        comprehensive_collector.start()
+                        components.comprehensive_collector = comprehensive_collector
+                        self.logger.info(f"In-process comprehensive collector started for real-time data (obj={comprehensive_collector is not None})")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to start in-process comprehensive collector: {e}")
                     
                     # Create in-process indicator collector for real-time data feeding
                     try:
