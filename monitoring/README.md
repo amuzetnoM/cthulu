@@ -2,22 +2,37 @@
 
 Core monitoring infrastructure for Cthulu's indicators, signals, and system health.
 
+![version-badge](https://img.shields.io/badge/version-5.1.0_Apex-blue)
+
 ## Overview
 
-Two specialized monitoring services that create comprehensive CSV outputs:
+Three specialized monitoring services that create comprehensive CSV outputs:
 
 1. **Indicator Monitoring** - Real-time indicator values, signals, and confidence scoring
 2. **System Health Monitoring** - Process metrics, resources, and performance tracking
+3. **Comprehensive Metrics** - Trading performance, equity, and position tracking
+
+### NEW in v5.1 "Apex"
+
+- **Real-Time Dashboard** - HTML dashboard with live charts and benchmarking
+- **RSI Reversal Tracking** - Monitors RSI extreme reversals for signal analysis
+- **Multi-Strategy Attribution** - Tracks which strategy (primary or fallback) generated signals
+- **Enhanced Benchmarking** - Automated grade calculation (A+ to F)
 
 ## Architecture
 
 ```
-Cthulu Trading System
+Cthulu Trading System v5.1 "Apex"
     ├─→ Indicator Collector → monitoring/indicator_metrics.csv
-    └─→ System Health Collector → monitoring/system_health.csv
-
-Observability Service (separate)
-    └─→ observability/reporting/comprehensive_metrics.csv
+    ├─→ System Health Collector → monitoring/system_health.csv
+    └─→ Comprehensive Collector → observability/reporting/comprehensive_metrics.csv
+                                        │
+                                        ↓
+                              Dashboard (dashboard.html)
+                                 ├─→ Balance/Equity Charts
+                                 ├─→ RSI/ADX Charts
+                                 ├─→ Benchmarking Tools
+                                 └─→ Performance Grades
 ```
 
 **3 Canonical CSV Files:**
@@ -83,7 +98,7 @@ Edit `monitoring/indicator_config.json` to add/remove indicators:
 - VWAP - Volume weighted average price
 - ATR - Average True Range
 
-### Current Strategies (6)
+### Current Strategies (7)
 
 - SMA Crossover - Simple moving average
 - EMA Crossover - Exponential moving average
@@ -91,6 +106,7 @@ Edit `monitoring/indicator_config.json` to add/remove indicators:
 - Mean Reversion - Overbought/oversold
 - Momentum Breakout - Breakout detection
 - Scalping - Quick trades
+- **RSI Reversal (NEW in v5.1)** - Pure RSI-based trading without crossovers
 
 ### Output Columns (78 fields)
 

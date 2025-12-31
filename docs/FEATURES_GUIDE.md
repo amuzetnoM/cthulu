@@ -1,32 +1,87 @@
 ---
 title: Advanced Features
 description: Comprehensive guide to Cthulu's advanced trading strategies, next-generation indicators, and dynamic strategy selection system
-tags: [features, strategies, indicators, dynamic-selection]
+tags: [features, strategies, indicators, dynamic-selection, SAFE]
 slug: /docs/features
 sidebar_position: 2
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
+![version-badge](https://img.shields.io/badge/version-5.1.0_Apex-blue)
 
 ## Overview
 
-This document describes the major features of the Cthulu trading system, and its transformation from a basic SMA crossover system into a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection and next-generation indicators.
+This document describes the major features of the Cthulu trading system — a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection, next-generation indicators, and the revolutionary **SAFE (Set And Forget Engine)** architecture.
+
+### SAFE: Set And Forget Engine
+
+Cthulu v5.1 "Apex" introduces the SAFE paradigm:
+- **S**mart strategy selection with intelligent fallback
+- **A**daptive to all market conditions (ranging, trending, volatile)
+- **F**ully autonomous signal generation without manual intervention
+- **E**xpert-level risk management with survival mode protection
 
 ## Table of Contents
 
-1. [New Trading Strategies](#new-trading-strategies)
+1. [Trading Strategies (7 Active)](#trading-strategies)
 2. [Next-Generation Indicators](#next-generation-indicators)
 3. [Dynamic Strategy Selection](#dynamic-strategy-selection)
-4. [Ultra-Aggressive Mode](#ultra-aggressive-mode)
-5. [Configuration Guide](#configuration-guide)
-6. [Usage Examples](#usage-examples)
-7. [Performance Tuning](#performance-tuning)
+4. [Multi-Strategy Fallback](#multi-strategy-fallback)
+5. [Ultra-Aggressive Mode](#ultra-aggressive-mode)
+6. [Equity Curve Management](#equity-curve-management)
+7. [Configuration Guide](#configuration-guide)
+8. [Usage Examples](#usage-examples)
+9. [Performance Tuning](#performance-tuning)
 
 ---
 
-## New Trading Strategies
+## Trading Strategies
 
-### 1. EMA Crossover Strategy
+Cthulu v5.1 "Apex" includes **7 active trading strategies**, each optimized for specific market conditions:
+
+| Strategy | Type | Best Regime | Signal Speed | Crossover Required |
+|----------|------|-------------|--------------|-------------------|
+| RSI Reversal | Reversal | REVERSAL, VOLATILE | Instant | ❌ No |
+| EMA Crossover | Trend | TRENDING | Fast | ✅ Yes |
+| SMA Crossover | Trend | TRENDING_WEAK | Medium | ✅ Yes |
+| Momentum Breakout | Breakout | VOLATILE_BREAKOUT | Medium | ❌ No |
+| Scalping | Mean Reversion | RANGING_TIGHT | Ultra-Fast | ✅ Yes |
+| Mean Reversion | Reversal | RANGING | Fast | ❌ No |
+| Trend Following | Trend | TRENDING_STRONG | Slow | ❌ No |
+
+### 1. RSI Reversal Strategy (NEW in v5.1)
+
+**Purpose**: Trade immediately on RSI extremes without waiting for crossovers
+**Optimal Timeframes**: M5, M15, M30
+**Key Innovation**: No crossover dependency — signals fire instantly on RSI direction change
+
+**Configuration Example**:
+```json
+{
+  "type": "rsi_reversal",
+  "params": {
+    "rsi_period": 14,
+    "rsi_extreme_oversold": 25,
+    "rsi_extreme_overbought": 85,
+    "atr_multiplier": 1.5,
+    "risk_reward_ratio": 2.0,
+    "cooldown_bars": 2,
+    "symbol": "BTCUSD#"
+  }
+}
+```
+
+**Signal Logic**:
+- **LONG**: Previous RSI ≤ oversold threshold AND current RSI > previous RSI AND RSI < 50
+- **SHORT**: Previous RSI ≥ overbought threshold AND current RSI < previous RSI AND RSI > 50
+
+**When to Use**:
+- Volatile markets with frequent overbought/oversold conditions
+- When crossover strategies are too slow
+- Crypto markets with high RSI oscillation
+
+---
+
+### 2. EMA Crossover Strategy
 
 **Purpose**: Faster reaction to price changes for day trading
 **Optimal Timeframes**: M15, M30, H1
@@ -425,9 +480,12 @@ Each strategy has optimal performance in certain regimes (0.0-1.0 scale):
 | **SMA Crossover** | 0.90 | 0.85 | 0.90 | 0.85 | 0.30 | 0.40 | 0.60 | 0.50 | 0.40 | 0.70 |
 | **EMA Crossover** | 0.95 | 0.90 | 0.95 | 0.90 | 0.40 | 0.50 | 0.70 | 0.60 | 0.50 | 0.75 |
 | **Momentum Breakout** | 0.80 | 0.70 | 0.80 | 0.70 | 0.50 | 0.60 | 0.95 | 0.80 | 0.30 | 0.85 |
-| **Scalping** | 0.60 | 0.65 | 0.60 | 0.65 | 0.90 | 0.85 | 0.40 | 0.50 | 0.70 | 0.55 |
-| **Mean Reversion** | 0.40 | 0.45 | 0.40 | 0.45 | 0.95 | 0.90 | 0.30 | 0.35 | 0.85 | 0.60 |
-| **Trend Following** | 0.95 | 0.80 | 0.95 | 0.80 | 0.20 | 0.25 | 0.80 | 0.70 | 0.30 | 0.90 |
+| **Scalping** | 0.60 | 0.65 | 0.60 | 0.65 | 0.95 | 0.85 | 0.40 | 0.50 | 0.70 | 0.55 |
+| **Mean Reversion** | 0.40 | 0.45 | 0.40 | 0.45 | 0.95 | 0.85 | 0.50 | 0.70 | 0.90 | 0.80 |
+| **Trend Following** | 0.98 | 0.90 | 0.98 | 0.90 | 0.20 | 0.30 | 0.80 | 0.40 | 0.30 | 0.50 |
+| **RSI Reversal** ⭐ | 0.50 | 0.60 | 0.50 | 0.60 | 0.90 | 0.85 | 0.70 | **0.95** | 0.85 | **0.98** |
+
+⭐ **RSI Reversal** (NEW in v5.1): Highest affinity for REVERSAL and VOLATILE_CONSOLIDATION regimes
 
 ### Performance Tracking
 
@@ -452,6 +510,46 @@ Total Score = (Performance × 0.4) + (Regime Affinity × 0.4) + (Confidence × 0
 
 **Best Strategy**: Highest total score wins
 
+### Multi-Strategy Fallback (NEW in v5.1)
+
+The fallback mechanism dramatically increases signal generation by trying multiple strategies:
+
+**How It Works**:
+1. Primary strategy (highest score) is tried first
+2. If no signal, calculate scores for all remaining strategies
+3. Try top 3 alternatives in descending score order
+4. First strategy to generate a valid signal wins
+5. Attribution logged for performance tracking
+
+**Code Flow**:
+```python
+def generate_signal(data, bar):
+    # 1. Select primary strategy
+    primary = self.select_strategy(data)
+    signal = primary.on_bar(bar)
+    
+    # 2. If no signal, try fallbacks
+    if signal is None:
+        scores = self._calculate_all_scores(data)
+        sorted_strategies = sorted(scores.items(), key=lambda x: x[1]['total'], reverse=True)
+        
+        for name, score in sorted_strategies[:3]:
+            if name != primary.name:
+                fallback = self.strategies[name]
+                signal = fallback.on_bar(bar)
+                if signal:
+                    logger.info(f"Fallback signal from {name} (score={score['total']:.3f})")
+                    return signal
+    
+    return signal
+```
+
+**Benefits**:
+- **No missed opportunities**: Even if scalping needs a crossover, RSI Reversal can fire
+- **Regime adaptability**: Different strategies catch different conditions
+- **Performance tracking**: Attribution enables strategy optimization
+- **Configurable depth**: Adjust fallback count (default: 3)
+
 ### Usage Example
 
 ```python
@@ -461,23 +559,24 @@ from cthulu.strategy.strategy_selector import StrategySelector
 strategies = [
     EmaCrossover(config1),
     MomentumBreakout(config2),
-    ScalpingStrategy(config3)
+    ScalpingStrategy(config3),
+    RsiReversalStrategy(config4)  # NEW in v5.1
 ]
 
 # Initialize selector
 selector = StrategySelector(strategies=strategies, config={
     'regime_check_interval': 180,  # Check every 3 minutes
     'min_strategy_signals': 5,
-    'performance_weight': 0.4,
-    'regime_weight': 0.4,
-    'confidence_weight': 0.2
+    'performance_weight': 0.35,
+    'regime_weight': 0.35,
+    'confidence_weight': 0.30
 })
 
-# Generate signal (auto-selects best strategy)
+# Generate signal (auto-selects best strategy with fallback)
 signal = selector.generate_signal(data, latest_bar)
 
 # Record outcome for learning
-selector.record_outcome('ema_crossover', 'win', 150.0)
+selector.record_outcome('rsi_reversal', 'win', 150.0)
 
 # Get performance report
 report = selector.get_performance_report()

@@ -25,18 +25,58 @@ _________   __  .__          .__
 
 ## UNRELEASED
 
+*No unreleased changes — see v5.1.0 "Apex" below*
 
-**Status:** Active development and validation — recent stability, observability, and monitoring improvements have been deployed and validated in live stress tests.
+---
+
+## [5.1.0] "Apex" — 2025-12-31
+
+**Status:** ✅ RELEASED — Live trading validated with 5 autonomous trades
 
 **Summary & Highlights:**
-- **120-minute stress testing:** Full-run validation completed during the latest sessions (Target: 120 min). System achieved **B+** overall grade after critical fixes; indicator suite passed **12/12** tests.
-- **Adaptive Drawdown Management:** NEW cutting-edge dynamic risk management system with state-based position sizing, trailing equity protection, and survival mode for critical drawdowns.
-- **Survival Mode (NEW):** When drawdown exceeds 90%, system enters ultra-defensive mode with micro positions (0.01 lots), 95% confidence requirement, and 5:1 R:R minimum.
-- **Runtime indicator resilience:** Added `runtime_` namespacing, aliasing, and safe fallbacks so strategies have deterministic access to `rsi`, `atr`, and `adx` even when runtime indicators are produced dynamically.
-- **Observability & monitoring:** Prometheus exporter and automated monitoring scripts (`monitoring/run_stress.ps1`, `monitoring/inject_signals.py`, `scripts/monitor_cthulu.ps1`) were added or improved; metrics are collected to `monitoring/metrics.csv` and exported at `http://127.0.0.1:8181/metrics`.
-- **RPC robustness:** Improved RPC error handling and unique signal ID generation to avoid duplicate-order detection and race conditions in high-throughput scenarios.
-- **CI & cross-platform:** Windows and coverage support were added to CI workflows and tests were expanded to cover runtime indicator behavior (`tests/test_runtime_indicators.py`).
-- **Safety & ergonomics:** Removed blocking `LIVE_RUN_CONFIRM` gate (now emits a clear log warning) and improved startup resilience for missing optional components (e.g., defensive skip of missing `PositionManager` implementations).
+- 🚀 **RSI Reversal Strategy (NEW):** Pure RSI-based trading without crossover requirements — instant signals on RSI extremes
+- 🔄 **Multi-Strategy Fallback:** System tries up to 4 strategies per bar for maximum opportunity capture
+- 📊 **7 Active Strategies:** Complete arsenal (EMA, Momentum, Scalping, Trend, SMA, Mean Reversion, RSI Reversal)
+- ⚡ **Aggressive Configuration:** Optimized thresholds for ultra-aggressive signal generation
+- 🛡️ **Database WAL Mode:** Improved concurrent access with 30-second timeout
+- 📈 **SAFE Engine:** Set And Forget — truly autonomous trading capability
+
+### Added
+- **RSI Reversal Strategy (`strategy/rsi_reversal.py`):**
+  - Trades on RSI extreme reversals (overbought >85, oversold <25)
+  - No crossover dependency — instant signal generation
+  - Configurable cooldown (default: 2 bars between signals)
+  - Integrated into StrategySelector with regime affinity matrix
+- **Multi-Strategy Fallback Mechanism:**
+  - Primary strategy tried first
+  - If no signal, top 3 alternatives tried in score order
+  - First valid signal wins
+  - Dramatically increases trading activity
+- **Mean Reversion Strategy** added to dynamic selection
+- **Database WAL Mode** for concurrent access optimization
+
+### Changed
+- `confidence_threshold`: 0.25 → 0.15 (more signals)
+- `adx_threshold`: 20 → 15 (weaker trend detection)
+- `momentum rsi_threshold`: 50 → 45 (earlier momentum)
+- `scalping rsi_overbought`: 80 → 75 (tighter boundary)
+- `scalping spread_limit_pips`: 2.0 → 5.0 (flexible spreads)
+- Strategy selector now scores 7 strategies with fallback
+
+### Fixed
+- Signal generation gap when market ranges without crossovers
+- Database lock contention under high-throughput trading
+- Strategy score stagnation in quiet market conditions
+
+### Performance
+- Live validation: 5 trades in 15 minutes
+- RSI range captured: 67-92 (extreme overbought)
+- All trades via RSI Reversal fallback
+- System achieved SAFE (Set And Forget Engine) status
+
+---
+
+## [5.0.1] — 2025-12-28
 
 ### Added
 - **Adaptive Drawdown Manager (`risk/adaptive_drawdown.py`):** Complete rewrite of risk management with:

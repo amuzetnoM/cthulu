@@ -133,7 +133,69 @@ For complete RPC documentation, see [development_log/rpc.md](development_log/rpc
 
 ---
 
-For examples and more details, see `docs/changelog/CHANGELOG.md` and the tests (`tests/unit/test_metrics_improved.py`, `tests/unit/test_metrics_prometheus_integration.py`).
+## Real-Time Dashboard & Benchmarking (NEW in v5.1)
 
+Cthulu v5.1 includes a comprehensive real-time monitoring dashboard with benchmarking capabilities.
 
+### Dashboard Location
+`observability/reporting/dashboard.html`
+
+### Features
+
+**Real-Time Charts (Auto-Refresh):**
+- Balance & Equity tracking
+- RSI oscillation with overbought/oversold zones
+- ADX trend strength with color coding
+- Price movement visualization
+
+**Comprehensive Metrics Display:**
+- All trading metrics from `comprehensive_metrics.csv`
+- All indicator metrics from `indicator_metrics.csv`
+- System health metrics from `system_health_metrics.csv`
+
+**Benchmarking Tools:**
+- Performance grade calculation (A+ to F)
+- Win rate, profit factor, Sharpe ratio
+- Risk:Reward distribution analysis
+- Session duration tracking
+- Strategy performance comparison
+
+### CSV Data Sources
+
+| CSV File | Purpose | Update Frequency |
+|----------|---------|------------------|
+| `comprehensive_metrics.csv` | Full trading state | Every loop (~15s) |
+| `indicator_metrics.csv` | Technical indicators | Every loop |
+| `system_health_metrics.csv` | CPU, memory, connections | Every loop |
+
+### Launching the Dashboard
+
+```powershell
+# Option 1: PowerShell one-liner
+Start-Process "C:\workspace\cthulu\observability\reporting\dashboard.html"
+
+# Option 2: Run observability suite
+cd C:\workspace\cthulu\observability
+python run_all_collectors.py
+
+# Option 3: Via monitoring script
+.\monitoring\monitor_dashboard.ps1
+```
+
+### Custom Benchmarking
+
+The dashboard calculates grades based on:
+
+| Grade | Win Rate | Profit Factor | Criteria |
+|-------|----------|---------------|----------|
+| A+ | >70% | >3.0 | Exceptional performance |
+| A | >60% | >2.5 | Excellent performance |
+| B | >55% | >2.0 | Good performance |
+| C | >50% | >1.5 | Acceptable performance |
+| D | >45% | >1.0 | Below average |
+| F | <45% | <1.0 | Needs improvement |
+
+---
+
+For examples and more details, see `docs/Changelog/CHANGELOG.md` and the tests (`tests/unit/test_metrics_improved.py`, `tests/unit/test_metrics_prometheus_integration.py`).
 
