@@ -6,7 +6,7 @@ slug: /docs/performance-tuning
 sidebar_position: 6
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.1.0-indigo) ![codename-badge](https://img.shields.io/badge/codename-APEX-gold)
+![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo)
 
 ## Table of Contents
 - [Overview](#overview)

@@ -6,7 +6,7 @@ slug: /docs/risk-management
 sidebar_position: 9
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.1.0-indigo) ![codename-badge](https://img.shields.io/badge/codename-APEX-gold)
+![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo)
 
 
 ## Overview

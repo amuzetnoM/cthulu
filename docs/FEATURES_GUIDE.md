@@ -14,7 +14,7 @@ _________   __  .__          .__
         \/           \/                  
 ````    
 
-![version-badge](https://img.shields.io/badge/version-5.1.0-indigo.svg) ![codename-badge](https://img.shields.io/badge/codename-APEX-gold.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
+![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
 
 
 ## Overview

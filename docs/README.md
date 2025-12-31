@@ -8,7 +8,7 @@ sidebar_position: 1
 ---
 
 
-![version-badge](https://img.shields.io/badge/version-5.1.0-indigo.svg) ![codename-badge](https://img.shields.io/badge/codename-APEX-gold.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
+![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
 
 > [CHANGELOG](https://artifact-virtual.gitbook.io/Cthulu)
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">

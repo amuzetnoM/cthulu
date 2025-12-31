@@ -6,7 +6,7 @@ slug: /docs/quickstart
 sidebar_position: 3
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.1.0-indigo) ![codename-badge](https://img.shields.io/badge/codename-APEX-gold)
+![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo)
 
 ### 1. Initial Setup
 

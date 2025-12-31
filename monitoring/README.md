@@ -2,7 +2,7 @@
 
 Core monitoring infrastructure for Cthulu's indicators, signals, and system health.
 
-![version-badge](https://img.shields.io/badge/version-5.1.0-indigo) ![codename-badge](https://img.shields.io/badge/codename-APEX-gold)
+![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo)
 
 ## Overview
 
