@@ -17,9 +17,21 @@ sidebar_position: 1
   <img src="../assets/cthulu-black.png" alt="Cthulu logo" width="480" />
 </p>
 
+<br><n>
+
+```
+_________   __  .__          .__         
+\_   ___ \_/  |_|  |__  __ __|  |  __ __ 
+/    \  \/\   __\  |  \|  |  \  | |  |  \
+\     \____|  | |   Y  \  |  /  |_|  |  /
+ \______  /|__| |___|  /____/|____/____/ 
+        \/           \/                  
+ ```
 
 
-  <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
+
+
+<br><n><img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
   <img src="https://img.shields.io/badge/Integration-MT5-lightgrey?style=flat-square" />
   <img src="https://img.shields.io/badge/Persistenece-Persistence-003B57?style=flat-square" />
   <img src="https://img.shields.io/badge/pandas-DataFrames-150458?style=flat-square" />
