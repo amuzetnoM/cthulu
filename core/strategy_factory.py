@@ -15,6 +15,7 @@ from cthulu.strategy.momentum_breakout import MomentumBreakout
 from cthulu.strategy.scalping import ScalpingStrategy
 from cthulu.strategy.trend_following import TrendFollowingStrategy
 from cthulu.strategy.mean_reversion import MeanReversionStrategy
+from cthulu.strategy.rsi_reversal import RsiReversalStrategy
 from cthulu.strategy.strategy_selector import StrategySelector
 
 
@@ -25,7 +26,8 @@ STRATEGY_REGISTRY = {
     'momentum_breakout': MomentumBreakout,
     'scalping': ScalpingStrategy,
     'trend_following': TrendFollowingStrategy,
-    'mean_reversion': MeanReversionStrategy
+    'mean_reversion': MeanReversionStrategy,
+    'rsi_reversal': RsiReversalStrategy
 }
 
 

@@ -195,6 +195,18 @@ class StrategySelector:
                 MarketRegime.CONSOLIDATING: 0.9,
                 MarketRegime.REVERSAL: 0.8
             },
+            'rsi_reversal': {
+                MarketRegime.TRENDING_UP_STRONG: 0.5,
+                MarketRegime.TRENDING_UP_WEAK: 0.6,
+                MarketRegime.TRENDING_DOWN_STRONG: 0.5,
+                MarketRegime.TRENDING_DOWN_WEAK: 0.6,
+                MarketRegime.RANGING_TIGHT: 0.90,
+                MarketRegime.RANGING_WIDE: 0.85,
+                MarketRegime.VOLATILE_BREAKOUT: 0.7,
+                MarketRegime.VOLATILE_CONSOLIDATION: 0.95,
+                MarketRegime.CONSOLIDATING: 0.85,
+                MarketRegime.REVERSAL: 0.98
+            },
             'trend_following': {
                 MarketRegime.TRENDING_UP_STRONG: 0.98,
                 MarketRegime.TRENDING_UP_WEAK: 0.9,
@@ -366,26 +378,81 @@ class StrategySelector:
         
     def generate_signal(self, data: pd.DataFrame, bar: pd.Series) -> Optional[Signal]:
         """
-        Generate signal using selected strategy.
+        Generate signal using selected strategy with fallback to alternatives.
         
         Args:
             data: Full market data
             bar: Latest bar
             
         Returns:
-            Signal from selected strategy
+            Signal from selected strategy or fallback
         """
         # Select best strategy
-        strategy = self.select_strategy(data)
+        primary_strategy = self.select_strategy(data)
         
-        # Generate signal
-        signal = strategy.on_bar(bar)
+        # Try primary strategy first
+        signal = primary_strategy.on_bar(bar)
+        
+        # If no signal, try fallback strategies in order of score
+        if signal is None:
+            # Get all strategies sorted by score (excluding primary)
+            scores = self._calculate_all_scores(data)
+            sorted_strategies = sorted(
+                [(name, s['total']) for name, s in scores.items() if name != primary_strategy.name],
+                key=lambda x: x[1],
+                reverse=True
+            )
+            
+            # Try top 3 fallback strategies
+            for name, score in sorted_strategies[:3]:
+                fallback = self.strategies[name]
+                signal = fallback.on_bar(bar)
+                if signal:
+                    self.logger.info(f"Fallback signal from {name} (score={score:.3f})")
+                    self.performance[name].add_signal(signal)
+                    return signal
         
         # Track signal for performance monitoring
         if signal:
-            self.performance[strategy.name].add_signal(signal)
+            self.performance[primary_strategy.name].add_signal(signal)
             
         return signal
+    
+    def _calculate_all_scores(self, data: pd.DataFrame) -> Dict[str, Dict[str, float]]:
+        """Calculate scores for all strategies."""
+        scores = {}
+        
+        for name, strategy in self.strategies.items():
+            perf = self.performance[name]
+            
+            # Performance score
+            if perf.signals_count >= self.min_strategy_signals:
+                perf_score = (perf.win_rate * 0.5 + 
+                             min(perf.profit_factor / 2.0, 1.0) * 0.3 +
+                             perf.recent_performance_score * 0.2)
+            else:
+                perf_score = 0.5  # Neutral for untested strategies
+                
+            # Regime affinity score
+            affinity = self.strategy_affinity.get(name, {})
+            regime_score = affinity.get(self.current_regime, 0.5)
+            
+            # Confidence score
+            confidence_score = perf.avg_confidence if perf.confidence_scores else 0.5
+            
+            # Combined weighted score
+            total_score = (perf_score * self.performance_weight +
+                          regime_score * self.regime_weight +
+                          confidence_score * self.confidence_weight)
+                          
+            scores[name] = {
+                'total': total_score,
+                'performance': perf_score,
+                'regime': regime_score,
+                'confidence': confidence_score
+            }
+            
+        return scores
         
     def record_outcome(self, strategy_name: str, outcome: str, pnl: float):
         """

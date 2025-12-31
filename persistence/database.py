@@ -89,9 +89,13 @@ class Database:
         try:
             self.conn = sqlite3.connect(
                 self.db_path,
-                detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+                detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+                timeout=30.0  # 30 second timeout to reduce lock conflicts
             )
             self.conn.row_factory = sqlite3.Row
+            # Enable WAL mode for better concurrent access
+            self.conn.execute("PRAGMA journal_mode=WAL")
+            self.conn.execute("PRAGMA busy_timeout=30000")
             
             cursor = self.conn.cursor()
             

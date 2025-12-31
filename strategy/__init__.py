@@ -7,6 +7,7 @@ from .momentum_breakout import MomentumBreakout
 from .scalping import ScalpingStrategy
 from .mean_reversion import MeanReversionStrategy
 from .trend_following import TrendFollowingStrategy
+from .rsi_reversal import RsiReversalStrategy
 from .strategy_selector import StrategySelector, MarketRegime, StrategyPerformance
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "ScalpingStrategy",
     "MeanReversionStrategy",
     "TrendFollowingStrategy",
+    "RsiReversalStrategy",
     "StrategySelector",
     "MarketRegime",
     "StrategyPerformance"
