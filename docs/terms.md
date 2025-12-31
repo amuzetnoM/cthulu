@@ -1,3 +1,11 @@
+---
+title: Terms of Use
+description: Terms of use, disclaimers, and legal notices for the Cthulu trading system
+tags: [terms, legal, disclaimer, risk-disclosure]
+slug: /docs/terms
+sidebar_position: 12
+---
+
 # Terms of Use
 
 Last updated: December 28, 2025

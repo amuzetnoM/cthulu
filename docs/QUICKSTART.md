@@ -3,7 +3,7 @@ title: Quick Start
 description: Get started with Cthulu trading system - installation, configuration, and first trades
 tags: [quickstart, installation, setup, getting-started]
 slug: /docs/quickstart
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 ![version-badge](https://img.shields.io/badge/version-5.1.0-blue)

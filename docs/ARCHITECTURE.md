@@ -3,7 +3,7 @@ title: Architecture Overview
 description: Technical architecture and system design of the Cthulu multi-strategy autonomous trading platform
 tags: [architecture, system-design, technical-overview]
 slug: /docs/architecture
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 ## System Architecture

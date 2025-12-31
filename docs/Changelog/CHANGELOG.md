@@ -2,7 +2,7 @@
 title: CHANGELOG
 description: Project release notes and version history (canonical)
 tags: [changelog, releases]
-sidebar_position: 10
+sidebar_position: 13
 slug: /docs/changelog
 ---
 

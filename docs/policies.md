@@ -1,3 +1,11 @@
+---
+title: Privacy & Policies
+description: Privacy policy and data handling practices for the Cthulu trading system
+tags: [privacy, policies, data-handling, legal]
+slug: /docs/policies
+sidebar_position: 11
+---
+
 # Privacy & Policies
 
 Last updated: December 28, 2025
