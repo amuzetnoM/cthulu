@@ -6,7 +6,7 @@ slug: /docs/deployment
 sidebar_position: 5
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.1.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.1.0-indigo) ![codename-badge](https://img.shields.io/badge/codename-APEX-gold)
 
 ## Table of Contents
 - [Quick Start](#quick-start)

@@ -17,7 +17,7 @@ _________   __  .__          .__
 
 • [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
-![version-badge](https://img.shields.io/badge/version-5.1.0-blue)
+![version-badge](https://img.shields.io/badge/version-5.1.0-indigo) ![codename-badge](https://img.shields.io/badge/codename-APEX-gold)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
 

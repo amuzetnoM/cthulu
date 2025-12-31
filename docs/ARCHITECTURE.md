@@ -8,7 +8,7 @@ sidebar_position: 4
 
 ## System Architecture
 
-<a href="https://artifact-virtual.gitbook.io/Cthulu"><img alt="Version" src="https://img.shields.io/badge/version-5.1.0-blue?style=flat-square" /></a>
+<a href="https://artifact-virtual.gitbook.io/Cthulu"><img alt="Version" src="https://img.shields.io/badge/version-5.1.0-indigo?style=flat-square" /></a> <img alt="Codename" src="https://img.shields.io/badge/codename-APEX-gold?style=flat-square" />
 
 ### High-Level System Overview
 
