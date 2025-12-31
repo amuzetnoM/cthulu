@@ -163,6 +163,10 @@ class CthuluBootstrap:
         self.logger.info("Initializing risk evaluator...")
         risk_config = config.get('risk', {})
         
+        # Log the min_balance_threshold being used
+        min_bal = risk_config.get('min_balance_threshold', 10.0)
+        self.logger.info(f"Risk config min_balance_threshold: {min_bal}")
+        
         # Build RiskLimits with defaults
         risk_limits = RiskLimits(
             max_position_size_percent=risk_config.get('max_position_size_percent', 2.0),
@@ -173,7 +177,9 @@ class CthuluBootstrap:
             max_spread_points=risk_config.get('max_spread_points', 5000.0),
             max_spread_pct=risk_config.get('max_spread_pct', 0.05),
             min_confidence=risk_config.get('min_confidence', 0.0),
-            emergency_shutdown_enabled=risk_config.get('emergency_shutdown_enabled', True)
+            emergency_shutdown_enabled=risk_config.get('emergency_shutdown_enabled', True),
+            min_balance_threshold=risk_config.get('min_balance_threshold', 10.0),
+            negative_balance_action=risk_config.get('negative_balance_action', 'halt')
         )
         
         return risk_limits

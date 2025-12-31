@@ -135,7 +135,7 @@ class RiskEvaluator:
         self.negative_balance_triggered = False
         self.margin_call_triggered = False
         
-        logger.info(f"RiskEvaluator initialized (max_spread_points={self.limits.max_spread_points})")
+        logger.info(f"RiskEvaluator initialized (max_spread_points={self.limits.max_spread_points}, min_balance_threshold={self.limits.min_balance_threshold})")
     
     def check_balance_protection(self, account_info) -> tuple[bool, str]:
         """
