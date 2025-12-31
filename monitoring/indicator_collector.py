@@ -14,7 +14,7 @@ import time
 import logging
 import threading
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, asdict
 
@@ -201,19 +201,32 @@ class IndicatorMetricsCollector:
                     with open(self.csv_path, 'r', newline='') as f:
                         reader = csv.reader(f)
                         first_row = next(reader, None)
-                        # Check if first row is our expected header (must have 'timestamp' as first column)
-                        if first_row and len(first_row) > 0 and first_row[0] == 'timestamp':
+<<<<<<< Updated upstream
+                        # Check if first row is our expected header
+                        if first_row and first_row[0] == 'timestamp':
                             needs_header = False
+                except Exception:
+=======
+                        # Check if first row is our expected header (must have 'timestamp' as first column
+                        # and match expected column count)
+                        if first_row and len(first_row) == len(fieldnames) and first_row[0] == 'timestamp':
+                            # Verify it's actually a header (not data starting with ISO timestamp)
+                            if first_row == fieldnames:
+                                needs_header = False
+                            else:
+                                self.logger.warning(f"CSV header mismatch, resetting file")
+                                needs_header = True
                         else:
                             # Invalid header detected - file needs reset
-                            self.logger.warning(f"Invalid CSV header detected, resetting file")
+                            self.logger.warning(f"Invalid CSV header detected (first={first_row[0] if first_row else 'None'}, cols={len(first_row) if first_row else 0}), resetting file")
                             needs_header = True
                 except Exception as e:
                     self.logger.warning(f"Error reading CSV header: {e}")
+>>>>>>> Stashed changes
                     needs_header = True
             
             if needs_header:
-                # Write fresh file with headers (overwrite any invalid data)
+                # Write fresh file with headers
                 with open(self.csv_path, 'w', newline='') as f:
                     writer = csv.DictWriter(f, fieldnames=fieldnames)
                     writer.writeheader()
@@ -262,9 +275,6 @@ class IndicatorMetricsCollector:
         """Write current snapshot to CSV"""
         try:
             with self._lock:
-                # Always ensure timestamp is set
-                if not self.current_snapshot.timestamp:
-                    self.current_snapshot.timestamp = datetime.now(timezone.utc).isoformat()
                 snapshot_dict = asdict(self.current_snapshot)
             
             # Append to CSV
@@ -283,8 +293,8 @@ class IndicatorMetricsCollector:
             **kwargs: Field names and values to update
         """
         with self._lock:
-            # Update timestamp (using timezone-aware UTC)
-            self.current_snapshot.timestamp = datetime.now(timezone.utc).isoformat()
+            # Update timestamp
+            self.current_snapshot.timestamp = datetime.utcnow().isoformat()
             
             # Update provided fields
             for key, value in kwargs.items():

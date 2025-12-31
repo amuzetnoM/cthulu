@@ -412,7 +412,9 @@ def create_shutdown_handler(
         news_ingestor=optional_components.get('news_ingestor'),
         ml_collector=optional_components.get('ml_collector'),
         trade_monitor=optional_components.get('trade_monitor'),
-        gui_process=optional_components.get('gui_process')
+        gui_process=optional_components.get('gui_process'),
+        observability_process=optional_components.get('observability_process'),
+        monitoring_processes=optional_components.get('monitoring_processes')
     )
 
 

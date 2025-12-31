@@ -275,10 +275,20 @@ class ComprehensiveMetricsCollector:
                         import csv as csv_reader
                         reader = csv_reader.reader(f)
                         first_row = next(reader, None)
-                        # Check if first row is our expected header
-                        if first_row and first_row[0] == 'timestamp':
-                            needs_header = False
-                except Exception:
+                        # Check if first row is our expected header (must match exactly)
+                        if first_row and len(first_row) == len(fieldnames) and first_row[0] == 'timestamp':
+                            # Verify it's actually a header (not data starting with ISO timestamp)
+                            if first_row == fieldnames:
+                                needs_header = False
+                            else:
+                                self.logger.warning(f"CSV header mismatch, resetting file")
+                                needs_header = True
+                        else:
+                            # Invalid header detected - file needs reset
+                            self.logger.warning(f"Invalid CSV header detected, resetting file")
+                            needs_header = True
+                except Exception as e:
+                    self.logger.warning(f"Error reading CSV header: {e}")
                     needs_header = True
             
             if needs_header:
