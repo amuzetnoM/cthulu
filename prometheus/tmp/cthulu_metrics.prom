@@ -1,0 +1,347 @@
+# HELP cthulu_account_balance Account balance
+# TYPE cthulu_account_balance gauge
+cthulu_account_balance 0.0
+
+# HELP cthulu_account_equity Account equity
+# TYPE cthulu_account_equity gauge
+cthulu_account_equity 0.0
+
+# HELP cthulu_account_margin Used margin
+# TYPE cthulu_account_margin gauge
+cthulu_account_margin 0.0
+
+# HELP cthulu_account_free_margin Free margin
+# TYPE cthulu_account_free_margin gauge
+cthulu_account_free_margin 0.0
+
+# HELP cthulu_account_margin_level Margin level percent
+# TYPE cthulu_account_margin_level gauge
+cthulu_account_margin_level 0.0
+
+# HELP cthulu_realized_pnl Realized P&L
+# TYPE cthulu_realized_pnl gauge
+cthulu_realized_pnl 0.0
+
+# HELP cthulu_unrealized_pnl Unrealized P&L
+# TYPE cthulu_unrealized_pnl gauge
+cthulu_unrealized_pnl 0.0
+
+# HELP cthulu_total_pnl Total P&L
+# TYPE cthulu_total_pnl gauge
+cthulu_total_pnl 0.0
+
+# HELP cthulu_total_trades Total trades
+# TYPE cthulu_total_trades counter
+cthulu_total_trades 0
+
+# HELP cthulu_winning_trades Winning trades
+# TYPE cthulu_winning_trades counter
+cthulu_winning_trades 0
+
+# HELP cthulu_losing_trades Losing trades
+# TYPE cthulu_losing_trades counter
+cthulu_losing_trades 0
+
+# HELP cthulu_breakeven_trades Breakeven trades
+# TYPE cthulu_breakeven_trades counter
+cthulu_breakeven_trades 0
+
+# HELP cthulu_active_positions Active positions
+# TYPE cthulu_active_positions gauge
+cthulu_active_positions 0
+
+# HELP cthulu_gross_profit Gross profit
+# TYPE cthulu_gross_profit counter
+cthulu_gross_profit 0.0
+
+# HELP cthulu_gross_loss Gross loss
+# TYPE cthulu_gross_loss counter
+cthulu_gross_loss 0.0
+
+# HELP cthulu_net_profit Net profit
+# TYPE cthulu_net_profit gauge
+cthulu_net_profit 0.0
+
+# HELP cthulu_avg_win Average win
+# TYPE cthulu_avg_win gauge
+cthulu_avg_win 0.0
+
+# HELP cthulu_avg_loss Average loss
+# TYPE cthulu_avg_loss gauge
+cthulu_avg_loss 0.0
+
+# HELP cthulu_largest_win Largest win
+# TYPE cthulu_largest_win gauge
+cthulu_largest_win 0.0
+
+# HELP cthulu_largest_loss Largest loss
+# TYPE cthulu_largest_loss gauge
+cthulu_largest_loss 0.0
+
+# HELP cthulu_win_rate_pct Win rate percent
+# TYPE cthulu_win_rate_pct gauge
+cthulu_win_rate_pct 0.0
+
+# HELP cthulu_profit_factor Profit factor (gross profit / gross loss)
+# TYPE cthulu_profit_factor gauge
+cthulu_profit_factor 0
+
+# HELP cthulu_expectancy Expectancy
+# TYPE cthulu_expectancy gauge
+cthulu_expectancy 0.0
+
+# HELP cthulu_avg_trade_duration_seconds Average trade duration
+# TYPE cthulu_avg_trade_duration_seconds gauge
+cthulu_avg_trade_duration_seconds 0.0
+
+# HELP cthulu_median_trade_duration_seconds Median trade duration
+# TYPE cthulu_median_trade_duration_seconds gauge
+cthulu_median_trade_duration_seconds 0.0
+
+# HELP cthulu_trades_per_hour Trades per hour
+# TYPE cthulu_trades_per_hour gauge
+cthulu_trades_per_hour 0.0
+
+# HELP cthulu_trades_today Trades today
+# TYPE cthulu_trades_today counter
+cthulu_trades_today 0
+
+# HELP cthulu_daily_pnl Daily P&L
+# TYPE cthulu_daily_pnl gauge
+cthulu_daily_pnl 0.0
+
+# HELP cthulu_weekly_pnl Weekly P&L
+# TYPE cthulu_weekly_pnl gauge
+cthulu_weekly_pnl 0.0
+
+# HELP cthulu_monthly_pnl Monthly P&L
+# TYPE cthulu_monthly_pnl gauge
+cthulu_monthly_pnl 0.0
+
+# HELP cthulu_max_drawdown_pct Max drawdown percent
+# TYPE cthulu_max_drawdown_pct gauge
+cthulu_max_drawdown_pct 0.0
+
+# HELP cthulu_max_drawdown_abs Max drawdown absolute
+# TYPE cthulu_max_drawdown_abs gauge
+cthulu_max_drawdown_abs 0.0
+
+# HELP cthulu_current_drawdown_pct Current drawdown percent
+# TYPE cthulu_current_drawdown_pct gauge
+cthulu_current_drawdown_pct 0.0
+
+# HELP cthulu_current_drawdown_abs Current drawdown absolute
+# TYPE cthulu_current_drawdown_abs gauge
+cthulu_current_drawdown_abs 0.0
+
+# HELP cthulu_drawdown_duration_seconds Max drawdown duration
+# TYPE cthulu_drawdown_duration_seconds gauge
+cthulu_drawdown_duration_seconds 0.0
+
+# HELP cthulu_current_drawdown_duration_seconds Current drawdown duration
+# TYPE cthulu_current_drawdown_duration_seconds gauge
+cthulu_current_drawdown_duration_seconds 0.0
+
+# HELP cthulu_peak_equity Peak equity
+# TYPE cthulu_peak_equity gauge
+cthulu_peak_equity 0.0
+
+# HELP cthulu_trough_equity Trough equity
+# TYPE cthulu_trough_equity gauge
+cthulu_trough_equity 0.0
+
+# HELP cthulu_risk_reward_ratio Average risk:reward ratio
+# TYPE cthulu_risk_reward_ratio gauge
+cthulu_risk_reward_ratio 0.0
+
+# HELP cthulu_sharpe_ratio Sharpe ratio
+# TYPE cthulu_sharpe_ratio gauge
+cthulu_sharpe_ratio 0.0
+
+# HELP cthulu_sortino_ratio Sortino ratio
+# TYPE cthulu_sortino_ratio gauge
+cthulu_sortino_ratio 0.0
+
+# HELP cthulu_calmar_ratio Calmar ratio
+# TYPE cthulu_calmar_ratio gauge
+cthulu_calmar_ratio 0.0
+
+# HELP cthulu_recovery_factor Recovery factor
+# TYPE cthulu_recovery_factor gauge
+cthulu_recovery_factor 0.0
+
+# HELP cthulu_rolling_sharpe_50 Rolling Sharpe 50
+# TYPE cthulu_rolling_sharpe_50 gauge
+cthulu_rolling_sharpe_50 0.0
+
+# HELP cthulu_rolling_sharpe_100 Rolling Sharpe 100
+# TYPE cthulu_rolling_sharpe_100 gauge
+cthulu_rolling_sharpe_100 0.0
+
+# HELP cthulu_avg_slippage_pips Average slippage pips
+# TYPE cthulu_avg_slippage_pips gauge
+cthulu_avg_slippage_pips 0.0
+
+# HELP cthulu_median_slippage_pips Median slippage pips
+# TYPE cthulu_median_slippage_pips gauge
+cthulu_median_slippage_pips 0.0
+
+# HELP cthulu_max_slippage_pips Max slippage pips
+# TYPE cthulu_max_slippage_pips gauge
+cthulu_max_slippage_pips 0.0
+
+# HELP cthulu_avg_execution_time_ms Average execution time ms
+# TYPE cthulu_avg_execution_time_ms gauge
+cthulu_avg_execution_time_ms 0.0
+
+# HELP cthulu_median_execution_time_ms Median execution time ms
+# TYPE cthulu_median_execution_time_ms gauge
+cthulu_median_execution_time_ms 0.0
+
+# HELP cthulu_fill_rate_pct Fill rate percent
+# TYPE cthulu_fill_rate_pct gauge
+cthulu_fill_rate_pct 0.0
+
+# HELP cthulu_order_rejection_rate_pct Order rejection rate
+# TYPE cthulu_order_rejection_rate_pct gauge
+cthulu_order_rejection_rate_pct 0.0
+
+# HELP cthulu_orders_total Total orders
+# TYPE cthulu_orders_total counter
+cthulu_orders_total 0
+
+# HELP cthulu_orders_filled Orders filled
+# TYPE cthulu_orders_filled counter
+cthulu_orders_filled 0
+
+# HELP cthulu_signals_generated Signals generated
+# TYPE cthulu_signals_generated counter
+cthulu_signals_generated 0
+
+# HELP cthulu_signals_approved Signals approved
+# TYPE cthulu_signals_approved counter
+cthulu_signals_approved 0
+
+# HELP cthulu_signals_rejected Signals rejected
+# TYPE cthulu_signals_rejected counter
+cthulu_signals_rejected 0
+
+# HELP cthulu_signal_approval_rate_pct Signal approval rate
+# TYPE cthulu_signal_approval_rate_pct gauge
+cthulu_signal_approval_rate_pct 0.0
+
+# HELP cthulu_spread_rejections Spread rejections
+# TYPE cthulu_spread_rejections counter
+cthulu_spread_rejections 0
+
+# HELP cthulu_position_limit_rejections Position limit rejections
+# TYPE cthulu_position_limit_rejections counter
+cthulu_position_limit_rejections 0
+
+# HELP cthulu_drawdown_limit_rejections Drawdown limit rejections
+# TYPE cthulu_drawdown_limit_rejections counter
+cthulu_drawdown_limit_rejections 0
+
+# HELP cthulu_exit_tp_count Take profit exits
+# TYPE cthulu_exit_tp_count counter
+cthulu_exit_tp_count 0
+
+# HELP cthulu_exit_sl_count Stop loss exits
+# TYPE cthulu_exit_sl_count counter
+cthulu_exit_sl_count 0
+
+# HELP cthulu_open_positions_volume Open positions volume
+# TYPE cthulu_open_positions_volume gauge
+cthulu_open_positions_volume 0.0
+
+# HELP cthulu_long_positions Long positions
+# TYPE cthulu_long_positions gauge
+cthulu_long_positions 0
+
+# HELP cthulu_short_positions Short positions
+# TYPE cthulu_short_positions gauge
+cthulu_short_positions 0
+
+# HELP cthulu_long_exposure Long exposure USD
+# TYPE cthulu_long_exposure gauge
+cthulu_long_exposure 0.0
+
+# HELP cthulu_short_exposure Short exposure USD
+# TYPE cthulu_short_exposure gauge
+cthulu_short_exposure 0.0
+
+# HELP cthulu_net_exposure Net exposure USD
+# TYPE cthulu_net_exposure gauge
+cthulu_net_exposure 0.0
+
+# HELP cthulu_system_uptime_seconds System uptime
+# TYPE cthulu_system_uptime_seconds counter
+cthulu_system_uptime_seconds 1289.7666127681732
+
+# HELP cthulu_mt5_connected MT5 connected
+# TYPE cthulu_mt5_connected gauge
+cthulu_mt5_connected 0
+
+# HELP cthulu_cpu_usage_pct CPU usage percent
+# TYPE cthulu_cpu_usage_pct gauge
+cthulu_cpu_usage_pct 0.0
+
+# HELP cthulu_memory_usage_mb Memory usage MB
+# TYPE cthulu_memory_usage_mb gauge
+cthulu_memory_usage_mb 26.390625
+
+# HELP cthulu_memory_usage_pct Memory usage percent
+# TYPE cthulu_memory_usage_pct gauge
+cthulu_memory_usage_pct 0.16946006551653214
+
+# HELP cthulu_errors_total Total errors
+# TYPE cthulu_errors_total counter
+cthulu_errors_total 0
+
+# HELP cthulu_warnings_total Total warnings
+# TYPE cthulu_warnings_total counter
+cthulu_warnings_total 0
+
+# HELP cthulu_session_asian_trades Asian session trades
+# TYPE cthulu_session_asian_trades counter
+cthulu_session_asian_trades 0
+
+# HELP cthulu_session_european_trades European session trades
+# TYPE cthulu_session_european_trades counter
+cthulu_session_european_trades 0
+
+# HELP cthulu_session_us_trades US session trades
+# TYPE cthulu_session_us_trades counter
+cthulu_session_us_trades 0
+
+# HELP cthulu_uptime_seconds Cthulu uptime in seconds
+# TYPE cthulu_uptime_seconds counter
+cthulu_uptime_seconds 1289.8652393817902
+
+# HELP cthulu_trades_total Total number of trades
+# TYPE cthulu_trades_total counter
+cthulu_trades_total 0
+
+# HELP cthulu_trades_won Number of winning trades
+# TYPE cthulu_trades_won counter
+cthulu_trades_won 0
+
+# HELP cthulu_trades_lost Number of losing trades
+# TYPE cthulu_trades_lost counter
+cthulu_trades_lost 0
+
+# HELP cthulu_pnl_total Total net profit/loss
+# TYPE cthulu_pnl_total gauge
+cthulu_pnl_total 0.0
+
+# HELP cthulu_profit_total Total gross profit
+# TYPE cthulu_profit_total counter
+cthulu_profit_total 0.0
+
+# HELP cthulu_loss_total Total gross loss
+# TYPE cthulu_loss_total counter
+cthulu_loss_total 0.0
+
+# HELP cthulu_win_rate Win rate (0-1)
+# TYPE cthulu_win_rate gauge
+cthulu_win_rate 0

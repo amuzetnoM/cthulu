@@ -8,7 +8,7 @@
 
 ## 🎯 MISSION STATEMENT
 
-**Objective:** Transform Cthulu into a cutting-edge, self-improving trading system with:
+**Objective:** Precision tuning Cthulu into a cutting-edge, self-improving trading system with:
 - Zero fatal errors for extended periods (target: 120+ minutes)
 - Surgical precision in signal generation and execution
 - Dynamic equity/balance protection at all market conditions
@@ -564,3 +564,15 @@ The Cthulu trading system has proven **ROCK SOLID** across three different minds
 
 ---
 
+
+## Live Monitoring Plan (Started: 2025-12-31T15:57:16.0529229+05:00)
+- Phase 4: Ultra-Aggressive RUNNING (1h) — live trading, observability suite ON, dashboard at http://127.0.0.1:8888/observability/reporting/dashboard.html
+- Next: Aggressive → Balanced → Conservative (each 1h), sequential
+- CSV pillars: comprehensive_metrics.csv, indicator_metrics.csv, system_health.csv (5s refresh)
+- Actions: precision tuning (dynamic SL/TP, adaptive drawdown), continuous benchmarking, system health checks
+
+## Restarted Live Session (Ultra-Aggressive)
+- MT5 Terminal: STARTED via detected install path
+- Cthulu: RESTARTED in live mode (no flags) to auto-wire MT5
+- Dashboard: Expanded to show ALL CSV metrics dynamically
+- Next: 1h per mindset (Ultra→Aggressive→Balanced→Conservative) with continuous tuning
