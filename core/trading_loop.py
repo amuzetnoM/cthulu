@@ -991,7 +991,16 @@ class TradingLoop:
         try:
             # Get current account info and positions
             account_info = self.ctx.connector.get_account_info()
-            current_positions = len(self.ctx.position_manager.get_positions(symbol=self.ctx.symbol))
+            
+            # CRITICAL: Get positions directly from MT5 for accurate count
+            # The position manager cache may be stale
+            try:
+                import MetaTrader5 as mt5
+                mt5_positions = mt5.positions_get(symbol=self.ctx.symbol)
+                current_positions = len(mt5_positions) if mt5_positions else 0
+            except Exception:
+                # Fallback to position manager if MT5 direct call fails
+                current_positions = len(self.ctx.position_manager.get_positions(symbol=self.ctx.symbol))
             
             # Risk approval
             approved, reason, position_size = self.ctx.risk_manager.approve(

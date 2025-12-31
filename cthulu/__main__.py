@@ -19,7 +19,7 @@ from typing import Optional
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-__version__ = "5.0.1"  # Rebranding to Cthulu
+__version__ = "5.1.0"  # Apex Release - Market Destroyer
 
 from core.bootstrap import CthuluBootstrap, SystemComponents
 from core.trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators

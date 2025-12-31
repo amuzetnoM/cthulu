@@ -17,7 +17,7 @@ _________   __  .__          .__
 
 • [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
-![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
+![version-badge](https://img.shields.io/badge/version-5.1.0-blue)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
 
@@ -76,7 +76,7 @@ _________   __  .__          .__
 
 ---
 
-## [5.0.1] — 2025-12-28
+## [5.1.0] — 2025-12-28
 
 ### Added
 - **Adaptive Drawdown Manager (`risk/adaptive_drawdown.py`):** Complete rewrite of risk management with:
@@ -146,13 +146,13 @@ Cthulu's monitoring and stress-testing infrastructure has been significantly enh
 
 ## LATEST RELEASE
 
-## **5.0.1** 
+## **5.1.0** 
 > *2025-12-27*
 
 ### Summary
 **MAJOR RELEASE**: Architecture upgrade and live-run stability fixes.
 
-This release advances Cthulu from v4.0.0 to v5.0.1 with a major architecture change and several important runtime fixes discovered and validated during live testing (2025-12-27). Notable changes include: removal of the live-run confirmation gate, robust runtime indicator handling (namespace, aliasing, fallbacks), improved trading loop wiring, additional unit tests, and CI/workflow improvements for Windows and coverage.
+This release advances Cthulu from v4.0.0 to v5.1.0 with a major architecture change and several important runtime fixes discovered and validated during live testing (2025-12-27). Notable changes include: removal of the live-run confirmation gate, robust runtime indicator handling (namespace, aliasing, fallbacks), improved trading loop wiring, additional unit tests, and CI/workflow improvements for Windows and coverage.
 
 ### Added
 - **Live-run stability fixes & telemetry:** Added aliasing and fallback indicator calculations so strategies have deterministic access to `rsi`, `atr`, and `adx` even when runtime indicators are added dynamically.
@@ -164,7 +164,7 @@ This release advances Cthulu from v4.0.0 to v5.0.1 with a major architecture cha
 ### Changed
 - **Safety gate removal:** `LIVE_RUN_CONFIRM` gate removed; live-run now proceeds and emits a clear warning in logs (was blocking startup). Documented and justified by live testing processes.
 - **Strategy resilience:** Strategies now rely on alias columns and are resilient to transient missing runtime indicators.
-- **Docs & Release Notes:** Added v5.0.1 release notes and updated CHANGELOG to highlight live-test findings.
+- **Docs & Release Notes:** Added v5.1.0 release notes and updated CHANGELOG to highlight live-test findings.
 
 ### Fixed
 - Prevent `pandas.DataFrame.join` ValueError due to overlapping columns by renaming runtime columns and using defensive joins.
@@ -176,7 +176,7 @@ This release advances Cthulu from v4.0.0 to v5.0.1 with a major architecture cha
 ## TABLE OF RELEASES
 | Version | Date | Description |
 |---------|------|-------------|
-| [v5.0.1](v5.0.1.md) | 2025-12-28 | Minor branding & stability patch: runtime indicator fixes, monitoring enhancements, Windows/CI improvements. |
+| [v5.1.0](v5.1.0.md) | 2025-12-28 | Minor branding & stability patch: runtime indicator fixes, monitoring enhancements, Windows/CI improvements. |
 | [v5.0.0](v5.0.0.md) | 2025-12-27 | Major architecture & runtime stability release; runtime namespacing and indicator fallbacks; CI and testing improvements. |
 | [v4.0.0](v4.0.0.md) | 2026-12-25 | MAJOR: Multi-strategy framework, next-gen indicators, GUI and metrics enhancements. |
 | [v3.3.1](v3.3.1.md) | (see file) | Advisory & news ingestion features, ML instrumentation improvements, and documentation updates. |

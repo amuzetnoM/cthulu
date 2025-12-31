@@ -548,6 +548,29 @@ class CthuluBootstrap:
             self.logger.exception("Failed to initialize AdaptiveDrawdownManager")
             return None
     
+    def initialize_exit_strategies(self, config: Dict[str, Any]) -> list:
+        """Initialize exit strategies from configuration.
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            List of exit strategy instances
+        """
+        try:
+            exit_configs = config.get('exit_strategies', [])
+            if not exit_configs:
+                self.logger.info("No exit strategies configured")
+                return []
+            
+            from cthulu.core.exit_loader import load_exit_strategies
+            exit_strategies = load_exit_strategies(exit_configs)
+            self.logger.info(f"Loaded {len(exit_strategies)} exit strategies")
+            return exit_strategies
+        except Exception:
+            self.logger.exception("Failed to initialize exit strategies")
+            return []
+    
     def bootstrap(self, config_path: str, args: Any) -> SystemComponents:
         """Bootstrap the entire Cthulu system.
         
@@ -622,6 +645,9 @@ class CthuluBootstrap:
         dynamic_sltp_manager = self.initialize_dynamic_sltp_manager(config)
         adaptive_drawdown_manager = self.initialize_adaptive_drawdown_manager(config)
         
+        # Initialize exit strategies
+        exit_strategies = self.initialize_exit_strategies(config)
+        
         # Create components container
         components = SystemComponents(
             config=config,
@@ -642,7 +668,8 @@ class CthuluBootstrap:
             exporter=exporter,
             strategy=strategy,
             dynamic_sltp_manager=dynamic_sltp_manager,
-            adaptive_drawdown_manager=adaptive_drawdown_manager
+            adaptive_drawdown_manager=adaptive_drawdown_manager,
+            exit_strategies=exit_strategies
         )
         # Expose trade_adoption_policy for convenience
         try:

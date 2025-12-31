@@ -6,7 +6,7 @@ slug: /docs/deployment
 sidebar_position: 5
 ---
 
-![version-badge](https://img.shields.io/badge/version-5.0.1-blue)
+![version-badge](https://img.shields.io/badge/version-5.1.0-blue)
 
 ## Table of Contents
 - [Quick Start](#quick-start)
@@ -68,7 +68,7 @@ docker-compose logs -f Cthulu
 docker build -t Cthulu:latest .
 
 # Or build with specific version
-docker build -t Cthulu:5.0.1 .
+docker build -t Cthulu:5.1.0 .
 ```
 
 #### 2. Environment Configuration

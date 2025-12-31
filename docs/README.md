@@ -8,7 +8,7 @@ sidebar_position: 1
 ---
 
 
-<a href="https://artifact-virtual.gitbook.io/Cthulu"><img alt="Version" src="https://img.shields.io/badge/version-5.1.0_Apex-blue?style=flat-square" /></a> 
+![version-badge](https://img.shields.io/badge/version-5.1.0-indigo.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
 
 > [CHANGELOG](https://artifact-virtual.gitbook.io/Cthulu)
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
@@ -1038,7 +1038,7 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.0.1
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.1.0
 - **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
@@ -1056,7 +1056,7 @@ Past performance is not indicative of future results. Use at your own risk.
 | Version | Date | Status | Description |
 |---------|------|--------|-------------|
 | **5.1.0** | Dec 2025 | ✅ Current | **Apex** - RSI Reversal, multi-strategy fallback, SAFE engine |
-| **5.0.1** | Dec 2025 | ✅ Complete | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
+| **5.1.0** | Dec 2025 | ✅ Complete | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
 | **4.0.0** | Dec 2024 | ✅ Complete | **Dynamic Strategy Selection** - Multi-strategy framework, exit strategies |
 | **3.0.0** | Dec 2024 | ✅ Complete | **Production Ready** - Zero-error test suite, MT5 funded account verified |
 | **2.0.0** | Dec 2024 | ✅ Complete | **Autonomous Trading** - Indicators, position management |
