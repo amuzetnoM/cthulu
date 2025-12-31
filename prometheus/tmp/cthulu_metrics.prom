@@ -276,7 +276,7 @@ cthulu_net_exposure 0.0
 
 # HELP cthulu_system_uptime_seconds System uptime
 # TYPE cthulu_system_uptime_seconds counter
-cthulu_system_uptime_seconds 1289.7666127681732
+cthulu_system_uptime_seconds 2012.3230729103088
 
 # HELP cthulu_mt5_connected MT5 connected
 # TYPE cthulu_mt5_connected gauge
@@ -288,11 +288,11 @@ cthulu_cpu_usage_pct 0.0
 
 # HELP cthulu_memory_usage_mb Memory usage MB
 # TYPE cthulu_memory_usage_mb gauge
-cthulu_memory_usage_mb 26.390625
+cthulu_memory_usage_mb 17.578125
 
 # HELP cthulu_memory_usage_pct Memory usage percent
 # TYPE cthulu_memory_usage_pct gauge
-cthulu_memory_usage_pct 0.16946006551653214
+cthulu_memory_usage_pct 0.11287304541509689
 
 # HELP cthulu_errors_total Total errors
 # TYPE cthulu_errors_total counter
@@ -316,7 +316,7 @@ cthulu_session_us_trades 0
 
 # HELP cthulu_uptime_seconds Cthulu uptime in seconds
 # TYPE cthulu_uptime_seconds counter
-cthulu_uptime_seconds 1289.8652393817902
+cthulu_uptime_seconds 2012.4214899539948
 
 # HELP cthulu_trades_total Total number of trades
 # TYPE cthulu_trades_total counter
