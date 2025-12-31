@@ -1085,8 +1085,7 @@ class TradingLoop:
                 volume=result.filled_volume,
                 stop_loss=signal.stop_loss,
                 take_profit=signal.take_profit,
-                entry_time=datetime.now(),
-                commission=result.commission
+                entry_time=datetime.now()
             )
             self.ctx.database.record_trade(trade_record)
         else:
