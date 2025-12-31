@@ -427,24 +427,27 @@ def configure_indicators(current_indicators: List[Dict[str, Any]] = None) -> Lis
 def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
     """Configure strategy-specific settings.
     
-    UPDATED: Based on user feedback - Dynamic mode auto-selects all strategies/indicators.
-    Single mode allows manual selection.
+    UPDATED: Three modes available:
+    - Dynamic: Auto-selects ALL strategies/indicators (SAFE mode - Set And Forget)
+    - Create Your Own: Full customization of strategies and indicators
+    - Single Strategy: Use one strategy with manual indicator selection
     """
     print_section("STEP 5: Strategy Mode", 5, 7)
     
     strategy = deepcopy(current_strategy)
     params = strategy.get('params', {})
     
-    # Ask if user wants dynamic strategy selection
+    # Ask which strategy mode
     print("  Choose strategy mode:\n")
-    print_option("1", "Single Strategy", "Use one strategy - YOU choose indicators")
-    print_option("2", "Dynamic (Recommended)", "Auto-adapts to market - ALL strategies & indicators auto-selected")
+    print_option("1", "🌊 Dynamic (SAFE Mode)", "Set And Forget - Auto-adapts to ALL market conditions")
+    print_option("2", "🔧 Create Your Own", "Full customization - Choose YOUR strategies & indicators")
+    print_option("3", "📊 Single Strategy", "Use one strategy only")
     print()
     
-    mode_choice = get_input("Strategy mode (1-2)", "2")
+    mode_choice = get_input("Strategy mode (1-3)", "1")
     
-    if mode_choice == "2":
-        # Dynamic strategy mode - AUTO-SELECT everything
+    if mode_choice == "1":
+        # Dynamic SAFE mode - AUTO-SELECT everything
         strategy['type'] = 'dynamic'
         strategy['dynamic_selection'] = {
             'regime_detection_enabled': True,
@@ -467,10 +470,84 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
         # Auto-include ALL indicators for dynamic mode
         strategy['auto_indicators'] = True  # Flag for bootstrap to add all indicators
         
-        print_success("Dynamic mode enabled - ALL strategies and indicators auto-selected")
-        print_info("System will automatically adapt to market conditions")
+        print()
+        print_success("🌊 SAFE Mode Enabled - Set And Forget Engine")
+        print_info("✓ ALL 7 strategies auto-selected and rotating based on market regime")
+        print_info("✓ ALL indicators auto-enabled for maximum market awareness")
+        print_info("✓ System will autonomously adapt to ANY market condition")
         
-    else:
+    elif mode_choice == "2":
+        # Create Your Own mode - FULL CUSTOMIZATION
+        strategy['type'] = 'dynamic'
+        strategy['dynamic_selection'] = {
+            'regime_detection_enabled': True,
+            'performance_tracking_enabled': True,
+            'min_confidence_threshold': 0.6,
+            'switch_cooldown_bars': 10
+        }
+        
+        print()
+        print("  " + "="*50)
+        print("  🔧 CREATE YOUR OWN - Strategy Selection")
+        print("  " + "="*50)
+        print("  Select which strategies to include in your custom mix:\n")
+        
+        available_strategies = [
+            ('sma_crossover', 'SMA Crossover', 'Simple MA crossover', {'fast_period': 10, 'slow_period': 30}),
+            ('ema_crossover', 'EMA Crossover', 'Exponential MA crossover', {'fast_period': 12, 'slow_period': 26}),
+            ('momentum_breakout', 'Momentum Breakout', 'Price momentum detection', {'lookback_period': 20, 'breakout_threshold': 1.5}),
+            ('scalping', 'Scalping', 'Fast scalping', {'quick_period': 5, 'trend_period': 20}),
+            ('mean_reversion', 'Mean Reversion', 'Bollinger bounce', {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}),
+            ('trend_following', 'Trend Following', 'ADX trend', {'adx_period': 14, 'adx_threshold': 25, 'supertrend_period': 10}),
+            ('rsi_reversal', 'RSI Reversal', 'RSI reversals', {'rsi_overbought': 75, 'rsi_oversold': 25})
+        ]
+        
+        selected_strategies = []
+        for i, (strat_type, name, desc, default_params) in enumerate(available_strategies, 1):
+            choice = get_input(f"  [{i}] Include {name}? ({desc}) [y/n]", "y").lower()
+            if choice == 'y':
+                selected_strategies.append({'type': strat_type, 'params': default_params})
+                print_success(f"      ✓ Added {name}")
+        
+        if not selected_strategies:
+            print_warning("No strategies selected! Adding SMA Crossover as default.")
+            selected_strategies.append({'type': 'sma_crossover', 'params': {'fast_period': 10, 'slow_period': 30}})
+        
+        strategy['strategies'] = selected_strategies
+        
+        print()
+        print("  " + "="*50)
+        print("  🔧 CREATE YOUR OWN - Indicator Selection")
+        print("  " + "="*50)
+        print("  Select which indicators to enable:\n")
+        
+        # Let user select indicators
+        strategy['custom_indicators'] = True
+        strategy['selected_indicators'] = []
+        
+        available_indicators = [
+            ('rsi', 'RSI', 'Relative Strength Index'),
+            ('macd', 'MACD', 'Moving Average Conv/Div'),
+            ('bollinger', 'Bollinger Bands', 'Volatility bands'),
+            ('atr', 'ATR', 'Average True Range'),
+            ('adx', 'ADX', 'Trend strength'),
+            ('stochastic', 'Stochastic', 'Momentum oscillator'),
+            ('supertrend', 'Supertrend', 'Trend indicator'),
+            ('volume', 'Volume Profile', 'Volume analysis'),
+            ('ichimoku', 'Ichimoku Cloud', 'Complete trend system'),
+            ('williams_r', 'Williams %R', 'Momentum')
+        ]
+        
+        for i, (ind_type, name, desc) in enumerate(available_indicators, 1):
+            choice = get_input(f"  [{i}] Include {name}? ({desc}) [y/n]", "y").lower()
+            if choice == 'y':
+                strategy['selected_indicators'].append(ind_type)
+                print_success(f"      ✓ Added {name}")
+        
+        print()
+        print_success(f"🔧 Custom Configuration Complete: {len(selected_strategies)} strategies, {len(strategy.get('selected_indicators', []))} indicators")
+        
+    elif mode_choice == "3":
         # Single strategy mode - user selects manually
         print()
         print("  Choose your strategy:\n")

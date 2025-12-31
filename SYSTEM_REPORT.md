@@ -108,6 +108,14 @@ Configuration in `profit_scaling`:
 - Low margin protection (30% margin level)
 - Highest priority (100) - always executes first
 
+#### 4. Wizard Strategy Modes Overhaul (NEW!)
+Three modes now available:
+| Mode | Description |
+|------|-------------|
+| **🌊 Dynamic (SAFE)** | Set And Forget Engine - ALL strategies & indicators auto-selected |
+| **🔧 Create Your Own** | Full customization - User picks strategies & indicators |
+| **📊 Single Strategy** | Traditional single strategy mode |
+
 ### Phase Testing Results
 
 | Phase | Status | Duration | Performance |
