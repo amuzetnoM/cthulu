@@ -81,7 +81,7 @@ C:\workspace\cthulu\monitoring\
 
 ### Prerequisites
 
-1. **MT5 Terminal** - Running and logged into demo account ****0069
+1. **MT5 Terminal** - Running and logged into demo/live account ****0069
 2. **Python 3.12+** - With cthulu package installed
 3. **PowerShell 7+** - For running monitoring scripts
 
