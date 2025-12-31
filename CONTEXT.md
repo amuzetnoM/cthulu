@@ -1,4 +1,4 @@
-# Cthulu Trading System - Complete Context & Overview
+# Complete Context & Overview
 
 ## Executive Summary
 

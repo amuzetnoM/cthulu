@@ -5,12 +5,17 @@ tags: [features, strategies, indicators, dynamic-selection, SAFE]
 slug: /docs/features
 sidebar_position: 2
 ---
+````
+_________   __  .__          .__         
+\_   ___ \_/  |_|  |__  __ __|  |  __ __ 
+/    \  \/\   __\  |  \|  |  \  | |  |  \
+\     \____|  | |   Y  \  |  /  |_|  |  /
+ \______  /|__| |___|  /____/|____/____/ 
+        \/           \/                  
+````    
 
-<<<<<<< Updated upstream
-![version-badge](https://img.shields.io/badge/version-5.1.0_Apex-blue)
-=======
 ![version-badge](https://img.shields.io/badge/version-5.1.0-indigo.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
->>>>>>> Stashed changes
+
 
 ## Overview
 
@@ -52,7 +57,7 @@ Cthulu v5.1 "Apex" includes **7 active trading strategies**, each optimized for 
 | Mean Reversion | Reversal | RANGING | Fast | ❌ No |
 | Trend Following | Trend | TRENDING_STRONG | Slow | ❌ No |
 
-### 1. RSI Reversal Strategy (NEW in v5.1)
+### 1. RSI Reversal Strategy
 
 **Purpose**: Trade immediately on RSI extremes without waiting for crossovers
 **Optimal Timeframes**: M5, M15, M30
@@ -489,7 +494,7 @@ Each strategy has optimal performance in certain regimes (0.0-1.0 scale):
 | **Trend Following** | 0.98 | 0.90 | 0.98 | 0.90 | 0.20 | 0.30 | 0.80 | 0.40 | 0.30 | 0.50 |
 | **RSI Reversal** ⭐ | 0.50 | 0.60 | 0.50 | 0.60 | 0.90 | 0.85 | 0.70 | **0.95** | 0.85 | **0.98** |
 
-⭐ **RSI Reversal** (NEW in v5.1): Highest affinity for REVERSAL and VOLATILE_CONSOLIDATION regimes
+⭐ **RSI Reversal**: Highest affinity for REVERSAL and VOLATILE_CONSOLIDATION regimes
 
 ### Performance Tracking
 
@@ -514,7 +519,7 @@ Total Score = (Performance × 0.4) + (Regime Affinity × 0.4) + (Confidence × 0
 
 **Best Strategy**: Highest total score wins
 
-### Multi-Strategy Fallback (NEW in v5.1)
+### Multi-Strategy Fallback
 
 The fallback mechanism dramatically increases signal generation by trying multiple strategies:
 
@@ -564,7 +569,7 @@ strategies = [
     EmaCrossover(config1),
     MomentumBreakout(config2),
     ScalpingStrategy(config3),
-    RsiReversalStrategy(config4)  # NEW in v5.1
+    RsiReversalStrategy(config4) 
 ]
 
 # Initialize selector
