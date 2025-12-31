@@ -51,7 +51,7 @@ _________   __  .__          .__
 >
 > - 🚀 **RSI Reversal Strategy (NEW)**: Pure RSI-based trading — signals fire instantly on RSI extremes without waiting for crossovers  
 > - 🔄 **Multi-Strategy Fallback**: When primary strategy returns no signal, system tries up to 3 alternatives automatically  
-> - 📊 **7 Active Strategies**: Complete arsenal — EMA, Momentum, Scalping, Trend, SMA, Mean Reversion, RSI Reversal  
+> - 📊 **Active Strategies**: Complete arsenal — EMA, Momentum, Scalping, Trend, SMA, Mean Reversion, RSI Reversal  
 > - ⚡ **Aggressive Configuration**: Optimized thresholds for maximum opportunity capture (confidence: 0.15, ADX: 15)
 > - 🛡️ **Enhanced Database**: WAL mode with 30-second timeout for concurrent access  
 > - 📈 **Live Validated**: 5 trades executed autonomously within 15 minutes of deployment!
