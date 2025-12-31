@@ -201,12 +201,6 @@ class IndicatorMetricsCollector:
                     with open(self.csv_path, 'r', newline='') as f:
                         reader = csv.reader(f)
                         first_row = next(reader, None)
-<<<<<<< Updated upstream
-                        # Check if first row is our expected header
-                        if first_row and first_row[0] == 'timestamp':
-                            needs_header = False
-                except Exception:
-=======
                         # Check if first row is our expected header (must have 'timestamp' as first column
                         # and match expected column count)
                         if first_row and len(first_row) == len(fieldnames) and first_row[0] == 'timestamp':
@@ -218,11 +212,10 @@ class IndicatorMetricsCollector:
                                 needs_header = True
                         else:
                             # Invalid header detected - file needs reset
-                            self.logger.warning(f"Invalid CSV header detected (first={first_row[0] if first_row else 'None'}, cols={len(first_row) if first_row else 0}), resetting file")
+                            self.logger.warning(f"Invalid CSV header detected, resetting file")
                             needs_header = True
                 except Exception as e:
                     self.logger.warning(f"Error reading CSV header: {e}")
->>>>>>> Stashed changes
                     needs_header = True
             
             if needs_header:
