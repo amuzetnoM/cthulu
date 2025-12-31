@@ -129,10 +129,13 @@ class RsiReversalStrategy(Strategy):
         risk = price - stop_loss
         take_profit = price + (risk * self.risk_reward_ratio)
         
+        # Get symbol from params, config, or bar index name
+        symbol = self.config.get('params', {}).get('symbol') or self.config.get('symbol') or 'BTCUSD#'
+        
         return Signal(
             id=self.generate_signal_id(),
             timestamp=bar.name,
-            symbol=self.config.get('params', {}).get('symbol', 'UNKNOWN'),
+            symbol=symbol,
             timeframe=self.config.get('timeframe', 'M15'),
             side=SignalType.LONG,
             action='BUY',
@@ -157,10 +160,13 @@ class RsiReversalStrategy(Strategy):
         risk = stop_loss - price
         take_profit = price - (risk * self.risk_reward_ratio)
         
+        # Get symbol from params, config, or default
+        symbol = self.config.get('params', {}).get('symbol') or self.config.get('symbol') or 'BTCUSD#'
+        
         return Signal(
             id=self.generate_signal_id(),
             timestamp=bar.name,
-            symbol=self.config.get('params', {}).get('symbol', 'UNKNOWN'),
+            symbol=symbol,
             timeframe=self.config.get('timeframe', 'M15'),
             side=SignalType.SHORT,
             action='SELL',

@@ -161,16 +161,19 @@ ULTRA_AGGRESSIVE = {
         "type": "dynamic",
         "dynamic_selection": {
             "enabled": True,
-            "regime_check_interval": 180,
-            "min_strategy_signals": 3,
-            "performance_weight": 0.4,
-            "regime_weight": 0.4,
-            "confidence_weight": 0.2
+            "regime_check_interval": 120,
+            "min_strategy_signals": 2,
+            "performance_weight": 0.35,
+            "regime_weight": 0.35,
+            "confidence_weight": 0.30
         },
         "strategies": [
+            {"type": "rsi_reversal", "params": {"rsi_period": 14, "rsi_extreme_oversold": 32, "rsi_extreme_overbought": 78, "atr_multiplier": 1.0, "risk_reward_ratio": 2.5, "cooldown_bars": 3}},
             {"type": "ema_crossover", "params": {"fast_period": 8, "slow_period": 21, "atr_period": 14, "atr_multiplier": 1.2, "risk_reward_ratio": 3.0}},
-            {"type": "momentum_breakout", "params": {"lookback_period": 15, "rsi_threshold": 50, "atr_multiplier": 1.3, "risk_reward_ratio": 3.5}},
             {"type": "scalping", "params": {"fast_ema": 5, "slow_ema": 10, "rsi_period": 7, "rsi_oversold": 20, "rsi_overbought": 80, "rsi_long_max": 65, "rsi_short_min": 35, "atr_multiplier": 0.8, "risk_reward_ratio": 2.5}},
+            {"type": "momentum_breakout", "params": {"lookback_period": 15, "rsi_threshold": 45, "atr_multiplier": 1.3, "risk_reward_ratio": 3.5}},
+            {"type": "mean_reversion", "params": {"ma_period": 20, "bb_std": 2.0, "rsi_period": 14, "rsi_oversold": 35, "rsi_overbought": 65, "atr_multiplier": 1.0, "risk_reward_ratio": 2.0}},
+            {"type": "trend_following", "params": {"fast_ma": 20, "slow_ma": 50, "adx_period": 14, "adx_threshold": 18, "atr_multiplier": 1.5, "risk_reward_ratio": 2.5}},
             {"type": "sma_crossover", "params": {"fast_period": 5, "slow_period": 13, "atr_period": 14, "atr_multiplier": 1.5, "risk_reward_ratio": 2.5}}
         ]
     },

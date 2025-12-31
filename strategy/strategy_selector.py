@@ -403,14 +403,17 @@ class StrategySelector:
                 reverse=True
             )
             
-            # Try top 3 fallback strategies
-            for name, score in sorted_strategies[:3]:
+            # Try ALL fallback strategies (all 6 remaining)
+            for name, score in sorted_strategies:
                 fallback = self.strategies[name]
-                signal = fallback.on_bar(bar)
-                if signal:
-                    self.logger.info(f"Fallback signal from {name} (score={score:.3f})")
-                    self.performance[name].add_signal(signal)
-                    return signal
+                try:
+                    signal = fallback.on_bar(bar)
+                    if signal:
+                        self.logger.info(f"Fallback signal from {name} (score={score:.3f})")
+                        self.performance[name].add_signal(signal)
+                        return signal
+                except Exception as e:
+                    self.logger.debug(f"Fallback {name} failed: {e}")
         
         # Track signal for performance monitoring
         if signal:

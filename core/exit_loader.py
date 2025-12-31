@@ -12,7 +12,8 @@ from cthulu.exit.trailing_stop import TrailingStop
 from cthulu.exit.time_based import TimeBasedExit
 from cthulu.exit.profit_target import ProfitTargetExit
 from cthulu.exit.adverse_movement import AdverseMovementExit
-from cthulu.exit.micro_account_protection import MicroAccountProtection
+from cthulu.exit.micro_account_protection import MicroAccountProtection, SurvivalModeExit
+from cthulu.exit.profit_scaling import ProfitScalingExit, AggressiveScalingExit
 
 
 # Exit strategy registry mapping type names to classes
@@ -21,7 +22,10 @@ EXIT_STRATEGY_REGISTRY = {
     'time_based': TimeBasedExit,
     'profit_target': ProfitTargetExit,
     'adverse_movement': AdverseMovementExit,
-    'micro_account_protection': MicroAccountProtection
+    'micro_account_protection': MicroAccountProtection,
+    'survival_mode': SurvivalModeExit,
+    'profit_scaling': ProfitScalingExit,
+    'aggressive_scaling': AggressiveScalingExit,
 }
 
 

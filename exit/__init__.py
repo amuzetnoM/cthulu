@@ -15,6 +15,8 @@ from .stop_loss import StopLossExit
 from .take_profit import TakeProfitExit
 from .exit_manager import ExitDecision, ExitStrategyManager
 from .coordinator import ExitCoordinator, MarketContext, PositionContext, create_exit_coordinator
+from .micro_account_protection import MicroAccountProtection, SurvivalModeExit
+from .profit_scaling import ProfitScalingExit, AggressiveScalingExit, ProfitScaling, AggressiveScaling
 
 __all__ = [
     "ExitStrategy",
@@ -31,6 +33,12 @@ __all__ = [
     "MarketContext",
     "PositionContext",
     "create_exit_coordinator",
+    "MicroAccountProtection",
+    "SurvivalModeExit",
+    "ProfitScalingExit",
+    "AggressiveScalingExit",
+    "ProfitScaling",
+    "AggressiveScaling",
 ]
 
 

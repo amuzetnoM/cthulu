@@ -181,6 +181,63 @@ class PositionManager:
                 out[p.symbol]['volume'] += p.volume
         return out
 
+    def close_position(self, ticket: int, reason: str = "", partial_volume: Optional[float] = None):
+        """Close a position via execution engine.
+        
+        Args:
+            ticket: Position ticket to close
+            reason: Reason for closing
+            partial_volume: Optional partial close volume
+            
+        Returns:
+            ExecutionResult from the close order
+        """
+        from cthulu.execution.engine import OrderRequest, OrderType
+        
+        position = self.get_position(ticket)
+        if not position:
+            # Position not tracked locally - try to close via MT5 directly
+            import MetaTrader5 as mt5
+            mt5_pos = mt5.positions_get(ticket=ticket)
+            if not mt5_pos:
+                from cthulu.execution.engine import ExecutionResult, OrderStatus
+                return ExecutionResult(
+                    status=OrderStatus.REJECTED,
+                    message=f"Position {ticket} not found"
+                )
+            position = PositionInfo(
+                ticket=mt5_pos[0].ticket,
+                symbol=mt5_pos[0].symbol,
+                volume=mt5_pos[0].volume,
+                open_price=mt5_pos[0].price_open,
+                side='BUY' if mt5_pos[0].type == 0 else 'SELL'
+            )
+        
+        close_volume = partial_volume if partial_volume and partial_volume < position.volume else position.volume
+        
+        # Create close order
+        close_side = 'SELL' if position.side.upper() == 'BUY' else 'BUY'
+        order_req = OrderRequest(
+            symbol=position.symbol,
+            order_type=OrderType.MARKET,
+            side=close_side,
+            volume=close_volume,
+            comment=f"CLOSE:{reason[:20]}" if reason else "CLOSE",
+            metadata={'closing_ticket': ticket, 'reason': reason}
+        )
+        
+        # Execute close via execution engine
+        result = self.execution_engine.place_order(order_req)
+        
+        # If successful, remove from tracking
+        if hasattr(result, 'status') and str(result.status).upper() in ('FILLED', 'ORDERSTATUS.FILLED'):
+            if close_volume >= position.volume:
+                self.remove_position(ticket)
+            else:
+                # Partial close - update volume
+                self.update_position(ticket, volume=position.volume - close_volume)
+        
+        return result
 
 
 
