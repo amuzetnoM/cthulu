@@ -30,6 +30,11 @@ config/*.yaml
 !config.example.json
 .env
 .env.local
+config_battle_test.json
+config_aggressive*.json
+config_ultra*.json
+configs/*.json
+!configs/*.example.json
 
 # Build Plan (private development roadmap)
 build_plan.md
@@ -70,8 +75,12 @@ backtesting/cache/
 data/
 output/
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
+cthulu.db
+Cthulu.db
 
 # Jupyter Notebooks
 .ipynb_checkpoints/

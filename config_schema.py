@@ -57,6 +57,9 @@ class RiskConfig(BaseModel):
         "large": 0.25   # > $20k
     })
     sl_balance_breakpoints: list = Field(default_factory=lambda: [1000.0, 5000.0, 20000.0])
+    # Balance protection
+    min_balance_threshold: float = 10.0  # Minimum balance to allow trading
+    negative_balance_action: str = "halt"  # "halt", "close_all", "reduce"
 
 
 class TradingConfig(BaseModel):
