@@ -62,6 +62,7 @@ class SystemComponents:
     # Dynamic SL/TP and Adaptive Drawdown (cutting-edge risk management)
     dynamic_sltp_manager: Any = None
     adaptive_drawdown_manager: Any = None
+    profit_scaler: Any = None  # Profit scaling for partial profit taking
     
     # In-process observability collectors
     indicator_collector: Any = None
@@ -548,6 +549,35 @@ class CthuluBootstrap:
             self.logger.exception("Failed to initialize AdaptiveDrawdownManager")
             return None
     
+    def initialize_profit_scaler(self, config: Dict[str, Any], connector, execution_engine) -> Optional[Any]:
+        """Initialize profit scaler for partial profit taking.
+        
+        Args:
+            config: System configuration
+            connector: MT5Connector instance
+            execution_engine: ExecutionEngine instance
+            
+        Returns:
+            ProfitScaler instance or None if disabled
+        """
+        try:
+            scaler_config = config.get('profit_scaling', {})
+            if not scaler_config.get('enabled', True):  # Enabled by default
+                self.logger.info("Profit scaling disabled")
+                return None
+            
+            from cthulu.position.profit_scaler import create_profit_scaler
+            scaler = create_profit_scaler(connector, execution_engine, scaler_config)
+            self.logger.info(
+                f"ProfitScaler initialized: "
+                f"micro_threshold=${scaler_config.get('micro_account_threshold', 100)}, "
+                f"emergency_lock={scaler_config.get('emergency_lock_threshold_pct', 0.10)*100}%"
+            )
+            return scaler
+        except Exception:
+            self.logger.exception("Failed to initialize ProfitScaler")
+            return None
+    
     def initialize_exit_strategies(self, config: Dict[str, Any]) -> list:
         """Initialize exit strategies from configuration.
         
@@ -644,6 +674,7 @@ class CthuluBootstrap:
         # Initialize cutting-edge risk management components
         dynamic_sltp_manager = self.initialize_dynamic_sltp_manager(config)
         adaptive_drawdown_manager = self.initialize_adaptive_drawdown_manager(config)
+        profit_scaler = self.initialize_profit_scaler(config, connector, execution_engine)
         
         # Initialize exit strategies
         exit_strategies = self.initialize_exit_strategies(config)
@@ -669,6 +700,7 @@ class CthuluBootstrap:
             strategy=strategy,
             dynamic_sltp_manager=dynamic_sltp_manager,
             adaptive_drawdown_manager=adaptive_drawdown_manager,
+            profit_scaler=profit_scaler,
             exit_strategies=exit_strategies
         )
         # Expose trade_adoption_policy for convenience

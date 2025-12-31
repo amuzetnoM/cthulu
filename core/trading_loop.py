@@ -81,6 +81,7 @@ class TradingLoopContext:
     persist_summary_fn: Optional[Any] = None
     dynamic_sltp_manager: Optional[Any] = None  # Dynamic SL/TP management
     adaptive_drawdown_manager: Optional[Any] = None  # Adaptive drawdown management
+    profit_scaler: Optional[Any] = None  # Profit scaling manager for partial profit taking
     
     # Observability collectors (in-process for real-time data)
     indicator_collector: Optional[Any] = None
@@ -1190,6 +1191,20 @@ class TradingLoop:
             
             # Get ATR for dynamic SL/TP
             atr_value = df['atr'].iloc[-1] if 'atr' in df.columns else None
+            
+            # PROFIT SCALING - Run scaling cycle for all positions
+            if self.ctx.profit_scaler and account_info:
+                try:
+                    balance = float(account_info.get('balance', 0)) if isinstance(account_info, dict) else float(getattr(account_info, 'balance', 0))
+                    scaling_results = self.ctx.profit_scaler.run_scaling_cycle(balance)
+                    if scaling_results:
+                        for sr in scaling_results:
+                            if sr.get('success'):
+                                self.ctx.logger.info(f"Profit scaling: {sr}")
+                            elif sr.get('error'):
+                                self.ctx.logger.warning(f"Profit scaling issue: {sr.get('error')}")
+                except Exception as e:
+                    self.ctx.logger.error(f"Profit scaling cycle error: {e}")
             
             # Check each position against exit strategies
             for position in positions:

@@ -254,6 +254,7 @@ def main():
             exporter=components.exporter,
             dynamic_sltp_manager=components.dynamic_sltp_manager,
             adaptive_drawdown_manager=components.adaptive_drawdown_manager,
+            profit_scaler=getattr(components, 'profit_scaler', None),
             indicator_collector=getattr(components, 'indicator_collector', None),
             system_health_collector=getattr(components, 'system_health_collector', None),
             comprehensive_collector=getattr(components, 'comprehensive_collector', None),
