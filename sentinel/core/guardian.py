@@ -30,13 +30,21 @@ import psutil
 LOG_DIR = Path(__file__).parent.parent / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 
+# Configure file handler with UTF-8 encoding
+file_handler = logging.FileHandler(
+    LOG_DIR / f"sentinel_{datetime.now().strftime('%Y%m%d')}.log",
+    encoding='utf-8'
+)
+file_handler.setFormatter(logging.Formatter("%(asctime)s [SENTINEL] %(levelname)s: %(message)s"))
+
+# Configure stream handler with UTF-8 encoding for Windows
+import sys
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(logging.Formatter("%(asctime)s [SENTINEL] %(levelname)s: %(message)s"))
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [SENTINEL] %(levelname)s: %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_DIR / f"sentinel_{datetime.now().strftime('%Y%m%d')}.log"),
-        logging.StreamHandler()
-    ]
+    handlers=[file_handler, stream_handler]
 )
 logger = logging.getLogger("SENTINEL")
 
@@ -185,6 +193,7 @@ class SentinelGuardian:
         proc = self.find_cthulu_process()
         
         if proc is None:
+            self.metrics.cthulu_pid = None
             if self.metrics.cthulu_state == CthhuluState.RUNNING:
                 # Was running, now not - potential crash
                 return CthhuluState.CRASHED
@@ -204,6 +213,7 @@ class SentinelGuardian:
             return CthhuluState.RUNNING
             
         except psutil.NoSuchProcess:
+            self.metrics.cthulu_pid = None
             return CthhuluState.CRASHED
         except Exception as e:
             logger.error(f"Error checking Cthulu health: {e}")
@@ -214,6 +224,7 @@ class SentinelGuardian:
         proc = self.find_mt5_process()
         
         if proc is None:
+            self.metrics.mt5_pid = None
             return MT5State.NOT_RUNNING
         
         self.metrics.mt5_pid = proc.pid

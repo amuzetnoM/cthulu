@@ -489,14 +489,33 @@ class TradingLoop:
         try:
             # Calculate SMA indicators for strategy (use strategy params when available)
             try:
+                sma_periods_calculated = set()
+                
+                # Check direct strategy attributes
                 short_w = getattr(self.ctx.strategy, 'short_window', None)
                 long_w = getattr(self.ctx.strategy, 'long_window', None)
                 if short_w and long_w:
                     df[f'sma_{short_w}'] = df['close'].rolling(window=int(short_w)).mean()
                     df[f'sma_{long_w}'] = df['close'].rolling(window=int(long_w)).mean()
-                else:
-                    # Fallback to legacy defaults
+                    sma_periods_calculated.add(int(short_w))
+                    sma_periods_calculated.add(int(long_w))
+                
+                # For StrategySelector, calculate SMAs for all contained strategies
+                if hasattr(self.ctx.strategy, 'strategies'):
+                    for strategy_name, strategy in self.ctx.strategy.strategies.items():
+                        sw = getattr(strategy, 'short_window', None)
+                        lw = getattr(strategy, 'long_window', None)
+                        if sw and int(sw) not in sma_periods_calculated:
+                            df[f'sma_{sw}'] = df['close'].rolling(window=int(sw)).mean()
+                            sma_periods_calculated.add(int(sw))
+                        if lw and int(lw) not in sma_periods_calculated:
+                            df[f'sma_{lw}'] = df['close'].rolling(window=int(lw)).mean()
+                            sma_periods_calculated.add(int(lw))
+                
+                # Always ensure common defaults exist
+                if 20 not in sma_periods_calculated:
                     df['sma_20'] = df['close'].rolling(window=20).mean()
+                if 50 not in sma_periods_calculated:
                     df['sma_50'] = df['close'].rolling(window=50).mean()
             except Exception:
                 # If anything goes wrong, compute defaults and continue
