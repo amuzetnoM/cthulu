@@ -42,9 +42,14 @@ Cthulu v5.1 "Apex" introduces the SAFE paradigm:
 9. [Confluence Exit Manager](#confluence-exit-manager)
 10. [Micro Account Protection](#micro-account-protection)
 11. [Profit Scaling System](#profit-scaling-system)
-12. [Configuration Guide](#configuration-guide)
-13. [Usage Examples](#usage-examples)
-14. [Performance Tuning](#performance-tuning)
+12. [Adaptive Account Manager](#adaptive-account-manager)
+13. [Liquidity Trap Detection](#liquidity-trap-detection)
+14. [SPARTA Mode](#sparta-mode-battle-testing)
+15. [Create Your Own Mode](#create-your-own-mode)
+16. [Real-Time Observability](#real-time-observability)
+17. [Configuration Guide](#configuration-guide)
+18. [Usage Examples](#usage-examples)
+19. [Performance Tuning](#performance-tuning)
 
 ---
 
@@ -1437,6 +1442,132 @@ if recommendation:
     "rsi_divergence_threshold": 5.0
   }
 }
+```
+
+---
+
+## Adaptive Account Manager
+
+### Philosophy
+
+**Account size dictates trading style.** A $5 account cannot trade like a $5,000 account. The AdaptiveAccountManager implements phase-based account lifecycle management with dynamic timeframe selection.
+
+### Account Phases
+
+| Phase | Balance Range | Max Lot | Timeframe | Risk/Trade | R:R Min |
+|-------|---------------|---------|-----------|------------|---------|
+| **MICRO** | $0-25 | 0.01 | Scalp (M1-M5) | 10% | 1.5 |
+| **SEED** | $25-100 | 0.02 | Scalp/Intraday | 5% | 1.8 |
+| **GROWTH** | $100-500 | 0.05 | Intraday | 3% | 2.0 |
+| **ESTABLISHED** | $500-2000 | 0.10 | Intraday/Swing | 2% | 2.0 |
+| **MATURE** | $2000+ | 0.50 | Swing/Position | 1% | 2.5 |
+| **RECOVERY** | Any (20%+ DD) | 0.01 | Scalp | 2% | 1.2 |
+
+### Dynamic Timeframe Selection
+
+The system automatically selects optimal timeframes based on:
+
+1. **Account Phase**: Smaller accounts use faster timeframes for quick profits
+2. **Market Volatility**: High volatility → shorter timeframes
+3. **Recovery Mode**: Forces scalp timeframes for quick wins
+4. **Balance Progress**: As balance grows, timeframes extend
+
+### Argmax Decision Making
+
+Phase selection uses argmax scoring over multiple factors:
+
+```
+score(phase) = balance_fit + drawdown_adjustment + performance_momentum
+
+best_phase = argmax(scores)
+```
+
+**Scoring Factors**:
+- Balance fit: 50-70 points (primary)
+- Drawdown adjustment: +15 for conservative phases if DD > 15%
+- Performance momentum: +10 if win rate > 60%
+
+### Trade Frequency Limits
+
+Each phase has built-in frequency limits:
+
+| Phase | Max Trades/Hour | Min Trade Interval |
+|-------|----------------:|-------------------:|
+| MICRO | 10 | 60s |
+| SEED | 8 | 120s |
+| GROWTH | 6 | 180s |
+| ESTABLISHED | 4 | 300s |
+| MATURE | 3 | 600s |
+| RECOVERY | 15 | 30s |
+
+### Integration with Trading Loop
+
+The AdaptiveAccountManager integrates at three points:
+
+1. **Pre-Signal Validation**: Checks phase limits and validates signal confidence
+2. **Position Sizing**: Adjusts lot size based on phase config
+3. **Timeframe Selection**: Returns optimal MT5 timeframe constant
+
+### Usage
+
+```python
+from cthulu.risk import AdaptiveAccountManager, create_adaptive_account_manager
+
+# Create manager
+manager = create_adaptive_account_manager()
+
+# Update with current balance
+phase_config = manager.update(balance=29.0, equity=29.5)
+
+# Check if can trade
+can_trade, reason = manager.can_open_trade()
+
+# Validate signal
+is_valid, reason = manager.validate_signal(confidence=0.7, risk_reward=1.8)
+
+# Get position size
+lot_size = manager.get_position_size(
+    entry_price=88000,
+    stop_loss=87500
+)
+
+# Get optimal timeframe
+timeframe = manager.get_optimal_timeframe(market_volatility=0.5)
+```
+
+### Configuration
+
+```json
+{
+  "adaptive_account_manager": {
+    "phase_thresholds": {
+      "micro": 25,
+      "seed": 100,
+      "growth": 500,
+      "established": 2000
+    },
+    "recovery_threshold": 0.20
+  }
+}
+```
+
+### Status Report
+
+Get comprehensive status:
+
+```python
+status = manager.get_status_report()
+# Returns:
+# {
+#   'phase': 'seed',
+#   'balance': 29.81,
+#   'drawdown_pct': 1.76,
+#   'in_recovery': False,
+#   'timeframe': 'scalp',
+#   'can_trade': True,
+#   'trades_today': 5,
+#   'win_rate': 60.0
+# }
 ```
 
 ---

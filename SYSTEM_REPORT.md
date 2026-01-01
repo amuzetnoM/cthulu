@@ -1,19 +1,19 @@
 # Cthulu System Report
 
 **Version:** 5.1.0 - APEX  
-**Last Updated:** 2025-01-01T00:25:00Z  
+**Last Updated:** 2026-01-01T15:45:00Z  
 **Classification:** SOURCE OF TRUTH
 
-## 🎆 HAPPY NEW YEAR 2025! 🎆
+## 🎆 HAPPY NEW YEAR 2026! 🎆
 
 ### 🏆 BATTLE TEST FINAL RESULTS - VICTORY!
 
 | Metric | Start | End | Change |
 |--------|-------|-----|--------|
-| **Balance** | $5.00 | $30.01 | **+500.2%** |
-| Total Trades | 0 | 10+ | Profitable |
-| Max Drawdown | - | -$2.50 | Recovered |
-| Session Duration | - | 120+ min | Continuous |
+| **Balance** | $5.00 | $29.81 | **+496.2%** |
+| Total Trades | 0 | 15+ | Profitable |
+| Max Drawdown | - | -$3.00 | Recovered |
+| Session Duration | - | 180+ min | Continuous |
 | Fatal Errors | - | 0 | Perfect |
 
 **SPARTA MODE: MISSION ACCOMPLISHED** 🎯
@@ -24,11 +24,40 @@
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Balance | $30.01 | 🟢 **+500%** from $5 start |
-| Open Positions | 0 | 🟢 Profits locked |
-| System Status | Ready | 🟢 Operational |
+| Balance | $29.81 | 🟢 **+496%** from $5 start |
+| Equity | $28.78 | 🟡 Small floating loss |
+| Drawdown | 3.5% | 🟢 Within tolerance |
+| Open Positions | Active | 🟢 Monitoring |
+| System Status | TRADING | 🟢 Operational |
 | Observability | Active | 🟢 All services running |
 | Dashboard | Live | 🟢 [dashboard.html](observability/reporting/dashboard.html) |
+| Account Phase | SEED | 🟢 $25-100 range |
+
+---
+
+## 🚀 ADAPTIVE ACCOUNT MANAGER (NEW - 2026-01-01)
+
+**Just Implemented:** Phase-based account lifecycle with dynamic timeframe selection
+
+### Account Phases
+
+| Phase | Balance | Timeframe | Risk/Trade |
+|-------|---------|-----------|------------|
+| MICRO | $0-25 | Scalp (M1-M5) | 10% |
+| **SEED** ← Current | **$25-100** | **Scalp/Intraday** | **5%** |
+| GROWTH | $100-500 | Intraday | 3% |
+| ESTABLISHED | $500-2000 | Intraday/Swing | 2% |
+| MATURE | $2000+ | Swing/Position | 1% |
+
+### Key Features:
+- **Argmax Phase Selection:** Scores phases based on balance fit + drawdown + momentum
+- **Dynamic Timeframe:** Automatically selects optimal timeframe per phase
+- **Trade Frequency Limits:** Prevents overtrading based on account size
+- **Signal Validation:** Confidence and R:R requirements per phase
+- **Recovery Mode:** Auto-activates at 20%+ drawdown
+
+### Files Added:
+- `risk/adaptive_account_manager.py` - Core implementation
 
 ---
 

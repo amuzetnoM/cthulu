@@ -82,6 +82,8 @@ class TradingLoopContext:
     dynamic_sltp_manager: Optional[Any] = None  # Dynamic SL/TP management
     adaptive_drawdown_manager: Optional[Any] = None  # Adaptive drawdown management
     profit_scaler: Optional[Any] = None  # Profit scaling manager for partial profit taking
+    adaptive_account_manager: Optional[Any] = None  # Dynamic phase & timeframe management
+    adaptive_loss_curve: Optional[Any] = None  # Non-linear loss tolerance
     
     # Observability collectors (in-process for real-time data)
     indicator_collector: Optional[Any] = None
@@ -1011,16 +1013,44 @@ class TradingLoop:
         try:
             # Get current account info and positions
             account_info = self.ctx.connector.get_account_info()
+            balance = float(account_info.get('balance', 0)) if account_info else 0
+            equity = float(account_info.get('equity', balance)) if account_info else balance
             
             # CRITICAL: Get positions directly from MT5 for accurate count
-            # The position manager cache may be stale
             try:
                 import MetaTrader5 as mt5
                 mt5_positions = mt5.positions_get(symbol=self.ctx.symbol)
                 current_positions = len(mt5_positions) if mt5_positions else 0
             except Exception:
-                # Fallback to position manager if MT5 direct call fails
                 current_positions = len(self.ctx.position_manager.get_positions(symbol=self.ctx.symbol))
+            
+            # Adaptive Account Manager check (if available)
+            if self.ctx.adaptive_account_manager:
+                try:
+                    phase_config = self.ctx.adaptive_account_manager.update(balance, equity)
+                    
+                    # Check if can trade based on phase limits
+                    can_trade, trade_reason = self.ctx.adaptive_account_manager.can_open_trade()
+                    if not can_trade:
+                        self.ctx.logger.info(f"Phase limit: {trade_reason}")
+                        return
+                    
+                    # Validate signal confidence/RR against phase requirements
+                    signal_confidence = getattr(signal, 'confidence', 0.5)
+                    signal_rr = getattr(signal, 'risk_reward', 1.5)
+                    is_valid, valid_reason = self.ctx.adaptive_account_manager.validate_signal(
+                        signal_confidence, signal_rr
+                    )
+                    if not is_valid:
+                        self.ctx.logger.info(f"Signal validation failed: {valid_reason}")
+                        return
+                    
+                    # Log phase info
+                    state = self.ctx.adaptive_account_manager.get_state()
+                    self.ctx.logger.debug(f"Account phase: {state.phase.value}, "
+                                         f"timeframe: {state.active_timeframe.value}")
+                except Exception as e:
+                    self.ctx.logger.debug(f"Adaptive account manager check failed: {e}")
             
             # Risk approval
             approved, reason, position_size = self.ctx.risk_manager.approve(
@@ -1028,6 +1058,24 @@ class TradingLoop:
                 account_info=account_info,
                 current_positions=current_positions
             )
+            
+            # Apply adaptive loss curve adjustment (if available)
+            if approved and self.ctx.adaptive_loss_curve and position_size > 0:
+                try:
+                    max_loss = self.ctx.adaptive_loss_curve.get_max_loss(balance, per_trade=True)
+                    entry_price = getattr(signal, 'price', 0) or getattr(signal, 'entry_price', 0)
+                    stop_loss = getattr(signal, 'stop_loss', 0)
+                    
+                    if entry_price > 0 and stop_loss > 0:
+                        pip_distance = abs(entry_price - stop_loss)
+                        # Adjust position size to respect max loss
+                        if pip_distance > 0:
+                            adjusted_size = max_loss / (pip_distance * 10)  # Rough pip value
+                            if adjusted_size < position_size:
+                                self.ctx.logger.info(f"Loss curve adjustment: {position_size:.2f} → {adjusted_size:.2f}")
+                                position_size = max(0.01, round(adjusted_size, 2))
+                except Exception as e:
+                    self.ctx.logger.debug(f"Loss curve adjustment failed: {e}")
             
             if approved:
                 self.ctx.logger.info(f"Risk approved: {position_size:.2f} lots - {reason}")
