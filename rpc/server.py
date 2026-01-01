@@ -2,15 +2,33 @@
 
 Provides a minimal POST /trade endpoint protected by a bearer token.
 Designed to be local-only (binds to 127.0.0.1 by default) and dependency-free (uses http.server).
+
+Security Features (v5.1 Apex):
+- Intelligent rate limiting with adaptive thresholds
+- IP whitelist/blacklist with automatic threat detection
+- Request validation and sanitization
+- Comprehensive audit logging
+- Optional TLS support
 """
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
 import logging
 from urllib.parse import urlparse
 from threading import Thread
-from typing import Optional
+from typing import Optional, Dict, Any
 
 logger = logging.getLogger('Cthulu.rpc')
+
+# Import security manager
+try:
+    from cthulu.rpc.security import (
+        RPCSecurityManager, SecurityConfig, RateLimitConfig,
+        get_security_manager, ThreatLevel
+    )
+    SECURITY_AVAILABLE = True
+except ImportError:
+    SECURITY_AVAILABLE = False
+    logger.warning("RPC security module not available - running without hardening")
 
 
 class RPCRequestHandler(BaseHTTPRequestHandler):
@@ -20,6 +38,8 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
     risk_manager = None
     position_manager = None
     database = None
+    security_manager: Optional['RPCSecurityManager'] = None
+    security_config: Optional[Dict[str, Any]] = None
 
     def _send_json(self, status_code: int, payload: dict):
         body = json.dumps(payload).encode('utf-8')
@@ -41,6 +61,65 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        client_ip = self.client_address[0]
+        
+        # Security check if security manager is available
+        if self.security_manager:
+            # Read body for security checks
+            length = int(self.headers.get('Content-Length', 0))
+            
+            # Check request size limit
+            max_size = self.security_manager.config.max_request_size_bytes
+            if length > max_size:
+                logger.warning(f"Request too large from {client_ip}: {length} > {max_size}")
+                self._send_json(413, {'error': f'Request too large (max {max_size} bytes)'})
+                return
+            
+            try:
+                raw = self.rfile.read(length)
+                payload = json.loads(raw.decode('utf-8') if isinstance(raw, (bytes, bytearray)) else raw)
+            except Exception as e:
+                logger.warning(f"Invalid JSON from {client_ip}: {e}")
+                self._bad_request('Invalid JSON')
+                return
+            
+            # Determine volume for rate limiting
+            volume = float(payload.get('volume', 0)) if payload.get('volume') else 0.0
+            
+            # Comprehensive security check
+            allowed, reason = self.security_manager.check_request(
+                client_ip=client_ip,
+                endpoint=parsed.path,
+                method='POST',
+                payload=payload,
+                is_trade=(parsed.path == '/trade'),
+                volume=volume
+            )
+            
+            if not allowed:
+                logger.warning(f"Request blocked from {client_ip}: {reason}")
+                self._send_json(429 if 'limit' in reason.lower() else 403, {'error': reason})
+                return
+            
+            # Validate and sanitize payload for trade requests
+            if parsed.path == '/trade':
+                valid, error, sanitized = self.security_manager.validate_and_sanitize(payload)
+                if not valid:
+                    self._bad_request(error)
+                    return
+                # Use sanitized payload
+                payload = {**payload, **sanitized}
+        else:
+            # No security manager - original behavior
+            length = int(self.headers.get('Content-Length', 0))
+            try:
+                raw = self.rfile.read(length)
+                payload = json.loads(raw.decode('utf-8') if isinstance(raw, (bytes, bytearray)) else raw)
+            except Exception as e:
+                logger.exception('Failed to parse JSON body')
+                self._bad_request('Invalid JSON')
+                return
+        
         if parsed.path != '/trade':
             self._bad_request('Unknown endpoint')
             return
@@ -55,17 +134,12 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 token = api_key
             if not token or token != self.token:
                 self._unauthorized('Invalid or missing API token')
+                if self.security_manager:
+                    self.security_manager.audit.log_security_event(
+                        "AUTH_FAILED", client_ip, ThreatLevel.MEDIUM if SECURITY_AVAILABLE else None,
+                        "Invalid or missing token"
+                    )
                 return
-
-        # Read body
-        length = int(self.headers.get('Content-Length', 0))
-        try:
-            raw = self.rfile.read(length)
-            payload = json.loads(raw.decode('utf-8') if isinstance(raw, (bytes, bytearray)) else raw)
-        except Exception as e:
-            logger.exception('Failed to parse JSON body')
-            self._bad_request('Invalid JSON')
-            return
 
         # Validate minimal fields
         symbol = payload.get('symbol')
@@ -258,21 +332,131 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
         logger.info("%s - - [%s] %s" % (self.client_address[0], self.log_date_time_string(), format % args))
 
 
-def run_rpc_server(host: str, port: int, token: Optional[str], execution_engine, risk_manager, position_manager, database, daemon=True):
-    """Start RPC server in background thread. Returns the Thread and HTTPServer instances."""
+def run_rpc_server(
+    host: str,
+    port: int,
+    token: Optional[str],
+    execution_engine,
+    risk_manager,
+    position_manager,
+    database,
+    daemon: bool = True,
+    security_config: Optional[Dict[str, Any]] = None
+):
+    """
+    Start RPC server in background thread with security hardening.
+    
+    Args:
+        host: Bind address (default 127.0.0.1 for local-only)
+        port: Listen port
+        token: Bearer token for authentication (None = no auth)
+        execution_engine: ExecutionEngine instance for trade execution
+        risk_manager: RiskManager instance for trade approval
+        position_manager: PositionManager instance for position tracking
+        database: Database instance for trade recording
+        daemon: Run as daemon thread
+        security_config: Optional security configuration dict with keys:
+            - rate_limit: Dict with rate limit settings
+            - ip_whitelist: List of allowed IPs
+            - ip_blacklist: List of blocked IPs
+            - tls_enabled: Enable TLS
+            - tls_cert_path: Path to TLS certificate
+            - tls_key_path: Path to TLS private key
+            - audit_enabled: Enable audit logging
+    
+    Returns:
+        Tuple of (Thread, HTTPServer) instances
+    """
     RPCRequestHandler.token = token
     RPCRequestHandler.execution_engine = execution_engine
     RPCRequestHandler.risk_manager = risk_manager
     RPCRequestHandler.position_manager = position_manager
     RPCRequestHandler.database = database
+    
+    # Initialize security manager if available
+    if SECURITY_AVAILABLE:
+        try:
+            # Build security config from dict
+            sec_config = SecurityConfig()
+            
+            if security_config:
+                # Apply rate limit config
+                if 'rate_limit' in security_config:
+                    rl = security_config['rate_limit']
+                    sec_config.rate_limit = RateLimitConfig(
+                        requests_per_minute=rl.get('requests_per_minute', 60),
+                        requests_per_hour=rl.get('requests_per_hour', 1000),
+                        burst_limit=rl.get('burst_limit', 10),
+                        trades_per_minute=rl.get('trades_per_minute', 10),
+                        trades_per_hour=rl.get('trades_per_hour', 100),
+                        max_volume_per_minute=rl.get('max_volume_per_minute', 10.0),
+                        adaptive_enabled=rl.get('adaptive_enabled', True),
+                    )
+                
+                # Apply IP access controls
+                if 'ip_whitelist' in security_config:
+                    sec_config.ip_whitelist = security_config['ip_whitelist']
+                if 'ip_blacklist' in security_config:
+                    sec_config.ip_blacklist = security_config['ip_blacklist']
+                
+                # Apply TLS config
+                if security_config.get('tls_enabled'):
+                    sec_config.tls_enabled = True
+                    sec_config.tls_cert_path = security_config.get('tls_cert_path')
+                    sec_config.tls_key_path = security_config.get('tls_key_path')
+                
+                # Apply audit config
+                if 'audit_enabled' in security_config:
+                    sec_config.audit_enabled = security_config['audit_enabled']
+                if 'audit_log_path' in security_config:
+                    sec_config.audit_log_path = security_config['audit_log_path']
+            
+            RPCRequestHandler.security_manager = RPCSecurityManager(sec_config)
+            RPCRequestHandler.security_config = security_config
+            
+            logger.info("RPC Security Manager initialized with hardened settings")
+            logger.info(f"  Rate limits: {sec_config.rate_limit.requests_per_minute}/min, "
+                       f"{sec_config.rate_limit.trades_per_minute} trades/min")
+            logger.info(f"  IP whitelist: {len(sec_config.ip_whitelist)} entries")
+            logger.info(f"  Audit logging: {'enabled' if sec_config.audit_enabled else 'disabled'}")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize security manager: {e}")
+            RPCRequestHandler.security_manager = None
+    else:
+        logger.warning("RPC running WITHOUT security hardening - security module not available")
 
     server = HTTPServer((host, port), RPCRequestHandler)
+    
+    # Apply TLS if configured
+    if SECURITY_AVAILABLE and RPCRequestHandler.security_manager:
+        tls_context = RPCRequestHandler.security_manager.tls_context
+        if tls_context:
+            server.socket = tls_context.wrap_socket(server.socket, server_side=True)
+            logger.info("TLS enabled for RPC server")
 
     t = Thread(target=server.serve_forever, daemon=daemon, name='rpc-server')
     t.start()
-    logger.info(f"RPC server listening on http://{host}:{port} (local only).")
+    
+    protocol = "https" if (SECURITY_AVAILABLE and RPCRequestHandler.security_manager 
+                          and RPCRequestHandler.security_manager.tls_context) else "http"
+    logger.info(f"RPC server listening on {protocol}://{host}:{port} (local only).")
+    
     return t, server
 
 
+def get_rpc_security_stats() -> Dict[str, Any]:
+    """Get current RPC security statistics."""
+    if RPCRequestHandler.security_manager:
+        return RPCRequestHandler.security_manager.get_security_stats()
+    return {"security_enabled": False}
+
+
+def scan_rpc_dependencies() -> list:
+    """Scan for known vulnerable dependencies."""
+    if SECURITY_AVAILABLE:
+        from cthulu.rpc.security import DependencyScanner
+        return DependencyScanner.scan_installed()
+    return []
 
 

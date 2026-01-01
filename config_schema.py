@@ -118,8 +118,23 @@ class Config(BaseModel):
     database: Dict[str, Any] = Field(default_factory=lambda: {"path": "cthulu.db"})
     cache_enabled: bool = True
     logging: Dict[str, Any] = Field(default_factory=dict)
-    # RPC configuration (optional runtime HTTP control)
-    rpc: Dict[str, Any] = Field(default_factory=dict)
+    # RPC configuration (optional runtime HTTP control) with security hardening
+    rpc: Dict[str, Any] = Field(default_factory=lambda: {
+        "enabled": False,
+        "host": "127.0.0.1",
+        "port": 8080,
+        "token": None,
+        "security": {
+            "rate_limit": {
+                "requests_per_minute": 60,
+                "trades_per_minute": 10,
+                "burst_limit": 10,
+                "adaptive_enabled": True
+            },
+            "ip_whitelist": ["127.0.0.1", "::1"],
+            "audit_enabled": True
+        }
+    })
     # Dynamic SL/TP management (cutting-edge position management)
     dynamic_sltp: Dict[str, Any] = Field(default_factory=lambda: {"enabled": False})
     # Adaptive drawdown management (dynamic risk management)
