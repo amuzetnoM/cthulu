@@ -570,7 +570,9 @@ class ExecutionEngine:
             result = mt5.order_send(request)
             
             if result and result.retcode == mt5.TRADE_RETCODE_DONE:
-                self.logger.info(f"Position closed: #{ticket} | Profit: {result.profit:.2f}")
+                # Safely get profit - not all brokers/MT5 versions include it in order_send result
+                close_profit = getattr(result, 'profit', 0.0) or 0.0
+                self.logger.info(f"Position closed: #{ticket} | Profit: {close_profit:.2f}")
                 try:
                     if self.ml_collector:
                         exec_payload = {
@@ -592,7 +594,7 @@ class ExecutionEngine:
                     executed_price=result.price,
                     executed_volume=result.volume,
                     timestamp=datetime.now(),
-                    metadata={'profit': result.profit, 'commission': getattr(result, 'commission', 0.0)}
+                    metadata={'profit': close_profit, 'commission': getattr(result, 'commission', 0.0)}
                 )
             else:
                 error = result.comment if result else "Unknown error"

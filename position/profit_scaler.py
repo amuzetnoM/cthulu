@@ -350,7 +350,13 @@ class ProfitScaler:
         try:
             result = self.execution_engine.close_position(ticket, volume=volume)
             if result and result.status.value == 'FILLED':
-                profit = result.metadata.get('profit', 0) if result.metadata else 0
+                # Safely extract profit from metadata or result
+                profit = 0.0
+                if result.metadata and isinstance(result.metadata, dict):
+                    profit = result.metadata.get('profit', 0.0) or 0.0
+                elif hasattr(result, 'profit'):
+                    profit = getattr(result, 'profit', 0.0) or 0.0
+                    
                 logger.info(f"Partial close #{ticket}: {volume} lots, profit: {profit}")
                 return {'success': True, 'profit': profit, 'volume': volume}
             else:

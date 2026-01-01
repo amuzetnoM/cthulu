@@ -409,9 +409,11 @@ class Database:
             Database row ID
         """
         try:
+            # Use INSERT OR REPLACE to handle duplicate signal_ids gracefully
+            # This prevents UNIQUE constraint failures for retry scenarios
             cursor = self.conn.cursor()
             cursor.execute("""
-                INSERT INTO signals (
+                INSERT OR REPLACE INTO signals (
                     signal_id, timestamp, symbol, timeframe, side, action,
                     confidence, price, stop_loss, take_profit, reason, executed, execution_timestamp, metadata
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -452,36 +454,56 @@ class Database:
         Returns:
             Database row ID
         """
-        try:
-            # Use a fresh connection per call to avoid cross-thread sqlite3 errors
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO trades (
-                        signal_id, order_id, symbol, side, volume, entry_price,
-                        stop_loss, take_profit, entry_time, status, metadata
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    trade_record.signal_id,
-                    trade_record.order_id,
-                    trade_record.symbol,
-                    trade_record.side,
-                    trade_record.volume,
-                    trade_record.entry_price,
-                    trade_record.stop_loss,
-                    trade_record.take_profit,
-                    self._normalize_timestamp(trade_record.entry_time),
-                    trade_record.status,
-                    json.dumps(trade_record.metadata) if not isinstance(trade_record.metadata, str) else trade_record.metadata
-                ))
-                conn.commit()
-                row_id = cursor.lastrowid
-
-            return row_id
-            
-        except Exception as e:
-            self.logger.error(f"Failed to record trade: {e}", exc_info=True)
-            return -1
+        import time
+        max_retries = 3
+        retry_delay = 0.5
+        
+        for attempt in range(max_retries):
+            try:
+                # Use a fresh connection per call with timeout and WAL mode for better concurrency
+                conn = sqlite3.connect(self.db_path, timeout=30.0)
+                conn.execute("PRAGMA journal_mode=WAL")
+                conn.execute("PRAGMA busy_timeout=30000")
+                
+                try:
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        INSERT INTO trades (
+                            signal_id, order_id, symbol, side, volume, entry_price,
+                            stop_loss, take_profit, entry_time, status, metadata
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        trade_record.signal_id,
+                        trade_record.order_id,
+                        trade_record.symbol,
+                        trade_record.side,
+                        trade_record.volume,
+                        trade_record.entry_price,
+                        trade_record.stop_loss,
+                        trade_record.take_profit,
+                        self._normalize_timestamp(trade_record.entry_time),
+                        trade_record.status,
+                        json.dumps(trade_record.metadata) if not isinstance(trade_record.metadata, str) else trade_record.metadata
+                    ))
+                    conn.commit()
+                    row_id = cursor.lastrowid
+                    return row_id
+                finally:
+                    conn.close()
+                
+            except sqlite3.OperationalError as e:
+                if "locked" in str(e).lower() and attempt < max_retries - 1:
+                    self.logger.warning(f"Database locked, retry {attempt + 1}/{max_retries} after {retry_delay}s")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    self.logger.error(f"Failed to record trade: {e}", exc_info=True)
+                    return -1
+            except Exception as e:
+                self.logger.error(f"Failed to record trade: {e}", exc_info=True)
+                return -1
+        
+        return -1
     
     def save_position(
         self,
