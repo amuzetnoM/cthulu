@@ -132,6 +132,24 @@ Three modes now available:
 
 ## 🛠️ ENHANCEMENTS APPLIED
 
+### Exception Handling Overhaul (2025-01-01)
+- **File:** `core/exceptions.py` - NEW centralized exception handling module
+- **Problem Addressed:** 585+ broad `except Exception:` catches causing silent failures
+- **Solution:** 
+  - Created exception hierarchy: `CriticalTradingError`, `RecoverableError`, `ConfigurationError`
+  - Added utility decorators: `@log_and_continue`, `@critical_section`, `@retry_on_connection_error`
+  - Safe import functions: `safe_import()`, `safe_import_from()`
+  - Database safety wrapper: `@db_safe`
+- **Files Fixed:**
+  - `core/trading_loop.py` - Import errors now use `ImportError` not broad `Exception`
+  - `execution/engine.py` - Position resolution errors more specific
+  - `position/lifecycle.py` - Fixed circular import handling, logic bug in profit target
+  - `persistence/database.py` - Added `IntegrityError` handling for duplicate signals
+
+### Circular Import Resolution
+- **Problem:** `position ↔ execution` module coupling causing import issues
+- **Solution:** Lazy imports with specific `ImportError` handling instead of broad catches
+
 ### Profit Scaler Module
 - **File:** `position/profit_scaler.py`
 - **Integration:** `core/trading_loop.py`, `core/bootstrap.py`

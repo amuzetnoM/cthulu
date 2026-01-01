@@ -88,10 +88,13 @@ class PositionLifecycle:
                 if position_info:
                     # Import PositionInfo here to avoid circular import
                     try:
-                        from position.tracker import PositionInfo
-                    except Exception:
-                        # Fallback to package import for test / runtime environments
                         from cthulu.position.tracker import PositionInfo
+                    except ImportError:
+                        try:
+                            from position.tracker import PositionInfo
+                        except ImportError as import_err:
+                            logger.error(f"Failed to import PositionInfo: {import_err}")
+                            return None
                     
                     # Create tracked position
                     tracked_pos = PositionInfo(
@@ -157,8 +160,9 @@ class PositionLifecycle:
                 else:
                     # Fallback: truthiness for legacy boolean API
                     success = bool(result)
-            except Exception:
-                success = False
+            except (ImportError, AttributeError) as e:
+                logger.warning(f"Error checking close result for {ticket}: {e}")
+                success = bool(result) if result else False
             if success:
                 # Remove from tracker
                 self.tracker.remove_position(ticket)
@@ -317,11 +321,14 @@ class PositionLifecycle:
         """
         try:
             position = self.tracker.get_position(ticket)
-            if not position and position.profit >= target_profit:
+            if position and position.profit >= target_profit:
                 return self.close_position(ticket, f"Profit target ({target_profit})")
             
             return False
             
+        except AttributeError as e:
+            logger.warning(f"Position {ticket} missing profit attribute: {e}")
+            return False
         except Exception as e:
             logger.error(f"Error applying profit target to {ticket}: {e}", exc_info=True)
             return False

@@ -116,26 +116,26 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     from cthulu.indicators.rsi import RSI
     from cthulu.indicators.adx import ADX
     from cthulu.indicators.atr import ATR
-    # Optional runtime indicators
+    # Optional runtime indicators - use specific ImportError
     try:
         from cthulu.indicators.macd import MACD
-    except Exception:
+    except ImportError:
         MACD = None
     try:
         from cthulu.indicators.bollinger import BollingerBands
-    except Exception:
+    except ImportError:
         BollingerBands = None
     try:
         from cthulu.indicators.stochastic import Stochastic
-    except Exception:
+    except ImportError:
         Stochastic = None
     try:
         from cthulu.indicators.supertrend import Supertrend
-    except Exception:
+    except ImportError:
         Supertrend = None
     try:
         from cthulu.indicators.vwap import VWAP
-    except Exception:
+    except ImportError:
         VWAP = None
     
     required_emas = set()
@@ -150,8 +150,8 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
                     val = int(getattr(obj, attr))
                     if 'ema' in attr or 'fast_period' in attr or 'slow_period' in attr or 'fast_ema' in attr or 'slow_ema' in attr:
                         required_emas.add(val)
-                except Exception:
-                    pass
+                except (ValueError, TypeError):
+                    pass  # Non-integer period values are skipped
     
     # Strategy instance inspection
     try:
@@ -161,7 +161,7 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
                 collect_ema_periods(s)
         else:
             collect_ema_periods(strategy)
-    except Exception:
+    except ImportError:
         collect_ema_periods(strategy)
     
     # Also check config-level strategies
@@ -174,18 +174,18 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
                     if attr in params and params[attr]:
                         try:
                             required_emas.add(int(params[attr]))
-                        except Exception:
-                            pass
+                        except (ValueError, TypeError):
+                            pass  # Invalid period value
         else:
             params = strat_cfg.get('params', {}) if isinstance(strat_cfg.get('params', {}), dict) else {}
             for attr in ('fast_period', 'slow_period', 'fast_ema', 'slow_ema'):
                 if attr in params and params[attr]:
                     try:
                         required_emas.add(int(params[attr]))
-                    except Exception:
-                        pass
-    except Exception:
-        pass
+                    except (ValueError, TypeError):
+                        pass  # Invalid period value
+    except (KeyError, AttributeError) as e:
+        logger.debug(f"Config strategy parsing skipped: {e}")
     
     # Check for RSI requirement
     needs_rsi = False

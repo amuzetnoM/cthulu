@@ -440,6 +440,13 @@ class Database:
             self.logger.debug(f"Signal recorded: {signal_record.signal_id} (ID: {row_id})")
             return row_id
             
+        except sqlite3.IntegrityError as e:
+            # UNIQUE constraint - signal already exists, this is expected on retries
+            self.logger.warning(f"Signal {signal_record.signal_id} already exists: {e}")
+            return -1
+        except sqlite3.OperationalError as e:
+            self.logger.error(f"Database operational error recording signal: {e}", exc_info=True)
+            return -1
         except Exception as e:
             self.logger.error(f"Failed to record signal: {e}", exc_info=True)
             return -1

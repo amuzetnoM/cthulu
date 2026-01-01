@@ -371,8 +371,8 @@ class ExecutionEngine:
                         oldest = next(iter(self._submitted_orders))
                         try:
                             del self._submitted_orders[oldest]
-                        except Exception:
-                            pass
+                        except KeyError:
+                            pass  # Already removed
                     self._submitted_orders[order_req.client_tag] = result.order
                     
                 self.logger.info(
@@ -406,9 +406,10 @@ class ExecutionEngine:
                                 if abs(getattr(p, 'volume', 0) - result.volume) < 0.0001:
                                     position_ticket = getattr(p, 'ticket', None)
                                     break
-                            except Exception:
+                            except (AttributeError, TypeError):
                                 continue
-                except Exception:
+                except (AttributeError, RuntimeError) as e:
+                    self.logger.debug(f"Position ticket resolution skipped: {e}")
                     position_ticket = None
 
                 # Instrumentation: record order and execution events for ML and telemetry
@@ -585,6 +586,8 @@ class ExecutionEngine:
                             'timestamp': datetime.utcnow().isoformat() + 'Z',
                         }
                         self.ml_collector.record_execution(exec_payload)
+                except (AttributeError, TypeError) as e:
+                    self.logger.debug(f'ML collector recording skipped: {e}')
                 except Exception:
                     self.logger.exception('ML collector failed')
 
