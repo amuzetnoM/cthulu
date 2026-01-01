@@ -174,10 +174,21 @@ class PricePredictor:
         features.extend([mom_5 * 100, mom_10 * 100, mom_20 * 100])
         
         # 4. ATR ratio (volatility)
-        tr = np.maximum(high[-14:] - low[-14:],
-                       np.maximum(np.abs(high[-14:] - close[-15:-1]),
-                                 np.abs(low[-14:] - close[-15:-1]))) if len(close) >= 15 else [0]
-        atr = np.mean(tr)
+        if len(close) >= 15:
+            # True Range calculation with aligned arrays
+            high_slice = high[-14:]
+            low_slice = low[-14:]
+            prev_close = close[-15:-1]
+            tr = np.maximum(
+                high_slice - low_slice,
+                np.maximum(
+                    np.abs(high_slice - prev_close),
+                    np.abs(low_slice - prev_close)
+                )
+            )
+            atr = np.mean(tr)
+        else:
+            atr = np.mean(high - low) if len(high) > 0 else 0
         atr_ratio = (atr / close[-1]) * 100 if close[-1] > 0 else 0
         features.append(atr_ratio)
         
@@ -320,13 +331,17 @@ class PricePredictor:
     
     def _estimate_expected_move(self, df: pd.DataFrame, direction: PredictionDirection, confidence: float) -> float:
         """Estimate expected price move based on recent volatility."""
-        if len(df) < 20:
+        if len(df) < 21:
             return 0.0
         
         close = df['close'].values
         
         # Average bar size (as percentage)
-        bar_sizes = np.abs(np.diff(close[-20:])) / close[-21:-1] * 100
+        # Use aligned slices: diff of last 20 gives 19 values, divide by previous 19 closes
+        recent_close = close[-20:]
+        price_changes = np.abs(np.diff(recent_close))
+        prev_closes = recent_close[:-1]  # 19 elements to match diff output
+        bar_sizes = price_changes / (prev_closes + 1e-10) * 100
         avg_bar_size = np.mean(bar_sizes)
         
         # Expected move = avg_bar_size * horizon * confidence factor
