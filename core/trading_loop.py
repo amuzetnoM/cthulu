@@ -84,6 +84,7 @@ class TradingLoopContext:
     profit_scaler: Optional[Any] = None  # Profit scaling manager for partial profit taking
     adaptive_account_manager: Optional[Any] = None  # Dynamic phase & timeframe management
     adaptive_loss_curve: Optional[Any] = None  # Non-linear loss tolerance
+    cognition_engine: Optional[Any] = None  # AI/ML cognition engine for signal enhancement
     
     # Observability collectors (in-process for real-time data)
     indicator_collector: Optional[Any] = None
@@ -991,6 +992,48 @@ class TradingLoop:
                     f"Signal generated: {signal.side.name} {signal.symbol} "
                     f"(confidence: {signal.confidence:.2f})"
                 )
+                
+                # Cognition Engine Enhancement - Apply AI/ML signal adjustments
+                if self.ctx.cognition_engine:
+                    try:
+                        signal_direction = 'long' if signal.side == SignalType.LONG else 'short'
+                        enhancement = self.ctx.cognition_engine.enhance_signal(
+                            signal_direction=signal_direction,
+                            signal_confidence=signal.confidence,
+                            symbol=self.ctx.symbol,
+                            market_data=df
+                        )
+                        
+                        # Apply confidence adjustment
+                        original_conf = signal.confidence
+                        signal.confidence = min(1.0, signal.confidence * enhancement.confidence_multiplier)
+                        
+                        # Store size multiplier for later use in position sizing
+                        signal._cognition_size_mult = enhancement.size_multiplier
+                        signal._cognition_reasons = enhancement.reasons
+                        signal._cognition_warnings = enhancement.warnings
+                        
+                        if enhancement.reasons:
+                            self.ctx.logger.info(f"Cognition boost: {', '.join(enhancement.reasons)}")
+                        if enhancement.warnings:
+                            self.ctx.logger.warning(f"Cognition warnings: {', '.join(enhancement.warnings)}")
+                        
+                        if original_conf != signal.confidence:
+                            self.ctx.logger.info(
+                                f"Signal confidence adjusted: {original_conf:.2f} → {signal.confidence:.2f} "
+                                f"(size mult: {enhancement.size_multiplier:.2f})"
+                            )
+                        
+                        # Check if trading is advisable
+                        should_trade, reason = self.ctx.cognition_engine.should_trade(
+                            self.ctx.symbol, df
+                        )
+                        if not should_trade:
+                            self.ctx.logger.info(f"Cognition advises against trading: {reason}")
+                            return None
+                            
+                    except Exception as e:
+                        self.ctx.logger.warning(f"Cognition enhancement failed: {e}")
             else:
                 self.ctx.logger.info("Strategy returned NO SIGNAL for this bar")
             
@@ -1076,6 +1119,17 @@ class TradingLoop:
                                 position_size = max(0.01, round(adjusted_size, 2))
                 except Exception as e:
                     self.ctx.logger.debug(f"Loss curve adjustment failed: {e}")
+            
+            # Apply cognition size multiplier (if available from signal enhancement)
+            if approved and position_size > 0:
+                try:
+                    cognition_mult = getattr(signal, '_cognition_size_mult', 1.0)
+                    if cognition_mult != 1.0:
+                        original_size = position_size
+                        position_size = max(0.01, round(position_size * cognition_mult, 2))
+                        self.ctx.logger.info(f"Cognition size adjustment: {original_size:.2f} → {position_size:.2f}")
+                except Exception:
+                    pass
             
             if approved:
                 self.ctx.logger.info(f"Risk approved: {position_size:.2f} lots - {reason}")
@@ -1272,6 +1326,54 @@ class TradingLoop:
                                 self.ctx.logger.warning(f"Profit scaling issue: {sr.get('error')}")
                 except Exception as e:
                     self.ctx.logger.error(f"Profit scaling cycle error: {e}")
+            
+            # COGNITION EXIT SIGNALS - AI/ML enhanced exit decisions
+            if self.ctx.cognition_engine and positions:
+                try:
+                    # Get current indicators
+                    current_bar = df.iloc[-1] if len(df) > 0 else {}
+                    indicators = {
+                        'rsi': current_bar.get('rsi', current_bar.get('rsi_14', 50)),
+                        'atr': atr_value or 0,
+                        'adx': current_bar.get('adx', 20),
+                        'macd': current_bar.get('macd', 0),
+                        'bb_upper': current_bar.get('bb_upper', 0),
+                        'bb_lower': current_bar.get('bb_lower', 0)
+                    }
+                    
+                    # Convert positions to dict format for cognition engine
+                    pos_dicts = []
+                    for p in positions:
+                        pos_dicts.append({
+                            'ticket': p.ticket,
+                            'symbol': p.symbol,
+                            'type': 0 if p.side.lower() == 'buy' else 1,
+                            'price_open': p.open_price,
+                            'price_current': p.current_price,
+                            'volume': p.volume,
+                            'profit': p.unrealized_pnl,
+                            'time': getattr(p, 'open_time', None)
+                        })
+                    
+                    exit_signals = self.ctx.cognition_engine.get_exit_signals(
+                        pos_dicts, df, indicators
+                    )
+                    
+                    for exit_sig in exit_signals:
+                        if exit_sig.should_exit and exit_sig.confidence > 0.7:
+                            self.ctx.logger.info(
+                                f"Cognition exit signal: #{exit_sig.ticket} "
+                                f"urgency={exit_sig.urgency.value} conf={exit_sig.confidence:.2f} "
+                                f"reasons: {', '.join(exit_sig.reasons)}"
+                            )
+                            # Mark position for priority exit
+                            for p in positions:
+                                if p.ticket == exit_sig.ticket:
+                                    p._cognition_exit = exit_sig
+                                    break
+                                    
+                except Exception as e:
+                    self.ctx.logger.debug(f"Cognition exit signals error: {e}")
             
             # Check each position against exit strategies
             for position in positions:
