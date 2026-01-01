@@ -188,9 +188,16 @@ class BacktestEngine:
             results = self._run_fast(data, progress_callback)
         else:
             results = self._run_slow(data, progress_callback)
+        
+        # Close any remaining open positions at end of backtest
+        if self.positions:
+            last_bar = data.iloc[-1]
+            last_timestamp = data.index[-1]
+            self.logger.info(f"Closing {len(self.positions)} open positions at backtest end")
+            self._close_all_positions(last_timestamp, last_bar['close'], "backtest_end")
             
         # Calculate final metrics
-        final_metrics = self.metrics.get_metrics(0)  # active positions = 0 at end
+        final_metrics = self.metrics.get_metrics()  # Get current metrics snapshot
         
         elapsed = time.time() - self.start_time
         self.logger.info(f"Backtest completed in {elapsed:.2f} seconds")
@@ -286,6 +293,7 @@ class BacktestEngine:
         # Calculate position size
         size = self._calculate_position_size(signal, bar['close'])
         if size <= 0:
+            self.logger.debug(f"Position size zero or negative: {size}")
             return
             
         # Calculate entry price with slippage
@@ -320,7 +328,7 @@ class BacktestEngine:
         # Update cash
         self.cash -= required_cash
         
-        self.logger.debug(f"Opened {signal.side.value} position #{position.ticket} @ {entry_price:.5f} size {size:.2f}")
+        self.logger.info(f"Opened {signal.side.value} #{position.ticket} @ {entry_price:.2f} size {size:.4f}")
         
     def _update_positions(self, timestamp: datetime, bar: pd.Series) -> None:
         """Update open positions and check for exits."""
@@ -401,7 +409,7 @@ class BacktestEngine:
         # Remove position
         del self.positions[ticket]
         
-        self.logger.debug(f"Closed position #{ticket} @ {exit_price:.5f}: P&L ${pnl:.2f} ({reason})")
+        self.logger.info(f"Closed #{ticket} @ {exit_price:.2f}: P&L ${pnl:.2f} ({reason})")
         
     def _close_all_positions(self, timestamp: datetime, price: float, reason: str) -> None:
         """Close all open positions."""
@@ -427,7 +435,7 @@ class BacktestEngine:
             
     def get_results_summary(self) -> str:
         """Get human-readable results summary."""
-        metrics = self.metrics.get_metrics(len(self.positions))
+        metrics = self.metrics.get_metrics()
         
         summary = f"""
 Backtest Results Summary

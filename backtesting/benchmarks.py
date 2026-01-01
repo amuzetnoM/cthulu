@@ -331,7 +331,7 @@ class BenchmarkSuite:
         """Calculate monthly returns."""
         if len(df) == 0:
             return []
-        monthly = df['equity'].resample('M').last()
+        monthly = df['equity'].resample('ME').last()  # Use 'ME' for month-end
         monthly_returns = monthly.pct_change().dropna() * 100
         return monthly_returns.tolist()
         
