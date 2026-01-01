@@ -7,17 +7,22 @@ sidebar_position: 1
 
 ---
 
+![LEGENDARY](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&labelColor=0D1117)
 
-![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
 
-> [CHANGELOG](https://artifact-virtual.gitbook.io/Cthulu)
+
+![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+[![CHANGELOG](https://img.shields.io/badge/CHANGELOG-GitBook-FF6F61?style=for-the-badge&labelColor=0D1117&logo=gitbook&logoColor=white)](https://artifact-virtual.gitbook.io/Cthulu)
+
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
 
 <p align="center">
-  <img src="../assets/cthulu-black.png" alt="Cthulu logo" width="480" />
+  <img src="../assets/cthulu-black.png" alt="Cthulu logo" width="480" /> 
+
 </p>
 
-<br><n>
+
+
 
 ```
 _________   __  .__          .__         
@@ -31,17 +36,20 @@ _________   __  .__          .__
 
 
 
-<br><n><img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&style=flat-square" />
-  <img src="https://img.shields.io/badge/Integration-MT5-lightgrey?style=flat-square" />
-  <img src="https://img.shields.io/badge/Persistenece-Persistence-003B57?style=flat-square" />
-  <img src="https://img.shields.io/badge/pandas-DataFrames-150458?style=flat-square" />
-  <img src="https://img.shields.io/badge/Prometheus-Metrics-00A5E3?style=flat-square" />
-  <img src="https://img.shields.io/badge/Tkinter-GUI-6AA84F?style=flat-square" />
-  <br><n>
-  <img src="https://img.shields.io/badge/tests-185%20passing-brightgreen?logo=pytest&style=flat-square" />
-  <img src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat-square" />
-  <img src="https://img.shields.io/badge/coverage-95%25-brightgreen?style=flat-square" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" />
+
+![Language](https://img.shields.io/badge/Language-Python_3.10+-3776AB?style=for-the-badge&labelColor=0D1117&logo=python&logoColor=white)
+![Integration](https://img.shields.io/badge/Integration-MetaTrader_5-00599C?style=for-the-badge&labelColor=0D1117&logo=metatrader5&logoColor=white)
+![Data](https://img.shields.io/badge/Data-Pandas_DataFrames-150458?style=for-the-badge&labelColor=0D1117&logo=pandas&logoColor=white)
+![Storage](https://img.shields.io/badge/Storage-SQLite-003B57?style=for-the-badge&labelColor=0D1117&logo=sqlite&logoColor=white)
+![Metrics](https://img.shields.io/badge/Metrics-Prometheus-E6522C?style=for-the-badge&labelColor=0D1117&logo=prometheus&logoColor=white)
+
+![Pipeline](https://img.shields.io/badge/Pipeline-Local-2088FF?style=for-the-badge&labelColor=0D1117&logo=githubactions&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-185_Passing-00C853?style=for-the-badge&labelColor=0D1117&logo=pytest&logoColor=white)
+![Coverage](https://img.shields.io/badge/Coverage-95%25-00C853?style=for-the-badge&labelColor=0D1117&logo=codecov&logoColor=white)
+
+![License](https://img.shields.io/badge/License-MIT-FADB04?style=for-the-badge&labelColor=0D1117&logo=opensourceinitiative&logoColor=white)
+
+
 </div>
 
 <br>

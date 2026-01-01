@@ -14,7 +14,8 @@ _________   __  .__          .__
         \/           \/                  
 ````    
 
-![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
+ ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+ ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 
 ## Overview

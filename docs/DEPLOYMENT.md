@@ -6,7 +6,8 @@ slug: /docs/deployment
 sidebar_position: 5
 ---
 
-![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo)
+ ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+ ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 ## Table of Contents
 - [Quick Start](#quick-start)
