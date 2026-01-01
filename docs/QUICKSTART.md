@@ -72,25 +72,7 @@ export LIVE_RUN_CONFIRM=1
 python -m Cthulu --config config.json
 ```
 
----
 
-## 🎨 GUI Features
-
-The Cthulu GUI launches automatically and provides:
-
-### Dark Mode Interface
-- Real-time performance metrics
-- Live trade monitoring
-- Trade history
-- Active strategy display
-- Market regime indicator
-- Manual trade placement
-
-### Color-Coded Regimes
-- 🟢 **Trending Up**: Green
-- 🔴 **Trending Down**: Red  
-- 🟡 **Volatile**: Yellow
-- 🔵 **Ranging**: Blue
 
 ### Features
 - Auto-refresh every 2 seconds
@@ -275,16 +257,6 @@ python -m Cthulu --config config.json --enable-rpc       # Enable RPC for GUI
 
 ---
 
-## 🎉 What's New in v4.0.0
-
-1. **Multi-Strategy Framework**: Dynamic strategy switching
-2. **New Strategies**: EMA Crossover, Momentum Breakout, Scalping
-3. **New Indicators**: Supertrend, VWAP, Enhanced RSI
-4. **Enhanced GUI**: Dark mode, auto-launch, real-time monitoring
-5. **Improved Wizard**: NLP support, indicator configuration
-6. **Better Connectivity**: FROM_ENV config support
-
----
 
 ## 💡 Tips
 
