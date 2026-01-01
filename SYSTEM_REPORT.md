@@ -35,7 +35,7 @@
 
 ---
 
-## 🚀 ADAPTIVE ACCOUNT MANAGER
+## 🚀 ADAPTIVE ACCOUNT MANAGER (NEW - 2026-01-01)
 
 **Just Implemented:** Phase-based account lifecycle with dynamic timeframe selection
 
@@ -61,7 +61,7 @@
 
 ---
 
-## 🧠 ML TIER OPTIMIZER 
+## 🧠 ML TIER OPTIMIZER (NEW - 2025-01-01)
 
 **Just Implemented:** Machine Learning-based profit tier optimization
 
