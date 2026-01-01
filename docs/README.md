@@ -1064,10 +1064,6 @@ Past performance is not indicative of future results. Use at your own risk.
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
 
-### Phase 2 Documentation 🆕
-- **[Phase 2 README](PHASE2_README.md)** - Complete autonomous trading guide
-- **[Phase 2 Summary](PHASE2_SUMMARY.md)** - Implementation details and statistics
-- **[Configuration Example](config.example.json)** - Full JSON configuration template
 
 ### API Reference
 - **[HTML Documentation](docs/index.html)** - Interactive documentation website
@@ -1099,7 +1095,6 @@ See [CHANGELOG.md](docs/CHANGELOG.md) for detailed release notes.
 
 **Built with focus on safety, testability, and production readiness.**
 
-*Cthulu v5.1.0 "Apex" - Peak Performance. SAFE: Set And Forget Engine with RSI Reversal, multi-strategy fallback, and enterprise-grade architecture.*
 
 
 
