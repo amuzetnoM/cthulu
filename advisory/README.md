@@ -1,11 +1,8 @@
 # Advisory Manager
 
-<div align="center">
 
-![APEX](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=flat-square)
-![Module](https://img.shields.io/badge/Module-Advisory-blue?style=flat-square)
+ ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 
-</div>
 
 ---
 
