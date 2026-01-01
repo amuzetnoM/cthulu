@@ -287,7 +287,7 @@ class ReportGenerator:
 </body>
 </html>
 """
-        with open(output_path, 'w') as f:
+        with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html)
             
     def _generate_text(self, results: Dict[str, Any], metrics: Any, output_path: str) -> None:
@@ -328,18 +328,26 @@ Bars Processed:       {results['bars_processed']:>10,}
 Duration:             {results['duration_seconds']:>10.2f} seconds
 Bars/Second:          {results['bars_per_second']:>10,.0f}
 """
-        with open(output_path, 'w') as f:
+        with open(output_path, 'w', encoding='utf-8') as f:
             f.write(text)
             
     def _generate_json(self, results: Dict[str, Any], metrics: Any, output_path: str) -> None:
         """Generate JSON report."""
         import json
+        # Be flexible about metrics representation (dataclass-like with to_dict, or simple namespace)
+        if hasattr(metrics, 'to_dict'):
+            metrics_data = metrics.to_dict()
+        elif hasattr(metrics, '__dict__'):
+            metrics_data = metrics.__dict__
+        else:
+            metrics_data = metrics
+
         report = {
             'timestamp': datetime.now().isoformat(),
             'results': results,
-            'metrics': metrics.to_dict()
+            'metrics': metrics_data
         }
-        with open(output_path, 'w') as f:
+        with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(report, f, indent=2, default=str)
             
     def _generate_csv(self, results: Dict[str, Any], metrics: Any, output_path: str) -> None:
@@ -367,4 +375,4 @@ Bars/Second:          {results['bars_per_second']:>10,.0f}
             })
             
         df = pd.DataFrame(trade_data)
-        df.to_csv(output_path, index=False)
+        df.to_csv(output_path, index=False, encoding='utf-8')

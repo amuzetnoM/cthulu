@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 PORT = 8000
-ROOT = Path(__file__).parents[1].resolve()  # repo root
+ROOT = Path(__file__).parents[2].resolve()  # repository root
 os.chdir(ROOT)
 
 Handler = http.server.SimpleHTTPRequestHandler
