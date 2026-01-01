@@ -88,6 +88,15 @@ from .tier_optimizer import (
 # ML Instrumentation (existing)
 from .instrumentation import MLDataCollector
 
+# Training Data Logger
+from .training_logger import (
+    TrainingDataLogger,
+    TradeDecision,
+    get_training_logger,
+    log_trade_decision,
+    log_trade_outcome,
+)
+
 __all__ = [
     # Regime
     'MarketRegimeClassifier',
@@ -137,4 +146,11 @@ __all__ = [
     'get_tier_optimizer',
     'run_tier_optimization',
     'MLDataCollector',
+    
+    # Training Logger
+    'TrainingDataLogger',
+    'TradeDecision',
+    'get_training_logger',
+    'log_trade_decision',
+    'log_trade_outcome',
 ]

@@ -1,37 +1,68 @@
 # Cthulu System Report
 
 **Version:** 5.1.0 - APEX  
-**Last Updated:** 2026-01-01T15:45:00Z  
+**Last Updated:** 2026-01-01T17:25:00Z  
 **Classification:** SOURCE OF TRUTH
 
 ## 🎆 HAPPY NEW YEAR 2026! 🎆
 
-### 🏆 BATTLE TEST FINAL RESULTS - VICTORY!
+### 🏆 BATTLE TEST RESULTS - CONTINUOUS IMPROVEMENT
 
-| Metric | Start | End | Change |
-|--------|-------|-----|--------|
-| **Balance** | $5.00 | $29.81 | **+496.2%** |
-| Total Trades | 0 | 15+ | Profitable |
+| Metric | Start | Current | Change |
+|--------|-------|---------|--------|
+| **Balance** | $5.00 | $36.15 | **+623%** |
+| Total Trades | 0 | 20+ | Profitable |
 | Max Drawdown | - | -$3.00 | Recovered |
-| Session Duration | - | 180+ min | Continuous |
+| Session Duration | - | 4+ hours | Continuous |
 | Fatal Errors | - | 0 | Perfect |
 
-**SPARTA MODE: ACCOMPLISHED** 🎯
+**SPARTA MODE: ACTIVE** 🎯
 
 ---
 
-## 📊 CURRENT SESSION STATUS
+## 📊 CURRENT SESSION STATUS (Live)
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Balance | $29.81 | 🟢 **+496%** from $5 start |
-| Equity | $28.78 | 🟡 Small floating loss |
-| Drawdown | 3.5% | 🟢 Within tolerance |
+| Balance | $36.15 | 🟢 **+623%** from $5 start |
+| Equity | ~$35 | 🟡 Small floating loss |
+| Drawdown | ~2.3% | 🟢 Within tolerance |
 | Open Positions | Active | 🟢 Monitoring |
 | System Status | TRADING | 🟢 Operational |
 | Observability | Active | 🟢 All services running |
 | Dashboard | Live | 🟢 [dashboard.html](observability/reporting/dashboard.html) |
 | Account Phase | SEED | 🟢 $25-100 range |
+| ML Training | Active | 🟢 Collecting decision data |
+
+---
+
+## 🧠 COGNITION ENGINE (Session Updates)
+
+### Modules Active:
+- **Regime Classifier**: Bull/Bear/Sideways/Volatile/Choppy detection
+- **Price Predictor**: Softmax/Argmax direction forecasting
+- **Sentiment Analyzer**: News/calendar integration ready
+- **Exit Oracle**: High-confluence exit signals
+- **Training Logger**: Recording decisions for ML training
+
+### New: Training Data Pipeline
+- Location: `cognition/data/training/`
+- Format: JSONL (compressed)
+- Records: All trade decisions with outcomes
+- Purpose: Supervised learning model training
+
+---
+
+## 📁 Ultra-Aggressive Mindset (Restored)
+
+All timeframe configs now available in `configs/mindsets/ultra_aggressive/`:
+- `config_ultra_aggressive_m1.json` - Scalping beast
+- `config_ultra_aggressive_m5.json` - High-frequency trends
+- `config_ultra_aggressive_m15.json` - Dynamic selector
+- `config_ultra_aggressive_m30.json` - Swing capture
+- `config_ultra_aggressive_h1.json` - Medium-term trends
+- `config_ultra_aggressive_h4.json` - Position trading
+- `config_ultra_aggressive_d1.json` - Long-term trends
 
 ---
 
