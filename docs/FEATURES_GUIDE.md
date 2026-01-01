@@ -917,19 +917,472 @@ The GUI automatically connects to the running Cthulu instance and displays data 
 - `logs/latest_summary.txt` - Performance metrics
 - `logs/strategy_info.txt` - Strategy status
 
+---
+
+## Autonomous Position Management
+
+### Overview
+
+Cthulu v5.1 "Apex" introduces revolutionary **autonomous position management** that creates self-managing trades. This is the core of the **SAFE (Set And Forget Engine)** paradigm.
+
+The system comprises four interconnected modules:
+1. **ProfitScaler** - Tiered partial profit taking
+2. **MicroAccountProtection** - Intelligent DCA (Dollar Cost Averaging)
+3. **AdaptiveDrawdownManager** - Dynamic drawdown state management
+4. **EquityCurveManager** - Trailing equity protection
+
+### How They Work Together
+
+```
+Signal Generated → Position Opened → ProfitScaler monitors
+                                          ↓
+                        Profit grows → Take partial (25%, 35%, 50%)
+                        Profit shrinks → MicroAccountProtection evaluates DCA
+                                          ↓
+                        Market adverse → AdaptiveDrawdownManager adjusts risk
+                        Equity drops → EquityCurveManager protects capital
+```
+
+---
+
+## Profit Scaling System
+
+### Purpose
+Automatically lock in profits at tiered milestones while letting winners run.
+
+### Tier Configuration
+
+**Standard Account Tiers** (Balance ≥ $100):
+| Tier | Profit Threshold | Close % | Move SL | Trail % |
+|------|------------------|---------|---------|---------|
+| 1 | 30% of position | 25% | To Breakeven | 50% |
+| 2 | 60% of position | 35% | To Breakeven | 60% |
+| 3 | 100% of position | 50% | To Breakeven | 70% |
+
+**Micro Account Tiers** (Balance < $100 - SPARTA Mode):
+| Tier | Profit Threshold | Close % | Move SL | Trail % |
+|------|------------------|---------|---------|---------|
+| 1 | 15% of position | 30% | To Breakeven | 40% |
+| 2 | 30% of position | 40% | To Breakeven | 50% |
+| 3 | 50% of position | 50% | To Breakeven | 60% |
+
+### How It Works
+
+1. **Position Registered**: When a trade opens, ProfitScaler begins monitoring
+2. **Profit Calculation**: Continuously calculates unrealized P&L percentage
+3. **Tier Evaluation**: Checks if profit threshold is reached
+4. **Partial Close**: Executes partial position close via ExecutionEngine
+5. **SL Adjustment**: Moves stop-loss to breakeven after first tier
+6. **Trailing**: Implements trailing stop at configured percentage
+
+### Emergency Profit Lock
+
+If unrealized profit exceeds **10% of account balance**, ProfitScaler triggers **emergency profit lock**:
+- Immediately closes 50% of position
+- Moves SL to breakeven
+- Logs as emergency action
+
+### ML-Powered Tier Optimization
+
+The system learns optimal tier configurations from historical outcomes:
+- Records every scaling action and its result
+- Adjusts tier thresholds based on what maximizes total profit
+- Adapts to account size and instrument volatility
+
+### Configuration
+
+```json
+{
+  "profit_scaling": {
+    "enabled": true,
+    "micro_account_threshold": 100.0,
+    "min_profit_amount": 0.10,
+    "emergency_lock_threshold_pct": 0.10,
+    "tiers": [
+      {"profit_threshold_pct": 0.30, "close_pct": 0.25, "move_sl_to_entry": true, "trail_pct": 0.50},
+      {"profit_threshold_pct": 0.60, "close_pct": 0.35, "move_sl_to_entry": true, "trail_pct": 0.60},
+      {"profit_threshold_pct": 1.00, "close_pct": 0.50, "move_sl_to_entry": true, "trail_pct": 0.70}
+    ]
+  }
+}
+```
+
+---
+
+## MicroAccountProtection (Intelligent DCA)
+
+### Purpose
+Provides intelligent averaging-down capabilities for adverse positions, especially critical for micro accounts where a single bad trade could devastate the balance.
+
+### DCA Logic
+
+The system evaluates positions for potential averaging opportunities:
+
+1. **Entry Conditions**:
+   - Position is in loss (negative floating P&L)
+   - Loss percentage exceeds configurable threshold
+   - Market shows favorable re-entry signals
+   - Account has sufficient margin
+
+2. **Volume Calculation**:
+   - New entry volume = Original volume × DCA multiplier (default: 0.5)
+   - Never exceeds remaining margin safety limits
+
+3. **Re-entry Timing**:
+   - Waits for price to stabilize (configurable bars)
+   - Confirms with indicator convergence
+   - Validates against risk parameters
+
+### Configuration
+
+```json
+{
+  "micro_account_protection": {
+    "enabled": true,
+    "balance_threshold": 100.0,
+    "dca_enabled": true,
+    "dca_loss_threshold_pct": 2.0,
+    "dca_max_entries": 3,
+    "dca_volume_multiplier": 0.5,
+    "emergency_stop_pct": 10.0
+  }
+}
+```
+
+### Safety Rails
+
+- **Maximum DCA Entries**: Limited to 3 additional entries per position
+- **Margin Check**: Always validates sufficient free margin
+- **Emergency Stop**: Closes everything if drawdown exceeds threshold
+- **Cooldown Period**: Minimum time between DCA entries
+
+---
+
+## Adaptive Drawdown Management
+
+### Purpose
+Dynamically adjusts trading behavior based on current drawdown state, implementing survival strategies when capital is at risk.
+
+### Drawdown States
+
+| State | Drawdown % | Position Multiplier | Max Positions | Confidence Required |
+|-------|------------|--------------------:|:-------------:|:-------------------:|
+| NORMAL | 0-5% | 1.0x | 10 | 0.25 |
+| CAUTION | 5-10% | 0.75x | 7 | 0.35 |
+| WARNING | 10-20% | 0.5x | 5 | 0.50 |
+| DANGER | 20-35% | 0.25x | 3 | 0.70 |
+| CRITICAL | 35-50% | 0.1x | 1 | 0.85 |
+| SURVIVAL | 50-90% | 0.05x | 1 | 0.95 |
+| RECOVERY | Recovering | 0.6x | 4 | 0.45 |
+
+### State Transitions
+
+```
+NORMAL → CAUTION → WARNING → DANGER → CRITICAL → SURVIVAL
+                                                    ↓
+                                              RECOVERY (climbing back)
+```
+
+### SURVIVAL Mode
+
+When drawdown exceeds 50%, the system enters **SURVIVAL MODE**:
+
+- **Position Size**: Micro-lots only (0.01)
+- **Max Positions**: 1 only
+- **Confidence Required**: 95%+ (near-certain signals only)
+- **Risk:Reward Minimum**: 5:1
+- **Allowed Strategies**: High-probability only (trend_following)
+- **Session Filter**: High liquidity periods only (London/NY)
+- **Wider Stops**: 2x normal ATR multiplier
+
+### Win/Lose Streak Adjustment
+
+The system tracks consecutive wins/losses and adjusts accordingly:
+
+- **4+ Wins**: Position size +20% (anti-martingale)
+- **3+ Losses**: Position size -20%
+- **4+ Losses**: Position size -40%
+
+### Configuration
+
+```json
+{
+  "adaptive_drawdown": {
+    "enabled": true,
+    "trailing_lock_pct": 0.5,
+    "thresholds": {
+      "caution": 5.0,
+      "warning": 10.0,
+      "danger": 20.0,
+      "critical": 35.0,
+      "survival": 50.0
+    }
+  }
+}
+```
+
+---
+
+## Equity Curve Management
+
+### Purpose
+Monitors the equity curve trajectory and implements trailing profit protection to prevent giving back gains.
+
+### Key Metrics Tracked
+
+- **Peak Balance**: Highest balance achieved
+- **Peak Equity**: Highest equity achieved
+- **Trailing Equity High**: High watermark for profit locking
+- **Locked Profit Amount**: Gains that must be protected
+- **Equity Velocity**: Rate of change ($/minute)
+- **Equity Momentum**: Acceleration of equity change
+
+### Trailing Equity Protection
+
+Once account gains exceed **5% of initial balance**, the system starts locking profits:
+
+1. **New High**: When equity makes new high, lock 50% of the new gain
+2. **Protection Trigger**: If current profit drops below 50% of locked amount, trigger protective actions
+3. **Actions**: Tighten stops, move to breakeven, partial close recommendations
+
+### Equity States
+
+| State | Description | Action |
+|-------|-------------|--------|
+| ASCENDING | Equity rising steadily | Allow larger positions |
+| DESCENDING | Equity falling | Reduce position sizes |
+| CONSOLIDATING | Sideways movement | Normal trading |
+| BREAKOUT_UP | Breaking to new highs | Slightly larger positions |
+| BREAKDOWN | Breaking to new lows | Defensive mode |
+| RECOVERY | Recovering from drawdown | Gradual size increase |
+
+### Protection Levels
+
+| Equity vs Peak | Level | Actions |
+|----------------|-------|---------|
+| >90% | Normal | Full trading |
+| 80-90% | WARNING | Reduce size 50%, tighten stops |
+| 70-80% | DANGER | Reduce size 75%, partial close 50% |
+| 50-70% | CRITICAL | Minimal size, close 75%, breakeven all |
+| <50% | EMERGENCY | Close all positions |
+
+### Configuration
+
+```json
+{
+  "equity_curve_management": {
+    "enabled": true,
+    "trailing_lock_pct": 0.5,
+    "profit_lock_threshold": 5.0,
+    "equity_warning_pct": 90.0,
+    "equity_danger_pct": 80.0,
+    "equity_critical_pct": 70.0,
+    "equity_emergency_pct": 50.0
+  }
+}
+```
+
+---
+
+## Liquidity Trap Detection
+
+### Purpose
+Detects market manipulation patterns and protects against stop hunts, fakeouts, and sudden regime changes.
+
+### Trap Types Detected
+
+#### 1. Stop Hunt Detection
+**Signature**: Price spikes beyond recent swing high/low, then quickly reverses
+- Monitors swing highs/lows
+- Detects wick-to-body ratio anomalies
+- Confidence: 85%
+
+#### 2. Fakeout Detection
+**Signature**: Breakout on low volume
+- Price breaks above/below consolidation
+- Volume < 70% of average
+- Confidence: 70%
+
+#### 3. Volume Divergence
+**Signature**: Large price move without volume confirmation
+- Range > 1.5x average
+- Volume < 50% of average
+- Confidence: 65%
+
+#### 4. Regime Flip
+**Signature**: Sudden trend reversal
+- First half trending one direction
+- Second half trending opposite
+- Magnitude > 50% of first move
+- Confidence: 75%
+
+### Trading Recommendations
+
+When trap detected:
+- **Stop Hunt (Bearish)**: Consider short entry at rejection level
+- **Stop Hunt (Bullish)**: Consider long entry at rejection level
+- **Fakeout**: Fade the move
+- **Volume Divergence**: Wait 3 bars for confirmation
+- **Regime Flip**: Follow the new direction
+
+### Market Flip Protection
+
+For open positions, the system monitors for:
+- **Momentum Flip**: RSI crossing from overbought to oversold (or vice versa)
+- **Volume Surge**: 2x average volume against position direction
+- **Automatic Exit**: Triggered when flip conditions met
+
+### Configuration
+
+```json
+{
+  "liquidity_trap_detection": {
+    "enabled": true,
+    "spike_threshold_pct": 0.3,
+    "reversal_bars": 3,
+    "volume_divergence_mult": 0.5,
+    "fakeout_volume_mult": 0.7,
+    "trap_cooldown_minutes": 30
+  }
+}
+```
+
+---
+
+## SPARTA Mode (Battle Testing)
+
+### Purpose
+Special configuration for testing system resilience under extreme conditions with micro capital.
+
+### Philosophy
+> "This is Sparta! We fight not for survival but to grow no matter the odds."
+
+### Configuration
+
+SPARTA Mode activates when:
+- Account balance < $100
+- OR explicit `config_battle_test.json` loaded
+
+### Key Differences
+
+| Parameter | Normal | SPARTA |
+|-----------|--------|--------|
+| Profit Tiers | Standard | Aggressive (faster taking) |
+| DCA | Conservative | Intelligent averaging |
+| Max Loss | 10% daily | 5% per trade |
+| Confidence | 0.25 | 0.15 (more signals) |
+| Position Size | Risk-based | Micro-lots only |
+| Targets | Standard | Quick scalps |
+
+### Battle Test Metrics
+
+During SPARTA mode, additional metrics tracked:
+- Recovery time from adverse moves
+- DCA effectiveness
+- Profit locking success rate
+- Maximum consecutive losses survived
+
+---
+
+## Create Your Own Mode
+
+### Purpose
+Full customization of strategy selection and parameters for advanced users.
+
+### Available Strategies
+
+| Strategy | Code | Type |
+|----------|------|------|
+| RSI Reversal | `rsi_reversal` | Reversal |
+| EMA Crossover | `ema_crossover` | Trend |
+| SMA Crossover | `sma_crossover` | Trend |
+| Momentum Breakout | `momentum_breakout` | Breakout |
+| Scalping | `scalping` | Mean Reversion |
+| Mean Reversion | `mean_reversion` | Reversal |
+| Trend Following | `trend_following` | Trend |
+
+### Configuration Example
+
+```json
+{
+  "strategy": {
+    "type": "custom",
+    "custom_selection": {
+      "strategies": ["rsi_reversal", "ema_crossover", "scalping"],
+      "primary": "rsi_reversal",
+      "fallback_enabled": true,
+      "fallback_order": ["ema_crossover", "scalping"]
+    }
+  }
+}
+```
+
+### Dynamic vs Custom
+
+| Feature | Dynamic | Custom |
+|---------|---------|--------|
+| Strategy Selection | Automatic | Manual |
+| All Strategies | ✅ All 7 | ✅ Your choice |
+| Regime Detection | ✅ | ✅ |
+| Performance Tracking | ✅ | ✅ |
+| Fallback Order | Score-based | Config-based |
+
+---
+
+## Real-Time Observability
+
+### Dashboard
+
+The live dashboard (`observability/reporting/dashboard.html`) provides:
+
+**Charts**:
+- Equity curve over time
+- Win rate by strategy
+- Drawdown visualization
+- P&L distribution
+
+**Benchmarking Tables**:
+- Performance metrics
+- Strategy comparison
+- Risk-adjusted returns
+- Statistical analysis
+
+### Metrics Collection
+
+Three CSV files are continuously updated:
+
+1. **comprehensive_metrics.csv**: All trading metrics
+2. **indicator_metrics.csv**: Technical indicator values
+3. **system_health.csv**: System performance metrics
+
+### Prometheus Integration
+
+Metrics exported to Prometheus for external monitoring:
+- Trade counts by status
+- P&L by strategy
+- Latency measurements
+- System health indicators
+
+---
+
 ## Conclusion
 
-These upgrades transform Cthulu from a basic single-strategy system into a sophisticated multi-strategy platform with:
+Cthulu v5.1 "Apex" is a **market-destroying beast** with:
 
-✅ **4 Advanced Strategies**: EMA, Momentum, Scalping, SMA
-✅ **Dynamic Selection**: Auto-adapts to market conditions
-✅ **Next-Gen Indicators**: Supertrend, VWAP
-✅ **Performance Tracking**: Learn from every trade
-✅ **Market Regime Detection**: 5 different regimes
-✅ **Ultra-Aggressive Mode**: For experienced traders
-✅ **Comprehensive Testing**: Full test coverage
+✅ **7 Active Strategies** with intelligent selection
+✅ **SAFE Engine** for autonomous operation
+✅ **Profit Scaling** with ML-optimized tiers
+✅ **Intelligent DCA** for adverse conditions
+✅ **Adaptive Drawdown** with survival mode
+✅ **Equity Protection** with profit locking
+✅ **Trap Detection** against manipulation
+✅ **SPARTA Mode** for battle testing
+✅ **Create Your Own** full customization
+✅ **Real-Time Dashboard** with benchmarking
 
-The system is now ready for aggressive day trading and scalping while maintaining smart risk management and adaptive intelligence.
+The system is designed to be a **Set And Forget Engine** - configure once, let it trade autonomously, and watch it adapt to any market condition.
+
+**Remember**: *"An apex predator doesn't react to the market - it dominates it."*
 
 
 
