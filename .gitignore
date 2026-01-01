@@ -122,4 +122,3 @@ metrics/
 monitoring/*.csv
 observability/**/*.csv
 *.csv
-audit_reports/
