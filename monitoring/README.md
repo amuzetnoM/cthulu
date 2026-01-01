@@ -1,8 +1,9 @@
 # Monitoring Services
 
-Core monitoring infrastructure for Cthulu's indicators, signals, and system health.
+ ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
-![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo)
+> Core monitoring infrastructure for Cthulu's indicators, signals, and system health.
 
 ## Overview
 
@@ -12,7 +13,7 @@ Three specialized monitoring services that create comprehensive CSV outputs:
 2. **System Health Monitoring** - Process metrics, resources, and performance tracking
 3. **Comprehensive Metrics** - Trading performance, equity, and position tracking
 
-### NEW in v5.1 "Apex"
+### APEX v5.1
 
 - **Real-Time Dashboard** - HTML dashboard with live charts and benchmarking
 - **RSI Reversal Tracking** - Monitors RSI extreme reversals for signal analysis

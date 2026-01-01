@@ -54,7 +54,8 @@ _________   __  .__          .__
 
 <br>
 
- **NEW in v5.1.0 "Apex" — SAFE: Set And Forget Engine**  
+ **NEW in v5.1.0 <br> 
+ S A F E :<br> Set And Forget Engine**  
 > Cthulu reaches peak performance with revolutionary signal generation and the **SAFE** paradigm!
 >
 > - 🚀 **RSI Reversal Strategy (NEW)**: Pure RSI-based trading — signals fire instantly on RSI extremes without waiting for crossovers  

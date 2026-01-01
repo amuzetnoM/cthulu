@@ -1,6 +1,7 @@
 # 🛡️ SENTINEL
 
-**Version:** 1.0.0 | **Codename:** Guardian
+ ![Version](https://img.shields.io/badge/Version-1.0.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 Sentinel is an **independent watchdog system** that monitors Cthulu and MetaTrader 5, providing automatic crash recovery and system health monitoring.
 
@@ -8,7 +9,7 @@ Sentinel is an **independent watchdog system** that monitors Cthulu and MetaTrad
 
 ---
 
-## 🎯 Purpose
+## Purpose
 
 Sentinel solves the "Turing Problem" for algorithmic trading:
 - **Crashes** - Auto-recovery from Cthulu crashes
@@ -18,7 +19,7 @@ Sentinel solves the "Turing Problem" for algorithmic trading:
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Launch Sentinel Dashboard
 ```bash
@@ -45,7 +46,7 @@ python -m sentinel --headless
 
 ---
 
-## 🎮 Controls
+## Controls
 
 | Button | Action |
 |--------|--------|
@@ -56,7 +57,7 @@ python -m sentinel --headless
 
 ---
 
-## 📊 Monitored States
+## Monitored States
 
 ### System States
 | State | Description |
@@ -85,7 +86,7 @@ python -m sentinel --headless
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 Sentinel auto-detects the last used Cthulu config. Priority order:
 1. `config.json`
@@ -107,7 +108,7 @@ Options:
 
 ---
 
-## 🔒 Safety Features
+## Safety Features
 
 1. **Emergency Stop Threshold**
    - 5 crashes in 10 minutes = automatic shutdown
@@ -123,7 +124,7 @@ Options:
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```
 C:\workspace\sentinel\
@@ -143,7 +144,7 @@ C:\workspace\sentinel\
 
 ---
 
-## 🔄 Recovery Flow
+## Recovery Flow
 
 ```
 Crash Detected
@@ -175,7 +176,7 @@ Verify Running
 
 ---
 
-## 🐙 Relationship with Cthulu
+## Relationship with Cthulu
 
 ```
 ┌─────────────────────────────────────────┐
@@ -203,7 +204,7 @@ Verify Running
 
 ---
 
-## 📝 Logs
+## Logs
 
 Logs are stored in `C:\workspace\sentinel\logs\`:
 - Daily rotation: `sentinel_YYYYMMDD.log`
@@ -211,7 +212,7 @@ Logs are stored in `C:\workspace\sentinel\logs\`:
 
 ---
 
-## 🛠️ Development
+## Development
 
 Sentinel is designed to be:
 - **Independent** - Survives Cthulu crashes
@@ -221,4 +222,4 @@ Sentinel is designed to be:
 
 ---
 
-*Sentinel v1.0.0 Guardian - Watching over Cthulu so you don't have to.*
+
