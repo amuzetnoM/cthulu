@@ -59,6 +59,53 @@ results = run_tier_optimization("all")
 
 ---
 
+## 🎯 BACKTESTING ML ENHANCEMENTS (NEW - 2026-01-01)
+
+**Just Implemented:** Softmax/Argmax decision making for backtesting
+
+### New Module: `backtesting/ml_decision.py`
+
+#### 1. SoftmaxSelector
+Temperature-controlled probabilistic signal selection:
+- **Greedy (T=0.1):** Nearly argmax - selects highest confidence
+- **Balanced (T=1.0):** Standard softmax distribution  
+- **Exploratory (T=5.0):** Near-uniform for exploration
+
+```python
+from backtesting import SoftmaxSelector, SelectionMethod
+
+selector = SoftmaxSelector(temperature=0.5)
+selected = selector.select_signal(signals, method=SelectionMethod.SOFTMAX)
+blended = selector.blend_signals(signals)  # ML-weighted blend
+```
+
+#### 2. PricePredictor
+Multi-bar ahead price direction forecasting:
+- **Features:** Momentum, ATR, RSI, volume, range position, recent returns
+- **Training:** Gradient descent on cross-entropy loss
+- **Output:** Direction (LONG/SHORT), probability, expected move %
+
+```python
+from backtesting import PricePredictor
+
+predictor = PricePredictor(lookback_bars=20, prediction_horizon=5)
+predictor.train(historical_data, epochs=100)
+prediction = predictor.predict(recent_data)
+```
+
+#### 3. ArgmaxStrategySelector
+Epsilon-greedy best-strategy selection:
+- Tracks strategy performance (Sharpe, profit factor, win rate)
+- Exploration rate for discovering better strategies
+- Rankings API for monitoring
+
+### Integration Points:
+- Ensemble weighting: `WeightingMethod.SOFTMAX`, `WeightingMethod.ARGMAX`
+- Signal blending for combined strategy outputs
+- Walk-forward optimization enhancement
+
+---
+
 ## 🎯 MISSION STATEMENT
 
 **Objective:** Precision tuning Cthulu into a market-destroying trading beast with:
