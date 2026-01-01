@@ -4,6 +4,10 @@ Exit Strategy Module
 Exit strategy implementations for position management.
 
 Includes context-aware exit coordination for intelligent exit decision-making.
+
+**New in v5.1 APEX:**
+- AdaptiveLossCurve: Non-linear loss tolerance (hyperbolic/softmax)
+- ConfluenceExitManager: Multi-indicator confluence-based exits
 """
 
 from .base import ExitStrategy, ExitSignal
@@ -17,6 +21,21 @@ from .exit_manager import ExitDecision, ExitStrategyManager
 from .coordinator import ExitCoordinator, MarketContext, PositionContext, create_exit_coordinator
 from .micro_account_protection import MicroAccountProtection, SurvivalModeExit
 from .profit_scaling import ProfitScalingExit, AggressiveScalingExit, ProfitScaling, AggressiveScaling
+from .adaptive_loss_curve import (
+    AdaptiveLossCurve, 
+    AdaptiveLossExitStrategy, 
+    LossCurveConfig,
+    create_adaptive_loss_curve
+)
+from .confluence_exit_manager import (
+    ConfluenceExitManager,
+    ConfluenceExitStrategy,
+    ConfluenceSignal,
+    ExitRecommendation,
+    ExitClassification,
+    TrackedPosition,
+    create_confluence_exit_manager
+)
 
 __all__ = [
     "ExitStrategy",
@@ -39,6 +58,18 @@ __all__ = [
     "AggressiveScalingExit",
     "ProfitScaling",
     "AggressiveScaling",
+    # v5.1 APEX additions
+    "AdaptiveLossCurve",
+    "AdaptiveLossExitStrategy",
+    "LossCurveConfig",
+    "create_adaptive_loss_curve",
+    "ConfluenceExitManager",
+    "ConfluenceExitStrategy",
+    "ConfluenceSignal",
+    "ExitRecommendation",
+    "ExitClassification",
+    "TrackedPosition",
+    "create_confluence_exit_manager",
 ]
 
 

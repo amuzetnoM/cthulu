@@ -106,6 +106,54 @@ Epsilon-greedy best-strategy selection:
 
 ---
 
+## 🎯 ADAPTIVE EXIT MANAGEMENT (NEW - 2026-01-01)
+
+**Just Implemented:** Non-linear loss tolerance and confluence-based exits
+
+### 1. AdaptiveLossCurve
+Hyperbolic/softmax-based loss tolerance scaling:
+
+| Balance | Max Loss | Rate |
+|---------|----------|-----:|
+| $5 | $0.50 | 10% |
+| $50 | $2.50 | 5% |
+| $100 | $3.00 | 3% |
+| $500 | $10.00 | 2% |
+
+**Key Innovation:** Smaller accounts CANNOT afford the same loss percentage as larger ones. Recovery from 50% loss requires 100% gain.
+
+```python
+from cthulu.exit import AdaptiveLossCurve
+
+curve = AdaptiveLossCurve()
+max_loss = curve.get_max_loss(50.0)  # Returns $1.25
+should_close, reason = curve.should_close_for_loss(balance=50, unrealized_pnl=-1.50)
+```
+
+### 2. ConfluenceExitManager
+Multi-indicator reversal detection:
+
+- **RSI Divergence (20%):** Direction change from extremes
+- **MACD Crossover (15%):** Signal line crosses
+- **Trend Flip (25%):** EMA crossover against position
+- **Bollinger Breach (15%):** Price at bands
+- **Volume Spike (10%):** Distribution detection
+- **Price Action (15%):** Profit giveback
+
+**Classifications:**
+- `HOLD`: < 0.55 confluence
+- `SCALE_OUT`: 0.55-0.74 (take partial)
+- `CLOSE_NOW`: 0.75-0.89 (full exit)
+- `EMERGENCY`: ≥ 0.90 (immediate exit)
+
+**Philosophy:** *"Don't hope for recovery - that's market prediction."*
+
+### Files Added:
+- `exit/adaptive_loss_curve.py` - Non-linear loss tolerance
+- `exit/confluence_exit_manager.py` - Multi-indicator confluence
+
+---
+
 ## 🎯 MISSION STATEMENT
 
 **Objective:** Precision tuning Cthulu into a market-destroying trading beast with:

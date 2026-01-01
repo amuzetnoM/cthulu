@@ -37,9 +37,14 @@ Cthulu v5.1 "Apex" introduces the SAFE paradigm:
 4. [Multi-Strategy Fallback](#multi-strategy-fallback)
 5. [Ultra-Aggressive Mode](#ultra-aggressive-mode)
 6. [Equity Curve Management](#equity-curve-management)
-7. [Configuration Guide](#configuration-guide)
-8. [Usage Examples](#usage-examples)
-9. [Performance Tuning](#performance-tuning)
+7. [Exit Management System](#exit-management-system)
+8. [Adaptive Loss Curve](#adaptive-loss-curve)
+9. [Confluence Exit Manager](#confluence-exit-manager)
+10. [Micro Account Protection](#micro-account-protection)
+11. [Profit Scaling System](#profit-scaling-system)
+12. [Configuration Guide](#configuration-guide)
+13. [Usage Examples](#usage-examples)
+14. [Performance Tuning](#performance-tuning)
 
 ---
 
@@ -1178,6 +1183,258 @@ Once account gains exceed **5% of initial balance**, the system starts locking p
     "equity_danger_pct": 80.0,
     "equity_critical_pct": 70.0,
     "equity_emergency_pct": 50.0
+  }
+}
+```
+
+---
+
+## Exit Management System
+
+### Architecture Overview
+
+Cthulu v5.1 "Apex" implements a **multi-layered exit management system** that coordinates multiple exit strategies with intelligent priority adjustment. The system is designed around the principle: **"Don't hope for recovery - that's market prediction."**
+
+### Exit Strategy Hierarchy
+
+| Layer | Strategy | Priority | Purpose |
+|-------|----------|----------|---------|
+| 1 | SurvivalModeExit | 100 | Emergency capital protection |
+| 2 | AdaptiveLossExit | 90 | Non-linear loss tolerance enforcement |
+| 3 | MicroAccountProtection | 80 | Micro account profit protection |
+| 4 | ConfluenceExitManager | 75 | Multi-indicator reversal detection |
+| 5 | AdverseMovementExit | 70 | Sudden adverse movement response |
+| 6 | StopLoss | 65 | Traditional stop loss |
+| 7 | ProfitScalingExit | 60 | Tiered profit taking |
+| 8 | TakeProfit | 55 | Traditional take profit |
+| 9 | TimeBasedExit | 45 | Time-based position management |
+| 10 | TrailingStop | 40 | Dynamic trailing stop |
+
+### Priority Adjustment System
+
+The ExitCoordinator dynamically adjusts strategy priorities based on:
+
+- **High Volatility**: +10 priority to StopLoss, AdverseMovement
+- **Wide Spreads**: -5 priority to all exits (costly to close)
+- **News Events**: +15 priority to all exits
+- **Market Close**: +20 priority to TimeBasedExit
+- **Near Profit Target**: +15 priority to TakeProfit, ProfitTarget
+- **Long Hold Time**: +10 priority to TimeBasedExit
+- **Deep Loss (-2%+)**: +20 priority to StopLoss
+
+---
+
+## Adaptive Loss Curve
+
+### Philosophy
+
+**Linear loss tolerance is dangerous for micro accounts.** Recovery from a 50% loss requires a 100% gain. The AdaptiveLossCurve implements hyperbolic/softmax-based scaling that enforces tighter stops on smaller accounts.
+
+### Mathematical Foundation
+
+The curve uses a hybrid hyperbolic-softmax function:
+
+```
+loss_rate = interpolate(anchor_points) * softmax_smooth(balance)
+
+Where:
+- softmax_weight = 1 / (1 + exp(-k * (x - 0.5)))
+- k = hyperbolic_steepness (default: 2.5)
+```
+
+### Loss Tolerance Table
+
+| Account Balance | Max Daily Loss | Max Per-Trade Loss | Rate |
+|-----------------|----------------|--------------------:|-----:|
+| $5 | $0.50 | $0.25 | 10% |
+| $10 | $0.80 | $0.40 | 8% |
+| $25 | $1.50 | $0.75 | 6% |
+| $50 | $2.50 | $1.25 | 5% |
+| $100 | $3.00 | $1.50 | 3% |
+| $250 | $6.25 | $3.12 | 2.5% |
+| $500 | $10.00 | $5.00 | 2% |
+| $1,000 | $20.00 | $10.00 | 2% |
+| $5,000 | $75.00 | $37.50 | 1.5% |
+
+### Recovery Mode
+
+When drawdown exceeds 20% from peak, the system enters **Recovery Mode**:
+- Loss tolerance reduced by 50%
+- More conservative position sizing
+- Exits recovery only when balance fully recovers
+
+### Usage
+
+```python
+from cthulu.exit import AdaptiveLossCurve, create_adaptive_loss_curve
+
+# Create curve with defaults
+curve = AdaptiveLossCurve()
+
+# Get max loss for $50 account
+max_loss = curve.get_max_loss(50.0)  # Returns $1.25
+
+# Check if position should close
+should_close, reason = curve.should_close_for_loss(
+    balance=50.0,
+    unrealized_pnl=-1.50  # $1.50 loss
+)
+# Returns (True, "Loss $1.50 exceeds adaptive limit $1.25 (3.0%)")
+
+# Get stop distance
+stop_distance = curve.get_stop_distance(
+    balance=100.0,
+    entry_price=88000,
+    lot_size=0.01,
+    pip_value=10.0
+)
+```
+
+### Configuration
+
+```json
+{
+  "adaptive_loss_curve": {
+    "base_loss_rate": 0.03,
+    "hyperbolic_steepness": 2.5,
+    "softmax_temperature": 50.0,
+    "min_loss_floor": 0.10,
+    "max_loss_cap_pct": 0.15,
+    "per_trade_multiplier": 0.5,
+    "recovery_mode_drawdown_pct": 0.20,
+    "recovery_mode_loss_reduction": 0.5,
+    "tier_anchors": {
+      "5.0": 0.10,
+      "50.0": 0.05,
+      "100.0": 0.03,
+      "500.0": 0.02,
+      "1000.0": 0.02
+    }
+  }
+}
+```
+
+---
+
+## Confluence Exit Manager
+
+### Philosophy
+
+**Exit when multiple indicators AGREE on reversal, not when hoping for recovery.** The ConfluenceExitManager tracks positions and generates high-confidence exit signals based on multi-indicator confluence.
+
+### Signal Classification
+
+| Classification | Confluence Score | Action | Urgency |
+|----------------|------------------|--------|--------:|
+| HOLD | < 0.55 | Continue | 0 |
+| SCALE_OUT | 0.55 - 0.74 | Partial close (30-50%) | 60 |
+| CLOSE_NOW | 0.75 - 0.89 | Full close | 85 |
+| EMERGENCY | ≥ 0.90 | Immediate full close | 100 |
+
+### Indicator Weights
+
+| Indicator | Weight | Detection |
+|-----------|-------:|-----------|
+| Trend Flip (EMA) | 25% | Fast EMA crosses slow EMA against position |
+| RSI Divergence | 20% | RSI drops from overbought (longs) or rises from oversold (shorts) |
+| MACD Crossover | 15% | MACD crosses signal line against position |
+| Bollinger Breach | 15% | Price at/beyond band in profit direction |
+| Price Action | 15% | 50%+ profit giveback from peak |
+| Volume Spike | 10% | 2x+ volume with profit = distribution |
+
+### Confluence Scoring
+
+```
+weighted_score = Σ(indicator_weight × strength × confidence)
+normalized_score = weighted_score / total_weights
+
+# Bonus for multiple agreeing indicators
+if agreeing >= 3: score × 1.2
+if agreeing >= 4: score × 1.1
+```
+
+### Example Scenario
+
+**Long BTC @ $88,000 with $50 unrealized profit:**
+
+1. RSI drops from 78 → 72 (reversal_down, strength=0.6, confidence=0.8)
+2. MACD just crossed below signal (reversal_down, strength=0.7, confidence=0.75)
+3. Price gave back 40% of peak profit (strength=0.4, confidence=0.7)
+
+**Calculation:**
+```
+rsi_contribution = 0.20 × 0.6 × 0.8 = 0.096
+macd_contribution = 0.15 × 0.7 × 0.75 = 0.079
+price_action = 0.15 × 0.4 × 0.7 = 0.042
+
+total = 0.217 / 1.0 = 0.217 (3 indicators)
+with_bonus = 0.217 × 1.2 = 0.26
+
+Classification: HOLD (needs more confluence)
+```
+
+### Position Tracking
+
+The manager maintains real-time tracking per position:
+
+```python
+TrackedPosition:
+  ticket: int          # Position ID
+  entry_price: float   # Entry price
+  entry_time: datetime # When opened
+  current_price: float # Current market price
+  unrealized_pnl: float # Current P&L
+  max_favorable: float # Peak profit achieved
+  max_adverse: float   # Max drawdown experienced
+  holding_bars: int    # Bars since entry
+```
+
+### Usage
+
+```python
+from cthulu.exit import ConfluenceExitManager, ExitClassification
+
+manager = ConfluenceExitManager()
+
+# Track a position
+manager.track_position(
+    ticket=123456,
+    symbol='BTCUSD#',
+    side='BUY',
+    entry_price=88000,
+    volume=0.01
+)
+
+# Evaluate for exit
+recommendation = manager.evaluate_exit(
+    ticket=123456,
+    current_price=88500,
+    indicators={
+        'rsi': 72, 'rsi_prev': 78,
+        'macd': -0.5, 'macd_signal': -0.3, 'macd_prev': -0.2,
+        'ema_fast': 88400, 'ema_slow': 88500,
+        'bb_upper': 89000, 'bb_lower': 87000,
+        'volume': 1500, 'volume_avg': 800
+    },
+    account_balance=100.0
+)
+
+if recommendation:
+    if recommendation.classification == ExitClassification.CLOSE_NOW:
+        print(f"CLOSE position: {recommendation.reason}")
+        print(f"Indicators agreeing: {recommendation.indicators_agreeing}")
+```
+
+### Configuration
+
+```json
+{
+  "confluence_exit": {
+    "scale_out_threshold": 0.55,
+    "close_now_threshold": 0.75,
+    "rsi_overbought": 70,
+    "rsi_oversold": 30,
+    "rsi_divergence_threshold": 5.0
   }
 }
 ```
