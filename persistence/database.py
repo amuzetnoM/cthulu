@@ -408,48 +408,61 @@ class Database:
         Returns:
             Database row ID
         """
-        try:
-            # Use INSERT OR REPLACE to handle duplicate signal_ids gracefully
-            # This prevents UNIQUE constraint failures for retry scenarios
-            cursor = self.conn.cursor()
-            cursor.execute("""
-                INSERT OR REPLACE INTO signals (
-                    signal_id, timestamp, symbol, timeframe, side, action,
-                    confidence, price, stop_loss, take_profit, reason, executed, execution_timestamp, metadata
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                signal_record.signal_id,
-                # Store timestamps as ISO strings for portability
-                self._normalize_timestamp(signal_record.timestamp),
-                signal_record.symbol,
-                signal_record.timeframe,
-                signal_record.side,
-                signal_record.action,
-                signal_record.confidence,
-                signal_record.price,
-                signal_record.stop_loss,
-                signal_record.take_profit,
-                signal_record.reason,
-                int(signal_record.executed),
-                signal_record.execution_timestamp.isoformat() if hasattr(signal_record.execution_timestamp, 'isoformat') and signal_record.execution_timestamp is not None else signal_record.execution_timestamp,
-                json.dumps(signal_record.metadata) if not isinstance(signal_record.metadata, str) else signal_record.metadata
-            ))
-            self.conn.commit()
-            
-            row_id = cursor.lastrowid
-            self.logger.debug(f"Signal recorded: {signal_record.signal_id} (ID: {row_id})")
-            return row_id
-            
-        except sqlite3.IntegrityError as e:
-            # UNIQUE constraint - signal already exists, this is expected on retries
-            self.logger.warning(f"Signal {signal_record.signal_id} already exists: {e}")
-            return -1
-        except sqlite3.OperationalError as e:
-            self.logger.error(f"Database operational error recording signal: {e}", exc_info=True)
-            return -1
-        except Exception as e:
-            self.logger.error(f"Failed to record signal: {e}", exc_info=True)
-            return -1
+        import time
+        max_retries = 3
+        retry_delay = 0.5
+        
+        for attempt in range(max_retries):
+            try:
+                # Use fresh connection per call for better concurrency
+                conn = sqlite3.connect(self.db_path, timeout=30.0)
+                conn.execute("PRAGMA journal_mode=WAL")
+                conn.execute("PRAGMA busy_timeout=30000")
+                
+                try:
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        INSERT OR REPLACE INTO signals (
+                            signal_id, timestamp, symbol, timeframe, side, action,
+                            confidence, price, stop_loss, take_profit, reason, executed, execution_timestamp, metadata
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        signal_record.signal_id,
+                        self._normalize_timestamp(signal_record.timestamp),
+                        signal_record.symbol,
+                        signal_record.timeframe,
+                        signal_record.side,
+                        signal_record.action,
+                        signal_record.confidence,
+                        signal_record.price,
+                        signal_record.stop_loss,
+                        signal_record.take_profit,
+                        signal_record.reason,
+                        int(signal_record.executed),
+                        signal_record.execution_timestamp.isoformat() if hasattr(signal_record.execution_timestamp, 'isoformat') and signal_record.execution_timestamp is not None else signal_record.execution_timestamp,
+                        json.dumps(signal_record.metadata) if not isinstance(signal_record.metadata, str) else signal_record.metadata
+                    ))
+                    conn.commit()
+                    row_id = cursor.lastrowid
+                    self.logger.debug(f"Signal recorded: {signal_record.signal_id} (ID: {row_id})")
+                    return row_id
+                finally:
+                    conn.close()
+                    
+            except sqlite3.IntegrityError:
+                # UNIQUE constraint - signal already exists, expected on retries
+                self.logger.debug(f"Signal {signal_record.signal_id} already exists (upserted)")
+                return -1
+            except sqlite3.OperationalError as e:
+                if "locked" in str(e) and attempt < max_retries - 1:
+                    time.sleep(retry_delay * (attempt + 1))
+                    continue
+                self.logger.warning(f"Database busy recording signal after {max_retries} attempts")
+                return -1
+            except Exception as e:
+                self.logger.error(f"Failed to record signal: {e}")
+                return -1
+        return -1
             
     def record_trade(self, trade_record: TradeRecord) -> int:
         """
@@ -500,14 +513,14 @@ class Database:
                 
             except sqlite3.OperationalError as e:
                 if "locked" in str(e).lower() and attempt < max_retries - 1:
-                    self.logger.warning(f"Database locked, retry {attempt + 1}/{max_retries} after {retry_delay}s")
+                    self.logger.debug(f"Database busy, retry {attempt + 1}/{max_retries}")
                     time.sleep(retry_delay)
                     retry_delay *= 2  # Exponential backoff
                 else:
-                    self.logger.error(f"Failed to record trade: {e}", exc_info=True)
+                    self.logger.warning(f"Database busy recording trade after {max_retries} attempts")
                     return -1
             except Exception as e:
-                self.logger.error(f"Failed to record trade: {e}", exc_info=True)
+                self.logger.error(f"Failed to record trade: {e}")
                 return -1
         
         return -1
