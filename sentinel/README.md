@@ -1,6 +1,6 @@
 # 🛡️ SENTINEL - Cthulu Guardian System
 
-**Version:** 1.0.0 "Guardian"  
+**Version:** 1.1.0 "Guardian"  
 **Status:** Production Ready
 
 ---
@@ -14,22 +14,36 @@ SENTINEL is an independent watchdog system that monitors and protects Cthulu. It
 - 🔄 **Auto-Crash Recovery** - Detects Cthulu crashes and restarts automatically
 - 📡 **MT5 Connection Monitoring** - Ensures MetaTrader stays connected
 - 🤖 **Algo Trading Watchdog** - Re-enables algo trading if disabled
-- 📊 **WebUI Dashboard** - Real-time system health visualization
+- 🖥️ **Native GUI Dashboard** - Real-time Tkinter-based system health visualization
 - 🚨 **Emergency Protocols** - Stops everything if repeated crashes detected
 - 📝 **Comprehensive Logging** - All events logged for analysis
+- ✅ **Auto-Restart Toggle** - Enable/disable automatic recovery with checkbox
 
 ---
 
 ## Quick Start
 
-### Basic Usage
+### Launch Sentinel GUI Dashboard
 
 ```powershell
-# Start Sentinel with default settings
-python -m sentinel.core.guardian
+# From cthulu directory:
+cd C:\workspace\cthulu
+python -m sentinel.gui
+```
 
-# Start with WebUI
-python -m sentinel.core.guardian --webui --webui-port 8282
+**This is the primary way to run Sentinel** - launches a native GUI dashboard with:
+- Real-time system state monitoring
+- Process status (Cthulu, MT5, Algo Trading)
+- CPU/Memory metrics
+- Recovery status and crash history
+- Control buttons (Start, Stop, Force Recovery, Enable Algo)
+- Auto-restart checkbox (enabled by default)
+
+### Headless Mode (No GUI)
+
+```powershell
+# Start Sentinel guardian without GUI
+python -m sentinel.core.guardian
 
 # Custom poll interval (check every 10 seconds)
 python -m sentinel.core.guardian --interval 10
@@ -42,7 +56,7 @@ python -m sentinel.core.guardian --no-auto-restart
 
 ```powershell
 # Run detached (survives terminal close)
-Start-Process python -ArgumentList "-m sentinel.core.guardian --webui" -WindowStyle Hidden
+Start-Process python -ArgumentList "-m sentinel.gui" -WindowStyle Normal
 
 # Or use Task Scheduler for Windows startup
 ```
@@ -82,9 +96,9 @@ guardian.run(poll_interval=5.0)
 
 ---
 
-## WebUI
+## GUI Dashboard
 
-Access the dashboard at `http://localhost:8282` when running with `--webui`.
+The Sentinel GUI provides a native Tkinter-based dashboard with real-time monitoring.
 
 ### Dashboard Features
 
@@ -94,18 +108,8 @@ Access the dashboard at `http://localhost:8282` when running with `--webui`.
 - **Crash Count** - Number of crashes and last crash time
 - **Resource Usage** - CPU and memory metrics
 - **Error Log** - Recent errors and warnings
-- **Quick Actions** - Restart Cthulu, Stop, Start MT5, Enable Algo
-
-### API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/status` | GET | Full status JSON |
-| `/api/health` | GET | Simple health check |
-| `/api/restart-cthulu` | POST | Restart Cthulu |
-| `/api/stop-cthulu` | POST | Stop Cthulu |
-| `/api/start-mt5` | POST | Start MetaTrader 5 |
-| `/api/enable-algo` | POST | Enable algo trading |
+- **Quick Actions** - Start/Stop Cthulu, Force Recovery, Enable Algo
+- **Auto-Restart Toggle** - Checkbox to enable/disable auto-recovery (ON by default)
 
 ---
 
@@ -202,8 +206,8 @@ sentinel/logs/
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │   ┌──────────────┐     ┌──────────────┐     ┌──────────────┐   │
-│   │   GUARDIAN   │────▶│   METRICS    │────▶│    WEBUI     │   │
-│   │   (Monitor)  │     │  (Collector) │     │   (Server)   │   │
+│   │   GUARDIAN   │────▶│   METRICS    │────▶│     GUI      │   │
+│   │   (Monitor)  │     │  (Collector) │     │  (Tkinter)   │   │
 │   └──────┬───────┘     └──────────────┘     └──────────────┘   │
 │          │                                                       │
 │          ▼                                                       │

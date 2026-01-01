@@ -133,11 +133,26 @@ class SentinelGuardian:
         }
         self._lock = threading.Lock()
         
+        # Auto-restart property (can be toggled by GUI)
+        self._auto_restart = True
+        
         # MT5 Python integration
         self._mt5_module = None
         self._load_mt5_module()
         
         logger.info("🛡️ SENTINEL Guardian initialized")
+    
+    @property
+    def auto_restart(self) -> bool:
+        """Get auto-restart state"""
+        return self._auto_restart
+    
+    @auto_restart.setter
+    def auto_restart(self, value: bool):
+        """Set auto-restart state - can be toggled by GUI"""
+        self._auto_restart = value
+        self.config.auto_restart_cthulu = value
+        logger.info(f"🔄 Auto-restart {'ENABLED' if value else 'DISABLED'}")
     
     def _load_mt5_module(self):
         """Attempt to load MT5 Python module"""
@@ -477,7 +492,7 @@ class SentinelGuardian:
             logger.info(f"📊 State change: {old_state.name} → {self.metrics.system_state.name}")
             self._emit_event("on_state_change", old_state, self.metrics.system_state, self.metrics)
     
-    def run(self, poll_interval: float = 5.0):
+    def run(self, poll_interval: float = 5.0, setup_signals: bool = True):
         """Main guardian loop"""
         self.running = True
         self.start_time = datetime.now()
@@ -490,13 +505,18 @@ class SentinelGuardian:
         logger.info(f"Auto algo enable: {self.config.auto_enable_algo}")
         logger.info("=" * 60)
         
-        # Setup signal handlers for graceful shutdown
-        def shutdown_handler(signum, frame):
-            logger.info("🛑 Shutdown signal received")
-            self.running = False
-        
-        signal.signal(signal.SIGINT, shutdown_handler)
-        signal.signal(signal.SIGTERM, shutdown_handler)
+        # Setup signal handlers for graceful shutdown (only in main thread)
+        if setup_signals:
+            try:
+                def shutdown_handler(signum, frame):
+                    logger.info("🛑 Shutdown signal received")
+                    self.running = False
+                
+                signal.signal(signal.SIGINT, shutdown_handler)
+                signal.signal(signal.SIGTERM, shutdown_handler)
+            except ValueError:
+                # Not in main thread - signals already handled elsewhere
+                pass
         
         while self.running:
             try:
@@ -562,8 +582,8 @@ def main():
     parser.add_argument("--no-auto-restart", action="store_true", help="Disable auto-restart of Cthulu")
     parser.add_argument("--no-auto-algo", action="store_true", help="Disable auto-enable of algo trading")
     parser.add_argument("--config", type=str, help="Cthulu config file to use")
-    parser.add_argument("--webui", action="store_true", help="Start WebUI server")
-    parser.add_argument("--webui-port", type=int, default=8282, help="WebUI port")
+    parser.add_argument("--gui", action="store_true", help="Start GUI dashboard")
+    parser.add_argument("--headless", action="store_true", help="Run without GUI (CLI only)")
     
     args = parser.parse_args()
     
@@ -575,16 +595,24 @@ def main():
     
     guardian = SentinelGuardian(config)
     
-    if args.webui:
-        # Start WebUI in separate thread
-        from sentinel.webui.server import start_webui_server
-        webui_thread = threading.Thread(
-            target=start_webui_server,
-            args=(guardian, args.webui_port),
+    if args.gui or not args.headless:
+        # Start GUI dashboard
+        from sentinel.gui.dashboard import SentinelDashboard
+        
+        # Run guardian in background thread (no signal handling - main thread will handle)
+        guardian_thread = threading.Thread(
+            target=guardian.run,
+            kwargs={'poll_interval': args.interval, 'setup_signals': False},
             daemon=True
         )
-        webui_thread.start()
-        logger.info(f"🌐 WebUI started on http://localhost:{args.webui_port}")
+        guardian_thread.start()
+        logger.info("🖥️ Starting GUI Dashboard...")
+        
+        # Run GUI on main thread
+        dashboard = SentinelDashboard(guardian)
+        dashboard.run()
+        guardian.running = False  # Stop guardian when GUI closes
+        return
     
     guardian.run(poll_interval=args.interval)
 
