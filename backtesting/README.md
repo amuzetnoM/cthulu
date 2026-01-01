@@ -1,41 +1,50 @@
 # Backtesting Framework
 
-Comprehensive backtesting framework for Cthulu trading strategies with advanced features.
+![version-badge](https://img.shields.io/badge/APEX-v5.1.0-indigo.svg)
+
+> Comprehensive backtesting framework for Cthulu trading strategies with ML-enhanced decision making, ensemble testing, and institutional-grade benchmarking.
+
+---
+
+## Overview
+
+The Cthulu Backtesting Framework provides a complete environment for strategy validation, optimization, and performance analysis. Built for professional traders and quantitative analysts, it combines traditional backtesting with modern machine learning techniques.
+
+---
 
 ## Features
 
-### 🚀 Performance
-- **Adjustable Speed Engine**: Fast vectorized, normal bar-by-bar, slow replay, realtime simulation, and HFT testing modes
-- **Efficient Data Management**: Smart caching, quality checks, and multiple data sources (MT5, CSV)
-- **Scalable**: Process thousands of bars per second in FAST mode
+### Performance Engine
+- **Adjustable Speed Modes**: Fast vectorized, normal bar-by-bar, slow replay, realtime simulation, and HFT testing
+- **Efficient Data Management**: Smart caching, quality checks, multiple data sources (MT5, CSV)
+- **Scalable Architecture**: Process 10,000+ bars per second in FAST mode
 
-### 📊 Comprehensive Benchmarking
-Beyond just Sharpe ratio:
+### Comprehensive Benchmarking
 - **Risk-Adjusted Returns**: Sharpe, Sortino, Calmar, Omega ratios
 - **Drawdown Analysis**: Max drawdown, duration, recovery factor, Ulcer Index
 - **Trade Statistics**: Win rate, profit factor, expectancy, consecutive streaks
 - **Advanced Metrics**: VaR, CVaR, kurtosis, skewness
 - **Benchmark Comparison**: Alpha, beta, correlation, tracking error
 
-### 🎯 Ensemble Testing
-- **Multi-Strategy**: Test multiple strategies simultaneously
+### Ensemble Testing
+- **Multi-Strategy Testing**: Run multiple strategies simultaneously
 - **Dynamic Weighting**: Performance-based, Sharpe-based, adaptive, or equal weighting
 - **Auto-Rebalancing**: Periodic weight adjustment based on recent performance
 - **Signal Aggregation**: Confidence-weighted voting with customizable rules
 
-### 🧠 ML-Enhanced Decision Making (NEW)
+### ML-Enhanced Decision Making
 - **Softmax Signal Selection**: Temperature-controlled probabilistic strategy selection
 - **Argmax Strategy Selection**: Epsilon-greedy best-strategy selection with exploration
 - **Price Prediction**: Multi-bar ahead forecasting with trainable softmax classifier
 - **Signal Blending**: ML-weighted signal combination for improved accuracy
 
-### 🔧 Optimization
-- **Walk-Forward**: Prevent overfitting with in-sample/out-of-sample validation
-- **Monte Carlo**: Robustness testing with confidence intervals
+### Optimization Tools
+- **Walk-Forward Analysis**: Prevent overfitting with in-sample/out-of-sample validation
+- **Monte Carlo Simulation**: Robustness testing with confidence intervals
 - **Parameter Grid Search**: Systematic parameter optimization
 
-### 📈 Reporting
-- **HTML Reports**: Beautiful visualizations with charts and tables
+### Reporting
+- **HTML Reports**: Interactive visualizations with charts and tables
 - **Text Reports**: Console-friendly summaries
 - **JSON/CSV Export**: Programmatic access and spreadsheet analysis
 
@@ -454,14 +463,10 @@ backtesting/
 
 ## Support
 
-For issues or questions:
-1. Check documentation in `/docs/`
-2. Review example scripts in `/backtesting/examples/`
-3. Open GitHub issue
-4. Check logs in `backtesting/backtesting.log`
+- **Documentation**: See `/docs/BACKTESTING.md` for comprehensive guide
+- **Examples**: Review scripts in `/backtesting/examples/`
+- **Logs**: Check `backtesting/backtesting.log` for execution details
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-12-31  
-**License**: Same as Cthulu (AGPL-3.0)
+*Cthulu Backtesting Framework v5.1.0 - Professional-grade strategy validation.*
