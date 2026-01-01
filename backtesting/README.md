@@ -48,6 +48,17 @@ The Cthulu Backtesting Framework provides a complete environment for strategy va
 - **Text Reports**: Console-friendly summaries
 - **JSON/CSV Export**: Programmatic access and spreadsheet analysis
 
+### Web Dashboard (Prototype) 🔧
+
+A small static web dashboard prototype is provided under `backtesting/report_ui/` which reads centralized reports from `backtesting/reports/`.
+
+- Generate reports with `ReportGenerator.generate(...)` — files will be written into `backtesting/reports/` and an `index.json` manifest will be updated automatically.
+- Serve the UI locally with:
+  - `python backtesting/report_ui/serve.py`
+  - Open `http://localhost:8000/backtesting/report_ui/static/index.html` to view reports (HTML inline, JSON visualized, text/CSV previewable).
+
+This viewer is intentionally lightweight and dependency-free for local workflows.
+
 ## Quick Start
 
 ### Basic Backtest

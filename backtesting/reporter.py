@@ -39,30 +39,82 @@ class ReportGenerator:
         self,
         results: Dict[str, Any],
         metrics: Any,
-        output_path: str,
+        output_path: str | None,
         format: ReportFormat = ReportFormat.HTML
-    ) -> None:
+    ) -> str:
         """
-        Generate backtest report.
-        
+        Generate backtest report and ensure it's stored in the centralized reports directory.
+
         Args:
             results: Backtest results dictionary
             metrics: PerformanceMetrics object
-            output_path: Output file path
+            output_path: Desired output file name or path. If None or if the provided
+                         name is not inside the reports directory, the report will be
+                         created under `backtesting/reports/` with a timestamped filename.
             format: Report format
+
+        Returns:
+            The final path to the generated report (as a string).
         """
+        # Central reports directory
+        reports_dir = Path('backtesting') / 'reports'
+        reports_dir.mkdir(parents=True, exist_ok=True)
+
+        # Determine final output path: always place reports under reports_dir
+        timestamp = datetime.now().strftime('%Y%m%dT%H%M%S')
+        if output_path:
+            # Use only the basename to avoid scattering files across the repo
+            base_name = Path(output_path).name
+        else:
+            base_name = f'backtest_{timestamp}.{format.value}'
+
+        final_path = reports_dir / f"{Path(base_name).stem}_{timestamp}{Path(base_name).suffix or '.' + format.value}"
+        final_path_str = str(final_path)
+
+        # Generate the report file
         if format == ReportFormat.HTML:
-            self._generate_html(results, metrics, output_path)
+            self._generate_html(results, metrics, final_path_str)
         elif format == ReportFormat.TEXT:
-            self._generate_text(results, metrics, output_path)
+            self._generate_text(results, metrics, final_path_str)
         elif format == ReportFormat.JSON:
-            self._generate_json(results, metrics, output_path)
+            self._generate_json(results, metrics, final_path_str)
         elif format == ReportFormat.CSV:
-            self._generate_csv(results, metrics, output_path)
+            self._generate_csv(results, metrics, final_path_str)
         else:
             raise ValueError(f"Unsupported format: {format}")
-            
-        self.logger.info(f"Report generated: {output_path}")
+
+        # Update manifest (index.json) with a brief summary for the UI
+        manifest_path = reports_dir / 'index.json'
+        try:
+            from json import loads, dumps
+            entry = {
+                'file': final_path.name,
+                'format': format.value,
+                'generated': datetime.now().isoformat(),
+                'summary': {
+                    'total_return': float(getattr(metrics, 'total_return', 0.0)),
+                    'sharpe_ratio': float(getattr(metrics, 'sharpe_ratio', 0.0)),
+                    'win_rate': float(getattr(metrics, 'win_rate', 0.0)),
+                    'total_trades': int(getattr(metrics, 'total_trades', 0)),
+                }
+            }
+
+            if manifest_path.exists():
+                with open(manifest_path, 'r') as f:
+                    manifest = loads(f.read())
+            else:
+                manifest = []
+
+            # Prepend new entry
+            manifest.insert(0, entry)
+
+            with open(manifest_path, 'w') as f:
+                f.write(dumps(manifest, indent=2))
+        except Exception as e:
+            self.logger.warning(f"Failed to update manifest: {e}")
+
+        self.logger.info(f"Report generated: {final_path_str}")
+        return final_path_str
         
     def _generate_html(self, results: Dict[str, Any], metrics: Any, output_path: str) -> None:
         """Generate HTML report."""
