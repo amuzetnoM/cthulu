@@ -1,10 +1,25 @@
+"""
+Cthulu Trading Dashboard v5.1.0 APEX
+
+A comprehensive real-time trading dashboard that displays:
+- Live positions from MT5 with real-time P&L
+- Complete trade history from database
+- All metrics from observability CSVs
+- System health and performance indicators
+- Manual trade controls
+
+Designed to work with wizard → UI → Sentinel flow.
+"""
+
 import sys
 import time
 import threading
 import re
 import json
 import os
+import csv
 from pathlib import Path
+from datetime import datetime
 
 try:
     import tkinter as tk
@@ -16,16 +31,30 @@ except Exception:
     sys.exit(2)
 
 # Add project root to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from cthulu.persistence.database import Database, TradeRecord
 
-LOG_PATH = Path(__file__).parents[1] / 'Cthulu.log'
-SUMMARY_PATH = Path(__file__).parents[1] / 'logs' / 'latest_summary.txt'
-STRATEGY_INFO_PATH = Path(__file__).parents[1] / 'logs' / 'strategy_info.txt'
+# Try to import MT5 for direct position reading
+try:
+    import MetaTrader5 as mt5
+    MT5_AVAILABLE = True
+except ImportError:
+    MT5_AVAILABLE = False
 
-REFRESH_INTERVAL = 2000  # ms
-TAIL_LINES = 200
+LOG_PATH = PROJECT_ROOT / 'Cthulu.log'
+SUMMARY_PATH = PROJECT_ROOT / 'logs' / 'latest_summary.txt'
+STRATEGY_INFO_PATH = PROJECT_ROOT / 'logs' / 'strategy_info.txt'
+
+# CSV paths for metrics
+METRICS_DIR = PROJECT_ROOT / 'metrics'
+COMPREHENSIVE_CSV = METRICS_DIR / 'comprehensive_metrics.csv'
+INDICATOR_CSV = METRICS_DIR / 'indicator_metrics.csv'
+SYSTEM_HEALTH_CSV = METRICS_DIR / 'system_health.csv'
+
+REFRESH_INTERVAL = 1500  # ms - faster refresh for real-time feel
+TAIL_LINES = 150
 
 RPC_ENDPOINTS = [
     'http://127.0.0.1:8181/trade',
@@ -34,9 +63,18 @@ RPC_ENDPOINTS = [
     'http://127.0.0.1:8181/place_order',
 ]
 
-THEME_BG = '#0f1720'
+# Theme colors - Cthulu dark purple theme
+THEME_BG = '#0a0e14'
+THEME_BG_SECONDARY = '#0f1720'
+THEME_BG_TERTIARY = '#161f2d'
 THEME_FG = '#e6eef6'
-ACCENT = '#8b5cf6'  # Cthulu thematic purple
+THEME_FG_DIM = '#8892a0'
+ACCENT = '#8b5cf6'  # Purple
+ACCENT_LIGHT = '#a78bfa'
+SUCCESS = '#4ade80'  # Green
+DANGER = '#f87171'   # Red
+WARNING = '#fbbf24'  # Yellow
+INFO = '#60a5fa'     # Blue
 
 
 def tail_file(path: Path, lines: int = TAIL_LINES):
@@ -70,6 +108,70 @@ def read_summary(path: Path):
         return 'No summary available yet.'
     except Exception as e:
         return f'Error reading summary: {e}'
+
+
+def read_latest_csv_row(csv_path: Path) -> dict:
+    """Read the last row of a CSV file and return as dict."""
+    try:
+        if not csv_path.exists():
+            return {}
+        with open(csv_path, 'r', newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+            if rows:
+                return rows[-1]
+        return {}
+    except Exception:
+        return {}
+
+
+def get_mt5_positions():
+    """Get live positions directly from MT5."""
+    if not MT5_AVAILABLE:
+        return []
+    try:
+        if not mt5.initialize():
+            return []
+        positions = mt5.positions_get()
+        if positions is None:
+            return []
+        return list(positions)
+    except Exception:
+        return []
+
+
+def get_mt5_account_info():
+    """Get account info directly from MT5."""
+    if not MT5_AVAILABLE:
+        return None
+    try:
+        if not mt5.initialize():
+            return None
+        return mt5.account_info()
+    except Exception:
+        return None
+
+
+def format_currency(value, symbol='$'):
+    """Format currency value with color coding."""
+    try:
+        val = float(value)
+        if val > 0:
+            return f"+{symbol}{val:.2f}"
+        elif val < 0:
+            return f"-{symbol}{abs(val):.2f}"
+        return f"{symbol}0.00"
+    except (ValueError, TypeError):
+        return f"{symbol}0.00"
+
+
+def format_percent(value):
+    """Format percentage value."""
+    try:
+        val = float(value)
+        return f"{val:.2f}%"
+    except (ValueError, TypeError):
+        return "0.00%"
 
 
 class CthuluGUI:

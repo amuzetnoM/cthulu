@@ -1,11 +1,11 @@
 # Complete System Overview
 
- ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
- ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
+ ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 ## Executive Summary
 
-Cthulu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that implements adaptive, algorithmic trading strategies with comprehensive risk management, real-time monitoring, and machine learning instrumentation. The system features multiple trading mindsets (conservative, balanced, aggressive, ultra-aggressive), dynamic strategy selection, and a sophisticated exit management system.
+👾 Cthulu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that implements adaptive, algorithmic trading strategies with comprehensive risk management, real-time monitoring, and machine learning instrumentation. The system features multiple trading mindsets (conservative, balanced, aggressive, ultra-aggressive), dynamic strategy selection, and a sophisticated exit management system.
 
 **Current Status:** Fully operational with complete architectural overhaul finished.
 
@@ -15,7 +15,7 @@ Cthulu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that 
 
 ```mermaid
 flowchart TB
-    subgraph ENTRY["🚀 Entry Layer"]
+    subgraph ENTRY["😈 Entry Layer"]
         MAIN["__main__.py"]
         WIZ["wizard.py"]
         CLI["CLI Args"]

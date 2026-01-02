@@ -91,7 +91,7 @@ _________   __  .__          .__
 
 ## Overview
 
-Cthulu implements a staged, modular approach to automated trading.
+👾 Cthulu implements a staged, modular approach to automated trading.
 The architecture emphasizes clear boundaries, testability, and safety with pluggable components that can be 
 enhanced without disrupting core functionality.
 
