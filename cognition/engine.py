@@ -90,15 +90,27 @@ class CognitionState:
     
     @property
     def trade_allowed(self) -> bool:
-        """Check if conditions are favorable for trading."""
-        # Avoid choppy markets with low prediction confidence
-        if self.regime.regime == MarketRegime.CHOPPY and self.prediction.confidence < 0.6:
-            return False
+        """Check if conditions are favorable for trading.
         
-        # Avoid trading against strong sentiment
+        NOTE: This is advisory, not restrictive. The rule-based system
+        should remain the primary decision maker. Cognition provides
+        enhancements, not gates.
+        """
+        # Only block in extreme conditions with very high confidence
+        if self.regime.regime == MarketRegime.CHOPPY:
+            # Only block if prediction is also strongly against AND low confidence
+            if self.prediction.confidence < 0.4 and self.regime.confidence > 0.8:
+                return False
+        
+        # Only block on extreme sentiment with critical events
         if self.sentiment.suggests_caution:
-            return False
+            # Check if there are actually critical upcoming events
+            critical_events = [e for e in self.sentiment.events 
+                             if e.get('impact') == 'critical' and e.get('is_upcoming')]
+            if critical_events:
+                return False
         
+        # Default: ALLOW trading - let rule-based system decide
         return True
 
 
@@ -288,71 +300,84 @@ class CognitionEngine:
         reasons = []
         warnings = []
         
-        # Regime alignment
+        # Regime alignment - BOOST MORE, PENALIZE LESS
+        # Philosophy: Rule-based signals are already good, cognition should enhance
         if state.regime.regime != MarketRegime.UNKNOWN:
             regime_val = state.regime.regime.value
             
             if signal_direction == 'long':
                 if regime_val == 'bull':
-                    confidence_mult *= 1.15
-                    reasons.append(f"Bullish regime (+15% conf)")
+                    confidence_mult *= 1.20  # +20% boost
+                    reasons.append(f"Bullish regime (+20% conf)")
                 elif regime_val == 'bear':
-                    confidence_mult *= 0.75
-                    warnings.append(f"Bearish regime (-25% conf)")
+                    # Only penalize if regime confidence is high
+                    if state.regime.confidence > 0.7:
+                        confidence_mult *= 0.90  # Reduced penalty: -10% instead of -25%
+                        warnings.append(f"Bearish regime (minor -10% conf)")
                 elif regime_val == 'sideways':
-                    size_mult *= 0.8
-                    warnings.append(f"Sideways regime (-20% size)")
+                    # No penalty for sideways - mean reversion can work here
+                    reasons.append(f"Sideways regime (neutral)")
                 elif regime_val in ('choppy', 'volatile'):
-                    confidence_mult *= 0.85
-                    size_mult *= 0.7
-                    warnings.append(f"{regime_val.title()} market (-15% conf, -30% size)")
+                    # Volatile can be good for momentum strategies
+                    if regime_val == 'volatile':
+                        confidence_mult *= 1.05  # Slight boost
+                        reasons.append(f"Volatile market (+5% conf)")
+                    else:
+                        confidence_mult *= 0.95  # Minimal penalty
+                        warnings.append(f"Choppy market (-5% conf)")
             
             elif signal_direction == 'short':
                 if regime_val == 'bear':
-                    confidence_mult *= 1.15
-                    reasons.append(f"Bearish regime (+15% conf)")
+                    confidence_mult *= 1.20  # +20% boost
+                    reasons.append(f"Bearish regime (+20% conf)")
                 elif regime_val == 'bull':
-                    confidence_mult *= 0.75
-                    warnings.append(f"Bullish regime (-25% conf)")
+                    if state.regime.confidence > 0.7:
+                        confidence_mult *= 0.90  # Reduced penalty
+                        warnings.append(f"Bullish regime (minor -10% conf)")
         
-        # Prediction alignment
+        # Prediction alignment - ONLY BOOST, MINIMAL PENALTY
         if state.prediction.direction != PredictionDirection.NEUTRAL:
             pred_dir = state.prediction.direction.value
             pred_conf = state.prediction.confidence
             
             if (signal_direction == 'long' and pred_dir == 'long') or \
                (signal_direction == 'short' and pred_dir == 'short'):
-                boost = 1 + (pred_conf - 0.5) * 0.3  # Up to +15% at 100% conf
+                boost = 1 + (pred_conf - 0.5) * 0.4  # Up to +20% at 100% conf
                 confidence_mult *= boost
                 reasons.append(f"Prediction aligned ({pred_conf:.0%} conf)")
-            elif pred_conf > 0.65:
-                # Strong prediction against signal
-                confidence_mult *= 0.8
-                warnings.append(f"Prediction against signal ({pred_conf:.0%})")
+            elif pred_conf > 0.75:  # Only penalize on VERY strong contrary prediction
+                confidence_mult *= 0.95  # Minimal penalty
+                warnings.append(f"Prediction contrary ({pred_conf:.0%})")
         
-        # Sentiment alignment
+        # Sentiment alignment - BOOST ONLY
         if state.sentiment.direction != SentimentDirection.NEUTRAL:
             sent_dir = state.sentiment.direction.value
             sent_conf = state.sentiment.confidence
             
             if (signal_direction == 'long' and sent_dir == 'bullish') or \
                (signal_direction == 'short' and sent_dir == 'bearish'):
-                boost = 1 + (sent_conf - 0.5) * 0.2
+                boost = 1 + (sent_conf - 0.5) * 0.25
                 confidence_mult *= boost
                 reasons.append(f"Sentiment aligned ({sent_dir})")
-            elif sent_conf > 0.6:
-                confidence_mult *= 0.9
-                warnings.append(f"Sentiment against ({sent_dir})")
+            # NO PENALTY for contrary sentiment - it's too unreliable
         
-        # Caution flag
+        # Caution flag - ONLY SIZE, NOT CONFIDENCE
         if state.sentiment.suggests_caution:
-            size_mult *= 0.5
-            warnings.append("Sentiment suggests caution (-50% size)")
+            # Check for actual critical events
+            critical_events = [e for e in state.sentiment.events 
+                             if e.get('impact') == 'critical']
+            if critical_events:
+                size_mult *= 0.7  # Reduced from 0.5
+                warnings.append("Critical event nearby (-30% size)")
         
-        # Consensus bonus
+        # Consensus bonus - BIGGER BOOST
         if state.directional_consensus == signal_direction.upper():
-            confidence_mult *= 1.1
-            reasons.append("Full consensus (+10% conf)")
+            confidence_mult *= 1.15  # Increased from 1.10
+            reasons.append("Full consensus (+15% conf)")
+        
+        # FLOOR: Never reduce confidence below 85% of original
+        confidence_mult = max(confidence_mult, 0.85)
+        size_mult = max(size_mult, 0.7)
         
         return SignalEnhancement(
             confidence_multiplier=confidence_mult,
@@ -419,6 +444,9 @@ class CognitionEngine:
         """
         Check if trading is advisable.
         
+        NOTE: This is ADVISORY only. The rule-based system should remain
+        primary decision maker. Only block in extreme conditions.
+        
         Args:
             symbol: Trading symbol
             market_data: OHLCV DataFrame
@@ -431,20 +459,31 @@ class CognitionEngine:
         
         state = self._last_state
         if state is None:
-            return True, "No cognition data"
+            return True, "No cognition data - proceeding"
         
-        # Check trade allowed
+        # Check trade allowed - but only block in EXTREME conditions
         if not state.trade_allowed:
-            if state.regime.regime == MarketRegime.CHOPPY:
-                return False, f"Choppy market with low prediction confidence"
+            # Log but DON'T block unless critical
+            if state.regime.regime == MarketRegime.CHOPPY and state.regime.confidence > 0.85:
+                # Only block if VERY confident it's choppy
+                logger.info(f"Cognition advisory: Choppy market detected (conf={state.regime.confidence:.2f})")
+                # Don't return False - let rule-based system decide
             if state.sentiment.suggests_caution:
-                return False, f"Sentiment suggests caution"
+                logger.info(f"Cognition advisory: Sentiment caution")
+                # Don't return False
         
-        # Check sentiment for upcoming events
+        # Only block for CRITICAL upcoming events with high-impact
         if self._sentiment_analyzer:
-            avoid, reason = self._sentiment_analyzer.should_avoid_trading(symbol)
-            if avoid:
-                return False, reason
+            try:
+                avoid, reason = self._sentiment_analyzer.should_avoid_trading(symbol)
+                if avoid:
+                    # Check if this is truly critical
+                    if 'critical' in reason.lower() or 'nfp' in reason.lower() or 'fomc' in reason.lower():
+                        return False, f"Critical event: {reason}"
+                    # For other events, just log advisory
+                    logger.info(f"Cognition advisory: {reason}")
+            except Exception as e:
+                logger.debug(f"Sentiment check error: {e}")
         
         return True, "Trading conditions acceptable"
     

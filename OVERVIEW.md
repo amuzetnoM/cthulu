@@ -11,129 +11,181 @@ Cthulu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that 
 
 ## System Architecture
 
-### High-Level Design
+### Complete System Architecture (v5.1.0 APEX)
+
+```mermaid
+flowchart TB
+    subgraph ENTRY["🚀 Entry Layer"]
+        MAIN["__main__.py"]
+        WIZ["wizard.py"]
+        CLI["CLI Args"]
+    end
+    
+    subgraph CORE["⚙️ Core Engine"]
+        BOOT["bootstrap.py<br/>System Init"]
+        LOOP["trading_loop.py<br/>Main Loop"]
+        SHUT["shutdown.py"]
+    end
+    
+    subgraph COGNITION["🧠 Cognition Engine (AI/ML)"]
+        direction TB
+        COG_ENG["engine.py<br/>Central Orchestrator"]
+        REGIME["regime_classifier.py<br/>Bull/Bear/Sideways"]
+        PREDICTOR["price_predictor.py<br/>Softmax Direction"]
+        SENTIMENT["sentiment_analyzer.py<br/>News/Calendar"]
+        EXIT_ORACLE["exit_oracle.py<br/>ML Exit Signals"]
+    end
+    
+    subgraph STRATEGY["📊 Strategy Layer"]
+        direction TB
+        SEL["strategy_selector.py<br/>Dynamic Selection"]
+        EMA["ema_crossover"]
+        SMA["sma_crossover"]
+        MOM["momentum_breakout"]
+        SCALP["scalping"]
+        TREND["trend_following"]
+        RSI_REV["rsi_reversal"]
+        MEAN_REV["mean_reversion"]
+    end
+    
+    subgraph INDICATORS["📈 Indicators"]
+        RSI["RSI"]
+        ADX["ADX"]
+        MACD["MACD"]
+        ATR["ATR"]
+        BB["Bollinger"]
+        SUPER["Supertrend"]
+        VWAP["VWAP"]
+    end
+    
+    subgraph RISK["🛡️ Risk Management"]
+        direction TB
+        EVAL["evaluator.py<br/>Trade Approval"]
+        ADAPT_ACC["adaptive_account_manager.py<br/>Phase-based Sizing"]
+        ADAPT_DD["adaptive_drawdown.py<br/>DD Protection"]
+        LOSS_CURVE["adaptive_loss_curve.py<br/>Non-linear Loss"]
+        TRAP["liquidity_trap_detector.py"]
+        DYN_SLTP["dynamic_sltp.py"]
+    end
+    
+    subgraph POSITION["📦 Position Management"]
+        direction TB
+        POS_MGR["manager.py"]
+        LIFECYCLE["lifecycle.py"]
+        SCALER["profit_scaler.py<br/>Partial Profits"]
+        TRACKER["tracker.py"]
+        ADOPT["adoption.py<br/>External Trades"]
+    end
+    
+    subgraph EXIT["🚪 Exit System"]
+        direction TB
+        COORD["coordinator.py"]
+        TRAIL["trailing_stop.py"]
+        MICRO["micro_account_protection.py"]
+        CONFLUENCE["confluence_exit_manager.py<br/>Multi-indicator Exit"]
+        TIME_EXIT["time_based.py"]
+        PROFIT_TGT["profit_target.py"]
+    end
+    
+    subgraph EXECUTION["⚡ Execution"]
+        ENGINE["engine.py<br/>Order Management"]
+        MT5["mt5_connector.py<br/>MT5 API"]
+    end
+    
+    subgraph PERSISTENCE["💾 Persistence"]
+        DB["database.py<br/>SQLite WAL"]
+        TRAINING_LOG["training_logger.py<br/>ML Data"]
+    end
+    
+    subgraph OBSERVABILITY["📊 Observability"]
+        METRICS["metrics.py"]
+        DASH["dashboard.html"]
+        CSV["CSV Collectors"]
+        PROM["prometheus.py"]
+    end
+    
+    %% Flow Connections
+    ENTRY --> CORE
+    CORE --> COGNITION
+    CORE --> STRATEGY
+    STRATEGY --> INDICATORS
+    
+    COG_ENG --> REGIME
+    COG_ENG --> PREDICTOR
+    COG_ENG --> SENTIMENT
+    COG_ENG --> EXIT_ORACLE
+    
+    LOOP --> RISK
+    RISK --> POSITION
+    POSITION --> EXIT
+    EXIT --> EXECUTION
+    EXECUTION --> MT5
+    
+    LOOP --> PERSISTENCE
+    LOOP --> OBSERVABILITY
+    
+    %% Cognition Integration
+    COGNITION -.->|enhance signals| STRATEGY
+    COGNITION -.->|exit oracle| EXIT
+    COGNITION -.->|regime info| RISK
+    
+    %% Styling
+    style COGNITION fill:#9b59b6,stroke:#8e44ad,color:#fff
+    style RISK fill:#e74c3c,stroke:#c0392b,color:#fff
+    style EXIT fill:#f39c12,stroke:#d68910,color:#fff
+    style EXECUTION fill:#27ae60,stroke:#1e8449,color:#fff
+    style STRATEGY fill:#3498db,stroke:#2980b9,color:#fff
+```
+
+### Data Flow Architecture
 
 ```mermaid
 flowchart LR
-    MAIN["__main__.py<br/>(Entry Point)"]
-    
-    subgraph CORE["core/ (Refactored Modules)"]
-        BOOT[bootstrap.py]
-        IND_LOAD[indicator_loader.py]
-        STRAT_FACT[strategy_factory.py]
-        EXIT_LOAD[exit_loader.py]
-        LOOP[trading_loop.py]
-        SHUT[shutdown.py]
+    subgraph INPUT["📥 Input"]
+        MT5_DATA["MT5 Market Data"]
+        NEWS_DATA["News Feed"]
+        CALENDAR["Economic Calendar"]
     end
     
-    subgraph CONN["connector/"]
-        MT5[mt5_connector.py]
+    subgraph PROCESSING["⚙️ Processing Pipeline"]
+        direction TB
+        INGEST["Data Ingestion"]
+        IND_CALC["Indicator Calculation"]
+        REGIME_DET["Regime Detection"]
+        SIG_GEN["Signal Generation"]
+        COG_ENH["Cognition Enhancement"]
+        RISK_CHK["Risk Check"]
     end
     
-    subgraph STRAT["strategy/"]
-        BASE[base.py]
-        SMA[sma_crossover.py]
-        EMA[ema_crossover.py]
-        MOM[momentum_breakout.py]
-        SCALP[scalping.py]
-        SEL[strategy_selector.py]
+    subgraph DECISION["🎯 Decision"]
+        APPROVE["Approval Gate"]
+        SIZE["Position Sizing"]
     end
     
-    subgraph IND["indicators/"]
-        IND_BASE[base.py]
-        RSI[rsi.py]
-        MACD[macd.py]
-        ATR[atr.py]
-        ADX[adx.py]
-        BB[bollinger.py]
-        STOCH[stochastic.py]
-        SUPER[supertrend.py]
-        VWAP[vwap.py]
+    subgraph OUTPUT["📤 Output"]
+        ORDER["Order Execution"]
+        DB_WRITE["DB Write"]
+        METRICS_OUT["Metrics Export"]
     end
     
-    subgraph EXEC["execution/"]
-        ENGINE[engine.py]
-    end
+    INPUT --> PROCESSING
+    PROCESSING --> DECISION
+    DECISION --> OUTPUT
     
-    subgraph POS["position/"]
-        MGR[manager.py]
-        TRADE[trade_manager.py]
-        RISK_P[risk_manager.py]
-        DYN[dynamic_manager.py]
-    end
-    
-    subgraph RISK["risk/"]
-        RISK_M[manager.py]
-    end
-    
-    subgraph EXIT["exit/"]
-        TRAIL[trailing_stop.py]
-        TIME[time_based.py]
-        PROFIT[profit_target.py]
-        ADV[adverse_movement.py]
-        COORD[coordinator.py]
-    end
-    
-    subgraph PERSIST["persistence/"]
-        DB[database.py]
-    end
-    
-    subgraph OBS["observability/"]
-        LOG[logger.py]
-        METRICS[metrics.py]
-        PROM[prometheus.py]
-    end
-    
-    subgraph DATA["data/"]
-        LAYER[layer.py]
-    end
-    
-    subgraph CONFIG["config/"]
-        MIND[mindsets.py]
-        WIZ[wizard.py]
-    end
-    
-    subgraph UI["ui/"]
-        DESK[desktop.py]
-    end
-    
-    subgraph MON["monitoring/"]
-        TMON[trade_monitor.py]
-    end
-    
-    subgraph ADV["advisory/"]
-        ADVMGR[manager.py]
-    end
-    
-    subgraph NEWS["news/"]
-        NEWSMGR[manager.py]
-    end
-    
-    subgraph ML["ML_RL/"]
-        INSTR[instrumentation.py]
-    end
-    
-    MAIN --> CORE
-    CORE --> CONN
-    CORE --> STRAT
-    CORE --> IND
-    CORE --> EXEC
-    CORE --> POS
-    CORE --> RISK
-    CORE --> EXIT
-    CORE --> PERSIST
-    CORE --> OBS
-    CORE --> DATA
-    CORE --> CONFIG
-    CORE --> UI
-    CORE --> MON
-    CORE --> ADV
-    CORE --> NEWS
-    CORE --> ML
-    
-    style MAIN fill:#00ff88,stroke:#00cc6a,color:#000
-    style CORE fill:#00aaff,stroke:#0088cc,color:#000
+    INGEST --> IND_CALC --> REGIME_DET --> SIG_GEN --> COG_ENH --> RISK_CHK
 ```
+
+### Module Integration Matrix
+
+| Module | Inputs From | Outputs To | Purpose |
+|--------|-------------|------------|---------|
+| **CognitionEngine** | market_data, indicators | trading_loop, exit_coord | Signal enhancement, exit signals |
+| **RegimeClassifier** | OHLCV data | CognitionEngine, StrategySelector | Market state detection |
+| **PricePredictor** | features | CognitionEngine | Direction probability |
+| **AdaptiveAccountManager** | balance, equity | RiskEvaluator, trading_loop | Phase-based position sizing |
+| **ConfluenceExitManager** | positions, indicators | ExitCoordinator | Multi-indicator exit signals |
+| **ProfitScaler** | positions, balance | trading_loop | Partial profit taking |
+| **AdaptiveLossCurve** | balance, position | RiskEvaluator | Non-linear loss tolerance |
 
 ## Core Concepts
 
