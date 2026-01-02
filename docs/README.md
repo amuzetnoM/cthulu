@@ -54,7 +54,7 @@ _________   __  .__          .__
 
  **NEW in v5.1.0 <br> 
  S A F E :<br> Set And Forget Engine**  
-> Cthulu reaches peak performance with revolutionary signal generation and the **SAFE** paradigm!
+> 👾 Cthulu reaches peak performance with revolutionary signal generation and the **SAFE** paradigm!
 >
 > - 🚀 **RSI Reversal Strategy (NEW)**: Pure RSI-based trading — signals fire instantly on RSI extremes without waiting for crossovers  
 > - 🔄 **Multi-Strategy Fallback**: When primary strategy returns no signal, system tries up to 3 alternatives automatically  
@@ -63,11 +63,10 @@ _________   __  .__          .__
 > - 🛡️ **Enhanced Database**: WAL mode with 30-second timeout for concurrent access  
 > - 📈 **Live Validated**: 5 trades executed autonomously within 15 minutes of deployment!
 >
-> **SAFE = Smart strategy selection, Adaptive to all conditions, Fully autonomous, Expert risk management**
+> **😈 S A F E <br> Smart strategy selection, <br> Adaptive to all conditions, <br> Fully autonomous, <br> Expert risk management**
 >  
-> See [FEATURES_GUIDE.md](FEATURES_GUIDE.md) for full strategy, fallback mechanism, and indicator details.
+> See [FEATURES_GUIDE.md](FEATURES_GUIDE.md) for full strategy ensemble, fallback mechanism, and indicator details.
 
-> Note: News ingest is opt-in — enable via `NEWS_INGEST_ENABLED=1` or set `config['news']['enabled']=true`. Integration tests that call external APIs are gated; set `RUN_NEWS_INTEGRATION=1` to run them.
 
 ---
 

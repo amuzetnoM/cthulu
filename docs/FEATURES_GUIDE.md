@@ -24,7 +24,7 @@ _________   __  .__          .__
 
 ### SAFE: Set And Forget Engine
 
-Cthulu v5.1 "Apex" introduces the SAFE paradigm:
+👾 Cthulu v5.1 "Apex" introduces the SAFE paradigm:
 - **S**mart strategy selection with intelligent fallback
 - **A**daptive to all market conditions (ranging, trending, volatile)
 - **F**ully autonomous signal generation without manual intervention
