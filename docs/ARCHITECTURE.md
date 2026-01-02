@@ -8,7 +8,7 @@ sidebar_position: 4
 
 ## System Architecture
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 
 ### High-Level System Overview
 
@@ -18,36 +18,36 @@ graph TB
         GUI[Desktop GUI<br/>Tkinter Dashboard]
         RPC[RPC Server<br/>HTTP API]
     end
-    
+
     subgraph "Core Trading Engine"
         ORCH[Multi-Strategy<br/>Orchestrator]
         STRAT[Strategy Engine<br/>6 Strategies]
         EXEC[Execution Engine<br/>Order Management]
     end
-    
+
     subgraph "Intelligence Layer"
         IND[Indicator Library<br/>12 Indicators]
         REGIME[Regime Detection<br/>10 States]
         NEWS[News Integration<br/>FRED, TradingEconomics]
     end
-    
+
     subgraph "Data & Persistence"
         DATA[Data Layer<br/>OHLCV Processing]
         DB[SQLite Database<br/>Trade History]
         CACHE[Cache Layer<br/>Performance]
     end
-    
+
     subgraph "Risk & Position Management"
         RISK[Risk Manager<br/>Position Sizing]
         POS[Position Manager<br/>Lifecycle]
         EXIT[Exit Strategies<br/>4 Types]
     end
-    
+
     subgraph "External Services"
         MT5[MetaTrader 5<br/>Broker]
         PROM[Prometheus<br/>Metrics]
     end
-    
+
     GUI --> ORCH
     RPC --> ORCH
     ORCH --> REGIME
@@ -66,7 +66,7 @@ graph TB
     EXEC --> DB
     ORCH --> PROM
     DATA --> CACHE
-    
+
     style ORCH fill:#00ff88,stroke:#00cc6a,color:#000
     style MT5 fill:#00aaff,stroke:#0088cc,color:#000
     style DB fill:#ffaa00,stroke:#dd8800,color:#000
@@ -77,28 +77,21 @@ graph TB
 ```mermaid
 flowchart LR
     ORCH["Multi-Strategy Orchestrator<br/>(__main__.py)<br/>11-step trading loop"]
-    
     CONFIG["Configuration<br/>(config/)<br/>Wizard + Schema"]
     LOGGING["Logging System<br/>(observability/)<br/>JSON + Metrics"]
-    
     MT5["MT5 Connector<br/>(connector/)<br/>- Reconnection<br/>- Rate limiting<br/>- Health check"]
     RISK["Risk Manager<br/>(risk/)<br/>- Position size<br/>- Daily limits<br/>- Approval"]
-    
     DATA["Data Layer<br/>(data/)<br/>- OHLCV norm<br/>- Caching<br/>- Resampling"]
     IND["Indicator Library<br/>(indicators/)<br/>RSI, MACD, BB, Stoch<br/>ADX, Supertrend, VWAP"]
-    
     STRAT["Strategy Engine<br/>(strategy/)<br/>- 7 Strategies<br/>- Regime Detection<br/>- Selection"]
     EXEC["Execution Engine<br/>(execution/)<br/>- Idempotent orders<br/>- ML instrumentation<br/>- Reconciliation"]
-    
     POS["Position Mgmt<br/>(position/)<br/>- Tracking<br/>- Adoption<br/>- P&L calc"]
     EXIT["Exit Strategies<br/>(exit/)<br/>- Trailing stop<br/>- Time-based<br/>- Profit target"]
-    
     DB["Persistence<br/>(database/)<br/>- SQLite trades<br/>- Signals<br/>- Metrics"]
     OBS["Observability<br/>(monitoring/)<br/>- Trade monitor<br/>- Health checks<br/>- Prometheus"]
-    
     GUI["Desktop GUI<br/>(ui/)<br/>- Trade history<br/>- Live monitor<br/>- Metrics dash"]
     RPC["RPC Server<br/>(rpc/)<br/>- HTTP API<br/>- Manual trading<br/>- REST endpoints"]
-    
+
     ORCH --> CONFIG
     ORCH --> LOGGING
     CONFIG --> MT5
@@ -125,67 +118,27 @@ flowchart LR
     OBS --> GUI
     DB --> RPC
     OBS --> RPC
-    
+
     style ORCH fill:#00ff88,stroke:#00cc6a,color:#000
     style MT5 fill:#00aaff,stroke:#0088cc,color:#000
     style DB fill:#ffaa00,stroke:#dd8800,color:#000
 ```
-         │            │ - ATR               │
-         │            └──────────┬──────────┘
-         │                       │
-         └───────────┬───────────┘
-                     │
-                     ▼
-          ┌──────────────────────┐
-          │   Strategy Engine    │
-          │   (strategy/)        │
-          │                      │
-          │ - Signal generation  │
-          │ - SMA crossover      │
-          │ - Indicator fusion   │
-          └──────────┬───────────┘
-                     │
-                     ▼
-          ┌──────────────────────┐
-          │  Execution Engine    │
-          │  (execution/)        │
-          │                      │
-          │ - Order submission   │
-          │ - Idempotency        │
-          │ - Fill tracking      │
-          └──────────┬───────────┘
-                     │
-                     ▼
-          ┌──────────────────────┐
-          │ Position Manager     │
-          │  (position/)         │
-          │                      │
-          │ - Track positions    │
-          │ - Calculate P&L      │
-          │ - Sync with MT5      │
-          └──────────┬───────────┘
-                     │
-                     ▼
-          ┌──────────────────────┐
-          │  Exit Strategies     │
-          │  (exit/)             │
-          │                      │
-          │ - Stop Loss (P1)     │
-          │ - Take Profit (P2)   │
-          │ - Trailing Stop (P3) │
-          │ - Time-based (P4)    │
-          └──────────┬───────────┘
-                     │
-                     ▼
-          ┌──────────────────────┐
-          │   Persistence Layer  │
-          │  (persistence/)      │
-          │                      │
-          │ - Signal storage     │
-          │ - Order history      │
-          │ - Trade records      │
-          │ - P&L tracking       │
-          └──────────────────────┘
+
+### Core Runtime Flow (strategy → execution → position → exit → persistence)
+
+```mermaid
+flowchart TD
+    SignalGen[Strategy Engine<br/>Signal Generation]
+    Exec[Execution Engine<br/>Order Submission]
+    Position[Position Manager<br/>Track & P&L]
+    Exit[Exit Strategies<br/>Stop/TP/Trailing/Time]
+    Persist[Persistence<br/>Signal/Order/Trade Storage]
+
+    SignalGen --> Exec
+    Exec --> Position
+    Position --> Exit
+    Exit --> Persist
+    Exec --> Persist
 ```
 
 ## Autonomous Trading Flow
@@ -201,44 +154,44 @@ sequenceDiagram
     participant Risk
     participant Execution
     participant Position
-    
+
     User->>Orchestrator: Start Trading
-    
+
     loop Every Trading Cycle
         Orchestrator->>MT5: Check Connection
         MT5-->>Orchestrator: Status OK
-        
+
         Orchestrator->>MT5: Fetch Market Data
         MT5-->>Orchestrator: OHLCV Data
-        
+
         Orchestrator->>Strategy: Detect Market Regime
         Strategy-->>Orchestrator: Regime Classification
-        
+
         Orchestrator->>Strategy: Analyze & Generate Signal
         Strategy-->>Orchestrator: Trade Signal (BUY/SELL/HOLD)
-        
+
         alt Signal is BUY or SELL
             Orchestrator->>Risk: Validate Trade
             Risk-->>Orchestrator: Risk Approved + Position Size
-            
+
             Orchestrator->>Execution: Execute Order
             Execution->>MT5: Place Order
             MT5-->>Execution: Order Filled
             Execution-->>Orchestrator: Execution Result
-            
+
             Orchestrator->>Position: Track New Position
             Position-->>Orchestrator: Position Registered
         end
-        
+
         Orchestrator->>Position: Check Existing Positions
         Position->>Position: Evaluate Exit Conditions
-        
+
         alt Exit Condition Met
             Position->>Execution: Close Position
             Execution->>MT5: Close Order
             MT5-->>Execution: Position Closed
         end
-        
+
         Orchestrator->>Orchestrator: Update Metrics
         Orchestrator->>User: Log Status
     end
@@ -253,7 +206,7 @@ flowchart LR
     CONFIG[Load Configuration]
     MT5CONN[Connect MT5]
     COMPONENTS[Setup Modules]
-    
+
     LOOP_START{Main Trading Loop}
     HEALTH[Step 1: Connection Health]
     SYNC[Step 2: Position Sync]
@@ -266,16 +219,16 @@ flowchart LR
     EXIT_EXEC[Step 9: Execute Exit]
     PERSIST[Step 10: Persistence & Metrics]
     SLEEP[Sleep Interval]
-    
+
     SHUTDOWN[Shutdown: Close Connections & Save]
     END([End])
-    
+
     START --> INIT
     INIT --> CONFIG
     CONFIG --> MT5CONN
     MT5CONN --> COMPONENTS
     COMPONENTS --> LOOP_START
-    
+
     LOOP_START --> HEALTH
     HEALTH --> SYNC
     SYNC --> FETCH
@@ -288,10 +241,10 @@ flowchart LR
     EXIT_EXEC --> PERSIST
     PERSIST --> SLEEP
     SLEEP --> LOOP_START
-    
+
     LOOP_START --> SHUTDOWN
     SHUTDOWN --> END
-    
+
     style START fill:#00ff88,stroke:#00cc6a,color:#000
     style END fill:#ff4444,stroke:#cc0000,color:#fff
     style LOOP_START fill:#ffaa00,stroke:#dd8800,color:#000
@@ -307,13 +260,13 @@ flowchart LR
     IND[Indicators]
     STRAT[Strategy Engine]
     SIGNAL[Trade Signal]
-    
+
     MT5 -->|Historical Data| CONN
     CONN -->|OHLCV| DATA
     DATA -->|Normalized DataFrame| IND
     IND -->|Technical Values| STRAT
     STRAT -->|Analysis| SIGNAL
-    
+
     style MT5 fill:#00aaff,stroke:#0088cc,color:#000
     style SIGNAL fill:#00ff88,stroke:#00cc6a,color:#000
 ```
@@ -322,32 +275,23 @@ flowchart LR
 
 ## Monitoring & Deployment Recommendations
 
-**Short-term (30-60 min validation)**
-- Run Cthulu locally in a terminal using the aggressive mindset config and `--log-level DEBUG`:
-
+**Short-term (30–60 min validation)**
+- Run Cthulu locally using an aggressive mindset config and debug logging:
 ```bash
 python -m Cthulu --config configs/mindsets/aggressive/config_aggressive_h1.json --symbol "GOLD#m" --skip-setup --no-prompt --log-level DEBUG
 ```
-
-- Tail logs (e.g., `tail -f Cthulu.log`) and watch for these messages:
-  - `Adopted trade:` — adoption events
-  - `Set SL/TP for #` — confirmed SL/TP set on broker
-  - `SL/TP verification failed` — broker refused modification (investigate immediately)
-  - `Failed to select symbol` — symbol visibility issue in MT5 Market Watch
+- Tail logs and watch for messages:
+  - `Adopted trade:`
+  - `Set SL/TP for #`
+  - `SL/TP verification failed`
+  - `Failed to select symbol`
 
 **Production (recommended)**
-- Containerize with Docker and expose Prometheus metrics via simple endpoint (use `observability/prometheus.py` and a tiny metrics HTTP server).
-- Use an orchestrator (Docker Compose or Kubernetes) and set restart policies, resource limits, and liveness/readiness probes.
-- Centralized logging + alerting (Prometheus + Alertmanager; PagerDuty/Slack integration for critical alerts):
-  - Alert on any `Cthulu_sl_tp_failure_total > 0` within a 1-minute window
-  - Alert on `Cthulu_mt5_connected == 0` for 2 consecutive checks
-  - Alert on repeated adoption failures or repeated market data absence
+- Containerize with Docker, expose Prometheus metrics (use `observability/prometheus.py`).
+- Use orchestration (Compose/K8s) with health probes and restart policies.
+- Centralized logging and alerting (Prometheus + Alertmanager; Slack/PagerDuty for critical alerts).
 
-**Monitoring approach choice**
-- Terminal monitoring: fast, low-friction for smoke tests and short runs (30–60 min). I can run and monitor logs and report back.
-- Containerized monitoring: recommended for production — reproducible, easier integration with metrics and alerting, and safer for long-term uptime.
-
-Let me know if you want me to: **(A)** run a 30–60 minute live terminal monitoring session now, or **(B)** start containerizing Cthulu and add Prometheus HTTP exposure + alert rules (I can start with a Dockerfile and a metrics endpoint).
+Choose: (A) 30–60 minute live terminal monitoring, or (B) start containerizing + add Prometheus endpoint and alert rules.
 
 ---
 
@@ -359,7 +303,6 @@ flowchart LR
     FETCH[Fetch OHLCV Data]
     NORM[Normalize DataFrame]
     IND[Calculate Indicators]
-    
     subgraph INDICATORS["Technical Indicators"]
         RSI[RSI]
         MACD[MACD]
@@ -367,24 +310,20 @@ flowchart LR
         ADX[ADX]
         ATR[ATR]
     end
-    
     REGIME[Detect Market Regime]
     SELECT[Select Strategy]
     ANALYZE[Strategy Analysis]
     SIGNAL{Signal Generated?}
-    
     RISK_CHECK[Risk Validation]
     SIZE[Calculate Position Size]
     SLTP[Calculate SL/TP]
     APPROVE{Risk Approved?}
-    
     EXECUTE[Execute Order]
     TRACK[Track Position]
     MONITOR[Monitor Exits]
-    
     REJECT[Reject Trade]
     END([Continue Loop])
-    
+
     START --> FETCH
     FETCH --> NORM
     NORM --> IND
@@ -393,32 +332,26 @@ flowchart LR
     IND --> BB
     IND --> ADX
     IND --> ATR
-    
     RSI --> REGIME
     MACD --> REGIME
     BB --> REGIME
     ADX --> REGIME
     ATR --> REGIME
-    
     REGIME --> SELECT
     SELECT --> ANALYZE
     ANALYZE --> SIGNAL
-    
     SIGNAL -->|Yes| RISK_CHECK
     SIGNAL -->|No| END
-    
     RISK_CHECK --> SIZE
     SIZE --> SLTP
     SLTP --> APPROVE
-    
     APPROVE -->|Yes| EXECUTE
     APPROVE -->|No| REJECT
-    
     EXECUTE --> TRACK
     TRACK --> MONITOR
     MONITOR --> END
     REJECT --> END
-    
+
     style START fill:#00ff88,stroke:#00cc6a,color:#000
     style EXECUTE fill:#00aaff,stroke:#0088cc,color:#000
     style REJECT fill:#ff4444,stroke:#cc0000,color:#fff
@@ -430,11 +363,10 @@ flowchart LR
 flowchart TD
     START([Begin Strategy Selection])
     REGIME[Analyze Market Regime]
-    
     TRENDING{Trending<br/>ADX > 25?}
     VOLATILE{Volatile<br/>ATR High?}
     RANGING{Ranging<br/>BB Tight?}
-    
+
     RSI_REV[RSI Reversal<br/>Strategy]
     EMA[EMA Crossover<br/>Strategy]
     SMA[SMA Crossover<br/>Strategy]
@@ -442,25 +374,22 @@ flowchart TD
     SCALP[Scalping<br/>Strategy]
     MEAN[Mean Reversion<br/>Strategy]
     TREND[Trend Following<br/>Strategy]
-    
+
     FALLBACK{Primary<br/>Signal?}
     TRY_ALT[Try Alternative<br/>Strategies]
     NO_SIGNAL[No Signal]
-    
+
     START --> REGIME
     REGIME --> TRENDING
-    
     TRENDING -->|Yes, Strong| TREND
     TRENDING -->|Yes, Weak| EMA
     TRENDING -->|No| VOLATILE
-    
     VOLATILE -->|Yes| MOM
     VOLATILE -->|No| RANGING
-    
     RANGING -->|Tight| SCALP
     RANGING -->|Normal| MEAN
     RANGING -->|Wide| SMA
-    
+
     RSI_REV --> FALLBACK
     EMA --> FALLBACK
     SMA --> FALLBACK
@@ -468,13 +397,13 @@ flowchart TD
     SCALP --> FALLBACK
     MEAN --> FALLBACK
     TREND --> FALLBACK
-    
+
     FALLBACK -->|No| TRY_ALT
     FALLBACK -->|Yes| END([Generate Signal])
     TRY_ALT -->|Up to 3 more| FALLBACK
     TRY_ALT -->|Exhausted| NO_SIGNAL
     NO_SIGNAL --> END
-    
+
     style START fill:#00ff88,stroke:#00cc6a,color:#000
     style END fill:#00aaff,stroke:#0088cc,color:#000
     style NO_SIGNAL fill:#ffaa00,stroke:#dd8800,color:#000
@@ -486,43 +415,38 @@ flowchart TD
 flowchart LR
     START([Monitor Positions])
     CHECK[Check All Open Positions]
-    
+
     subgraph EXITS["Exit Strategy Evaluation (Priority Order)"]
         P90[Priority 90<br/>Adverse Movement<br/>Emergency Exit]
         P50[Priority 50<br/>Time-Based Exit<br/>Max Hold Time]
         P40[Priority 40<br/>Profit Target<br/>Take Profit]
         P25[Priority 25<br/>Trailing Stop<br/>Lock Profits]
     end
-    
+
     EXEC{Exit<br/>Triggered?}
     CLOSE[Close Position]
     UPDATE[Update P&L]
     LOG[Log Exit Event]
     PERSIST[Save to Database]
-    
     CONTINUE[Continue Monitoring]
-    
+
     START --> CHECK
     CHECK --> P90
-    
     P90 -->|Check| P50
     P50 -->|Check| P40
     P40 -->|Check| P25
-    
     P90 --> EXEC
     P50 --> EXEC
     P40 --> EXEC
     P25 --> EXEC
-    
     EXEC -->|Yes| CLOSE
     EXEC -->|No| CONTINUE
-    
     CLOSE --> UPDATE
     UPDATE --> LOG
     LOG --> PERSIST
     PERSIST --> CONTINUE
     CONTINUE --> START
-    
+
     style P90 fill:#ff4444,stroke:#cc0000,color:#fff
     style P50 fill:#ffaa00,stroke:#dd8800,color:#000
     style P40 fill:#00ff88,stroke:#00cc6a,color:#000
@@ -543,14 +467,14 @@ flowchart TB
         S6[Mean Reversion]
         S7[Trend Following]
     end
-    
+
     subgraph PERF["Performance Tracking"]
         WIN[Win Rate]
         PF[Profit Factor]
         SHARPE[Sharpe Ratio]
         DD[Drawdown]
     end
-    
+
     subgraph REGIME["Regime Detection"]
         TREND_D[Trending]
         RANGE_D[Ranging]
@@ -558,11 +482,11 @@ flowchart TB
         BREAKOUT[Breakout]
         REVERSAL[Reversal]
     end
-    
+
     SELECTOR[Dynamic Strategy Selector]
     ACTIVE[Active Strategy]
     SIGNAL[Trade Signal]
-    
+
     S1 --> PERF
     S2 --> PERF
     S3 --> PERF
@@ -570,19 +494,12 @@ flowchart TB
     S5 --> PERF
     S6 --> PERF
     S7 --> PERF
-    
+
     PERF --> SELECTOR
     REGIME --> SELECTOR
-    
-    TREND_D --> REGIME
-    RANGE_D --> REGIME
-    VOLAT_D --> REGIME
-    BREAKOUT --> REGIME
-    REVERSAL --> REGIME
-    
     SELECTOR --> ACTIVE
     ACTIVE --> SIGNAL
-    
+
     style SELECTOR fill:#00ff88,stroke:#00cc6a,color:#000
     style ACTIVE fill:#00aaff,stroke:#0088cc,color:#000
     style SIGNAL fill:#ffaa00,stroke:#dd8800,color:#000
@@ -593,7 +510,7 @@ flowchart TB
 ```mermaid
 flowchart LR
     SIGNAL[Trade Signal Received]
-    
+
     subgraph CHECKS["Risk Validation Checks"]
         BAL[Check Account Balance]
         DAILY[Check Daily Loss Limit]
@@ -601,50 +518,50 @@ flowchart LR
         EXPO[Check Symbol Exposure]
         MARGIN[Check Margin Available]
     end
-    
+
     SIZE[Calculate Position Size]
-    
+
     subgraph SIZING["Sizing Methods"]
         PCT[% of Balance]
         KELLY[Kelly Criterion]
         FIXED[Fixed Lot Size]
         VOL[Volatility-Based]
     end
-    
+
     SL[Calculate Stop Loss]
     TP[Calculate Take Profit]
-    
+
     APPROVE{All Checks<br/>Passed?}
     EXEC[Approve Execution]
     REJECT[Reject Trade]
     LOG[Log Decision]
-    
+
     SIGNAL --> CHECKS
     BAL --> SIZE
     DAILY --> SIZE
     POS_COUNT --> SIZE
     EXPO --> SIZE
     MARGIN --> SIZE
-    
+
     SIZE --> PCT
     SIZE --> KELLY
     SIZE --> FIXED
     SIZE --> VOL
-    
+
     PCT --> SL
     KELLY --> SL
     FIXED --> SL
     VOL --> SL
-    
+
     SL --> TP
     TP --> APPROVE
-    
+
     APPROVE -->|Yes| EXEC
     APPROVE -->|No| REJECT
-    
+
     EXEC --> LOG
     REJECT --> LOG
-    
+
     style APPROVE fill:#ffaa00,stroke:#dd8800,color:#000
     style EXEC fill:#00ff88,stroke:#00cc6a,color:#000
     style REJECT fill:#ff4444,stroke:#cc0000,color:#fff
@@ -709,25 +626,25 @@ flowchart LR
 
 ### Multi-Layer Risk Protection
 
-1. **Configuration Level**
+1. Configuration Level
    - Risk per trade limit (default: 1%)
    - Max concurrent positions (default: 3)
    - Max daily loss (default: 5%)
 
-2. **Pre-Trade Checks**
+2. Pre-Trade Checks
    - Connection validation
    - Trading hours filter
    - Spread limit check
    - Margin sufficiency
    - Account trading status
 
-3. **Position Level**
+3. Position Level
    - Automatic stop loss on every trade
    - Take profit for profit targets
    - ATR-based SL sizing
    - Risk/reward ratio enforcement
 
-4. **Daily Tracking**
+4. Daily Tracking
    - Daily P&L monitoring
    - Automatic trading halt at loss limit
    - Position count enforcement
@@ -743,7 +660,7 @@ class MyCustomStrategy(BaseStrategy):
     def analyze(self, df):
         # Your analysis logic
         return signal_dict
-    
+
     def should_close_position(self, position, df):
         # Your exit logic
         return (should_close, reason)
@@ -759,21 +676,9 @@ def my_indicator(df, period=14):
 ```
 
 ### Integration Points
-
-1. **gold_standard Integration**
-   - Import signals from analysis database
-   - Use regime detection
-   - Filter by economic calendar
-
-2. **External Data Sources**
-   - Sentiment analysis
-   - News feeds
-   - Alternative data
-
-3. **Machine Learning**
-   - Feature extraction from indicators
-   - Model prediction integration
-   - Confidence-based filtering
+- gold_standard Integration (import signals, regime detection)
+- External Data Sources (sentiment, news, alternative data)
+- Machine Learning (feature extraction, prediction integration)
 
 ## Testing Strategy
 
@@ -849,12 +754,10 @@ Cthulu Bot
 ---
 
 ```mermaid
-
 flowchart TD
     subgraph Orchestration
         O1["__main__.py loop"]
     end
-
     A["MT5 Connector<br/>(MT5Connector / mt5)"]
     B["Data Layer<br/>(DataLayer.normalize_rates)"]
     C["Indicators<br/>(RSI, MACD, Bollinger, Stochastic, ADX)"]
@@ -902,57 +805,6 @@ flowchart TD
 
 ---
 
-
 **Current Status:** Complete - Production-Ready Enterprise Trading System  
 **Architecture:** Fully modular, extensible, enterprise-grade with 6 strategies and 12 indicators  
 **Next Steps:** Performance optimization and advanced monitoring enhancements
-
-### Strategy Selection Logic
-
-```mermaid
-flowchart TD
-    Start([Start Trading Cycle]) --> FetchData[Fetch Market Data]
-    FetchData --> CalcIndicators[Calculate Indicators]
-    CalcIndicators --> DetectRegime{Detect Market<br/>Regime}
-    
-    DetectRegime -->|Trending Up Strong| TrendFollow[Trend Following<br/>Strategy]
-    DetectRegime -->|Trending Down Strong| TrendFollow
-    DetectRegime -->|Ranging Tight| MeanReversion[Mean Reversion<br/>Strategy]
-    DetectRegime -->|Ranging Wide| MeanReversion
-    DetectRegime -->|Volatile Breakout| MomentumBreakout[Momentum Breakout<br/>Strategy]
-    DetectRegime -->|Consolidating| Scalping[Scalping<br/>Strategy]
-    
-    TrendFollow --> GenerateSignal[Generate Trade Signal]
-    MeanReversion --> GenerateSignal
-    MomentumBreakout --> GenerateSignal
-    Scalping --> GenerateSignal
-    
-    GenerateSignal --> CheckSignal{Signal<br/>Type?}
-    CheckSignal -->|BUY/SELL| RiskCheck[Risk Manager<br/>Validation]
-    CheckSignal -->|HOLD| WaitNext[Wait for Next Cycle]
-    
-    RiskCheck --> RiskPass{Risk<br/>Approved?}
-    RiskPass -->|Yes| Execute[Execute Order]
-    RiskPass -->|No| WaitNext
-    
-    Execute --> TrackPosition[Track Position]
-    TrackPosition --> MonitorExits[Monitor Exit<br/>Conditions]
-    
-    MonitorExits --> ExitCheck{Exit<br/>Triggered?}
-    ExitCheck -->|Yes| ClosePosition[Close Position]
-    ExitCheck -->|No| WaitNext
-    
-    ClosePosition --> UpdateMetrics[Update Performance<br/>Metrics]
-    WaitNext --> UpdateMetrics
-    UpdateMetrics --> End([End Cycle])
-    
-    style Start fill:#00ff88,stroke:#00cc6a
-    style Execute fill:#ffaa00,stroke:#dd8800
-    style ClosePosition fill:#ff4444,stroke:#cc3333
-    style End fill:#00ff88,stroke:#00cc6a
-```
-
-
-
-
-
