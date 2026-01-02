@@ -26,7 +26,27 @@ _________   __  .__          .__
 
 ## UNRELEASED
 
-> There are unreleased changes waiting to be documented.
+> Documentation improvements and enhancements
+
+### Added
+- 👾 Comprehensive Mermaid flowchart diagrams throughout documentation
+- 👾 Trade decision flow diagram showing complete signal-to-execution pipeline
+- 👾 Strategy selection logic diagram with regime-based switching
+- 👾 Exit strategy priority flow diagram with 4-tier system
+- 👾 Multi-strategy ensemble architecture diagram
+- 👾 Risk management flow diagram with validation checks
+- 👾 System-wide INDEX.md with complete navigation and quick start
+- 👾 Ultra-Aggressive Trading Guide with HFT configuration
+- 👾 Consistent frontmatter across all documentation files
+
+### Changed
+- 👾 Replaced all ASCII diagrams with Mermaid flowchartLR implementations
+- 👾 Enhanced ARCHITECTURE.md with multi-layered comprehensive diagrams
+- 👾 Updated OVERVIEW.md with modern module structure visualization
+- 👾 Improved documentation organization with sidebar positioning
+
+### Removed
+- 👾 Alt text from images and badges (for cleaner rendering)
 
 ---
 

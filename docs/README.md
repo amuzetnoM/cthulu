@@ -17,7 +17,7 @@ sidebar_position: 1
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
 
 <p align="center">
-  <img src="../assets/cthulu-black.png" alt="Cthulu logo" width="480" /> 
+  <img src="../assets/cthulu-black.png" alt="" width="480" /> 
 
 </p>
 

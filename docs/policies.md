@@ -6,7 +6,7 @@ slug: /docs/policies
 sidebar_position: 11
 ---
 
-# Privacy & Policies
+# PRIVACY & POLICIES
 
 Last updated: December 28, 2025
 
