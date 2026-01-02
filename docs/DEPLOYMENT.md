@@ -655,8 +655,85 @@ sudo systemctl restart Cthulu
 
 ---
 
-**Last Updated**: December 2024  
-**Version**: 3.3.1
+## Docker Image from GitHub Container Registry
+
+### Pull Pre-built Image
+
+The fastest way to get started - pull the official image from GHCR:
+
+```bash
+# Pull latest APEX release
+docker pull ghcr.io/amuzetnom/cthulu:apex
+
+# Or specific version
+docker pull ghcr.io/amuzetnom/cthulu:5.1.0
+
+# Or latest
+docker pull ghcr.io/amuzetnom/cthulu:latest
+```
+
+### Run from GHCR Image
+
+```bash
+# 1. Create configuration
+mkdir -p cthulu-config && cd cthulu-config
+curl -O https://raw.githubusercontent.com/amuzetnoM/cthulu/main/config.example.json
+curl -O https://raw.githubusercontent.com/amuzetnoM/cthulu/main/.env.example
+mv config.example.json config.json
+mv .env.example .env
+
+# 2. Edit configuration
+nano .env        # Add MT5 credentials
+nano config.json # Adjust trading settings
+
+# 3. Run container
+docker run -d \
+  --name cthulu \
+  --env-file .env \
+  -v $(pwd)/config.json:/app/config.json:ro \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/logs:/app/logs \
+  -p 8181:8181 \
+  --restart unless-stopped \
+  ghcr.io/amuzetnom/cthulu:apex
+
+# 4. View logs
+docker logs -f cthulu
+```
+
+### Full Stack with Monitoring
+
+```bash
+# Clone for docker-compose.yml
+git clone https://github.com/amuzetnoM/cthulu.git
+cd cthulu
+
+# Configure
+cp .env.example .env && nano .env
+cp config.example.json config.json && nano config.json
+
+# Start full stack (Cthulu + Prometheus + Grafana)
+docker-compose up -d
+
+# Access
+# - Cthulu RPC: http://localhost:8181
+# - Prometheus: http://localhost:9090
+# - Grafana: http://localhost:3000 (admin/admin)
+```
+
+### Available Tags
+
+| Tag | Description |
+|-----|-------------|
+| `apex` | Latest v5.1.x APEX release |
+| `5.1.0` | Specific version |
+| `latest` | Latest stable from main branch |
+| `5.1` | Latest patch for 5.1.x |
+
+---
+
+**Last Updated**: January 2026  
+**Version**: 5.1.0 APEX
 
 
 

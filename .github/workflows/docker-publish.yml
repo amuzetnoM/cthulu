@@ -1,0 +1,138 @@
+name: Build and Publish Docker Image
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., 5.1.0)'
+        required: true
+        default: '5.1.0'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=apex,enable=${{ startsWith(github.ref, 'refs/tags/v5.1') }}
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Cthulu Trading System
+            org.opencontainers.image.description=Advanced multi-strategy autonomous trading system with MT5 integration
+            org.opencontainers.image.vendor=Artifact Virtual
+            org.opencontainers.image.version=5.1.0-APEX
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=5.1.0-APEX
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  create-release:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Cthulu v${{ github.ref_name }} - APEX"
+          body: |
+            ## 🐙 Cthulu v5.1.0 APEX Release
+
+            The market-destroying beast has arrived.
+
+            ### Docker Image
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ```
+
+            ### Quick Start
+            ```bash
+            # Clone and configure
+            git clone https://github.com/${{ github.repository }}.git
+            cd cthulu
+            cp .env.example .env
+            cp config.example.json config.json
+
+            # Run with Docker Compose (includes Prometheus + Grafana)
+            docker-compose up -d
+
+            # Or run standalone
+            docker run -d \
+              --name cthulu \
+              --env-file .env \
+              -v $(pwd)/config.json:/app/config.json:ro \
+              -p 8181:8181 \
+              ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+            ```
+
+            ### Highlights
+            - 🧠 **Cognition Engine** - ML-assisted regime detection & price prediction
+            - 📊 **Adaptive Account Manager** - Dynamic timeframe & position sizing
+            - 🎯 **Exit Oracle** - High-confluence exit signals with ArgMax
+            - 💰 **Profit Scaler** - Intelligent partial profit taking
+            - 🛡️ **Micro Account Protection** - Adaptive loss curves for small accounts
+            - 🔒 **RPC Security** - Rate limiting, TLS, intelligent throttling
+
+            See [CHANGELOG](./docs/Changelog/CHANGELOG.md) for full details.
+          draft: true
+          prerelease: false
+          generate_release_notes: true
