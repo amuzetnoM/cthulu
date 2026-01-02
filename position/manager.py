@@ -87,12 +87,14 @@ class PositionInfo:
 class PositionManager:
     """In-memory position manager used by trading logic and tests."""
 
-    def __init__(self, connector=None, execution_engine=None):
+    def __init__(self, connector=None, execution_engine=None, context_symbol=None):
         self._positions: Dict[int, PositionInfo] = {}
         self._lock = threading.RLock()
         # Optional integration references
         self.connector = connector
         self.execution_engine = execution_engine
+        # Context symbol for fallback when position symbol is UNKNOWN
+        self.context_symbol = context_symbol
 
     def add_position(self, pos: PositionInfo) -> None:
         with self._lock:
@@ -323,6 +325,10 @@ class PositionManager:
         elif mt5_pos and (position.symbol == 'UNKNOWN' or not position.symbol):
             # Fix UNKNOWN symbol from MT5 data
             position.symbol = mt5_pos[0].symbol
+        
+        # Ultimate fallback: use context_symbol if we still have UNKNOWN
+        if (position.symbol == 'UNKNOWN' or not position.symbol) and self.context_symbol:
+            position.symbol = self.context_symbol
         
         # Final safety check - if symbol still UNKNOWN, reject the close
         if position.symbol == 'UNKNOWN' or not position.symbol:

@@ -219,16 +219,21 @@ class CthuluBootstrap:
         position_tracker = PositionTracker()
         return position_tracker
 
-    def initialize_position_manager(self, connector: MT5Connector, execution_engine: ExecutionEngine) -> 'PositionManager':
+    def initialize_position_manager(self, connector: MT5Connector, execution_engine: ExecutionEngine, context_symbol: str = None) -> 'PositionManager':
         """Initialize a lightweight PositionManager for higher-level monitoring.
         
         This manager is separate from the low-level PositionTracker and provides
         additional monitoring and convenience APIs used by the trading loop.
+        
+        Args:
+            connector: MT5 connector instance
+            execution_engine: Execution engine instance
+            context_symbol: Symbol being traded (used as fallback for UNKNOWN symbols)
         """
         try:
             from cthulu.position.manager import PositionManager
             self.logger.info("Initializing position manager...")
-            pm = PositionManager(connector=connector, execution_engine=execution_engine)
+            pm = PositionManager(connector=connector, execution_engine=execution_engine, context_symbol=context_symbol)
             self.logger.info('PositionManager initialized')
             return pm
         except Exception as e:
@@ -241,6 +246,16 @@ class CthuluBootstrap:
         try:
             from core.strategy_factory import load_strategy
             strat_cfg = config.get('strategy', {}) if isinstance(config, dict) else {}
+            
+            # Ensure trading symbol is available to strategy for signal generation
+            trading_symbol = config.get('trading', {}).get('symbol')
+            if trading_symbol:
+                # Inject symbol into strategy params
+                if 'params' not in strat_cfg:
+                    strat_cfg['params'] = {}
+                if 'symbol' not in strat_cfg['params']:
+                    strat_cfg['params']['symbol'] = trading_symbol
+            
             strategy = load_strategy(strat_cfg)
             self.logger.info(f"Strategy initialized: {strategy.__class__.__name__}")
             return strategy
@@ -646,8 +661,10 @@ class CthuluBootstrap:
         
         # Initialize position management components
         position_tracker = self.initialize_position_tracker(connector)
+        # Get trading symbol from config for position manager fallback
+        trading_symbol = config.get('trading', {}).get('symbol', None)
         # Initialize higher-level position manager used by trading loop monitoring
-        position_manager = self.initialize_position_manager(connector, execution_engine)
+        position_manager = self.initialize_position_manager(connector, execution_engine, context_symbol=trading_symbol)
         # Now we can construct the risk evaluator with the connector and position tracker
         risk_manager = RiskEvaluator(connector, position_tracker, limits=risk_limits)
         self.logger.info('RiskEvaluator initialized with runtime dependencies')

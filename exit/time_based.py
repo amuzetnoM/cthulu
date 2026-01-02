@@ -152,9 +152,20 @@ class TimeBasedExit(ExitStrategy):
         """
         # Skip weekend protection for crypto symbols
         symbol = getattr(position, 'symbol', '') or ''
+        # Handle UNKNOWN symbol - try to get from MT5 directly
+        if not symbol or symbol.upper() == 'UNKNOWN':
+            try:
+                import MetaTrader5 as mt5
+                mt5_pos = mt5.positions_get(ticket=position.ticket)
+                if mt5_pos and len(mt5_pos) > 0:
+                    symbol = mt5_pos[0].symbol
+                    position.symbol = symbol  # Fix the position object too
+            except Exception:
+                pass
+        
         crypto_prefixes = ('BTC', 'ETH', 'XRP', 'LTC', 'BCH', 'ADA', 'DOT', 'DOGE', 
                          'SOL', 'AVAX', 'MATIC', 'LINK', 'UNI', 'ATOM', 'XLM')
-        is_crypto = any(symbol.upper().startswith(prefix) for prefix in crypto_prefixes)
+        is_crypto = any(symbol.upper().startswith(prefix) for prefix in crypto_prefixes) if symbol else False
         
         if is_crypto:
             return None  # Crypto trades 24/7, no weekend protection needed
