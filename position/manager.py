@@ -142,11 +142,33 @@ class PositionManager:
 
     # Additional helpers that the trading loop expects
     def track_position(self, execution_result, signal_metadata: dict = None) -> None:
-        """Create a PositionInfo from an execution result (best-effort)."""
+        """Create a PositionInfo from an execution result (best-effort).
+        
+        If symbol cannot be determined, queries MT5 for the position details.
+        """
         try:
             ticket = getattr(execution_result, 'order_id', None) or getattr(execution_result, 'position_ticket', None)
-            symbol = signal_metadata.get('symbol') if signal_metadata and 'symbol' in signal_metadata else getattr(execution_result, 'metadata', {}).get('symbol') if getattr(execution_result, 'metadata', None) else None
-            # Fallback: if symbol missing, leave unknown
+            
+            # Try multiple sources for symbol
+            symbol = None
+            if signal_metadata and 'symbol' in signal_metadata:
+                symbol = signal_metadata['symbol']
+            elif hasattr(execution_result, 'metadata') and execution_result.metadata:
+                symbol = execution_result.metadata.get('symbol')
+            elif hasattr(execution_result, 'symbol'):
+                symbol = execution_result.symbol
+            
+            # Fallback: Query MT5 directly for the position
+            if not symbol and ticket:
+                try:
+                    import MetaTrader5 as mt5
+                    if mt5.initialize():
+                        position = mt5.positions_get(ticket=int(ticket))
+                        if position and len(position) > 0:
+                            symbol = position[0].symbol
+                except Exception:
+                    pass
+            
             pos = PositionInfo(
                 ticket=int(ticket or 0),
                 symbol=symbol or 'UNKNOWN',
@@ -160,7 +182,11 @@ class PositionManager:
             pass
 
     def monitor_positions(self) -> List[PositionInfo]:
-        """Return currently tracked positions for monitoring."""
+        """Return currently tracked positions for monitoring.
+        
+        Reconciles with MT5 first to ensure accurate data.
+        """
+        self.reconcile_positions()  # Sync with MT5 before returning
         with self._lock:
             return list(self._positions.values())
 
