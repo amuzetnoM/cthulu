@@ -1,11 +1,11 @@
 ---
-title: Backtesting Framework
+title: BACKTESTING FRAMEWORK
 description: Professional-grade strategy validation with ML-enhanced decision making, ensemble testing, and institutional-grade benchmarking
 tags: [backtesting, ml, optimization, benchmarking, monte-carlo]
 sidebar_position: 8
 ---
 
-# BACKTESTING FRAMEWORK
+
 
  ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![ ](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)

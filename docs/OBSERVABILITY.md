@@ -1,5 +1,5 @@
 ---
-title: Observability & Metrics
+title: OBSERVABILITY
 description: Performance metrics, Prometheus exporter, and guidance for monitoring Cthulu
 tags: [observability, metrics, prometheus]
 slug: /docs/observability/metrics
@@ -7,8 +7,6 @@ sidebar_position: 10
 ---
 
  ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
-
-# OBSERVABILITY & METRICS
 
 This document describes Cthulu's performance metrics, how they're computed, and how to expose them via the built-in Prometheus exporter.
 

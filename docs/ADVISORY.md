@@ -1,6 +1,6 @@
 ---
 title: ADVISORY & GHOST MODES
-description: Safe deployment testing modes including advisory mode and ghost mode for validating Cthulu without real trades
+description: Safe deployment testing modes for validating Cthulu without real trades
 tags: [advisory, testing, paper-trading, validation]
 sidebar_position: 14
 ---

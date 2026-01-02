@@ -1,5 +1,5 @@
 ---
-title: Deployment Guide
+title: DEPLOYING CTHULU
 description: Production deployment strategies for Cthulu including Docker, Linux, Windows service, and monitoring setup
 tags: [deployment, docker, production, monitoring]
 sidebar_position: 5
