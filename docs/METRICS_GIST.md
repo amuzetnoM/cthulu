@@ -303,7 +303,7 @@ The dashboard displays these fields from `comprehensive_metrics.csv`:
 | `account_equity` | EQUITY | Current account equity |
 | `account_balance` | BALANCE | Account balance |
 | `account_margin_level` | MARGIN LEVEL | Margin level percentage |
-| `system_uptime_seconds` | UPTIME | How long Cthulu has been running |
+| `_exporter_uptime` | UPTIME | How long the metrics exporter has been running |
 | `total_trades` | TOTAL TRADES | Number of trades executed |
 | `win_rate` | Win Rate | Percentage of winning trades |
 | `max_drawdown_pct` | MAX DRAWDOWN | Maximum drawdown percentage |
@@ -312,6 +312,16 @@ The dashboard displays these fields from `comprehensive_metrics.csv`:
 | `current_symbol` | Symbol | Currently traded symbol |
 | `current_price` | Price | Current market price |
 | `memory_usage_mb` | Memory | RAM usage in MB |
+
+### Additional Metadata Fields
+
+| Field | Description |
+|-------|-------------|
+| `_exported_at` | ISO timestamp when data was exported |
+| `_exporter_uptime` | Seconds since exporter started (real-time uptime) |
+| `_data_status` | `live` if CSV data is fresh (<60s), `stale` otherwise |
+| `_data_age_seconds` | How old the CSV data is (when stale) |
+| `_status` | Overall export status |
 
 ---
 
