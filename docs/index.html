@@ -2034,7 +2034,11 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
             });
         });
 
-        // Live Metrics Dashboard - Fetch from dashboard_metrics.json
+        // Live Metrics Dashboard - Fetch from Gist (GitHub Pages) or local JSON
+        // IMPORTANT: Set your Gist ID here after creating the Gist
+        const GIST_ID = ''; // e.g., 'abc123def456...' - Leave empty to disable
+        const GIST_FILENAME = 'cthulu_metrics.json';
+
         async function loadMetricsDashboard() {
             const statusEl = document.getElementById('metricsStatus');
             const timestampEl = document.getElementById('metricsTimestamp');
@@ -2085,15 +2089,8 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                 else if (warning !== undefined) el.classList.add('warning');
             }
 
-            try {
-                // Try to fetch the JSON metrics file
-                const res = await fetch('logs/dashboard_metrics.json?' + Date.now());
-                if (!res.ok) throw new Error('JSON not found: ' + res.status);
-
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-
-                // Populate metrics
+            function populateMetrics(data, source) {
+                // Populate all metric elements
                 if (elements.equity) {
                     elements.equity.textContent = formatCurrency(data.account_equity);
                     const pnl = (data.account_equity || 0) - (data.account_balance || 0);
@@ -2157,12 +2154,12 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                     elements.memory.textContent = isNaN(mem) ? '—' : `Memory: ${mem.toFixed(0)} MB`;
                 }
 
-                // Update status to LIVE
+                // Update status
                 if (statusEl) {
                     statusEl.classList.remove('stale');
                     statusEl.classList.add('live');
                     const statusText = statusEl.querySelector('span:last-child');
-                    if (statusText) statusText.textContent = 'LIVE';
+                    if (statusText) statusText.textContent = source === 'gist' ? 'LIVE' : 'LOCAL';
                 }
 
                 // Update timestamp
@@ -2175,25 +2172,59 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                         timestampEl.textContent = `Last update: ${exported ? exported.toLocaleString() : '—'}`;
                     }
                 }
+            }
 
-            } catch (e) {
-                console.warn('Metrics fetch failed:', e.message);
-                // Show offline status
-                if (statusEl) {
-                    statusEl.classList.remove('live');
-                    statusEl.classList.add('stale');
-                    const statusText = statusEl.querySelector('span:last-child');
-                    if (statusText) statusText.textContent = 'OFFLINE';
+            // Try multiple sources in order
+            const sources = [];
+
+            // If Gist is configured, try it first (works on GitHub Pages)
+            if (GIST_ID) {
+                sources.push({
+                    name: 'gist',
+                    url: `https://gist.githubusercontent.com/raw/${GIST_ID}/${GIST_FILENAME}?t=${Date.now()}`
+                });
+            }
+
+            // Local file (works when running locally)
+            sources.push({
+                name: 'local',
+                url: `logs/dashboard_metrics.json?t=${Date.now()}`
+            });
+
+            for (const source of sources) {
+                try {
+                    const res = await fetch(source.url);
+                    if (!res.ok) continue;
+
+                    const data = await res.json();
+                    if (data.error) continue;
+
+                    populateMetrics(data, source.name);
+                    return; // Success!
+                } catch (e) {
+                    console.warn(`[${source.name}] fetch failed:`, e.message);
                 }
-                if (timestampEl) {
-                    timestampEl.textContent = 'Run: python scripts/export_dashboard_metrics.py --watch';
+            }
+
+            // All sources failed
+            if (statusEl) {
+                statusEl.classList.remove('live');
+                statusEl.classList.add('stale');
+                const statusText = statusEl.querySelector('span:last-child');
+                if (statusText) statusText.textContent = 'OFFLINE';
+            }
+            if (timestampEl) {
+                if (GIST_ID) {
+                    timestampEl.textContent = 'Waiting for metrics...';
+                } else {
+                    timestampEl.textContent = 'Set GIST_ID in script or run locally';
                 }
             }
         }
 
-        // Load metrics on page load and refresh every 10s
+        // Load metrics on page load and refresh every 15s
         loadMetricsDashboard();
-        setInterval(loadMetricsDashboard, 10000);
+        setInterval(loadMetricsDashboard, 15000);
 
         // Intersection Observer for fade-in animations
         const observerOptions = {

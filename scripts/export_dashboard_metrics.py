@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
 """
 Export latest metrics from comprehensive_metrics.csv to a JSON file for the dashboard.
-This script should be run periodically (e.g., every 30 seconds) or triggered by cthulu.
+Also pushes to GitHub Gist for the live GitHub Pages dashboard.
+
+Setup for Gist publishing:
+1. Create a GitHub Personal Access Token with 'gist' scope
+2. Create a new Gist at https://gist.github.com with a file named 'cthulu_metrics.json'
+3. Set environment variables:
+   - GITHUB_GIST_TOKEN: Your personal access token
+   - GITHUB_GIST_ID: The Gist ID (from the URL)
 """
 import csv
 import json
 import os
 from datetime import datetime
 from pathlib import Path
+from urllib import request, error
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 CSV_PATH = PROJECT_ROOT / "observability" / "reporting" / "comprehensive_metrics.csv"
 JSON_OUTPUT_PATH = PROJECT_ROOT / "docs" / "logs" / "dashboard_metrics.json"
+
+# GitHub Gist config (set via environment variables)
+GIST_TOKEN = os.environ.get("GITHUB_GIST_TOKEN", "")
+GIST_ID = os.environ.get("GITHUB_GIST_ID", "")
+GIST_FILENAME = "cthulu_metrics.json"
 
 # Fields we care about for the dashboard
 REQUIRED_FIELDS = [
@@ -72,7 +85,7 @@ def get_latest_metrics() -> dict:
         
         # Add export metadata
         metrics["_exported_at"] = datetime.now().isoformat()
-        metrics["_source"] = str(CSV_PATH)
+        metrics["_source"] = "cthulu"
         metrics["_status"] = "live"
         
         return metrics
@@ -85,8 +98,40 @@ def get_latest_metrics() -> dict:
         }
 
 
-def export_metrics():
-    """Export metrics to JSON file."""
+def push_to_gist(metrics: dict) -> bool:
+    """Push metrics to GitHub Gist for the live dashboard."""
+    if not GIST_TOKEN or not GIST_ID:
+        return False
+    
+    try:
+        url = f"https://api.github.com/gists/{GIST_ID}"
+        data = json.dumps({
+            "files": {
+                GIST_FILENAME: {
+                    "content": json.dumps(metrics, indent=2)
+                }
+            }
+        }).encode("utf-8")
+        
+        req = request.Request(url, data=data, method="PATCH")
+        req.add_header("Authorization", f"token {GIST_TOKEN}")
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/vnd.github.v3+json")
+        
+        with request.urlopen(req, timeout=10) as resp:
+            if resp.status == 200:
+                print(f"  → Pushed to Gist {GIST_ID}")
+                return True
+    except error.URLError as e:
+        print(f"  ⚠ Gist push failed: {e.reason}")
+    except Exception as e:
+        print(f"  ⚠ Gist push failed: {e}")
+    
+    return False
+
+
+def export_metrics(push_gist: bool = True):
+    """Export metrics to JSON file and optionally push to Gist."""
     metrics = get_latest_metrics()
     
     # Ensure output directory exists
@@ -95,7 +140,12 @@ def export_metrics():
     with open(JSON_OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2)
     
-    print(f"[{datetime.now().isoformat()}] Exported metrics to {JSON_OUTPUT_PATH}")
+    print(f"[{datetime.now().isoformat()}] Exported to {JSON_OUTPUT_PATH.name}")
+    
+    # Push to Gist for GitHub Pages
+    if push_gist and GIST_TOKEN and GIST_ID:
+        push_to_gist(metrics)
+    
     return metrics
 
 
