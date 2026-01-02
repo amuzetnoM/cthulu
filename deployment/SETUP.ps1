@@ -15,8 +15,8 @@ if (!(Get-Command choco -ErrorAction SilentlyContinue)) {
 }
 else { Write-Host "[1/6] Chocolatey OK" -ForegroundColor Green }
 
-# 2. Python
-Write-Host "[2/6] Installing Python 3.10..." -ForegroundColor Yellow
+# 2. Python & Git
+Write-Host "[2/6] Installing Python 3.10 & Git..." -ForegroundColor Yellow
 choco install python310 git -y 2>$null
 $env:Path = [Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [Environment]::GetEnvironmentVariable("Path", "User")
 
