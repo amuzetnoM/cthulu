@@ -56,7 +56,33 @@ gcloud compute ssh cthulu-reign-node --zone=us-central1-a
 sudo docker exec -it cthulu-windows bash
 ```
 
-## Initial Setup Checklist
+## Initial Setup - ONE-CLICK METHOD (Recommended)
+
+Two files have been placed on the VM at `C:\`:
+- `INSTALL_CTHULU.bat` - Double-click launcher
+- `cthulu_full_setup.ps1` - PowerShell setup script
+
+### Quick Setup:
+1. Open browser: `http://34.171.231.16:8006`
+2. Wait for Windows to boot (5-10 minutes on first boot)
+3. Open File Explorer → Navigate to `C:\`
+4. **Double-click `INSTALL_CTHULU.bat`**
+5. The script will automatically:
+   - Install Python 3.11
+   - Install Git
+   - Install MetaTrader 5
+   - Clone Cthulu repository
+   - Install all dependencies
+   - Create desktop shortcuts
+
+### After Setup:
+1. Open MetaTrader 5 and login to your broker
+2. Enable "Algo Trading" (Tools > Options > Expert Advisors)
+3. Double-click "Cthulu Wizard" on desktop to start trading
+
+---
+
+## Manual Setup (Alternative)
 
 ### Step 1: Access Windows Desktop
 1. Open browser: `http://34.171.231.16:8006`
@@ -95,7 +121,7 @@ pip install -r requirements.txt
 ### Step 7: Launch Cthulu
 ```cmd
 cd C:\cthulu
-python __main__.py --config config.json
+python __main__.py --wizard
 ```
 
 ## Operations
