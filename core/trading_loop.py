@@ -1193,8 +1193,11 @@ class TradingLoop:
                 f"price={result.fill_price:.5f}"
             )
             
-            # Track position
-            self.ctx.position_manager.track_position(result, signal_metadata=signal.metadata)
+            # Track position - ensure symbol is properly passed
+            track_metadata = signal.metadata.copy() if signal.metadata else {}
+            track_metadata['symbol'] = signal.symbol
+            track_metadata['side'] = order_req.side
+            self.ctx.position_manager.track_position(result, signal_metadata=track_metadata)
             
             # Record in database
             signal_record = SignalRecord(

@@ -145,7 +145,20 @@ class TimeBasedExit(ExitStrategy):
         position: PositionInfo,
         current_time: datetime
     ) -> Optional[ExitSignal]:
-        """Check if should close before weekend."""
+        """Check if should close before weekend.
+        
+        Note: Crypto markets (BTC, ETH, etc.) trade 24/7 and don't need
+        weekend protection.
+        """
+        # Skip weekend protection for crypto symbols
+        symbol = getattr(position, 'symbol', '') or ''
+        crypto_prefixes = ('BTC', 'ETH', 'XRP', 'LTC', 'BCH', 'ADA', 'DOT', 'DOGE', 
+                         'SOL', 'AVAX', 'MATIC', 'LINK', 'UNI', 'ATOM', 'XLM')
+        is_crypto = any(symbol.upper().startswith(prefix) for prefix in crypto_prefixes)
+        
+        if is_crypto:
+            return None  # Crypto trades 24/7, no weekend protection needed
+        
         # Friday is weekday 4
         if current_time.weekday() == 4:
             # Check if past Friday close time
