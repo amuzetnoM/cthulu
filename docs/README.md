@@ -11,8 +11,8 @@ sidebar_position: 1
 
 
 
-![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
-[![CHANGELOG](https://img.shields.io/badge/CHANGELOG-GitBook-FF6F61?style=for-the-badge&labelColor=0D1117&logo=gitbook&logoColor=white)](https://artifact-virtual.gitbook.io/Cthulu)
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+[![](https://img.shields.io/badge/CHANGELOG-GitBook-FF6F61?style=for-the-badge&labelColor=0D1117&logo=gitbook&logoColor=white)](https://artifact-virtual.gitbook.io/Cthulu)
 
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
 
@@ -37,17 +37,16 @@ _________   __  .__          .__
 
 
 
-![Language](https://img.shields.io/badge/Language-Python_3.10+-3776AB?style=for-the-badge&labelColor=0D1117&logo=python&logoColor=white)
-![Integration](https://img.shields.io/badge/Integration-MetaTrader_5-00599C?style=for-the-badge&labelColor=0D1117&logo=metatrader5&logoColor=white)
-![Data](https://img.shields.io/badge/Data-Pandas_DataFrames-150458?style=for-the-badge&labelColor=0D1117&logo=pandas&logoColor=white)
-![Storage](https://img.shields.io/badge/Storage-SQLite-003B57?style=for-the-badge&labelColor=0D1117&logo=sqlite&logoColor=white)
-![Metrics](https://img.shields.io/badge/Metrics-Prometheus-E6522C?style=for-the-badge&labelColor=0D1117&logo=prometheus&logoColor=white)
+![](https://img.shields.io/badge/Language-Python_3.10+-3776AB?style=for-the-badge&labelColor=0D1117&logo=python&logoColor=white)
+![](https://img.shields.io/badge/Integration-MetaTrader_5-00599C?style=for-the-badge&labelColor=0D1117&logo=metatrader5&logoColor=white)
+![](https://img.shields.io/badge/Data-Pandas_DataFrames-150458?style=for-the-badge&labelColor=0D1117&logo=pandas&logoColor=white)
+![](https://img.shields.io/badge/Storage-SQLite-003B57?style=for-the-badge&labelColor=0D1117&logo=sqlite&logoColor=white)
+![](https://img.shields.io/badge/Metrics-Prometheus-E6522C?style=for-the-badge&labelColor=0D1117&logo=prometheus&logoColor=white)
 
-![Pipeline](https://img.shields.io/badge/Pipeline-Local-2088FF?style=for-the-badge&labelColor=0D1117&logo=githubactions&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-185_Passing-00C853?style=for-the-badge&labelColor=0D1117&logo=pytest&logoColor=white)
-![Coverage](https://img.shields.io/badge/Coverage-95%25-00C853?style=for-the-badge&labelColor=0D1117&logo=codecov&logoColor=white)
-
-![License](https://img.shields.io/badge/License-MIT-FADB04?style=for-the-badge&labelColor=0D1117&logo=opensourceinitiative&logoColor=white)
+![](https://img.shields.io/badge/Pipeline-Local-2088FF?style=for-the-badge&labelColor=0D1117&logo=githubactions&logoColor=white)
+![](https://img.shields.io/badge/Tests-185_Passing-00C853?style=for-the-badge&labelColor=0D1117&logo=pytest&logoColor=white)
+![](https://img.shields.io/badge/Coverage-95%25-00C853?style=for-the-badge&labelColor=0D1117&logo=codecov&logoColor=white)
+![](https://img.shields.io/badge/License-MIT-FADB04?style=for-the-badge&labelColor=0D1117&logo=opensourceinitiative&logoColor=white)
 
 
 </div>
