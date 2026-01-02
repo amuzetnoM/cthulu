@@ -402,66 +402,171 @@
             }
         }
 
-        /* Status Dashboard */
-        .status-grid {
+        /* Live Metrics Dashboard */
+        .metrics-dashboard {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(0, 255, 136, 0.08), inset 0 0 60px rgba(0, 0, 0, 0.4);
+            margin-top: 2rem;
+        }
+
+        .metrics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--elevated);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metrics-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metrics-icon {
+            font-size: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .metrics-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+        }
+
+        .metrics-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        .metrics-status.live .status-dot {
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        .metrics-status.live {
+            color: var(--accent);
+        }
+
+        .metrics-status.stale .status-dot {
+            background: var(--warning);
+            box-shadow: 0 0 8px var(--warning);
+        }
+
+        .metrics-status.stale {
+            color: var(--warning);
+        }
+
+        .metrics-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-top: 3rem;
+            gap: 1px;
+            background: var(--border);
         }
 
         @media (max-width: 900px) {
-            .status-grid {
+            .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
         @media (max-width: 500px) {
-            .status-grid {
+            .metrics-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        .status-card {
+        .metric-cell {
             background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem;
             position: relative;
-            overflow: hidden;
+            transition: background 0.2s;
         }
 
-        .status-card::before {
+        .metric-cell:hover {
+            background: var(--elevated);
+        }
+
+        .metric-cell::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 3px;
-            height: 100%;
-            background: var(--accent);
+            bottom: 0;
+            left: 1.5rem;
+            right: 1.5rem;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        .status-label {
+        .metric-cell:hover::after {
+            opacity: 0.3;
+        }
+
+        .metric-label {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             margin-bottom: 0.5rem;
         }
 
-        .status-value {
+        .metric-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
+            color: var(--bright);
+            line-height: 1.2;
+            transition: color 0.3s;
+        }
+
+        .metric-value.positive {
             color: var(--accent);
         }
 
-        .status-value.warning {
+        .metric-value.negative {
+            color: var(--danger);
+        }
+
+        .metric-value.warning {
             color: var(--warning);
         }
 
-        .status-value.info {
-            color: var(--info);
+        .metric-sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--muted);
+            margin-top: 0.25rem;
+        }
+
+        .metrics-footer {
+            padding: 0.75rem 1.5rem;
+            background: var(--elevated);
+            border-top: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* Section styling */
@@ -569,6 +674,81 @@
             width: 2px;
             height: 1.5rem;
             background: linear-gradient(to bottom, var(--accent), transparent);
+        }
+
+        /* Mermaid Diagram Styles */
+        .diagram-section {
+            margin-top: 4rem;
+        }
+
+        .diagrams-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 1200px) {
+            .diagrams-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .diagram-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .diagram-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 1rem 1.5rem;
+            background: var(--elevated);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .diagram-card .mermaid {
+            padding: 2rem;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .diagram-card .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Mermaid overrides for dark theme */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node ellipse,
+        .mermaid .node polygon {
+            fill: var(--surface) !important;
+            stroke: var(--accent) !important;
+        }
+
+        .mermaid .label {
+            color: var(--text) !important;
+        }
+
+        .mermaid .edgePath .path {
+            stroke: var(--accent) !important;
+        }
+
+        .mermaid .cluster rect {
+            fill: var(--elevated) !important;
+            stroke: var(--border) !important;
+        }
+
+        .mermaid .cluster text {
+            fill: var(--muted) !important;
         }
 
         /* Modules Grid - Hexagonal inspired */
@@ -1095,6 +1275,33 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00ff88',
+                primaryTextColor: '#e0e0e8',
+                primaryBorderColor: '#1a1a25',
+                lineColor: '#00ff88',
+                secondaryColor: '#0a0a0f',
+                tertiaryColor: '#12121a',
+                background: '#000000',
+                mainBkg: '#0a0a0f',
+                nodeBkg: '#0a0a0f',
+                nodeBorder: '#00ff88',
+                clusterBkg: '#12121a',
+                clusterBorder: '#1a1a25',
+                titleColor: '#00ff88',
+                edgeLabelBackground: '#0a0a0f'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
 </head>
 
 <body>
@@ -1129,61 +1336,63 @@
                     <h2 class="hero-sub">APEX</h2>
                 </div>
             </div>
-            <p class="hero-subtitle">
-                Professional autonomous trading system. <br> 7 active strategies, 12 technical
-                indicators,
-                enterprise-grade risk management.
-                <br> MT5 integration
-            </p>
 
-            <!-- Performance Summary -->
-            <div class="summary-grid" style="margin-top: 2rem;">
-                <div class="summary-card">
-                    <div class="summary-label">STRATEGIES DEPLOYED</div>
-                    <div class="summary-value">7</div>
-                    <div class="summary-sparkline"></div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">INDICATORS ACTIVE</div>
-                    <div class="summary-value">12</div>
-                    <div class="summary-sparkline"></div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">TEST COVERAGE</div>
-                    <div class="summary-value">95%</div>
-                    <div class="summary-sparkline"></div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">PASSING TESTS</div>
-                    <div class="summary-value">185</div>
-                    <div class="summary-sparkline"></div>
-                </div>
-            </div>
-
-            <!-- System Status -->
-            <div class="terminal-window" style="margin-top: 2rem;">
-                <div class="terminal-header">
-                    <span class="terminal-dot red"></span>
-                    <span class="terminal-dot yellow"></span>
-                    <span class="terminal-dot green"></span>
-                    <span class="terminal-title">System Status</span>
-                </div>
-                <div class="terminal-body">
-                    <div class="terminal-line">
-                        <span class="output success">✓ Core Engine: Operational</span>
+            <!-- Live Metrics Dashboard -->
+            <div class="metrics-dashboard" id="metricsDashboard">
+                <div class="metrics-header">
+                    <div class="metrics-title">
+                        <span class="metrics-icon">◈</span>
+                        <span>LIVE METRICS</span>
                     </div>
-                    <div class="terminal-line">
-                        <span class="output success">✓ Risk Management: Active</span>
+                    <div class="metrics-status" id="metricsStatus">
+                        <span class="status-dot"></span>
+                        <span id="statusText">CONNECTING</span>
                     </div>
-                    <div class="terminal-line">
-                        <span class="output success">✓ Multi-Strategy Fallback: Enabled</span>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-cell">
+                        <div class="metric-label">EQUITY</div>
+                        <div class="metric-value" id="metricEquity">—</div>
+                        <div class="metric-sub" id="metricSymbol">—</div>
                     </div>
-                    <div class="terminal-line">
-                        <span class="output success">✓ Exit Strategies: 4 Priority Levels</span>
+                    <div class="metric-cell">
+                        <div class="metric-label">BALANCE</div>
+                        <div class="metric-value" id="metricBalance">—</div>
+                        <div class="metric-sub">USD</div>
                     </div>
-                    <div class="terminal-line">
-                        <span class="output info">→ SAFE Engine: Set And Forget — Fully Autonomous</span>
+                    <div class="metric-cell">
+                        <div class="metric-label">MARGIN LEVEL</div>
+                        <div class="metric-value" id="metricMarginLevel">—</div>
+                        <div class="metric-sub">%</div>
                     </div>
+                    <div class="metric-cell">
+                        <div class="metric-label">UPTIME</div>
+                        <div class="metric-value" id="metricUptime">—</div>
+                        <div class="metric-sub">seconds</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-label">TOTAL TRADES</div>
+                        <div class="metric-value" id="metricTrades">—</div>
+                        <div class="metric-sub" id="metricWinRate">—</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-label">MAX DRAWDOWN</div>
+                        <div class="metric-value" id="metricDrawdown">—</div>
+                        <div class="metric-sub">%</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-label">PEAK EQUITY</div>
+                        <div class="metric-value" id="metricPeak">—</div>
+                        <div class="metric-sub">USD</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="metric-label">SYSTEM STATE</div>
+                        <div class="metric-value" id="metricState">—</div>
+                        <div class="metric-sub" id="metricMemory">—</div>
+                    </div>
+                </div>
+                <div class="metrics-footer">
+                    <span id="metricsTimestamp">Last update: —</span>
                 </div>
             </div>
         </div>
@@ -1296,6 +1505,150 @@
                     <div class="flow-content">
                         <div class="flow-title">Health Monitoring</div>
                         <div class="flow-desc">Connection recovery, reconciliation, metrics collection</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mermaid System Flow Diagrams -->
+        <div class="diagram-section">
+            <div class="section-header" style="margin-top: 4rem;">
+                <div class="section-tag">System Flow Diagrams</div>
+                <h2 class="section-title">Visual Architecture</h2>
+            </div>
+
+            <div class="diagrams-grid">
+                <div class="diagram-card">
+                    <div class="diagram-title">Core Trading Loop</div>
+                    <div class="mermaid">
+                        flowchart TB
+                        subgraph Input["📥 Data Layer"]
+                        MT5[MT5 Terminal] --> Fetch[Data Fetcher]
+                        Fetch --> Norm[Normalizer]
+                        end
+
+                        subgraph Analysis["🧠 Analysis Engine"]
+                        Norm --> Ind[Indicator Engine]
+                        Ind --> Reg[Regime Detector]
+                        Reg --> Sig[Signal Generator]
+                        end
+
+                        subgraph Decision["⚡ Decision Layer"]
+                        Sig --> Strat[Strategy Selector]
+                        Strat --> Risk[Risk Manager]
+                        Risk -->|Approved| Exec[Executor]
+                        Risk -->|Rejected| Log[Audit Log]
+                        end
+
+                        subgraph Execution["🎯 Execution Layer"]
+                        Exec --> Order[Order Placement]
+                        Order --> Track[Position Tracker]
+                        Track --> Exit[Exit Manager]
+                        Exit --> Close[Position Close]
+                        end
+
+                        Close --> MT5
+
+                        style MT5 fill:#0a0a0f,stroke:#00ff88,color:#fff
+                        style Exec fill:#0a0a0f,stroke:#00ff88,color:#fff
+                        style Risk fill:#0a0a0f,stroke:#ffaa00,color:#fff
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <div class="diagram-title">Strategy Selection Flow</div>
+                    <div class="mermaid">
+                        flowchart LR
+                        subgraph Regime["Market Regime"]
+                        MR{Regime?}
+                        MR -->|Trending| T[Trend Strategies]
+                        MR -->|Ranging| R[Mean Reversion]
+                        MR -->|Volatile| V[Momentum Breakout]
+                        MR -->|Unknown| D[Default Strategy]
+                        end
+
+                        subgraph Strategies["Strategy Pool"]
+                        T --> EMA[EMA Crossover]
+                        T --> SMA[SMA Crossover]
+                        R --> MR2[Mean Reversion]
+                        V --> MB[Momentum Breakout]
+                        V --> SC[Scalping]
+                        D --> DEF[Conservative]
+                        end
+
+                        subgraph Output["Signal"]
+                        EMA --> SIG[Signal Bus]
+                        SMA --> SIG
+                        MR2 --> SIG
+                        MB --> SIG
+                        SC --> SIG
+                        DEF --> SIG
+                        end
+
+                        style MR fill:#0a0a0f,stroke:#00ff88,color:#fff
+                        style SIG fill:#0a0a0f,stroke:#00ff88,color:#fff
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <div class="diagram-title">Risk Management Pipeline</div>
+                    <div class="mermaid">
+                        flowchart TB
+                        Signal[Trade Signal] --> Check1{Position<br />Limits?}
+                        Check1 -->|Pass| Check2{Exposure<br />Check?}
+                        Check1 -->|Fail| Reject1[❌ Reject]
+
+                        Check2 -->|Pass| Check3{Daily Loss<br />Limit?}
+                        Check2 -->|Fail| Reject2[❌ Reject]
+
+                        Check3 -->|Pass| Check4{Drawdown<br />State?}
+                        Check3 -->|Fail| Reject3[❌ Reject]
+
+                        Check4 -->|Healthy| Size[Position Sizing]
+                        Check4 -->|Warning| Reduce[Reduce Size]
+                        Check4 -->|Critical| Reject4[❌ Reject]
+
+                        Size --> Approve[✅ Execute]
+                        Reduce --> Approve
+
+                        style Signal fill:#0a0a0f,stroke:#00ff88,color:#fff
+                        style Approve fill:#0a0a0f,stroke:#00ff88,color:#fff
+                        style Reject1 fill:#0a0a0f,stroke:#ff4444,color:#fff
+                        style Reject2 fill:#0a0a0f,stroke:#ff4444,color:#fff
+                        style Reject3 fill:#0a0a0f,stroke:#ff4444,color:#fff
+                        style Reject4 fill:#0a0a0f,stroke:#ff4444,color:#fff
+                    </div>
+                </div>
+
+                <div class="diagram-card">
+                    <div class="diagram-title">Exit Strategy Hierarchy</div>
+                    <div class="mermaid">
+                        flowchart TB
+                        Pos[Open Position] --> P1{Emergency<br />Stop?}
+                        P1 -->|Yes| E1[🚨 Immediate Exit]
+                        P1 -->|No| P2{Stop Loss<br />Hit?}
+
+                        P2 -->|Yes| E2[🛑 Stop Loss Exit]
+                        P2 -->|No| P3{Take Profit<br />Hit?}
+
+                        P3 -->|Yes| E3[💰 Take Profit Exit]
+                        P3 -->|No| P4{Trailing<br />Stop?}
+
+                        P4 -->|Yes| E4[📈 Trailing Exit]
+                        P4 -->|No| P5{Time<br />Decay?}
+
+                        P5 -->|Yes| E5[⏰ Time-based Exit]
+                        P5 -->|No| Hold[📊 Hold Position]
+
+                        E1 --> Close[Close Position]
+                        E2 --> Close
+                        E3 --> Close
+                        E4 --> Close
+                        E5 --> Close
+
+                        style Pos fill:#0a0a0f,stroke:#00ff88,color:#fff
+                        style Close fill:#0a0a0f,stroke:#00ff88,color:#fff
+                        style E1 fill:#0a0a0f,stroke:#ff4444,color:#fff
                     </div>
                 </div>
             </div>
@@ -1523,11 +1876,11 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                 </div>
             </div>
 
-            <div class="roadmap-item expandable" data-phase="4">
+            <div class="roadmap-item complete expandable" data-phase="4">
                 <div class="roadmap-header">
                     <div class="roadmap-phase">Phase 04</div>
                     <div class="roadmap-title">Multi-Strategy & GUI</div>
-                    <span class="roadmap-status current">Current</span>
+                    <span class="roadmap-status complete">Complete</span>
                     <span class="roadmap-toggle">▼</span>
                 </div>
                 <div class="roadmap-desc">
@@ -1535,20 +1888,29 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                     monitoring, and next-gen indicators.
                 </div>
                 <div class="roadmap-details">
-                    <div class="detail-item">Strategy orchestration & arbitration</div>
-                    <div class="detail-item">Desktop GUI: trade history, charts, and logs</div>
-                    <div class="detail-item">Next-gen indicators: Supertrend, VWAP</div>
-                    <div class="detail-item">Environment variable field overrides & security hardening</div>
+                    <div class="detail-item">✓ Strategy orchestration & arbitration</div>
+                    <div class="detail-item">✓ Desktop GUI: trade history, charts, and logs</div>
+                    <div class="detail-item">✓ Next-gen indicators: Supertrend, VWAP</div>
+                    <div class="detail-item">✓ Environment variable field overrides & security hardening</div>
                 </div>
             </div>
 
-            <div class="roadmap-item">
-                <div class="roadmap-phase">Phase 05</div>
-                <div class="roadmap-title">Advanced Intelligence</div>
-                <span class="roadmap-status planned">Planned</span>
+            <div class="roadmap-item expandable" data-phase="5">
+                <div class="roadmap-header">
+                    <div class="roadmap-phase">Phase 05</div>
+                    <div class="roadmap-title">Advanced Intelligence</div>
+                    <span class="roadmap-status current">Current</span>
+                    <span class="roadmap-toggle">▼</span>
+                </div>
                 <div class="roadmap-desc">
                     LSTM and Transformer models, reinforcement learning,
                     sentiment analysis, regime detection, operations dashboard.
+                </div>
+                <div class="roadmap-details">
+                    <div class="detail-item">ML Data Pipeline & Feature Engineering</div>
+                    <div class="detail-item">Reinforcement Learning agents for optimization</div>
+                    <div class="detail-item">LSTM/Transformer price forecasting</div>
+                    <div class="detail-item">Regime-aware feature store</div>
                 </div>
             </div>
         </div>
@@ -1672,45 +2034,166 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
             });
         });
 
-        // Summary widget data fetch (attempt logs/summary.json or logs/strategy_info.txt)
-        async function loadSummary() {
-            const sample = { strategy: 'EMA Crossover', pnl: '+1,243.50', open: 2, win: '62%' };
-            try {
-                // Try JSON summary first
-                let res = await fetch('logs/summary.json');
-                if (res.ok) {
-                    const j = await res.json();
-                    document.getElementById('summary-strategy').textContent = j.strategy || sample.strategy;
-                    document.getElementById('summary-pnl').textContent = j.pnl || sample.pnl;
-                    document.getElementById('summary-open').textContent = j.open ?? sample.open;
-                    document.getElementById('summary-win').textContent = j.win || sample.win;
-                    return;
-                }
-                // Fallback to a simple text file
-                res = await fetch('logs/strategy_info.txt');
-                if (res.ok) {
-                    const txt = await res.text();
-                    const lines = txt.split('\n');
-                    lines.forEach(line => {
-                        const [k, v] = line.split(':').map(s => s && s.trim());
-                        if (!k || !v) return;
-                        if (/strategy/i.test(k)) document.getElementById('summary-strategy').textContent = v;
-                        if (/pnl/i.test(k)) document.getElementById('summary-pnl').textContent = v;
-                        if (/open/i.test(k)) document.getElementById('summary-open').textContent = v;
-                        if (/win/i.test(k)) document.getElementById('summary-win').textContent = v;
-                    });
-                    return;
-                }
-            } catch (e) {
-                // ignore and show sample
+        // Live Metrics Dashboard - Fetch from dashboard_metrics.json
+        async function loadMetricsDashboard() {
+            const statusEl = document.getElementById('metricsStatus');
+            const timestampEl = document.getElementById('metricsTimestamp');
+
+            // Element references (match the IDs in the HTML)
+            const elements = {
+                equity: document.getElementById('metricEquity'),
+                balance: document.getElementById('metricBalance'),
+                marginLevel: document.getElementById('metricMarginLevel'),
+                uptime: document.getElementById('metricUptime'),
+                trades: document.getElementById('metricTrades'),
+                winRate: document.getElementById('metricWinRate'),
+                drawdown: document.getElementById('metricDrawdown'),
+                peak: document.getElementById('metricPeak'),
+                state: document.getElementById('metricState'),
+                symbol: document.getElementById('metricSymbol'),
+                memory: document.getElementById('metricMemory')
+            };
+
+            function formatCurrency(val) {
+                const num = parseFloat(val);
+                if (isNaN(num)) return '—';
+                return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
-            // sample fallback
-            document.getElementById('summary-strategy').textContent = sample.strategy;
-            document.getElementById('summary-pnl').textContent = sample.pnl;
-            document.getElementById('summary-open').textContent = sample.open;
-            document.getElementById('summary-win').textContent = sample.win;
+
+            function formatPercent(val) {
+                const num = parseFloat(val);
+                if (isNaN(num)) return '—';
+                return num.toFixed(2) + '%';
+            }
+
+            function formatUptime(seconds) {
+                const sec = parseFloat(seconds);
+                if (isNaN(sec)) return '—';
+                const days = Math.floor(sec / 86400);
+                const hrs = Math.floor((sec % 86400) / 3600);
+                const mins = Math.floor((sec % 3600) / 60);
+                if (days > 0) return `${days}d ${hrs}h`;
+                if (hrs > 0) return `${hrs}h ${mins}m`;
+                return `${mins}m ${Math.floor(sec % 60)}s`;
+            }
+
+            function setValueClass(el, value, { positive, warning, negative }) {
+                if (!el) return;
+                el.classList.remove('positive', 'negative', 'warning');
+                if (positive !== undefined && value >= positive) el.classList.add('positive');
+                else if (negative !== undefined && value <= negative) el.classList.add('negative');
+                else if (warning !== undefined) el.classList.add('warning');
+            }
+
+            try {
+                // Try to fetch the JSON metrics file
+                const res = await fetch('logs/dashboard_metrics.json?' + Date.now());
+                if (!res.ok) throw new Error('JSON not found: ' + res.status);
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                // Populate metrics
+                if (elements.equity) {
+                    elements.equity.textContent = formatCurrency(data.account_equity);
+                    const pnl = (data.account_equity || 0) - (data.account_balance || 0);
+                    setValueClass(elements.equity, pnl, { positive: 0 });
+                }
+
+                if (elements.balance) {
+                    elements.balance.textContent = formatCurrency(data.account_balance);
+                }
+
+                if (elements.marginLevel) {
+                    const ml = parseFloat(data.account_margin_level);
+                    elements.marginLevel.textContent = isNaN(ml) ? '—' : ml.toFixed(0);
+                    setValueClass(elements.marginLevel, ml, { positive: 500, warning: 200, negative: 100 });
+                }
+
+                if (elements.uptime) {
+                    elements.uptime.textContent = formatUptime(data.system_uptime_seconds);
+                }
+
+                if (elements.trades) {
+                    elements.trades.textContent = data.total_trades ?? '0';
+                }
+
+                if (elements.winRate) {
+                    const wr = parseFloat(data.win_rate);
+                    elements.winRate.textContent = isNaN(wr) ? '—' : `Win Rate: ${wr.toFixed(1)}%`;
+                }
+
+                if (elements.drawdown) {
+                    const dd = parseFloat(data.max_drawdown_pct);
+                    elements.drawdown.textContent = isNaN(dd) ? '0.00' : dd.toFixed(2);
+                    setValueClass(elements.drawdown, -dd, { positive: -5, warning: -15, negative: -25 });
+                }
+
+                if (elements.peak) {
+                    elements.peak.textContent = formatCurrency(data.peak_equity);
+                }
+
+                if (elements.state) {
+                    const state = (data.drawdown_state || 'UNKNOWN').toUpperCase();
+                    elements.state.textContent = state;
+                    elements.state.classList.remove('positive', 'warning', 'negative');
+                    if (state === 'NORMAL' || state === 'HEALTHY') {
+                        elements.state.classList.add('positive');
+                    } else if (state === 'WARNING' || state === 'CAUTION') {
+                        elements.state.classList.add('warning');
+                    } else if (state === 'CRITICAL' || state === 'DANGER') {
+                        elements.state.classList.add('negative');
+                    }
+                }
+
+                if (elements.symbol) {
+                    const sym = data.current_symbol || '—';
+                    const price = data.current_price;
+                    elements.symbol.textContent = price ? `${sym} @ ${parseFloat(price).toLocaleString()}` : sym;
+                }
+
+                if (elements.memory) {
+                    const mem = parseFloat(data.memory_usage_mb);
+                    elements.memory.textContent = isNaN(mem) ? '—' : `Memory: ${mem.toFixed(0)} MB`;
+                }
+
+                // Update status to LIVE
+                if (statusEl) {
+                    statusEl.classList.remove('stale');
+                    statusEl.classList.add('live');
+                    const statusText = statusEl.querySelector('span:last-child');
+                    if (statusText) statusText.textContent = 'LIVE';
+                }
+
+                // Update timestamp
+                if (timestampEl) {
+                    const ts = data.timestamp ? new Date(data.timestamp) : null;
+                    const exported = data._exported_at ? new Date(data._exported_at) : null;
+                    if (ts) {
+                        timestampEl.textContent = `Data: ${ts.toLocaleString()} | Updated: ${exported ? exported.toLocaleTimeString() : '—'}`;
+                    } else {
+                        timestampEl.textContent = `Last update: ${exported ? exported.toLocaleString() : '—'}`;
+                    }
+                }
+
+            } catch (e) {
+                console.warn('Metrics fetch failed:', e.message);
+                // Show offline status
+                if (statusEl) {
+                    statusEl.classList.remove('live');
+                    statusEl.classList.add('stale');
+                    const statusText = statusEl.querySelector('span:last-child');
+                    if (statusText) statusText.textContent = 'OFFLINE';
+                }
+                if (timestampEl) {
+                    timestampEl.textContent = 'Run: python scripts/export_dashboard_metrics.py --watch';
+                }
+            }
         }
-        loadSummary();
+
+        // Load metrics on page load and refresh every 10s
+        loadMetricsDashboard();
+        setInterval(loadMetricsDashboard, 10000);
 
         // Intersection Observer for fade-in animations
         const observerOptions = {
