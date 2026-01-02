@@ -13,92 +13,126 @@ Cthulu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that 
 
 ### High-Level Design
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                         __main__.py                              │
-│                         (Entry Point)                            │
-└────────────┬─────────────────────────────────────────────────────┘
-             │
-             ├──> core/ (NEW - Refactored Modules)
-             │    ├── bootstrap.py         - System initialization
-             │    ├── indicator_loader.py  - Indicator management
-             │    ├── strategy_factory.py  - Strategy creation
-             │    ├── exit_loader.py       - Exit strategy loading
-             │    ├── trading_loop.py      - Main trading logic (Phase 3)
-             │    └── shutdown.py          - Graceful shutdown (Phase 4)
-             │
-             ├──> connector/
-             │    └── mt5_connector.py     - MT5 API wrapper
-             │
-             ├──> strategy/
-             │    ├── base.py              - Strategy interface
-             │    ├── sma_crossover.py     - Simple moving average strategy
-             │    ├── ema_crossover.py     - Exponential moving average strategy
-             │    ├── momentum_breakout.py - Momentum-based strategy
-             │    ├── scalping.py          - High-frequency scalping (M1-M5)
-             │    └── strategy_selector.py - Dynamic strategy switching
-             │
-             ├──> indicators/
-             │    ├── base.py              - Indicator interface
-             │    ├── rsi.py               - Relative Strength Index
-             │    ├── macd.py              - Moving Average Convergence Divergence
-             │    ├── atr.py               - Average True Range
-             │    ├── adx.py               - Average Directional Index
-             │    ├── bollinger.py         - Bollinger Bands
-             │    ├── stochastic.py        - Stochastic Oscillator
-             │    ├── supertrend.py        - Supertrend Indicator
-             │    └── vwap.py              - Volume Weighted Average Price
-             │
-             ├──> execution/
-             │    └── engine.py            - Order placement & execution
-             │
-             ├──> position/
-             │    ├── manager.py           - Position tracking (966 lines)
-             │    ├── trade_manager.py     - External trade adoption (521 lines)
-             │    ├── risk_manager.py      - Position risk helpers (120 lines)
-             │    └── dynamic_manager.py   - Dynamic position sizing (124 lines)
-             │    [To be refactored: tracker, lifecycle, adoption]
-             │
-             ├──> risk/
-             │    └── manager.py           - Risk approval & limits (423 lines)
-             │    [To be unified with position/risk_manager.py]
-             │
-             ├──> exit/
-             │    ├── trailing_stop.py     - Trailing stop loss
-             │    ├── time_based.py        - Time-based exits
-             │    ├── profit_target.py     - Take profit targets
-             │    ├── adverse_movement.py  - Adverse movement stops
-             │    └── coordinator.py       - Exit orchestration (Phase 7)
-             │
-             ├──> persistence/
-             │    └── database.py          - SQLite trade/signal storage
-             │
-             ├──> observability/
-             │    ├── logger.py            - Logging setup
-             │    ├── metrics.py           - Performance metrics
-             │    └── prometheus.py        - Prometheus exporter
-             │
-             ├──> data/
-             │    └── layer.py             - Data normalization & caching
-             │
-             ├──> config/
-             │    ├── mindsets.py          - Trading mindset presets
-             │    └── wizard.py            - Interactive setup wizard
-             │
-             ├──> ui/
-             │    └── desktop.py           - Tkinter GUI
-             │
-             ├──> monitoring/
-             │    └── trade_monitor.py     - Real-time trade monitoring
-             │
-             ├──> advisory/
-             │    └── manager.py           - Advisory/ghost mode
-             │
-             ├──> news/
-             │    └── manager.py           - News ingestion
-             │
-             └──> ML_RL/
-                  └── instrumentation.py   - ML data collection
+```mermaid
+flowchart LR
+    MAIN["__main__.py<br/>(Entry Point)"]
+    
+    subgraph CORE["core/ (Refactored Modules)"]
+        BOOT[bootstrap.py]
+        IND_LOAD[indicator_loader.py]
+        STRAT_FACT[strategy_factory.py]
+        EXIT_LOAD[exit_loader.py]
+        LOOP[trading_loop.py]
+        SHUT[shutdown.py]
+    end
+    
+    subgraph CONN["connector/"]
+        MT5[mt5_connector.py]
+    end
+    
+    subgraph STRAT["strategy/"]
+        BASE[base.py]
+        SMA[sma_crossover.py]
+        EMA[ema_crossover.py]
+        MOM[momentum_breakout.py]
+        SCALP[scalping.py]
+        SEL[strategy_selector.py]
+    end
+    
+    subgraph IND["indicators/"]
+        IND_BASE[base.py]
+        RSI[rsi.py]
+        MACD[macd.py]
+        ATR[atr.py]
+        ADX[adx.py]
+        BB[bollinger.py]
+        STOCH[stochastic.py]
+        SUPER[supertrend.py]
+        VWAP[vwap.py]
+    end
+    
+    subgraph EXEC["execution/"]
+        ENGINE[engine.py]
+    end
+    
+    subgraph POS["position/"]
+        MGR[manager.py]
+        TRADE[trade_manager.py]
+        RISK_P[risk_manager.py]
+        DYN[dynamic_manager.py]
+    end
+    
+    subgraph RISK["risk/"]
+        RISK_M[manager.py]
+    end
+    
+    subgraph EXIT["exit/"]
+        TRAIL[trailing_stop.py]
+        TIME[time_based.py]
+        PROFIT[profit_target.py]
+        ADV[adverse_movement.py]
+        COORD[coordinator.py]
+    end
+    
+    subgraph PERSIST["persistence/"]
+        DB[database.py]
+    end
+    
+    subgraph OBS["observability/"]
+        LOG[logger.py]
+        METRICS[metrics.py]
+        PROM[prometheus.py]
+    end
+    
+    subgraph DATA["data/"]
+        LAYER[layer.py]
+    end
+    
+    subgraph CONFIG["config/"]
+        MIND[mindsets.py]
+        WIZ[wizard.py]
+    end
+    
+    subgraph UI["ui/"]
+        DESK[desktop.py]
+    end
+    
+    subgraph MON["monitoring/"]
+        TMON[trade_monitor.py]
+    end
+    
+    subgraph ADV["advisory/"]
+        ADVMGR[manager.py]
+    end
+    
+    subgraph NEWS["news/"]
+        NEWSMGR[manager.py]
+    end
+    
+    subgraph ML["ML_RL/"]
+        INSTR[instrumentation.py]
+    end
+    
+    MAIN --> CORE
+    CORE --> CONN
+    CORE --> STRAT
+    CORE --> IND
+    CORE --> EXEC
+    CORE --> POS
+    CORE --> RISK
+    CORE --> EXIT
+    CORE --> PERSIST
+    CORE --> OBS
+    CORE --> DATA
+    CORE --> CONFIG
+    CORE --> UI
+    CORE --> MON
+    CORE --> ADV
+    CORE --> NEWS
+    CORE --> ML
+    
+    style MAIN fill:#00ff88,stroke:#00cc6a,color:#000
+    style CORE fill:#00aaff,stroke:#0088cc,color:#000
 ```
 
 ## Core Concepts
