@@ -24,7 +24,7 @@ sudo docker run -d \
     --cap-add NET_ADMIN \
     -e RAM_SIZE=6G \
     -e CPU_CORES=2 \
-    dockur/windows
+    dockurr/windows
 "@
 
 # Save startup script temporarily
