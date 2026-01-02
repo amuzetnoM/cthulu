@@ -90,9 +90,7 @@ _________   __  .__          .__
 
 ## Overview
 
-👾 Cthulu implements a staged, modular approach to automated trading.
-The architecture emphasizes clear boundaries, testability, and safety with pluggable components that can be 
-enhanced without disrupting core functionality.
+👾 Cthulu is a high-fidelity, autonomous, rule-based trading engine implementing a staged, modular approach to automated trading. It is designed to be deterministic at its core, ensuring error-free execution and strict risk adherence—while utilizing machine learning to enhance signal confidence. The architecture emphasizes clear boundaries, testability, and safety with pluggable components that can be enhanced without disrupting core functionality.
 
 ### Design Principles
 
