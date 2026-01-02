@@ -4,27 +4,29 @@
 # INSTRUCTIONS:
 # 1. Open the GCP Windows VM via http://34.171.231.16:8006
 # 2. Open PowerShell as Administrator
-# 3. Copy this ENTIRE script and paste it into PowerShell
-# 4. Press Enter and wait for completion (~15-20 minutes)
+# 3. First run: Set-ExecutionPolicy Bypass -Scope Process -Force
+# 4. Then paste this ENTIRE script and press Enter
 # ============================================================================
+
+# Force execution policy bypass first
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
 $ErrorActionPreference = "Continue"
 $ProgressPreference = "SilentlyContinue"
 
 # Banner
-Write-Host @"
-
-_________   __  .__          .__         
-\_   ___ \_/  |_|  |__  __ __|  |  __ __ 
-/    \  \/\   __\  |  \|  |  \  | |  |  \
-\     \____|  | |   Y  \  |  /  |_|  |  /
- \______  /|__| |___|  /____/|____/____/ 
-        \/           \/                  
-
-        APEX v5.1 - GCP Auto-Installer
-        ================================
-
-"@ -ForegroundColor Cyan
+Write-Host ""
+Write-Host "_________   __  .__          .__         " -ForegroundColor Cyan
+Write-Host "\_   ___ \_/  |_|  |__  __ __|  |  __ __ " -ForegroundColor Cyan
+Write-Host "/    \  \/\   __\  |  \|  |  \  | |  |  \" -ForegroundColor Cyan
+Write-Host "\     \____|  | |   Y  \  |  /  |_|  |  /" -ForegroundColor Cyan
+Write-Host " \______  /|__| |___|  /____/|____/____/ " -ForegroundColor Cyan
+Write-Host "        \/           \/                  " -ForegroundColor Cyan
+Write-Host ""
+Write-Host "        APEX v5.1 - GCP Auto-Installer" -ForegroundColor Yellow
+Write-Host "        ================================" -ForegroundColor Yellow
+Write-Host ""
 
 $LogFile = "C:\cthulu_install.log"
 function Log { param($msg) $ts = Get-Date -Format "HH:mm:ss"; "$ts - $msg" | Tee-Object -Append $LogFile; Write-Host "[$ts] $msg" -ForegroundColor Green }
@@ -260,28 +262,26 @@ Log ""
 Log "============================================"
 Log "       INSTALLATION COMPLETE!"  
 Log "============================================"
-Write-Host @"
-
-NEXT STEPS:
------------
-1. If MT5 didn't auto-install, download from:
-   https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe
-
-2. Login to your MT5 account and ENABLE ALGO TRADING:
-   Tools -> Options -> Expert Advisors -> Allow algorithmic trading
-
-3. Edit your trading configuration:
-   notepad C:\workspace\cthulu\config.json
-
-4. Launch Cthulu:
-   - Double-click 'Cthulu Wizard.bat' on Desktop, OR
-   - Double-click 'Cthulu Launch.bat' for direct start
-
-5. For monitoring, launch 'Sentinel Monitor.bat'
-
-Log saved to: $LogFile
-
-"@ -ForegroundColor Yellow
+Write-Host ""
+Write-Host "NEXT STEPS:" -ForegroundColor Yellow
+Write-Host "-----------" -ForegroundColor Yellow
+Write-Host "1. If MT5 didn't auto-install, download from:" -ForegroundColor White
+Write-Host "   https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "2. Login to your MT5 account and ENABLE ALGO TRADING:" -ForegroundColor White
+Write-Host "   Tools -> Options -> Expert Advisors -> Allow algorithmic trading" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "3. Edit your trading configuration:" -ForegroundColor White
+Write-Host "   notepad C:\workspace\cthulu\config.json" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "4. Launch Cthulu:" -ForegroundColor White
+Write-Host "   - Double-click 'Cthulu Wizard.bat' on Desktop, OR" -ForegroundColor Cyan
+Write-Host "   - Double-click 'Cthulu Launch.bat' for direct start" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "5. For monitoring, launch 'Sentinel Monitor.bat'" -ForegroundColor White
+Write-Host ""
+Write-Host "Log saved to: $LogFile" -ForegroundColor Gray
+Write-Host ""
 
 # Open config for editing
 Write-Host "Opening config.json for editing..." -ForegroundColor Cyan

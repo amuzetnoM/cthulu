@@ -1,0 +1,45 @@
+# ============================================================================
+# CTHULU APEX v5.1 - BOOTSTRAP INSTALLER
+# ============================================================================
+# 
+# OPTION 1: One-liner (paste this in PowerShell as Admin):
+# ----------------------------------------------------------------------------
+
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/amuzetnoM/cthulu/main/deployment/PASTE_AND_RUN.ps1'))
+
+# ============================================================================
+#
+# OPTION 2: If GitHub raw doesn't work, paste this minimal installer:
+# ----------------------------------------------------------------------------
+
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+
+# Install Chocolatey
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# Install essentials
+choco install python310 git vscode -y
+
+# Refresh PATH
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+# Clone and setup
+New-Item -ItemType Directory -Path "C:\workspace" -Force
+cd C:\workspace
+git clone https://github.com/amuzetnoM/cthulu.git
+cd cthulu
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+Write-Host "DONE! Now download MT5 manually and configure config.json" -ForegroundColor Green
+
+# ============================================================================
+#
+# OPTION 3: Ultra-minimal - just get the tools, do the rest manually:
+# ----------------------------------------------------------------------------
+
+Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1')); choco install python310 git -y
+
+# ============================================================================

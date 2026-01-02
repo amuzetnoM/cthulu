@@ -2,7 +2,7 @@
 
 ## Current Status: ✅ OPERATIONAL
 
-**Last Updated**: 2026-01-02 13:55 UTC
+**Last Updated**: 2026-01-02 16:15 UTC
 
 ---
 
@@ -12,11 +12,35 @@
 |---------|-----|--------|
 | **Windows Desktop** | http://34.171.231.16:8006 | ✅ Running |
 | **VS Code Server** | http://34.171.231.16:8443 | ✅ Running |
-| **Cthulu Repo** | ~/workspace/cthulu | ✅ Cloned |
+| **Setup Script Server** | http://34.171.231.16:8080 | ✅ Running |
 
 ### VS Code Server Credentials
 - **URL**: http://34.171.231.16:8443
 - **Password**: `cthulu2026apex`
+
+---
+
+## 🚀 QUICK SETUP - One Command Install
+
+**Inside the Windows VM (http://34.171.231.16:8006):**
+
+1. Open PowerShell as Administrator
+2. Run this ONE command:
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; iwr -useb http://34.171.231.16:8080/windows_complete_setup.ps1 | iex
+```
+
+This will automatically install:
+- ✅ Chocolatey (package manager)
+- ✅ Python 3.11
+- ✅ Git
+- ✅ VS Code
+- ✅ Clone Cthulu repository
+- ✅ Set up Python virtual environment
+- ✅ Install all dependencies
+
+After that, just install MT5 manually and configure your account!
 
 ---
 
