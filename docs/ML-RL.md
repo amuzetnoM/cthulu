@@ -1,25 +1,22 @@
 ---
-title: Machine Learning & Reinforcement Learning
+title: Machine & Reinforcement Learning
 sidebar_position: 14
 description: Cognition Engine - ML/RL integration philosophy and implementation
 version: 5.1.0 APEX
 ---
 
-# Machine Learning & Reinforcement Learning
-
-<div align="center">
 
 ![APEX](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=for-the-badge)
 ![ML](https://img.shields.io/badge/ML-Assistive-blue?style=for-the-badge)
 ![RL](https://img.shields.io/badge/RL-Training-green?style=for-the-badge)
 
-**Rule-Based Foundation with Intelligent Augmentation**
+> **Rule-Based Foundation with Intelligent Augmentation**
 
-</div>
+
 
 ---
 
-## Philosophy: Rules First, ML Assists
+## Philosophy: <br> Rules First, ML/RL Second
 
 Cthulu is fundamentally a **rule-based trading system** that has been meticulously engineered, battle-tested, and precision-tuned through thousands of hours of live trading. The ML/RL components are designed to **enhance** decision-making, not replace it.
 
