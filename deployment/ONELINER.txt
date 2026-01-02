@@ -1,0 +1,6 @@
+# CTHULU APEX QUICK INSTALL - PASTE INTO POWERSHELL (RUN AS ADMIN)
+# This single command downloads and runs the full installer
+
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+irm https://raw.githubusercontent.com/amuzetnoM/cthulu/main/deployment/PASTE_AND_RUN.ps1 | iex
