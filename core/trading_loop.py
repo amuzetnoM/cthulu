@@ -417,6 +417,11 @@ class TradingLoop:
     
     def _execute_loop_iteration(self):
         """Execute one iteration of the trading loop."""
+        # Ensure position_manager has current symbol context for fallback
+        if self.ctx.position_manager and hasattr(self.ctx.position_manager, 'context_symbol'):
+            if not self.ctx.position_manager.context_symbol:
+                self.ctx.position_manager.context_symbol = self.ctx.symbol
+        
         # 1. Market data ingestion
         self.ctx.logger.info(f"Loop #{self.loop_count}: Fetching market data...")
         df = self._ingest_market_data()

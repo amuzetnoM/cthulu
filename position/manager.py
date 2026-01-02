@@ -212,15 +212,14 @@ class PositionManager:
         """Reconcile internal position tracking with MT5 live positions.
         
         Queries MT5 for actual open positions and syncs internal state.
-        Fixes UNKNOWN symbols by querying MT5 directly.
+        Always uses MT5 as the source of truth for symbol and other fields.
         Returns the count of reconciled positions.
         """
         try:
             import MetaTrader5 as mt5
             if not mt5.initialize():
-                # MT5 not available, return current count
-                with self._lock:
-                    return len(self._positions)
+                # Try to initialize MT5
+                mt5.initialize()
             
             positions = mt5.positions_get()
             if positions is None:
@@ -235,19 +234,16 @@ class PositionManager:
                 for ticket in internal_tickets - mt5_tickets:
                     del self._positions[ticket]
                 
-                # Create lookup for MT5 positions
-                mt5_lookup = {p.ticket: p for p in positions}
-                
-                # Add/update positions from MT5
+                # Add/update positions from MT5 - ALWAYS prefer MT5 data
                 for pos in positions:
                     existing = self._positions.get(pos.ticket)
                     if existing:
-                        # Update current price and other fields
+                        # Always update from MT5 - it's the source of truth
+                        existing.symbol = pos.symbol
                         existing.current_price = pos.price_current
                         existing.volume = pos.volume
-                        # FIX: Update symbol if it was UNKNOWN
-                        if existing.symbol == 'UNKNOWN' or not existing.symbol:
-                            existing.symbol = pos.symbol
+                        existing.open_price = pos.price_open
+                        existing.side = 'BUY' if pos.type == 0 else 'SELL'
                     else:
                         # Add new position from MT5
                         self._positions[pos.ticket] = PositionInfo(
@@ -299,21 +295,27 @@ class PositionManager:
         Returns:
             ExecutionResult from the close order
         """
-        from cthulu.execution.engine import OrderRequest, OrderType
+        from cthulu.execution.engine import OrderRequest, OrderType, ExecutionResult, OrderStatus
         import MetaTrader5 as mt5
         
         position = self.get_position(ticket)
         
-        # Always verify/fix symbol from MT5 to prevent UNKNOWN issues
-        mt5_pos = mt5.positions_get(ticket=ticket)
+        # Ensure MT5 is initialized before querying
+        mt5_pos = None
+        try:
+            if not mt5.initialize():
+                # Try to initialize MT5
+                mt5.initialize()
+            mt5_pos = mt5.positions_get(ticket=ticket)
+        except Exception:
+            pass
         
         if not position:
             # Position not tracked locally - try to close via MT5 directly
-            if not mt5_pos:
-                from cthulu.execution.engine import ExecutionResult, OrderStatus
+            if not mt5_pos or len(mt5_pos) == 0:
                 return ExecutionResult(
                     status=OrderStatus.REJECTED,
-                    message=f"Position {ticket} not found"
+                    message=f"Position {ticket} not found in MT5 or local tracking"
                 )
             position = PositionInfo(
                 ticket=mt5_pos[0].ticket,
@@ -322,20 +324,20 @@ class PositionManager:
                 open_price=mt5_pos[0].price_open,
                 side='BUY' if mt5_pos[0].type == 0 else 'SELL'
             )
-        elif mt5_pos and (position.symbol == 'UNKNOWN' or not position.symbol):
-            # Fix UNKNOWN symbol from MT5 data
+        elif mt5_pos and len(mt5_pos) > 0:
+            # Always prefer MT5 symbol over tracked symbol to prevent UNKNOWN issues
             position.symbol = mt5_pos[0].symbol
+            position.volume = mt5_pos[0].volume  # Also update volume in case of partial closes
         
         # Ultimate fallback: use context_symbol if we still have UNKNOWN
-        if (position.symbol == 'UNKNOWN' or not position.symbol) and self.context_symbol:
+        if (not position.symbol or position.symbol.upper() == 'UNKNOWN') and self.context_symbol:
             position.symbol = self.context_symbol
         
         # Final safety check - if symbol still UNKNOWN, reject the close
-        if position.symbol == 'UNKNOWN' or not position.symbol:
-            from cthulu.execution.engine import ExecutionResult, OrderStatus
+        if not position.symbol or position.symbol.upper() == 'UNKNOWN':
             return ExecutionResult(
                 status=OrderStatus.REJECTED,
-                message=f"Cannot close position {ticket}: symbol is UNKNOWN"
+                message=f"Cannot close position {ticket}: symbol is UNKNOWN and no context_symbol available"
             )
         
         close_volume = partial_volume if partial_volume and partial_volume < position.volume else position.volume
