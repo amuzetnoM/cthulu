@@ -281,87 +281,101 @@ Trades placed via `Cthulu-trade` use Cthulu's magic number, so they are automati
 
 ## Architecture
 
-```
-Cthulu/
-├── config/           # Configuration management
-│   ├── wizard.py     # Interactive setup wizard
-│   ├── mindsets.py   # Risk profiles
-│   └── schema.py     # Typed config validation
-├── connector/        # MT5 connection management
-│   └── mt5_connector.py
-├── data/             # Market data normalization & indicators
-│   └── layer.py
-├── strategy/         # Multi-strategy framework
-│   ├── base.py
-│   ├── strategy_selector.py  # Dynamic strategy selection
-│   ├── sma_crossover.py
-│   ├── ema_crossover.py
-│   ├── momentum_breakout.py
-│   ├── scalping.py
-│   ├── mean_reversion.py
-│   └── trend_following.py
-├── indicators/       # Technical indicators
-│   ├── base.py
-│   ├── rsi.py, macd.py, bollinger.py
-│   ├── stochastic.py, adx.py
-│   ├── supertrend.py, vwap.py  # Next-gen
-│   ├── anchored_vwap.py
-│   ├── volume_indicators.py    # VPT, Volume Oscillator
-│   └── price_volume_trend.py
-├── execution/        # Order execution
-│   └── engine.py
-├── risk/             # Risk management
-│   └── manager.py
-├── position/         # Position & trade management
-│   ├── manager.py
-│   └── trade_manager.py
-├── exit/             # Exit strategies
-│   ├── trailing_stop.py
-│   ├── time_based.py
-│   ├── profit_target.py
-│   └── adverse_movement.py
-├── persistence/      # Database layer
-│   └── database.py
-├── observability/    # Monitoring & metrics
-│   ├── logger.py
-│   ├── metrics.py
-│   └── health.py
-├── ui/               # Desktop interface
-│   └── desktop.py
-├── rpc/              # HTTP API
-│   └── server.py
-├── market/           # Market data providers
-│   └── tick_manager.py
-├── news/             # News integration (opt-in)
-│   ├── manager.py
-│   ├── ingest.py
-│   └── cache.py
-├── monitoring/       # Trade monitoring
-│   └── trade_monitor.py
-├── ML_RL/            # ML instrumentation
-│   └── instrumentation.py
-└── utils/            # Utilities
-    ├── rate_limiting.py
-    ├── circuit_breaker.py
-    └── retry.py
-```
-│   ├── profit_target.py
-│   └── adverse_movement.py
-├── config/           # 🆕 Configuration
-│   ├── mindsets.py        # Trading risk profiles
-│   └── wizard.py          # Interactive setup wizard 🆕
-├── persistence/      # Database layer
-│   └── database.py
-├── observability/    # Logging and monitoring
-│   ├── logger.py
-│   ├── metrics.py
-│   ├── health.py          # 🆕 Health checks
-│   └── prometheus.py      # 🆕 Prometheus metrics
-├── scripts/          # 🆕 CLI tools
-│   ├── trade_cli.py       # Manual trade CLI
-│   └── force_trade.py     # Test trades
-├── config_schema.py  # 🆕 Pydantic config validation
-└── __main__.py       # Autonomous orchestrator
+```mermaid
+flowchart LR
+    subgraph CONFIG["Configuration"]
+        WIZ[wizard.py]
+        MIND[mindsets.py]
+        SCHEMA[schema.py]
+    end
+    
+    subgraph CONN["Connector"]
+        MT5C[mt5_connector.py]
+    end
+    
+    subgraph DATA["Data Layer"]
+        LAYER[layer.py]
+    end
+    
+    subgraph STRAT["Strategy Framework"]
+        SBASE[base.py]
+        SEL[strategy_selector.py]
+        SMA[sma_crossover.py]
+        EMA[ema_crossover.py]
+        MOM[momentum_breakout.py]
+        SCALP[scalping.py]
+        MEAN[mean_reversion.py]
+        TREND[trend_following.py]
+    end
+    
+    subgraph IND["Indicators"]
+        IBASE[base.py]
+        RSI[rsi.py]
+        MACD[macd.py]
+        BB[bollinger.py]
+        STOCH[stochastic.py]
+        ADX[adx.py]
+        SUPER[supertrend.py]
+        VWAP[vwap.py]
+    end
+    
+    subgraph EXEC["Execution"]
+        ENG[engine.py]
+    end
+    
+    subgraph RISK["Risk Management"]
+        RMGR[manager.py]
+    end
+    
+    subgraph POS["Position Management"]
+        PMGR[manager.py]
+        TMGR[trade_manager.py]
+    end
+    
+    subgraph EXIT["Exit Strategies"]
+        TRAIL[trailing_stop.py]
+        TIME[time_based.py]
+        PROFIT[profit_target.py]
+        ADV[adverse_movement.py]
+    end
+    
+    subgraph PERSIST["Persistence"]
+        DB[database.py]
+    end
+    
+    subgraph OBS["Observability"]
+        LOG[logger.py]
+        MET[metrics.py]
+        HEALTH[health.py]
+    end
+    
+    subgraph UI["User Interface"]
+        DESK[desktop.py]
+    end
+    
+    subgraph RPC["RPC Server"]
+        SERVER[server.py]
+    end
+    
+    CONFIG --> CONN
+    CONFIG --> RISK
+    CONN --> DATA
+    DATA --> IND
+    IND --> STRAT
+    STRAT --> EXEC
+    RISK --> EXEC
+    EXEC --> POS
+    POS --> EXIT
+    EXIT --> PERSIST
+    POS --> PERSIST
+    EXEC --> OBS
+    OBS --> UI
+    OBS --> RPC
+    PERSIST --> UI
+    
+    style CONFIG fill:#ffaa00,stroke:#dd8800,color:#000
+    style CONN fill:#00aaff,stroke:#0088cc,color:#000
+    style PERSIST fill:#00ff88,stroke:#00cc6a,color:#000
 ```
 
 ### Component Responsibilities
