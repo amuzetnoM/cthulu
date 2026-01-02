@@ -6,8 +6,6 @@ slug: /docs/architecture
 sidebar_position: 4
 ---
 
-## System Architecture
-
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 
 ### High-Level System Overview

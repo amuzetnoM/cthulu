@@ -1,5 +1,5 @@
 ---
-title: Introduction
+title: INTRODUCTION
 description: Advanced multi-strategy autonomous trading system with MetaTrader 5 integration, dynamic strategy selection, and comprehensive risk management
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 slug: /docs/
