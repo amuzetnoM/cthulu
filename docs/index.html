@@ -2108,7 +2108,9 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
                 }
 
                 if (elements.uptime) {
-                    elements.uptime.textContent = formatUptime(data.system_uptime_seconds);
+                    // Use exporter uptime if available (more accurate), otherwise CSV uptime
+                    const uptime = data._exporter_uptime || data.system_uptime_seconds;
+                    elements.uptime.textContent = formatUptime(uptime);
                 }
 
                 if (elements.trades) {

@@ -13,7 +13,7 @@ Setup for Gist publishing:
 import csv
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib import request, error
 
@@ -27,6 +27,9 @@ JSON_OUTPUT_PATH = PROJECT_ROOT / "docs" / "logs" / "dashboard_metrics.json"
 GIST_TOKEN = os.environ.get("GITHUB_GIST_TOKEN", "")
 GIST_ID = os.environ.get("GITHUB_GIST_ID", "")
 GIST_FILENAME = "cthulu_metrics.json"
+
+# Track when exporter started for live uptime calculation
+EXPORTER_START_TIME = datetime.now(timezone.utc)
 
 # Fields we care about for the dashboard
 REQUIRED_FIELDS = [
@@ -52,6 +55,17 @@ REQUIRED_FIELDS = [
 ]
 
 
+def parse_timestamp(ts_str: str) -> datetime:
+    """Parse ISO timestamp string to datetime."""
+    try:
+        # Handle various ISO formats
+        if ts_str.endswith('Z'):
+            ts_str = ts_str[:-1] + '+00:00'
+        return datetime.fromisoformat(ts_str)
+    except:
+        return None
+
+
 def get_latest_metrics() -> dict:
     """Read the CSV and return the latest row as a dict with only required fields."""
     if not CSV_PATH.exists():
@@ -66,6 +80,7 @@ def get_latest_metrics() -> dict:
             return {"error": "No data in CSV", "timestamp": datetime.now().isoformat()}
         
         latest = rows[-1]
+        first = rows[0]
         
         # Extract only required fields
         metrics = {}
@@ -83,10 +98,34 @@ def get_latest_metrics() -> dict:
             else:
                 metrics[field] = value
         
+        # Calculate real uptime from CSV data span
+        first_ts = parse_timestamp(first.get("timestamp", ""))
+        latest_ts = parse_timestamp(latest.get("timestamp", ""))
+        now = datetime.now(timezone.utc)
+        
+        if first_ts and latest_ts:
+            # Calculate how long the CSV data spans (session duration)
+            csv_session_duration = (latest_ts - first_ts).total_seconds()
+            
+            # Check if data is fresh (less than 60 seconds old)
+            data_age = (now - latest_ts).total_seconds() if latest_ts.tzinfo else 0
+            
+            if data_age < 60:
+                # Data is fresh - use the CSV's system_uptime_seconds
+                metrics["_data_status"] = "live"
+            else:
+                # Data is stale - calculate exporter uptime instead
+                exporter_uptime = (now - EXPORTER_START_TIME).total_seconds()
+                metrics["system_uptime_seconds"] = exporter_uptime
+                metrics["_data_status"] = "stale"
+                metrics["_data_age_seconds"] = data_age
+                metrics["_csv_session_duration"] = csv_session_duration
+        
         # Add export metadata
-        metrics["_exported_at"] = datetime.now().isoformat()
+        metrics["_exported_at"] = now.isoformat()
         metrics["_source"] = "cthulu"
         metrics["_status"] = "live"
+        metrics["_exporter_uptime"] = (now - EXPORTER_START_TIME).total_seconds()
         
         return metrics
         
