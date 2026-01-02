@@ -1,8 +1,7 @@
 ---
-title: Performance Tuning
+title: PRECISION TUNING
 description: Optimize Cthulu's performance with database tuning, memory management, CPU optimization, and benchmarking strategies
 tags: [performance, optimization, tuning, benchmarking]
-slug: /docs/performance-tuning
 sidebar_position: 6
 ---
 

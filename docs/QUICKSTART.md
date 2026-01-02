@@ -1,8 +1,7 @@
 ---
-title: Quick Start
+title: QUICK START
 description: Get started with Cthulu trading system - installation, configuration, and first trades
 tags: [quickstart, installation, setup, getting-started]
-slug: /docs/quickstart
 sidebar_position: 3
 ---
 

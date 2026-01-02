@@ -2,7 +2,6 @@
 title: OBSERVABILITY
 description: Performance metrics, Prometheus exporter, and guidance for monitoring Cthulu
 tags: [observability, metrics, prometheus]
-slug: /docs/observability/metrics
 sidebar_position: 10
 ---
 

@@ -1,8 +1,7 @@
 ---
-title: Risk & Equity Management
+title: RISK MANAGEMENT
 description: Risk management configuration and stop-loss strategies for Cthulu trading system
 tags: [risk-management, stop-loss, position-sizing]
-slug: /docs/risk-management
 sidebar_position: 9
 ---
 

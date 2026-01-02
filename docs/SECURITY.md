@@ -1,8 +1,7 @@
 ---
-title: Security
+title: SECURITY
 description: Security guidelines for Cthulu including credential management, API security, network protection, and access control
 tags: [security, credentials, api-security, access-control]
-slug: /docs/security
 sidebar_position: 7
 ---
 
