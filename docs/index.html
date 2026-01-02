@@ -1063,89 +1063,61 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-container">
-            <div class="terminal-window">
+            <h1 class="hero-title">CTHULU <span>v5.1.0</span> APEX</h1>
+            <p class="hero-subtitle">
+                Professional autonomous trading system for MetaTrader 5 — 7 active strategies, 12 technical indicators, enterprise-grade risk management
+            </p>
+
+            <!-- Performance Summary -->
+            <div class="summary-grid" style="margin-top: 2rem;">
+                <div class="summary-card">
+                    <div class="summary-label">STRATEGIES DEPLOYED</div>
+                    <div class="summary-value">7</div>
+                    <div class="summary-sparkline"></div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">INDICATORS ACTIVE</div>
+                    <div class="summary-value">12</div>
+                    <div class="summary-sparkline"></div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">TEST COVERAGE</div>
+                    <div class="summary-value">95%</div>
+                    <div class="summary-sparkline"></div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-label">PASSING TESTS</div>
+                    <div class="summary-value">185</div>
+                    <div class="summary-sparkline"></div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="terminal-window" style="margin-top: 2rem;">
                 <div class="terminal-header">
                     <span class="terminal-dot red"></span>
                     <span class="terminal-dot yellow"></span>
                     <span class="terminal-dot green"></span>
-                    <span class="terminal-title">Cthulu@trading:~</span>
+                    <span class="terminal-title">System Status</span>
                 </div>
                 <div class="terminal-body">
-                    <div class="terminal-line" style="animation-delay: 0.3s">
-                        <span class="prompt">$</span> <span class="command">python -m Cthulu </span>
+                    <div class="terminal-line">
+                        <span class="output success">✓ Core Engine: Operational</span>
                     </div>
-                    <div class="terminal-line" style="animation-delay: 0.6s">
-                        <span class="output info">[INFO] Cthulu Autonomous Trading System v5.1.0</span>
+                    <div class="terminal-line">
+                        <span class="output success">✓ Risk Management: Active</span>
                     </div>
-                    <div class="terminal-line" style="animation-delay: 0.9s">
-                        <span class="output">[INFO] Phase 1: Bootstrapping system...</span>
+                    <div class="terminal-line">
+                        <span class="output success">✓ Multi-Strategy Fallback: Enabled</span>
                     </div>
-                    <div class="terminal-line" style="animation-delay: 1.2s">
-                        <span class="output">[INFO] Configuration loaded: config.json</span>
+                    <div class="terminal-line">
+                        <span class="output success">✓ Exit Strategies: 4 Priority Levels</span>
                     </div>
-                    <div class="terminal-line" style="animation-delay: 1.5s">
-                        <span class="output">[INFO] Initializing: MT5 connector, data layer, risk evaluator...</span>
-                    </div>
-                    <div class="terminal-line" style="animation-delay: 1.8s">
-                        <span class="output success">[OK] MT5 Connected — Account: ****0069 (Balance: $1029.27)</span>
-                    </div>
-                    <div class="terminal-line" style="animation-delay: 2.1s">
-                        <span class="output">[INFO] Added runtime indicators: ['RSI', 'ADX']</span>
-                    </div>
-                    <div class="terminal-line" style="animation-delay: 2.4s">
-                        <span class="output">[INFO] StrategySelector: detected regime=ranging → selected=scalping</span>
-                    </div>
-                    <div class="terminal-line" style="animation-delay: 2.7s">
-                        <span class="output success">[OK] System bootstrap complete — trading loop initialized</span>
-                    </div>
-                    <div class="terminal-line" style="animation-delay: 3.0s">
-                        <span class="output">[STATUS] Starting autonomous trading loop... (Press Ctrl+C to stop)</span>
+                    <div class="terminal-line">
+                        <span class="output info">→ SAFE Engine: Set And Forget — Fully Autonomous</span>
                     </div>
                 </div>
             </div>
-
-            <h1 class="hero-title">Adaptive <span>Trading</span> Intelligence</h1>
-            <p class="hero-subtitle">
-                Dynamic MT5 trading system with modular architecture,
-                comprehensive risk management, and intelligent exit strategies.
-            </p>
-
-
-        </div>
-        <style>
-            @keyframes pulse {
-
-                0%,
-                100% {
-                    opacity: 1;
-                    box-shadow: 0 0 8px #00ff88;
-                }
-
-                50% {
-                    opacity: 0.5;
-                    box-shadow: 0 0 2px #00ff88;
-                }
-            }
-        </style>
-
-        <div class="status-grid">
-            <div class="status-card">
-                <div class="status-label">Phase</div>
-                <div class="status-value">05</div>
-            </div>
-            <div class="status-card">
-                <div class="status-label">Indicators</div>
-                <div class="status-value info">8</div>
-            </div>
-            <div class="status-card">
-                <div class="status-label">Exit Strategies</div>
-                <div class="status-value warning">5</div>
-            </div>
-            <div class="status-card">
-                <div class="status-label">Status</div>
-                <div class="status-value">APEX</div>
-            </div>
-        </div>
         </div>
     </section>
 

@@ -1,4 +1,12 @@
-# Advisory Manager
+---
+title: Advisory & Testing Modes
+description: Safe deployment testing modes including advisory mode and ghost mode for validating Cthulu without real trades
+tags: [advisory, testing, paper-trading, validation]
+slug: /docs/advisory
+sidebar_position: 14
+---
+
+# ADVISORY MANAGER
 
  ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  
