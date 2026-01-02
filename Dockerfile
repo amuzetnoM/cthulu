@@ -35,12 +35,12 @@ ARG BUILD_DATE
 
 # Labels for GHCR
 LABEL org.opencontainers.image.title="Cthulu Trading System" \
-      org.opencontainers.image.description="Advanced multi-strategy autonomous trading system with MT5 integration" \
-      org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.created="${BUILD_DATE}" \
-      org.opencontainers.image.source="https://github.com/amuzetnoM/cthulu" \
-      org.opencontainers.image.vendor="Artifact Virtual" \
-      org.opencontainers.image.licenses="MIT"
+    org.opencontainers.image.description="Advanced multi-strategy autonomous trading system with MT5 integration" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.source="https://github.com/amuzetnoM/cthulu" \
+    org.opencontainers.image.vendor="Artifact Virtual" \
+    org.opencontainers.image.licenses="MIT"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
