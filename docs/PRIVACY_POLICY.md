@@ -4,10 +4,11 @@ description: Privacy policy and data handling practices for the Cthulu trading s
 tags: [privacy, policies, data-handling, legal]
 sidebar_position: 11
 ---
-![Last updated](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?label=Last%20updated&style=flat-square)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?label=Last%20updated&style=flat-square)
 
-### Overview
-Cthulu is an open-source autonomous trading system that runs locally on your machine. We are committed to protecting your privacy and being transparent about data handling.
+## Overview
+
+> Cthulu is an open-source autonomous trading system that runs locally on your machine. We are committed to protecting your privacy and being transparent about data handling.
 
 ### Data Collection
 Cthulu does not collect, transmit, or store personal data on external servers by default. All data remains on your local machine:

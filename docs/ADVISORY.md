@@ -10,7 +10,7 @@ sidebar_position: 14
 
 ## Overview
 
-The Advisory Manager provides **safe deployment testing modes** for Cthulu without executing real trades. It is designed for **validation and testing**, not live trading cognition.
+> The Advisory Manager provides **safe deployment testing modes** for Cthulu without executing real trades. It is designed for **validation and testing**, not live trading cognition.
 
 ## Modes
 

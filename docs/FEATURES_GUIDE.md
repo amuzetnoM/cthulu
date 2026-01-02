@@ -20,7 +20,7 @@ _________   __  .__          .__
 
 ## Overview
 
-This document describes the major features of the Cthulu trading system — a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection, next-generation indicators, and the revolutionary **SAFE (Set And Forget Engine)** architecture.
+> This document describes the major features of the Cthulu trading system — a cutting-edge, multi-strategy autonomous trading platform with dynamic strategy selection, next-generation indicators, and the revolutionary **SAFE (Set And Forget Engine)** architecture.
 
 ### SAFE: Set And Forget Engine
 

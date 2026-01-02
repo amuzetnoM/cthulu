@@ -5,9 +5,8 @@ tags: [terms, legal, disclaimer, risk-disclosure]
 sidebar_position: 12
 ---
 
-### Terms of Use
+[![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu.svg?label=last%20updated&logo=github)](https://github.com/amuzetnoM/cthulu/commits/main)  
 
-Last updated: December 28, 2025
 
 **IMPORTANT DISCLAIMER:** Trading in financial markets involves substantial risk of loss. Cthulu is provided AS-IS without warranties. You are solely responsible for your trading decisions and any losses incurred. Never trade with money you cannot afford to lose.
 

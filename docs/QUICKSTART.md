@@ -5,7 +5,7 @@ tags: [quickstart, installation, setup, getting-started]
 sidebar_position: 3
 ---
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 
 ### 1. Initial Setup
 

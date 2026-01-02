@@ -5,12 +5,12 @@ tags: [risk-management, stop-loss, position-sizing]
 sidebar_position: 9
 ---
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 
 
 ## Overview
 
-This document describes the lightweight risk-management knobs added to Cthulu and how the system adapts stop-loss placement to account size.
+> This document describes the lightweight risk-management knobs added to Cthulu and how the system adapts stop-loss placement to account size.
 
 Key configuration entries (in `config_schema.py` under `risk`):
 

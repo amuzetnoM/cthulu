@@ -5,11 +5,12 @@ tags: [observability, metrics, prometheus]
 sidebar_position: 10
 ---
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 
-This document describes Cthulu's performance metrics, how they're computed, and how to expose them via the built-in Prometheus exporter.
 
 ## Overview
+
+> This document describes Cthulu's performance metrics, how they're computed, and how to expose them via the built-in Prometheus exporter.
 
 Cthulu now produces a comprehensive performance snapshot that is suitable for realtime monitoring and historical analysis.
 Key capabilities:
