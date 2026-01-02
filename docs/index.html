@@ -147,6 +147,15 @@
             letter-spacing: 3px;
         }
 
+        .header-logo {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            display: inline-block;
+            margin-right: 0.5rem;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+        }
+
         .version-tag {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.65rem;
@@ -341,6 +350,56 @@
             font-size: 1.2rem;
             color: var(--muted);
             max-width: 600px;
+        }
+
+        /* New Parallax Hero visual */
+        .hero-visual {
+            position: relative;
+            height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            margin-bottom: 1rem;
+        }
+
+        .hero-parallax {
+            position: relative;
+            text-align: center;
+            perspective: 900px;
+            transform-style: preserve-3d;
+        }
+
+        .hero-main {
+            font-size: 5rem;
+            font-weight: 800;
+            color: var(--bright);
+            margin: 0;
+            letter-spacing: 6px;
+            transform: translateZ(0);
+            transition: transform 120ms linear;
+            pointer-events: none;
+        }
+
+        .hero-sub {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0;
+            margin-top: 0.5rem;
+            transform: translateZ(0);
+            transition: transform 140ms linear;
+            pointer-events: none;
+        }
+
+        @media (max-width: 900px) {
+            .hero-main {
+                font-size: 3rem;
+            }
+
+            .hero-sub {
+                font-size: 1.4rem;
+            }
         }
 
         /* Status Dashboard */
@@ -1045,6 +1104,7 @@
     <!-- Navigation -->
     <nav>
         <div class="nav-left">
+            <img class="header-logo" src="../assets/cthulu-white.png" alt="Cthulu logo">
             <span class="logo">Cthulu</span>
             <span class="version-tag">v5.1.0</span>
             <div class="live-indicator">
@@ -1063,9 +1123,17 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-container">
-            <h1 class="hero-title">CTHULU <span>v5.1.0</span> APEX</h1>
+            <div class="hero-visual">
+                <div class="hero-parallax" id="heroParallax">
+                    <h1 class="hero-main">CTHULU</h1>
+                    <h2 class="hero-sub">APEX</h2>
+                </div>
+            </div>
             <p class="hero-subtitle">
-                Professional autonomous trading system for MetaTrader 5 — 7 active strategies, 12 technical indicators, enterprise-grade risk management
+                Professional autonomous trading system. <br> 7 active strategies, 12 technical
+                indicators,
+                enterprise-grade risk management.
+                <br> MT5 integration
             </p>
 
             <!-- Performance Summary -->
@@ -1558,6 +1626,33 @@ MAX_DAILY_LOSS=<span class="string">0.05</span></pre>
             particle.style.animationDuration = (15 + Math.random() * 20) + 's';
             particle.style.animationDelay = Math.random() * 20 + 's';
             particlesContainer.appendChild(particle);
+        }
+
+        // Parallax hero interaction (mouse & subtle scroll)
+        const heroParallax = document.getElementById('heroParallax');
+        if (heroParallax) {
+            const main = heroParallax.querySelector('.hero-main');
+            const sub = heroParallax.querySelector('.hero-sub');
+
+            function handleHeroMove(e) {
+                const rect = heroParallax.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                if (main) main.style.transform = `translate3d(${x * 18}px, ${y * 10}px, 0)`;
+                if (sub) sub.style.transform = `translate3d(${x * 36}px, ${y * 18}px, 0)`;
+            }
+
+            heroParallax.addEventListener('mousemove', handleHeroMove);
+            heroParallax.addEventListener('mouseleave', () => {
+                if (main) main.style.transform = '';
+                if (sub) sub.style.transform = '';
+            });
+
+            // subtle scroll-based parallax offset
+            window.addEventListener('scroll', () => {
+                const offset = Math.min(Math.max((window.scrollY / 6), -60), 60);
+                heroParallax.style.transform = `translateY(${offset}px)`;
+            });
         }
 
         // Terminal typing effect
