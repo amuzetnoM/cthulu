@@ -7,7 +7,7 @@ sidebar_position: 1
 
 ---
 
-![LEGENDARY](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&labelColor=0D1117)
 
 
 
