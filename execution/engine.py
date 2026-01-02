@@ -52,17 +52,19 @@ class OrderRequest:
         sl: Stop loss price
         tp: Take profit price
         client_tag: Client order identifier
+        comment: Order comment for MT5
         metadata: Additional order data
     """
-    signal_id: str
     symbol: str
     side: str
     volume: float
     order_type: OrderType
+    signal_id: str = ""
     price: Optional[float] = None
     sl: Optional[float] = None
     tp: Optional[float] = None
     client_tag: str = ""
+    comment: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 

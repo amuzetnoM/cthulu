@@ -389,9 +389,15 @@ class CthuluGUI:
                     self.history_tree.delete(i)
                 for idx, trade in enumerate(trades):
                     tag = 'even' if idx % 2 == 0 else 'odd'
-                    # Format trade data
-                    entry_time = trade.entry_time.strftime('%Y-%m-%d %H:%M') if trade.entry_time else '—'
-                    exit_time = trade.exit_time.strftime('%Y-%m-%d %H:%M') if trade.exit_time else '—'
+                    # Format trade data - handle both datetime and string
+                    if trade.entry_time:
+                        entry_time = trade.entry_time.strftime('%Y-%m-%d %H:%M') if hasattr(trade.entry_time, 'strftime') else str(trade.entry_time)[:16]
+                    else:
+                        entry_time = '—'
+                    if trade.exit_time:
+                        exit_time = trade.exit_time.strftime('%Y-%m-%d %H:%M') if hasattr(trade.exit_time, 'strftime') else str(trade.exit_time)[:16]
+                    else:
+                        exit_time = '—'
                     pnl = f"{trade.profit:.2f}" if trade.profit is not None else '—'
                     status = trade.status
                     result = f"{trade.side} {trade.volume}@{trade.entry_price:.5f} → {pnl} ({status})"

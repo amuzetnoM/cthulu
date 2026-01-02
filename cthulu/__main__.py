@@ -27,6 +27,7 @@ from core.shutdown import ShutdownHandler, create_shutdown_handler
 from config_schema import Config
 from config.mindsets import apply_mindset, list_mindsets
 from observability.logger import setup_logger
+from cognition import get_cognition_engine
 
 # Backwards-compatible helper for tests & integrations
 # Signature matches older tests: init_ml_collector(config, args, logger)
@@ -255,10 +256,20 @@ def main():
             dynamic_sltp_manager=components.dynamic_sltp_manager,
             adaptive_drawdown_manager=components.adaptive_drawdown_manager,
             profit_scaler=getattr(components, 'profit_scaler', None),
+            adaptive_account_manager=getattr(components, 'adaptive_account_manager', None),
+            adaptive_loss_curve=getattr(components, 'adaptive_loss_curve', None),
             indicator_collector=getattr(components, 'indicator_collector', None),
             system_health_collector=getattr(components, 'system_health_collector', None),
             comprehensive_collector=getattr(components, 'comprehensive_collector', None),
         )
+        
+        # Initialize Cognition Engine (AI/ML layer)
+        try:
+            cognition_engine = get_cognition_engine()
+            trading_context.cognition_engine = cognition_engine
+            logger.info("🧠 Cognition Engine initialized - AI/ML signal enhancement active")
+        except Exception as e:
+            logger.warning(f"Cognition Engine not available: {e} - running in rule-based mode")
         
         # Log collector status
         logger.info(f"Context collectors: indicator={trading_context.indicator_collector is not None}, "

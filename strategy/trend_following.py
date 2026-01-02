@@ -55,6 +55,9 @@ class TrendFollowingStrategy(Strategy):
         """
         Process new bar and check for trend following signals.
 
+        Enhanced to be more aggressive in strong trends - doesn't require
+        exact pullback timing, generates signals on strong trend confirmation.
+
         Args:
             bar: Latest bar with indicators
 
@@ -66,109 +69,172 @@ class TrendFollowingStrategy(Strategy):
         if not all(col in bar for col in required_cols):
             return None
 
-        # Check for ADX
-        adx_col = f'adx_{self.adx_period}' if f'adx_{self.adx_period}' in bar else 'adx'
-        if adx_col not in bar:
+        # Check for ADX - try multiple column naming conventions
+        adx = None
+        for col in [f'adx_{self.adx_period}', 'adx', f'adx_{14}']:
+            if col in bar:
+                adx = bar[col]
+                break
+        if adx is None:
             return None
 
-        # Check for moving averages
-        fast_ma_col = f'sma_{self.fast_ma}' if f'sma_{self.fast_ma}' in bar else f'ema_{self.fast_ma}'
-        slow_ma_col = f'sma_{self.slow_ma}' if f'sma_{self.slow_ma}' in bar else f'ema_{self.slow_ma}'
-
-        if fast_ma_col not in bar or slow_ma_col not in bar:
+        # Check for moving averages - try EMA first, then SMA
+        fast_ma = None
+        slow_ma = None
+        
+        for prefix in ['ema', 'sma']:
+            fast_col = f'{prefix}_{self.fast_ma}'
+            slow_col = f'{prefix}_{self.slow_ma}'
+            if fast_col in bar and fast_ma is None:
+                fast_ma = bar[fast_col]
+            if slow_col in bar and slow_ma is None:
+                slow_ma = bar[slow_col]
+        
+        if fast_ma is None or slow_ma is None:
             return None
 
         close = bar['close']
         high = bar['high']
         low = bar['low']
         atr = bar['atr']
-        adx = bar[adx_col]
-        fast_ma = bar[fast_ma_col]
-        slow_ma = bar[slow_ma_col]
 
         # Check for trend direction and strength
         ma_trend = 1 if fast_ma > slow_ma else -1  # 1 = uptrend, -1 = downtrend
         trend_strength = adx >= self.adx_threshold
+        
+        # Calculate MA separation percentage
+        ma_separation = abs(fast_ma - slow_ma) / slow_ma if slow_ma > 0 else 0
+        ma_separation_pct = ma_separation * 100
 
         # Update trend state
+        prev_trend = self._state['trend_direction']
         if trend_strength:
             self._state['trend_direction'] = ma_trend
         else:
             self._state['trend_direction'] = 0
+        
+        # Track signal cooldown
+        if 'cooldown' not in self._state:
+            self._state['cooldown'] = 0
+        if self._state['cooldown'] > 0:
+            self._state['cooldown'] -= 1
+            return None
 
         # Only trade if we have a confirmed trend
         if not trend_strength or self._state['trend_direction'] == 0:
             return None
 
-        # Bullish trend continuation: Price above fast MA, fast MA above slow MA, strong uptrend
-        if (self._state['trend_direction'] == 1 and  # Uptrend confirmed
-            close > fast_ma and                    # Price above fast MA
-            fast_ma > slow_ma and                  # Fast MA above slow MA
-            low <= fast_ma * 1.002):              # Recent dip to fast MA (pullback)
+        # --- UPTREND SIGNALS ---
+        if self._state['trend_direction'] == 1 and close > fast_ma:
+            signal = None
+            reason = None
+            confidence = 0.70
+            
+            # Strong trend continuation: price well above MAs with strong ADX
+            if adx > 30 and close > fast_ma * 1.001:
+                reason = f"Strong uptrend continuation (ADX={adx:.1f}, sep={ma_separation_pct:.2f}%)"
+                confidence = 0.80
+                signal = True
+            
+            # Pullback entry: price touched fast MA and bounced
+            elif low <= fast_ma * 1.003 and close > fast_ma:
+                reason = f"Uptrend pullback entry to EMA (ADX={adx:.1f})"
+                confidence = 0.75
+                signal = True
+            
+            # New trend establishment: MAs just crossed
+            elif prev_trend != 1 and ma_trend == 1:
+                reason = f"New uptrend established (ADX={adx:.1f})"
+                confidence = 0.78
+                signal = True
+            
+            if signal:
+                entry_price = close
+                stop_loss = fast_ma - (atr * self.atr_multiplier)
+                risk = entry_price - stop_loss
+                take_profit = entry_price + (risk * self.risk_reward_ratio)
+                
+                self._state['cooldown'] = 5  # Cooldown bars
+                
+                return Signal(
+                    id=self.generate_signal_id(),
+                    timestamp=bar.name,
+                    symbol=self.config.get('params', {}).get('symbol', 'UNKNOWN'),
+                    timeframe=self.config.get('timeframe', '1H'),
+                    side=SignalType.LONG,
+                    action='BUY',
+                    price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    confidence=confidence,
+                    reason=reason,
+                    metadata={
+                        'strategy_type': 'trend_following',
+                        'trend_direction': 'up',
+                        'adx': float(adx),
+                        'fast_ma': float(fast_ma),
+                        'slow_ma': float(slow_ma),
+                        'ma_separation_pct': float(ma_separation_pct),
+                        'risk': float(risk),
+                        'reward': float(risk * self.risk_reward_ratio)
+                    }
+                )
 
-            # Calculate entry and stops
-            entry_price = close
-            stop_loss = slow_ma  # Stop below slow MA
-            risk = entry_price - stop_loss
-            take_profit = entry_price + (risk * self.risk_reward_ratio)
-
-            return Signal(
-                id=self.generate_signal_id(),
-                timestamp=bar.name,
-                symbol=self.config.get('params', {}).get('symbol', 'UNKNOWN'),
-                timeframe=self.config.get('timeframe', '1H'),
-                side=SignalType.LONG,
-                action='BUY',
-                price=entry_price,
-                stop_loss=stop_loss,
-                take_profit=take_profit,
-                confidence=0.80,
-                reason=f"Trend continuation uptrend (ADX={adx:.1f})",
-                metadata={
-                    'strategy_type': 'trend_following',
-                    'trend_direction': 'up',
-                    'adx': float(adx),
-                    'fast_ma': float(fast_ma),
-                    'slow_ma': float(slow_ma),
-                    'risk': float(risk),
-                    'reward': float(risk * self.risk_reward_ratio)
-                }
-            )
-
-        # Bearish trend continuation: Price below fast MA, fast MA below slow MA, strong downtrend
-        elif (self._state['trend_direction'] == -1 and  # Downtrend confirmed
-              close < fast_ma and                      # Price below fast MA
-              fast_ma < slow_ma and                    # Fast MA below slow MA
-              high >= fast_ma * 0.998):               # Recent rally to fast MA (pullback)
-
-            # Calculate entry and stops
-            entry_price = close
-            stop_loss = slow_ma  # Stop above slow MA
-            risk = stop_loss - entry_price
-            take_profit = entry_price - (risk * self.risk_reward_ratio)
-
-            return Signal(
-                id=self.generate_signal_id(),
-                timestamp=bar.name,
-                symbol=self.config.get('params', {}).get('symbol', 'UNKNOWN'),
-                timeframe=self.config.get('timeframe', '1H'),
-                side=SignalType.SHORT,
-                action='SELL',
-                price=entry_price,
-                stop_loss=stop_loss,
-                take_profit=take_profit,
-                confidence=0.80,
-                reason=f"Trend continuation downtrend (ADX={adx:.1f})",
-                metadata={
-                    'strategy_type': 'trend_following',
-                    'trend_direction': 'down',
-                    'adx': float(adx),
-                    'fast_ma': float(fast_ma),
-                    'slow_ma': float(slow_ma),
-                    'risk': float(risk),
-                    'reward': float(risk * self.risk_reward_ratio)
-                }
-            )
+        # --- DOWNTREND SIGNALS ---
+        elif self._state['trend_direction'] == -1 and close < fast_ma:
+            signal = None
+            reason = None
+            confidence = 0.70
+            
+            # Strong trend continuation
+            if adx > 30 and close < fast_ma * 0.999:
+                reason = f"Strong downtrend continuation (ADX={adx:.1f}, sep={ma_separation_pct:.2f}%)"
+                confidence = 0.80
+                signal = True
+            
+            # Pullback entry
+            elif high >= fast_ma * 0.997 and close < fast_ma:
+                reason = f"Downtrend pullback entry to EMA (ADX={adx:.1f})"
+                confidence = 0.75
+                signal = True
+            
+            # New trend establishment
+            elif prev_trend != -1 and ma_trend == -1:
+                reason = f"New downtrend established (ADX={adx:.1f})"
+                confidence = 0.78
+                signal = True
+            
+            if signal:
+                entry_price = close
+                stop_loss = fast_ma + (atr * self.atr_multiplier)
+                risk = stop_loss - entry_price
+                take_profit = entry_price - (risk * self.risk_reward_ratio)
+                
+                self._state['cooldown'] = 5
+                
+                return Signal(
+                    id=self.generate_signal_id(),
+                    timestamp=bar.name,
+                    symbol=self.config.get('params', {}).get('symbol', 'UNKNOWN'),
+                    timeframe=self.config.get('timeframe', '1H'),
+                    side=SignalType.SHORT,
+                    action='SELL',
+                    price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    confidence=confidence,
+                    reason=reason,
+                    metadata={
+                        'strategy_type': 'trend_following',
+                        'trend_direction': 'down',
+                        'adx': float(adx),
+                        'fast_ma': float(fast_ma),
+                        'slow_ma': float(slow_ma),
+                        'ma_separation_pct': float(ma_separation_pct),
+                        'risk': float(risk),
+                        'reward': float(risk * self.risk_reward_ratio)
+                    }
+                )
 
         return None
 
