@@ -17,8 +17,8 @@ _________   __  .__          .__
 
 • [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
- ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
- ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
+ ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
 
@@ -29,24 +29,24 @@ _________   __  .__          .__
 > Documentation improvements and enhancements
 
 ### Added
-- 👾 Comprehensive Mermaid flowchart diagrams throughout documentation
-- 👾 Trade decision flow diagram showing complete signal-to-execution pipeline
-- 👾 Strategy selection logic diagram with regime-based switching
-- 👾 Exit strategy priority flow diagram with 4-tier system
-- 👾 Multi-strategy ensemble architecture diagram
-- 👾 Risk management flow diagram with validation checks
-- 👾 System-wide INDEX.md with complete navigation and quick start
-- 👾 Ultra-Aggressive Trading Guide with HFT configuration
-- 👾 Consistent frontmatter across all documentation files
+- Comprehensive Mermaid flowchart diagrams throughout documentation
+- Trade decision flow diagram showing complete signal-to-execution pipeline
+- Strategy selection logic diagram with regime-based switching
+- Exit strategy priority flow diagram with 4-tier system
+- Multi-strategy ensemble architecture diagram
+- Risk management flow diagram with validation checks
+- System-wide INDEX.md with complete navigation and quick start
+- Ultra-Aggressive Trading Guide with HFT configuration
+- Consistent frontmatter across all documentation files
 
 ### Changed
-- 👾 Replaced all ASCII diagrams with Mermaid flowchartLR implementations
-- 👾 Enhanced ARCHITECTURE.md with multi-layered comprehensive diagrams
-- 👾 Updated OVERVIEW.md with modern module structure visualization
-- 👾 Improved documentation organization with sidebar positioning
+- Replaced all ASCII diagrams with Mermaid flowchartLR implementations
+- Enhanced ARCHITECTURE.md with multi-layered comprehensive diagrams
+- Updated OVERVIEW.md with modern module structure visualization
+- Improved documentation organization with sidebar positioning
 
 ### Removed
-- 👾 Alt text from images and badges (for cleaner rendering)
+- Alt text from images and badges (for cleaner rendering)
 
 ---
 

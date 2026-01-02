@@ -1,5 +1,5 @@
 ---
-title: Ultra-Aggressive Trading Guide
+title: Ultra-Aggressive Mindset Guide
 description: High-frequency trading configuration with ultra-aggressive parameters and risk settings
 tags: [ultra-aggressive, hft, scalping, high-frequency]
 slug: /docs/ultra-aggressive
@@ -8,7 +8,7 @@ sidebar_position: 15
 
 # ULTRA-AGGRESSIVE TRADING GUIDE
 
-![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 
 ## Overview
 
