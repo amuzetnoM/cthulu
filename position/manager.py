@@ -165,12 +165,68 @@ class PositionManager:
             return list(self._positions.values())
 
     def reconcile_positions(self) -> int:
-        """Placeholder reconcile - in full system this would query MT5; here we return count."""
-        with self._lock:
-            return len(self._positions)
+        """Reconcile internal position tracking with MT5 live positions.
+        
+        Queries MT5 for actual open positions and syncs internal state.
+        Returns the count of reconciled positions.
+        """
+        try:
+            import MetaTrader5 as mt5
+            if not mt5.initialize():
+                # MT5 not available, return current count
+                with self._lock:
+                    return len(self._positions)
+            
+            positions = mt5.positions_get()
+            if positions is None:
+                positions = []
+            
+            with self._lock:
+                # Get current MT5 tickets
+                mt5_tickets = {p.ticket for p in positions}
+                internal_tickets = set(self._positions.keys())
+                
+                # Remove positions that are no longer open in MT5
+                for ticket in internal_tickets - mt5_tickets:
+                    del self._positions[ticket]
+                
+                # Add/update positions from MT5
+                for pos in positions:
+                    existing = self._positions.get(pos.ticket)
+                    if existing:
+                        # Update current price and other fields
+                        existing.current_price = pos.price_current
+                        existing.volume = pos.volume
+                    else:
+                        # Add new position from MT5
+                        self._positions[pos.ticket] = PositionInfo(
+                            ticket=pos.ticket,
+                            symbol=pos.symbol,
+                            volume=pos.volume,
+                            open_price=pos.price_open,
+                            current_price=pos.price_current,
+                            open_time=None,  # MT5 provides timestamp differently
+                            side='BUY' if pos.type == 0 else 'SELL'
+                        )
+                
+                return len(self._positions)
+        except ImportError:
+            # MT5 not installed
+            with self._lock:
+                return len(self._positions)
+        except Exception:
+            # Any error - return current count
+            with self._lock:
+                return len(self._positions)
 
     def get_statistics(self) -> dict:
-        return {'open_positions': len(self._positions), 'total_unrealized_pnl': self.calculate_total_pnl()}
+        """Get position statistics, reconciling with MT5 first."""
+        self.reconcile_positions()  # Sync with MT5 before reporting
+        with self._lock:
+            total_pnl = 0.0
+            for p in self._positions.values():
+                total_pnl += p.calculate_unrealized_pnl()
+            return {'open_positions': len(self._positions), 'total_unrealized_pnl': total_pnl}
 
     def get_position_summary_by_symbol(self) -> dict:
         out = {}
