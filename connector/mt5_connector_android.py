@@ -26,6 +26,64 @@ from threading import Lock
 from pathlib import Path
 
 
+# MT5 Constants - duplicated here for Android compatibility
+# These match the MetaTrader5 package constants
+class MT5Constants:
+    """MT5 API constants for Android connector."""
+    
+    # Order types
+    ORDER_TYPE_BUY = 0
+    ORDER_TYPE_SELL = 1
+    ORDER_TYPE_BUY_LIMIT = 2
+    ORDER_TYPE_SELL_LIMIT = 3
+    ORDER_TYPE_BUY_STOP = 4
+    ORDER_TYPE_SELL_STOP = 5
+    
+    # Trade actions
+    TRADE_ACTION_DEAL = 1
+    TRADE_ACTION_PENDING = 5
+    TRADE_ACTION_SLTP = 6
+    TRADE_ACTION_MODIFY = 7
+    TRADE_ACTION_REMOVE = 8
+    
+    # Order time
+    ORDER_TIME_GTC = 0
+    ORDER_TIME_DAY = 1
+    ORDER_TIME_SPECIFIED = 2
+    ORDER_TIME_SPECIFIED_DAY = 3
+    
+    # Order filling
+    ORDER_FILLING_FOK = 0
+    ORDER_FILLING_IOC = 1
+    ORDER_FILLING_RETURN = 2
+    
+    # Trade retcodes
+    TRADE_RETCODE_DONE = 10009
+    TRADE_RETCODE_INVALID = 10013
+    TRADE_RETCODE_TIMEOUT = 10012
+    
+    # Timeframes
+    TIMEFRAME_M1 = 1
+    TIMEFRAME_M5 = 5
+    TIMEFRAME_M15 = 15
+    TIMEFRAME_M30 = 30
+    TIMEFRAME_H1 = 16385
+    TIMEFRAME_H4 = 16388
+    TIMEFRAME_D1 = 16408
+    TIMEFRAME_W1 = 32769
+    TIMEFRAME_MN1 = 49153
+
+
+# Create module-level constants for backward compatibility
+ORDER_TYPE_BUY = MT5Constants.ORDER_TYPE_BUY
+ORDER_TYPE_SELL = MT5Constants.ORDER_TYPE_SELL
+TRADE_ACTION_DEAL = MT5Constants.TRADE_ACTION_DEAL
+ORDER_TIME_GTC = MT5Constants.ORDER_TIME_GTC
+ORDER_FILLING_FOK = MT5Constants.ORDER_FILLING_FOK
+ORDER_FILLING_IOC = MT5Constants.ORDER_FILLING_IOC
+TRADE_RETCODE_DONE = MT5Constants.TRADE_RETCODE_DONE
+
+
 @dataclass
 class AndroidConnectionConfig:
     """Android MT5 connection configuration"""

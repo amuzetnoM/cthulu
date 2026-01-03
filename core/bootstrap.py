@@ -16,7 +16,9 @@ import os
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 
-from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulu.connector import create_connector, MT5Connector, MT5ConnectorAndroid
+from cthulu.connector.mt5_connector import ConnectionConfig
+from cthulu.connector.mt5_connector_android import AndroidConnectionConfig
 from cthulu.data.layer import DataLayer
 from cthulu.risk.evaluator import RiskEvaluator, RiskLimits
 from cthulu.execution.engine import ExecutionEngine
@@ -35,7 +37,7 @@ class SystemComponents:
     
     # Core components
     config: Dict[str, Any]
-    connector: MT5Connector
+    connector: Any  # Can be MT5Connector or MT5ConnectorAndroid
     data_layer: DataLayer
     risk_manager: RiskEvaluator
     execution_engine: ExecutionEngine
@@ -124,18 +126,23 @@ class CthuluBootstrap:
             self.logger.error(f"Failed to load configuration: {e}")
             raise
     
-    def initialize_connector(self, config: Dict[str, Any]) -> MT5Connector:
-        """Initialize MT5 connector.
+    def initialize_connector(self, config: Dict[str, Any]) -> Any:
+        """Initialize MT5 connector (platform-agnostic).
+        
+        Automatically detects the platform (Windows/Linux/Android) and creates
+        the appropriate connector type using the factory pattern.
         
         Args:
             config: System configuration
             
         Returns:
-            Initialized MT5Connector instance
+            Initialized connector instance (MT5Connector or MT5ConnectorAndroid)
         """
         self.logger.info("Initializing MT5 connector...")
-        connection_config = ConnectionConfig(**config['mt5'])
-        connector = MT5Connector(connection_config)
+        
+        # Use factory to create platform-appropriate connector
+        connector = create_connector(config['mt5'])
+        
         return connector
     
     def initialize_data_layer(self, config: Dict[str, Any]) -> DataLayer:
@@ -185,7 +192,7 @@ class CthuluBootstrap:
         
         return risk_limits
     
-    def initialize_execution_engine(self, connector: MT5Connector, config: Dict[str, Any],
+    def initialize_execution_engine(self, connector: Any, config: Dict[str, Any],
                                    ml_collector: Any = None) -> ExecutionEngine:
         """Initialize execution engine.
         
@@ -206,7 +213,7 @@ class CthuluBootstrap:
         )
         return execution_engine
     
-    def initialize_position_tracker(self, connector: MT5Connector) -> PositionTracker:
+    def initialize_position_tracker(self, connector: Any) -> PositionTracker:
         """Initialize position tracker.
         
         Args:
@@ -219,7 +226,7 @@ class CthuluBootstrap:
         position_tracker = PositionTracker()
         return position_tracker
 
-    def initialize_position_manager(self, connector: MT5Connector, execution_engine: ExecutionEngine, context_symbol: str = None) -> 'PositionManager':
+    def initialize_position_manager(self, connector: Any, execution_engine: ExecutionEngine, context_symbol: str = None) -> 'PositionManager':
         """Initialize a lightweight PositionManager for higher-level monitoring.
         
         This manager is separate from the low-level PositionTracker and provides
@@ -263,7 +270,7 @@ class CthuluBootstrap:
             self.logger.exception(f"Failed to initialize strategy: {e}")
             return None
     
-    def initialize_position_lifecycle(self, connector: MT5Connector,
+    def initialize_position_lifecycle(self, connector: Any,
                                       execution_engine: ExecutionEngine,
                                       position_tracker: PositionTracker,
                                       database: Database) -> PositionLifecycle:
@@ -282,7 +289,7 @@ class CthuluBootstrap:
         position_lifecycle = PositionLifecycle(connector, execution_engine, position_tracker, database)
         return position_lifecycle
     
-    def initialize_trade_adoption_manager(self, connector: MT5Connector, position_tracker: PositionTracker,
+    def initialize_trade_adoption_manager(self, connector: Any, position_tracker: PositionTracker,
                                           position_lifecycle: PositionLifecycle,
                                           config: Dict[str, Any]) -> TradeAdoptionManager:
         """Initialize trade adoption manager for external trade adoption.
