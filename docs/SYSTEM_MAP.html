@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cthulu — System Map</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            padding: 2rem
+        }
+
+        h1 {
+            color: #6a00ff
+        }
+
+        .legend {
+            margin-top: 1rem;
+        }
+
+        .legend span {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            margin-right: 0.6rem;
+            border-radius: 4px
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧭 Cthulu System Map (v5.1.0 APEX)</h1>
+    <p>Generated from <code>OVERVIEW.md</code> and `_dev` reviews. A local copy lives in `_dev/system_map.html` if you
+        prefer iterative edits.</p>
+
+    <div class="mermaid">
+        flowchart TB
+        subgraph ENTRY["ENTRY Layer \n (CLI / Wizard)"]
+        direction TB
+        main["__main__.py"]
+        wiz["wizard.py"]
+        cli["cli args"]
+        end
+
+        subgraph CORE["CORE Engine \n (bootstrap, loop)"]
+        direction TB
+        boot["bootstrap.py"]
+        loop["trading_loop.py"]
+        shut["shutdown.py"]
+        end
+
+        subgraph COG["Cognition (AI/ML)"]
+        direction TB
+        cog_eng["engine.py"]
+        regime["regime_classifier.py"]
+        predictor["price_predictor.py"]
+        sentiment["sentiment_analyzer.py"]
+        exit_oracle["exit_oracle.py"]
+        end
+
+        subgraph STR["Strategy Layer"]
+        direction TB
+        selector["strategy_selector.py"]
+        strat1["ema_crossover"]
+        strat2["sma_crossover"]
+        strat3["momentum_breakout"]
+        end
+
+        subgraph IND["Indicators"]
+        rsi["RSI"]
+        macd["MACD"]
+        atr["ATR"]
+        end
+
+        subgraph RISK["Risk Management"]
+        evaluator["evaluator.py"]
+        acct["adaptive_account_manager.py"]
+        dd["adaptive_drawdown.py"]
+        end
+
+        subgraph POS["Position Management"]
+        manager["manager.py"]
+        lifecycle["lifecycle.py"]
+        tracker["tracker.py"]
+        end
+
+        subgraph EXIT["Exit System"]
+        coord["coordinator.py"]
+        trail["trailing_stop.py"]
+        timeexit["time_based.py"]
+        end
+
+        subgraph EXEC["Execution / Connectors"]
+        eng["engine.py (exec)"]
+        mt5["mt5_connector.py"]
+        end
+
+        subgraph PERSIST["Persistence / Training Logs"]
+        db["database.py"]
+        training["training_logger.py"]
+        end
+
+        subgraph OBS["Observability"]
+        metrics["metrics.py"]
+        prom["prometheus.py"]
+        dash["dashboard.html"]
+        end
+
+        ENTRY --> CORE
+        CORE --> COG
+        CORE --> STR
+        STR --> IND
+
+        COG -->|enhance signals| STR
+        COG -->|exit oracle| EXIT
+        CORE --> RISK
+        RISK --> POS
+        POS --> EXIT
+        EXIT --> EXEC
+        EXEC --> mt5
+
+        CORE --> PERSIST
+        CORE --> OBS
+
+        classDef cognition fill:#9b59b6,stroke:#8e44ad,color:#fff
+        classDef risk fill:#e74c3c,stroke:#c0392b,color:#fff
+        classDef strategy fill:#3498db,stroke:#2980b9,color:#fff
+        classDef execution fill:#27ae60,stroke:#1e8449,color:#fff
+        classDef observ fill:#f1c40f,stroke:#f39c12,color:#111
+        classDef core fill:#2f3640,stroke:#222,color:#fff
+
+        class cog_eng,regime,predictor,sentiment,exit_oracle cognition
+        class evaluator,acct,dd risk
+        class selector,strat1,strat2,strat3 strategy
+        class eng,mt5 execution
+        class metrics,prom,dash observ
+    </div>
+
+    <div class="legend">
+        <strong>Legend:</strong>
+        <span style="background:#9b59b6;color:#fff">Cognition</span>
+        <span style="background:#e74c3c;color:#fff">Risk</span>
+        <span style="background:#3498db;color:#fff">Strategy</span>
+        <span style="background:#27ae60;color:#fff">Execution</span>
+        <span style="background:#f1c40f;color:#111">Observability</span>
+        <span style="background:#2f3640;color:#fff">Core/Entry</span>
+    </div>
+
+    <hr style="margin-top:1.5rem;" />
+    <p style="opacity:.8">To iterate: edit `_dev/system_map.html` and copy the final version to `docs/SYSTEM_MAP.html`
+        so it remains tracked.</p>
+</body>
+
+</html>

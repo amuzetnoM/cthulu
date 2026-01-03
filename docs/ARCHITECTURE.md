@@ -69,6 +69,8 @@ graph TB
     style DB fill:#ffaa00,stroke:#dd8800,color:#000
 ```
 
+> 🧭 Interactive system map available: `docs/SYSTEM_MAP.html` (local draft in `_dev/system_map.html`)
+
 ### Component Architecture
 
 ```mermaid
