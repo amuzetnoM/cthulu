@@ -33,7 +33,7 @@ from cthulu.position.lifecycle import PositionLifecycle
 from cthulu.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
 from cthulu.persistence.database import Database, TradeRecord, SignalRecord
 from cthulu.observability.metrics import MetricsCollector
-from cthulu.connector import MT5Connector, MT5ConnectorAndroid
+from cthulu.connector.mt5_connector_android import MT5ConnectorAndroid as MT5Connector
 from cthulu.data.layer import DataLayer
 
 
@@ -46,7 +46,7 @@ class TradingLoopContext:
     loop testable in isolation.
     """
     # Core trading components
-    connector: Any  # Can be MT5Connector or MT5ConnectorAndroid
+    connector: MT5Connector
     data_layer: DataLayer
     execution_engine: ExecutionEngine
     risk_manager: RiskEvaluator

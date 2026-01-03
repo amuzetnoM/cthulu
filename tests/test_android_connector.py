@@ -2,8 +2,8 @@
 Tests for Android MT5 Connector
 
 Tests the Android-specific MT5 connector functionality including:
-- Platform detection
-- Connector factory
+- Platform detection (standalone tool)
+- Connector factory (standalone tool)
 - Android connector basic operations
 - Bridge communication
 """
@@ -17,7 +17,7 @@ from unittest.mock import Mock, patch, MagicMock
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from cthulu.utils.platform_detector import (
+from tools.platform_detector import (
     detect_termux,
     detect_android,
     get_platform_type,
@@ -25,7 +25,7 @@ from cthulu.utils.platform_detector import (
     is_android,
     is_windows
 )
-from cthulu.connector.factory import create_connector, get_connector_type
+from tools.connector_factory import create_connector, get_connector_type
 from cthulu.connector.mt5_connector_android import MT5ConnectorAndroid, AndroidConnectionConfig
 
 
@@ -45,24 +45,24 @@ class TestPlatformDetection:
     
     def test_detect_android_via_termux(self):
         """Test Android detection via Termux."""
-        with patch('cthulu.utils.platform_detector.detect_termux', return_value=True):
+        with patch('tools.platform_detector.detect_termux', return_value=True):
             assert detect_android() is True
     
     def test_get_platform_type_windows(self):
         """Test platform type detection for Windows."""
         with patch('sys.platform', 'win32'):
-            with patch('cthulu.utils.platform_detector.detect_android', return_value=False):
+            with patch('tools.platform_detector.detect_android', return_value=False):
                 assert get_platform_type() == "windows"
     
     def test_get_platform_type_linux(self):
         """Test platform type detection for Linux."""
         with patch('sys.platform', 'linux'):
-            with patch('cthulu.utils.platform_detector.detect_android', return_value=False):
+            with patch('tools.platform_detector.detect_android', return_value=False):
                 assert get_platform_type() == "linux"
     
     def test_get_platform_type_android(self):
         """Test platform type detection for Android."""
-        with patch('cthulu.utils.platform_detector.detect_android', return_value=True):
+        with patch('tools.platform_detector.detect_android', return_value=True):
             assert get_platform_type() == "android"
     
     def test_get_platform_info(self):
@@ -120,7 +120,7 @@ class TestConnectorFactory:
         }
         
         with patch('sys.platform', 'win32'):
-            with patch('cthulu.utils.platform_detector.detect_android', return_value=False):
+            with patch('tools.platform_detector.detect_android', return_value=False):
                 connector = create_connector(config)
                 
                 assert isinstance(connector, MT5Connector)

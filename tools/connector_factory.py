@@ -3,14 +3,16 @@ MT5 Connector Factory
 
 Automatically selects and instantiates the appropriate MT5 connector
 based on the current platform (Windows, Linux, Android).
+
+This is a standalone tool - not integrated into the core system.
 """
 
 import logging
 from typing import Union, Optional, Dict, Any
 
-from ..utils.platform_detector import get_platform_info, PlatformInfo
-from .mt5_connector import MT5Connector, ConnectionConfig
-from .mt5_connector_android import MT5ConnectorAndroid, AndroidConnectionConfig
+from tools.platform_detector import get_platform_info, PlatformInfo
+from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
+from cthulu.connector.mt5_connector_android import MT5ConnectorAndroid, AndroidConnectionConfig
 
 
 logger = logging.getLogger("Cthulu.connector.factory")
