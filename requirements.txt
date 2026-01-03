@@ -16,6 +16,11 @@ python-dotenv>=1.0.0
 structlog>=23.1.0
 pydantic>=2.5.0
 
+# Android Bridge Support (optional)
+# Install with: pip install flask requests
+# flask>=2.3.0  # For REST API bridge server
+# requests>=2.31.0  # For REST API client
+
 
 
 
