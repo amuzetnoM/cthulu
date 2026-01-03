@@ -35,6 +35,7 @@ config_aggressive*.json
 config_ultra*.json
 configs/*.json
 !configs/*.example.json
+_dev/
 
 # Build Plan (private development roadmap)
 build_plan.md
