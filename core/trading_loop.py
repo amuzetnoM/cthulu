@@ -436,25 +436,95 @@ class TradingLoop:
             self.ctx.logger.warning("Indicator calculation failed")
             return
         
-        # 3. Generate strategy signals
+        # 3. Check pending entries (queued for better price)
+        self._check_pending_entries(df)
+        
+        # 4. Generate strategy signals
         self.ctx.logger.info(f"Loop #{self.loop_count}: Generating signals...")
         signal = self._generate_signal(df)
         
-        # 4. Process entry signals
+        # 5. Process entry signals
         if signal:
             self._process_entry_signal(signal)
         
-        # 5. Scan and adopt external trades
+        # 6. Scan and adopt external trades
         self._adopt_external_trades()
         
-        # 6. Monitor positions and check exits
+        # 7. Monitor positions and check exits
         self._monitor_positions(df)
         
-        # 7. Health monitoring
+        # 8. Health monitoring
         self._check_connection_health()
         
-        # 8. Performance monitoring
+        # 9. Performance monitoring
         self._report_performance_metrics()
+    
+    def _check_pending_entries(self, df: pd.DataFrame):
+        """
+        Check if any pending entries should now execute.
+        
+        Pending entries are signals that were queued to wait for better price.
+        """
+        try:
+            from cthulu.cognition.entry_confluence import get_entry_confluence_filter
+            
+            confluence_filter = get_entry_confluence_filter()
+            current_price = float(df['close'].iloc[-1])
+            current_bar = df.iloc[-1]
+            
+            ready_entries = confluence_filter.check_pending_entries(
+                symbol=self.ctx.symbol,
+                current_price=current_price,
+                current_bar=current_bar
+            )
+            
+            for entry in ready_entries:
+                self.ctx.logger.info(f"Pending entry ready: {entry['signal_id']} - {entry['reason']}")
+                
+                # Create a synthetic signal for the ready entry
+                from cthulu.strategy.base import Signal, SignalType
+                
+                direction = SignalType.LONG if entry['direction'] == 'long' else SignalType.SHORT
+                size_mult = entry.get('size_mult', 1.0)
+                
+                # Get ATR for SL/TP calculation
+                atr = float(df['atr'].iloc[-1]) if 'atr' in df.columns else current_price * 0.01
+                
+                if direction == SignalType.LONG:
+                    stop_loss = current_price - (atr * 2.0)
+                    take_profit = current_price + (atr * 4.0)
+                else:
+                    stop_loss = current_price + (atr * 2.0)
+                    take_profit = current_price - (atr * 4.0)
+                
+                synthetic_signal = Signal(
+                    id=entry['signal_id'] + '_pending',
+                    timestamp=datetime.now(),
+                    symbol=self.ctx.symbol,
+                    timeframe=str(self.ctx.timeframe),
+                    side=direction,
+                    action='BUY' if direction == SignalType.LONG else 'SELL',
+                    price=current_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    confidence=0.75 if not entry.get('timeout') else 0.5,
+                    reason=f"Pending entry: {entry['reason']}",
+                    metadata={
+                        'pending_entry': True,
+                        'waited_bars': entry['waited_bars'],
+                        'size_mult': size_mult
+                    }
+                )
+                
+                # Store size multiplier for later use
+                synthetic_signal._pending_size_mult = size_mult
+                
+                self._process_entry_signal(synthetic_signal)
+                
+        except ImportError:
+            pass  # Entry confluence filter not available
+        except Exception as e:
+            self.ctx.logger.debug(f"Pending entry check failed: {e}")
     
     def _ingest_market_data(self) -> Optional[pd.DataFrame]:
         """
@@ -1052,6 +1122,9 @@ class TradingLoop:
         """
         Process an entry signal (risk approval + execution).
         
+        CRITICAL CHANGE: Now includes Entry Confluence Filter as quality gate.
+        Signals must pass entry quality analysis before execution.
+        
         Args:
             signal: Trading signal from strategy
         """
@@ -1071,6 +1144,75 @@ class TradingLoop:
                 current_positions = len(mt5_positions) if mt5_positions else 0
             except Exception:
                 current_positions = len(self.ctx.position_manager.get_positions(symbol=self.ctx.symbol))
+            
+            # ============================================================
+            # ENTRY CONFLUENCE FILTER - Quality Gate (NEW)
+            # This is the critical addition that prevents blind entries
+            # ============================================================
+            entry_confluence_result = None
+            try:
+                from cthulu.cognition.entry_confluence import get_entry_confluence_filter
+                
+                # Get current market data for analysis
+                df = self.ctx.data_layer.get_cached_data(self.ctx.symbol)
+                if df is None or len(df) == 0:
+                    # Fallback: fetch fresh data
+                    rates = self.ctx.connector.get_rates(
+                        symbol=self.ctx.symbol,
+                        timeframe=self.ctx.timeframe,
+                        count=self.ctx.lookback_bars
+                    )
+                    if rates is not None:
+                        df = self.ctx.data_layer.normalize_rates(rates, symbol=self.ctx.symbol)
+                
+                if df is not None and len(df) > 20:
+                    signal_direction = 'long' if signal.side == SignalType.LONG else 'short'
+                    current_price = float(df['close'].iloc[-1])
+                    signal_price = getattr(signal, 'price', None) or getattr(signal, 'entry_price', None)
+                    atr = float(df['atr'].iloc[-1]) if 'atr' in df.columns else None
+                    
+                    confluence_filter = get_entry_confluence_filter(config=self.ctx.config.get('entry_confluence', {}))
+                    entry_confluence_result = confluence_filter.analyze_entry(
+                        signal_direction=signal_direction,
+                        current_price=current_price,
+                        symbol=self.ctx.symbol,
+                        market_data=df,
+                        atr=atr,
+                        signal_entry_price=signal_price
+                    )
+                    
+                    # Log entry analysis
+                    self.ctx.logger.info(f"Entry confluence: {entry_confluence_result.quality.value} "
+                                        f"(score={entry_confluence_result.score:.0f}, "
+                                        f"mult={entry_confluence_result.position_mult:.2f})")
+                    
+                    if entry_confluence_result.reasons:
+                        self.ctx.logger.debug(f"  Entry reasons: {entry_confluence_result.reasons[:3]}")
+                    if entry_confluence_result.warnings:
+                        self.ctx.logger.warning(f"  Entry warnings: {entry_confluence_result.warnings}")
+                    
+                    # GATE: Check if entry quality is acceptable
+                    if not entry_confluence_result.should_enter:
+                        self.ctx.logger.info(f"Entry rejected by confluence filter: "
+                                            f"{entry_confluence_result.quality.value} quality, "
+                                            f"score={entry_confluence_result.score:.0f}")
+                        
+                        # Register for pending entry if waiting is recommended
+                        if entry_confluence_result.wait_for_better and entry_confluence_result.optimal_entry:
+                            confluence_filter.register_pending_entry(
+                                signal_id=signal.id,
+                                signal_direction=signal_direction,
+                                optimal_entry=entry_confluence_result.optimal_entry,
+                                symbol=self.ctx.symbol
+                            )
+                            self.ctx.logger.info(f"Signal queued: waiting for better entry at "
+                                                f"{entry_confluence_result.optimal_entry:.2f}")
+                        return
+                        
+            except ImportError:
+                self.ctx.logger.debug("Entry confluence filter not available, proceeding without")
+            except Exception as e:
+                self.ctx.logger.warning(f"Entry confluence analysis failed: {e}")
             
             # Adaptive Account Manager check (if available)
             if self.ctx.adaptive_account_manager:
@@ -1106,6 +1248,14 @@ class TradingLoop:
                 account_info=account_info,
                 current_positions=current_positions
             )
+            
+            # Apply entry confluence position multiplier
+            if approved and entry_confluence_result and position_size > 0:
+                if entry_confluence_result.position_mult < 1.0:
+                    original_size = position_size
+                    position_size = max(0.01, round(position_size * entry_confluence_result.position_mult, 2))
+                    self.ctx.logger.info(f"Entry quality adjustment: {original_size:.2f} → {position_size:.2f} lots "
+                                        f"({entry_confluence_result.quality.value})")
             
             # Apply adaptive loss curve adjustment (if available)
             if approved and self.ctx.adaptive_loss_curve and position_size > 0:

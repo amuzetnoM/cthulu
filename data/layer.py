@@ -83,7 +83,48 @@ class DataLayer:
             
         self.logger.debug(f"Normalized {len(df)} bars with columns: {list(df.columns)}")
         
+        # Cache the normalized data
+        if self.cache_enabled and symbol:
+            self._cache[symbol] = {
+                'data': df,
+                'timestamp': datetime.now()
+            }
+        
         return df
+    
+    def get_cached_data(self, symbol: str, max_age_seconds: int = 60) -> Optional[pd.DataFrame]:
+        """
+        Get cached data for a symbol if available and not stale.
+        
+        Args:
+            symbol: Trading symbol
+            max_age_seconds: Maximum age of cached data in seconds
+            
+        Returns:
+            Cached DataFrame or None if not available/stale
+        """
+        if not self.cache_enabled or symbol not in self._cache:
+            return None
+        
+        cached = self._cache[symbol]
+        age = (datetime.now() - cached['timestamp']).total_seconds()
+        
+        if age <= max_age_seconds:
+            return cached['data']
+        
+        return None
+    
+    def invalidate_cache(self, symbol: str = None):
+        """
+        Invalidate cached data.
+        
+        Args:
+            symbol: Symbol to invalidate, or None to clear all
+        """
+        if symbol:
+            self._cache.pop(symbol, None)
+        else:
+            self._cache.clear()
         
     def add_indicators(self, data: pd.DataFrame, indicators: List) -> pd.DataFrame:
         """
