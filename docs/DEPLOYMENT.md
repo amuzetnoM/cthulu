@@ -1,53 +1,374 @@
 ---
-title: DEPLOYING CTHULU
-description: Production deployment strategies for Cthulu including Docker, Linux, Windows service, and monitoring setup
-tags: [deployment, docker, production, monitoring]
+title: DEPLOYING CTHULU ON ANDROID
+description: Production deployment on Android/Termux with background persistence and monitoring
+tags: [deployment, android, termux, production, monitoring]
 sidebar_position: 5
 ---
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
- ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
+ ![](https://img.shields.io/badge/Version-5.1.0_ANDROID-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white)
+ ![](https://img.shields.io/badge/Platform-Android%20%7C%20Termux-3DDC84?style=for-the-badge&logo=android)
 
 ## Table of Contents
+- [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-- [Docker Deployment](#docker-deployment)
-- [Linux Deployment](#linux-deployment)
-- [Windows Service](#windows-service)
+- [Background Operation](#background-operation)
 - [Production Checklist](#production-checklist)
 - [Monitoring Setup](#monitoring-setup)
-- [Backup & Recovery](#backup--recovery)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Prerequisites
+
+### Hardware Requirements
+- Android 7.0+ device
+- 4GB+ RAM (recommended)
+- 500MB+ free storage
+- Stable internet connection
+
+### Software Requirements
+- **Termux** - Install from F-Droid (NOT Play Store)
+- **Termux:API** - For wake locks and notifications
+- **MT5 Android App** - Official MetaQuotes app from Play Store
+
+### Installing Termux
+
+1. Install F-Droid: https://f-droid.org/
+2. Search and install "Termux"
+3. Search and install "Termux:API"
+4. Grant storage permissions when prompted
 
 ---
 
 ## Quick Start
 
-### Using Docker (Recommended)
-
-The fastest way to deploy Cthulu is using Docker:
+### 1. Setup Termux Environment
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/amuzetnoM/Cthulu.git
-cd Cthulu
+# Update packages
+pkg update && pkg upgrade -y
 
-# 2. Configure environment
-cp .env.example .env
-nano .env  # Edit with your MT5 credentials
+# Install essentials
+pkg install python git tmux nano curl -y
 
-# 3. Configure trading settings
-cp config.example.json config.json
-nano config.json  # Adjust risk settings
-
-# 4. Start with Docker Compose
-docker-compose up -d
-
-# 5. View logs
-docker-compose logs -f Cthulu
-
-# 6. Access dashboards
-# Grafana: http://localhost:3000 (admin/admin)
-# Prometheus: http://localhost:9090
+# Setup storage access
+termux-setup-storage
 ```
+
+### 2. Install Cthulu
+
+```bash
+# Clone repository
+cd ~
+git clone https://github.com/amuzetnoM/cthulu.git
+cd cthulu
+git checkout cthulu5-android
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 3. Configure
+
+```bash
+# Create config
+cp config.example.json config.json
+nano config.json
+```
+
+**Essential config.json:**
+```json
+{
+  "mt5": {
+    "bridge_type": "rest",
+    "bridge_host": "127.0.0.1",
+    "bridge_port": 18812,
+    "login": YOUR_MT5_LOGIN,
+    "password": "YOUR_PASSWORD",
+    "server": "YOUR_BROKER_SERVER"
+  },
+  "symbol": "EURUSD",
+  "timeframe": "H1",
+  "mindset": "balanced",
+  "magic_number": 123456
+}
+```
+
+### 4. Start Trading
+
+```bash
+# Create tmux session
+tmux new -s cthulu
+
+# Start bridge server (background)
+python connector/mt5_bridge_server.py &
+
+# Wait for bridge to start
+sleep 3
+
+# Start trading with background service
+python -m cthulu.core.android_service --config config.json
+
+# Detach from tmux: Ctrl+B, then D
+```
+
+---
+
+## Background Operation
+
+### The Problem
+
+Android aggressively kills background processes to save battery. Without proper setup, Cthulu will stop when:
+- You switch to another app
+- Screen turns off
+- Android decides to "optimize" battery
+
+### The Solution
+
+Cthulu includes a robust background service that handles this:
+
+```bash
+# Use the Android service manager
+python -m cthulu.core.android_service --config config.json
+```
+
+**Features:**
+- Wake lock acquisition (keeps process alive)
+- Signal handling (ignores SIGHUP on terminal close)
+- Watchdog (auto-restart if hung)
+- Persistent notifications (status updates)
+- Automatic recovery (restarts on crash)
+
+### Essential Steps
+
+#### 1. Acquire Wake Lock
+```bash
+# Before starting Cthulu
+termux-wake-lock
+
+# Check if held
+termux-wake-lock  # No error = lock held
+```
+
+#### 2. Disable Battery Optimization
+- Go to **Settings → Apps → Termux**
+- Tap **Battery**
+- Select **Unrestricted**
+
+#### 3. Use tmux for Session Persistence
+```bash
+# Start session
+tmux new -s cthulu
+
+# Run Cthulu inside tmux
+python -m cthulu.core.android_service
+
+# Detach: Ctrl+B, then D
+# Session keeps running!
+
+# Reattach later
+tmux attach -t cthulu
+```
+
+#### 4. Keep MT5 App Running
+- Ensure MT5 app is logged in
+- Keep MT5 in "recent apps"
+- Don't force-close MT5
+
+---
+
+## Production Checklist
+
+### Before Going Live
+
+- [ ] Termux installed from F-Droid
+- [ ] Termux:API installed
+- [ ] Python 3.10+ installed
+- [ ] All dependencies installed
+- [ ] Config file created with real credentials
+- [ ] MT5 app logged in and connected
+- [ ] Bridge server starts without errors
+- [ ] Test trade executed successfully
+- [ ] Wake lock acquired
+- [ ] Battery optimization disabled
+- [ ] tmux session created
+
+### Daily Monitoring
+
+- [ ] Check if Cthulu process running: `pgrep -f cthulu`
+- [ ] Check bridge health: `curl localhost:18812/health`
+- [ ] Review logs: `tail -50 logs/cthulu_service.log`
+- [ ] Check MT5 app is connected
+- [ ] Verify device battery level
+
+---
+
+## Monitoring Setup
+
+### Log Files
+
+```bash
+# Trading logs
+tail -f logs/cthulu_service.log
+
+# All logs
+ls -la logs/
+```
+
+### Health Check Script
+
+Create `check_health.sh`:
+```bash
+#!/bin/bash
+echo "=== Cthulu Health Check ==="
+
+# Check process
+if pgrep -f "cthulu" > /dev/null; then
+    echo "✅ Cthulu process running"
+else
+    echo "❌ Cthulu NOT running!"
+fi
+
+# Check bridge
+if curl -s localhost:18812/health | grep -q "ok"; then
+    echo "✅ Bridge server healthy"
+else
+    echo "❌ Bridge server DOWN!"
+fi
+
+# Check battery
+termux-battery-status 2>/dev/null || echo "⚠️ Battery status unavailable"
+
+echo "==========================="
+```
+
+### Metrics CSV Files
+
+```bash
+# Trading performance
+cat metrics/comprehensive_metrics.csv | tail -5
+
+# System health
+cat metrics/system_health.csv | tail -5
+```
+
+---
+
+## Troubleshooting
+
+### Process Keeps Getting Killed
+
+1. **Enable wake lock:** `termux-wake-lock`
+2. **Disable battery optimization** for Termux
+3. **Use android_service:** `python -m cthulu.core.android_service`
+4. **Keep device plugged in** if possible
+
+### Bridge Connection Failed
+
+```bash
+# Check if bridge is running
+curl http://127.0.0.1:18812/health
+
+# Start bridge manually
+python connector/mt5_bridge_server.py
+
+# Check for port conflicts
+netstat -tlnp | grep 18812
+```
+
+### MT5 Not Responding
+
+1. Open MT5 app manually
+2. Ensure logged in to trading account
+3. Check internet connection
+4. Restart bridge server
+
+### Out of Memory
+
+```bash
+# Check memory
+free -h
+
+# Close unused apps
+# Use device with more RAM
+```
+
+### Permission Denied
+
+```bash
+# Grant storage access
+termux-setup-storage
+
+# Make scripts executable
+chmod +x *.sh
+```
+
+---
+
+## Recommended Device Setup
+
+### Dedicated Trading Device
+
+For best results, use a dedicated Android device:
+
+1. **Disable all unnecessary apps**
+2. **Keep device plugged in 24/7**
+3. **Use Do Not Disturb mode**
+4. **Disable auto-updates**
+5. **Use stable WiFi, not mobile data**
+
+### Recommended Devices
+
+- Samsung Galaxy Tab series (good RAM, stable)
+- Xiaomi devices (good value)
+- Any device with 4GB+ RAM
+
+---
+
+## Stopping Cthulu
+
+```bash
+# Graceful shutdown
+# In tmux session, press Ctrl+C
+
+# Or kill from outside
+pkill -f "cthulu"
+
+# Stop bridge
+pkill -f "mt5_bridge_server"
+
+# Release wake lock
+termux-wake-unlock
+
+# Kill tmux session
+tmux kill-session -t cthulu
+```
+
+---
+
+## Updating Cthulu
+
+```bash
+# Stop trading first!
+pkill -f cthulu
+
+# Update code
+cd ~/cthulu
+git pull
+
+# Reinstall dependencies
+pip install -r requirements.txt
+
+# Restart
+tmux new -s cthulu
+python connector/mt5_bridge_server.py &
+python -m cthulu.core.android_service
+```
+
+---
+
+**🐙 Happy Trading on Android!**
 
 ---
 

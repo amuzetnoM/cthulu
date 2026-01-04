@@ -118,6 +118,10 @@ config.json.bak
 # Ignore Prometheus metrics textfile
 metrics/
 
+# Ignore generated mTLS test certs (local/staging only)
+_dev/mtls_test/
+_dev/mtls_test/*
+
 # Observability CSV files (contain runtime data)
 monitoring/*.csv
 observability/**/*.csv

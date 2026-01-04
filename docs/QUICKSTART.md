@@ -1,53 +1,113 @@
 ---
-title: QUICK START
-description: Get started with Cthulu trading system - installation, configuration, and first trades
-tags: [quickstart, installation, setup, getting-started]
+title: QUICK START - Android
+description: Get started with Cthulu on Android/Termux - installation, configuration, and first trades
+tags: [quickstart, installation, setup, android, termux]
 sidebar_position: 3
 ---
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.1.0_ANDROID-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white) 
 
-### 1. Initial Setup
+## Prerequisites
+
+- **Android 7.0+** device (4GB+ RAM recommended)
+- **Termux** from F-Droid (NOT Play Store - outdated)
+- **MT5 Android App** from Play Store
+- **Termux:API** (optional, for wake locks)
+
+---
+
+### 1. Initial Setup (Termux)
 
 ```bash
-# Clone or update repository
-git clone https://github.com/amuzetnoM/Cthulu.git
-cd Cthulu
+# Update Termux
+pkg update && pkg upgrade -y
 
-# Install dependencies
+# Install required packages
+pkg install python git tmux -y
+
+# Clone repository
+git clone https://github.com/amuzetnoM/cthulu.git
+cd cthulu
+git checkout cthulu5-android
+
+# Install Python dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
-
-# Create your .env file
-cp .env.example .env
 ```
 
 ### 2. Configure Credentials
 
-Edit `.env` file:
+Create your config file:
 ```bash
-# MetaTrader 5 Credentials
-MT5_LOGIN=your_account_number
-MT5_PASSWORD=your_password
-MT5_SERVER=your_broker_server
-
-# Trading Configuration
-ACCOUNT_CURRENCY=USD
-RISK_PER_TRADE=0.02
-MAX_DAILY_LOSS=0.05
+cp config.example.json config.json
+nano config.json
 ```
 
-### 3. Run Setup Wizard
-
-Choose one of two wizards:
-
-#### Interactive Wizard (Recommended for beginners)
-```bash
-python -m Cthulu --wizard
+Edit `config.json`:
+```json
+{
+  "mt5": {
+    "bridge_type": "rest",
+    "bridge_host": "127.0.0.1",
+    "bridge_port": 18812,
+    "login": 12345678,
+    "password": "your_password",
+    "server": "YourBroker-Server"
+  },
+  "symbol": "EURUSD",
+  "timeframe": "H1",
+  "mindset": "balanced"
+}
 ```
-Step-by-step prompts for:
-- Trading mindset (aggressive/balanced/conservative)
-- Symbol and timeframe
-- Risk management
+
+### 3. Start Trading
+
+#### Option A: Background Service (Recommended)
+
+```bash
+# Start in tmux for persistence
+tmux new -s cthulu
+
+# Start bridge server
+python connector/mt5_bridge_server.py &
+
+# Start with background service
+python -m cthulu.core.android_service --config config.json
+
+# Detach: Ctrl+B, then D
+```
+
+#### Option B: Direct Run
+
+```bash
+# Start bridge
+python connector/mt5_bridge_server.py &
+
+# Run trading loop
+python -m cthulu --config config.json
+```
+
+### 4. Keep Running in Background
+
+```bash
+# Acquire wake lock (prevents Android killing process)
+termux-wake-lock
+
+# Disable battery optimization for Termux
+# Settings → Apps → Termux → Battery → Unrestricted
+```
+
+### 5. Monitor
+
+```bash
+# View logs
+tail -f logs/cthulu_service.log
+
+# Check health
+curl http://127.0.0.1:18812/health
+
+# Reattach to session
+tmux attach -t cthulu
 - Strategy selection (single or dynamic)
 - Technical indicators
 

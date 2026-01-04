@@ -1,17 +1,17 @@
 ---
-title: INTRODUCTION
-description: Advanced multi-strategy autonomous trading system with MetaTrader 5 integration, dynamic strategy selection, and comprehensive risk management
-tags: [trading, mt5, autonomous, multi-strategy, risk-management]
+title: CTHULU - Android Native Edition
+description: Autonomous MT5 trading system running natively on Android/Termux with full background support
+tags: [trading, mt5, autonomous, android, termux]
 sidebar_position: 1
 
 ---
 
-![](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/ANDROID_NATIVE-00FF00?style=for-the-badge&labelColor=0D1117&logo=android)
 
 
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
-[![](https://img.shields.io/badge/CHANGELOG-GitBook-FF6F61?style=for-the-badge&labelColor=0D1117&logo=gitbook&logoColor=white)](https://artifact-virtual.gitbook.io/Cthulu)
+![](https://img.shields.io/badge/Version-5.1.0_ANDROID-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white) 
+[![](https://img.shields.io/badge/DOCS-GitBook-FF6F61?style=for-the-badge&labelColor=0D1117&logo=gitbook&logoColor=white)](https://artifact-virtual.gitbook.io/Cthulu)
 
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
 

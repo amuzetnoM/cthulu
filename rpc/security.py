@@ -95,6 +95,9 @@ class SecurityConfig:
     tls_cert_path: Optional[str] = None
     tls_key_path: Optional[str] = None
     tls_min_version: str = "TLSv1.2"
+    # mTLS: require client certificate and CA to validate
+    require_client_cert: bool = False
+    client_ca_path: Optional[str] = None
     
     # Request Validation
     max_request_size_bytes: int = 65536  # 64KB
@@ -641,12 +644,26 @@ class TLSHelper:
             context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             context.minimum_version = min_version
             context.load_cert_chain(config.tls_cert_path, config.tls_key_path)
-            
+
+            # If configured, require client certificates and load CA for verification
+            if getattr(config, 'require_client_cert', False):
+                if not config.client_ca_path:
+                    logger.error('require_client_cert enabled but client_ca_path missing')
+                    return None
+                # Enforce client certificate verification
+                context.verify_mode = ssl.CERT_REQUIRED
+                try:
+                    context.load_verify_locations(cafile=config.client_ca_path)
+                except Exception as e:
+                    logger.error(f'Failed to load client CA: {e}')
+                    return None
+
             # Security settings
             context.set_ciphers('ECDHE+AESGCM:DHE+AESGCM:ECDHE+CHACHA20:DHE+CHACHA20')
             context.options |= ssl.OP_NO_COMPRESSION
             
             logger.info(f"TLS context created with min version {config.tls_min_version}")
+            logger.info(f"  client certs required: {getattr(config,'require_client_cert', False)}")
             return context
             
         except Exception as e:

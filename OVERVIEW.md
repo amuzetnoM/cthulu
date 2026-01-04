@@ -1,23 +1,28 @@
-# Complete System Overview
+# Complete System Overview - Android Native Edition
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
- ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
+ ![](https://img.shields.io/badge/Version-5.1.0_ANDROID-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white) 
+ ![](https://img.shields.io/badge/Platform-Android%20%7C%20Termux-3DDC84?style=for-the-badge&logo=android)
 
 ## Executive Summary
 
-👾 Cthulu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that implements adaptive, algorithmic trading strategies with comprehensive risk management, real-time monitoring, and machine learning instrumentation. The system features multiple trading mindsets (conservative, balanced, aggressive, ultra-aggressive), dynamic strategy selection, and a sophisticated exit management system.
+👾 Cthulu is an **autonomous trading system** designed for MetaTrader 5 (MT5) that runs **natively on Android via Termux**. This branch is fully Android-native with no Windows dependencies. It implements adaptive, algorithmic trading strategies with comprehensive risk management, real-time monitoring, and machine learning instrumentation.
 
-**Current Status:** Fully operational with complete architectural overhaul finished.
+**Current Status:** Production-ready for Android deployment.
+
+**Platform:** Android 7.0+ with Termux
 
 ## System Architecture
 
-### Complete System Architecture (v5.1.0 APEX)
+### Android Architecture (v5.1.0 ANDROID)
 
 ```mermaid
 flowchart TB
-    subgraph ENTRY["😈 Entry Layer"]
-        MAIN["__main__.py"]
-        WIZ["wizard.py"]
+    subgraph ANDROID["📱 Android Device"]
+        subgraph TERMUX["🖥️ Termux"]
+            subgraph ENTRY["😈 Entry Layer"]
+                MAIN["__main__.py"]
+                SERVICE["android_service.py<br/>Background Service"]
+            end
         CLI["CLI Args"]
     end
     
