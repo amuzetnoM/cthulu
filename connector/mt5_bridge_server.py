@@ -65,12 +65,11 @@ class MT5AndroidBridge:
         """
         Initialize MT5 interface.
         
-        This attempts to use various methods to communicate with MT5 Android app:
-        1. MetaTrader5 Python package (if available on Android - unlikely)
-        2. File-based communication with MT5 data directory
-        3. Intent-based communication with Android MT5 app
+        Priority:
+        1. MetaTrader5 Python package (Windows/Linux)
+        2. Android file-based interface (Termux)
         """
-        # Try standard MT5 package first (unlikely to work on Android)
+        # Try standard MT5 package first
         try:
             import MetaTrader5 as mt5
             self.mt5 = mt5
@@ -80,17 +79,24 @@ class MT5AndroidBridge:
         except ImportError:
             pass
         
-        # Fall back to file-based interface
-        self.logger.info("MetaTrader5 package not available")
-        self.logger.info("Using file-based interface with MT5 Android app")
-        self.interface_type = "file_based"
+        # Try Android file-based interface
+        try:
+            from connector.mt5_android_interface import MT5AndroidInterface
+            self.android_interface = MT5AndroidInterface()
+            if self.android_interface.available:
+                self.interface_type = "android_file"
+                self.logger.info("Using Android file-based MT5 interface")
+                self.logger.info(f"MT5 data directory: {self.android_interface.data_dir}")
+                return
+        except ImportError as e:
+            self.logger.debug(f"Android interface import failed: {e}")
+        except Exception as e:
+            self.logger.warning(f"Android interface init failed: {e}")
         
-        # Detect MT5 data directory on Android
-        self.mt5_data_dir = self._detect_mt5_data_dir()
-        if self.mt5_data_dir:
-            self.logger.info(f"MT5 data directory: {self.mt5_data_dir}")
-        else:
-            self.logger.warning("Could not detect MT5 data directory")
+        # Fall back to simulation mode
+        self.logger.warning("No MT5 interface available - running in SIMULATION mode")
+        self.interface_type = "simulation"
+        self.android_interface = None
     
     def _detect_mt5_data_dir(self) -> Optional[Path]:
         """Detect MT5 Android app data directory."""
@@ -133,14 +139,30 @@ class MT5AndroidBridge:
                     error = self.mt5.last_error()
                     return {'success': False, 'error': f'MT5 initialization failed: {error}'}
             
+            elif self.interface_type == "android_file" and self.android_interface:
+                # Android file-based interface
+                self.logger.info("Android file-based interface: checking MT5 data access")
+                self.connected = self.android_interface.available
+                if self.connected:
+                    return {
+                        'success': True,
+                        'message': 'Connected via Android file-based interface',
+                        'data_dir': str(self.android_interface.data_dir)
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MT5 data directory not accessible'
+                    }
+            
             else:
-                # File-based interface - simulate connection
-                self.logger.info("File-based interface: simulating MT5 connection")
+                # Simulation mode
+                self.logger.info("Simulation mode: no real MT5 connection")
                 self.connected = True
                 return {
                     'success': True,
-                    'message': 'Connected via file-based interface',
-                    'note': 'This is a simulated connection. Full MT5 integration requires additional setup.'
+                    'message': 'Connected in SIMULATION mode',
+                    'warning': 'No real MT5 connection - data is simulated'
                 }
         
         except Exception as e:
@@ -221,6 +243,10 @@ class MT5AndroidBridge:
                         }
                     }
             
+            elif self.interface_type == "android_file" and self.android_interface:
+                # Use Android file interface
+                return self.android_interface.get_account_info()
+            
             # Fallback/simulated data
             return {
                 'success': True,
@@ -269,6 +295,10 @@ class MT5AndroidBridge:
                             'currency_margin': info.currency_margin,
                         }
                     }
+            
+            elif self.interface_type == "android_file" and self.android_interface:
+                # Use Android file interface
+                return self.android_interface.get_symbol_info(symbol)
             
             # Fallback/simulated data
             return {
@@ -319,6 +349,10 @@ class MT5AndroidBridge:
                         for rate in rates
                     ]
                     return {'success': True, 'data': rates_list}
+            
+            elif self.interface_type == "android_file" and self.android_interface:
+                # Use Android file interface
+                return self.android_interface.get_rates(symbol, timeframe, count)
             
             # Fallback: return empty data with message
             return {
@@ -414,6 +448,10 @@ class MT5AndroidBridge:
                             'volume_real': getattr(tick, 'volume_real', 0),
                         }
                     }
+            
+            elif self.interface_type == "android_file" and self.android_interface:
+                # Use Android file interface for tick data
+                return self.android_interface.get_tick(symbol)
             
             # Fallback: return simulated tick based on symbol_info
             info_result = self.symbol_info({'symbol': symbol})
@@ -532,6 +570,11 @@ class MT5AndroidBridge:
                         'retcode': result.retcode,
                         'data': response_data
                     }
+            
+            elif self.interface_type == "android_file" and self.android_interface:
+                # Android interface - queue order for execution
+                self.logger.info("Order requested via Android interface - queuing for execution")
+                return self.android_interface.send_order(params)
             
             else:
                 # Simulation mode - cannot execute real trades
