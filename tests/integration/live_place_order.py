@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os, json, time
 from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
-from cthulu.ML_RL.instrumentation import MLDataCollector
+from cthulu.training.instrumentation import MLDataCollector
 from cthulu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
 
 load_dotenv()

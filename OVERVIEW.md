@@ -915,7 +915,7 @@ Cthulu/
 ├── monitoring/           # Monitoring
 ├── advisory/             # Advisory mode
 ├── news/                 # News ingestion
-├── ML_RL/                # ML integration
+├── training/             # ML/RL training & instrumentation
 ├── tests/                # Test suite
 └── docs/                 # Documentation
 ```

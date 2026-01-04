@@ -77,7 +77,7 @@ def init_ml_collector(config=None, args=None, logger=None):
                     return
             return _Stub()
 
-        from ML_RL.instrumentation import MLDataCollector
+        from training.instrumentation import MLDataCollector
         return MLDataCollector(prefix=prefix)
     except Exception:
         # Best-effort stub if ML collector is unavailable or fails to initialize

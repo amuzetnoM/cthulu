@@ -1,7 +1,7 @@
 import time
 import os
 from cthulu.monitoring.trade_monitor import TradeMonitor
-from cthulu.ML_RL.instrumentation import MLDataCollector
+from cthulu.training.instrumentation import MLDataCollector
 from unittest.mock import MagicMock
 
 

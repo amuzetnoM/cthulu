@@ -1,6 +1,6 @@
 """
 ML instrumentation and lightweight collector.
-Writes JSONL entries to `ML_RL/data/raw/` and provides simple rotate-by-size logic.
+Writes JSONL entries to `training/data/raw/` and provides simple rotate-by-size logic.
 """
 from __future__ import annotations
 import os

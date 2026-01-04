@@ -5,7 +5,7 @@ from typing import Optional
 import logging
 from .manager import NewsManager
 from .base import NewsAdapter, NewsEvent
-from cthulu.ML_RL.instrumentation import MLDataCollector
+from cthulu.training.instrumentation import MLDataCollector
 
 logger = logging.getLogger('Cthulu.news.ingest')
 

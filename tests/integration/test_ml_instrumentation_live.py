@@ -22,8 +22,8 @@ if os.getenv('RUN_MT5_INTEGRATION') != '1' and os.getenv('RUN_MT5_CONNECT_TESTS'
 
 from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
 from cthulu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
-from cthulu.ML_RL import instrumentation as instr
-from cthulu.ML_RL.instrumentation import MLDataCollector
+from cthulu.training import instrumentation as instr
+from cthulu.training.instrumentation import MLDataCollector
 
 
 def test_ml_instrumentation_end_to_end():

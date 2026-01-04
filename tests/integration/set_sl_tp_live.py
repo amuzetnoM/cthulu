@@ -3,7 +3,7 @@ import os, json, time
 from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
 from cthulu.position.manager import PositionManager
 from cthulu.execution.engine import ExecutionEngine
-from cthulu.ML_RL.instrumentation import MLDataCollector
+from cthulu.training.instrumentation import MLDataCollector
 
 load_dotenv()
 
@@ -46,7 +46,7 @@ if positions:
     print('position sl,tp:', getattr(p,'sl',None), getattr(p,'tp',None))
 
 # leave position open; check ML events produced
-base_dir = os.path.join(os.path.dirname(__file__), '..', 'ML_RL', 'data', 'raw')
+base_dir = os.path.join(os.path.dirname(__file__), '..', 'training', 'data', 'raw')
 base = os.path.normpath(base_dir)
 files = [f for f in os.listdir(base) if f.startswith('sltp_')]
 print('New ML files with prefix sltp_:', files)

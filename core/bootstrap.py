@@ -375,7 +375,7 @@ class CthuluBootstrap:
                 ml_enabled = args.enable_ml
             
             if ml_enabled:
-                from cthulu.ML_RL.instrumentation import MLDataCollector
+                from cthulu.training.instrumentation import MLDataCollector
                 ml_prefix = ml_config.get('prefix', 'events')
                 ml_collector = MLDataCollector(prefix=ml_prefix)
                 self.logger.info('MLDataCollector initialized')
