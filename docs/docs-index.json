@@ -213,6 +213,22 @@
         "data-handling",
         "legal"
       ]
+    },
+    {
+      "id": "16-hecktor",
+      "file": "16_HECKTOR.md",
+      "title": "Hecktor Integration",
+      "description": "Technical integration specification between Cthulu and Vector Studio (Hecktor) for semantic trading memory",
+      "order": 16,
+      "category": "advanced",
+      "tags": [
+        "hecktor",
+        "vector-database",
+        "integration",
+        "semantic-memory",
+        "embeddings",
+        "pattern-recognition"
+      ]
     }
   ],
   "categories": [
