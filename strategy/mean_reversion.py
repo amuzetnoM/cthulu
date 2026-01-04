@@ -125,11 +125,13 @@ class MeanReversionStrategy(Strategy):
                 }
             )
 
-        # Bearish mean reversion: Price near upper BB + overbought RSI + rejection candle
-        elif (close >= bb_upper * 0.995 and  # Price touched or very near upper BB
-              rsi >= self.rsi_overbought and  # RSI overbought
-              high > bb_upper and            # Wick above BB (rejection)
-              close < high - (high - low) * 0.6):  # Closed below upper wick (bearish rejection)
+        # Bearish mean reversion: Price near upper BB + overbought RSI
+        # Relaxed conditions: no longer requires strict rejection candle
+        bb_width = bb_upper - bb_lower
+        upper_zone = bb_middle + (bb_width * 0.4)  # Upper 40% of BB
+        
+        if (close >= upper_zone and           # Price in upper zone of BB
+              rsi >= self.rsi_overbought):      # RSI overbought
 
             # Calculate entry and stops
             entry_price = close
