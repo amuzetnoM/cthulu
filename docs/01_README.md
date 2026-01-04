@@ -5,11 +5,7 @@ tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 sidebar_position: 1
 
 ---
-
-![](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&labelColor=0D1117)
-
-
-
+![👾](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&logo=zap&logoColor=gold) <br>
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 [![](https://img.shields.io/badge/CHANGELOG-GitBook-FF6F61?style=for-the-badge&labelColor=0D1117&logo=gitbook&logoColor=white)](https://artifact-virtual.gitbook.io/Cthulu)
 

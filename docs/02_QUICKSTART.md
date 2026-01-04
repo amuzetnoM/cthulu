@@ -2,7 +2,7 @@
 title: QUICK START
 description: Get started with Cthulu trading system - installation, configuration, and first trades
 tags: [quickstart, installation, setup, getting-started]
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 

@@ -2,7 +2,7 @@
 title: MINDSETS GUIDE
 description: Mindsets guide covering Conservative, Balanced, Aggressive, and Ultra-Aggressive trading configurations
 tags: [conservative, balanced, aggressive, ultra-aggressive, hft, scalping]
-sidebar_position: 15
+sidebar_position: 6
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)

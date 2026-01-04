@@ -2,7 +2,7 @@
 title: BACKTESTING FRAMEWORK
 description: Professional-grade strategy validation with ML-enhanced decision making, ensemble testing, and institutional-grade benchmarking
 tags: [backtesting, ml, optimization, benchmarking, monte-carlo]
-sidebar_position: 8
+sidebar_position: 10
 ---
 
 
