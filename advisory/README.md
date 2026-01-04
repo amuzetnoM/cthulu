@@ -1,7 +1,7 @@
 # Advisory Manager
 
 
- ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![Version](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 
 
 ---
@@ -99,6 +99,7 @@ The Advisory Manager integrates with:
 
 <div align="center">
 
-**Cthulu Trading System** · APEX v5.1.0
+**Cthulu Trading System** · Android Beta v1.0.0-beta
 
 </div>
+

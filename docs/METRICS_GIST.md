@@ -346,3 +346,4 @@ cd C:\workspace\cthulu; $env:GITHUB_GIST_TOKEN=(gh auth token); $env:GITHUB_GIST
 **Gist URL**: https://gist.github.com/amuzetnoM/0e860218dbdf40ab4019970b1e035cab
 
 **Dashboard URL**: https://amuzetnom.github.io/cthulu/docs/
+

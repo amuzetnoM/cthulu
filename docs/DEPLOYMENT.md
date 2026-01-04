@@ -5,7 +5,7 @@ tags: [deployment, android, termux, production, monitoring]
 sidebar_position: 5
 ---
 
- ![](https://img.shields.io/badge/Version-5.1.0_ANDROID-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white)
+ ![](https://img.shields.io/badge/Version-1.0.0_Beta-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white)
  ![](https://img.shields.io/badge/Platform-Android%20%7C%20Termux-3DDC84?style=for-the-badge&logo=android)
 
 ## Table of Contents
@@ -389,7 +389,7 @@ python -m cthulu.core.android_service
 docker build -t Cthulu:latest .
 
 # Or build with specific version
-docker build -t Cthulu:5.1.0 .
+docker build -t Cthulu:1.0.0-beta .
 ```
 
 #### 2. Environment Configuration
@@ -983,11 +983,11 @@ sudo systemctl restart Cthulu
 The fastest way to get started - pull the official image from GHCR:
 
 ```bash
-# Pull latest APEX release
-docker pull ghcr.io/amuzetnom/cthulu:apex
+# Pull latest Android Beta release
+docker pull ghcr.io/amuzetnom/cthulu:Android Beta
 
 # Or specific version
-docker pull ghcr.io/amuzetnom/cthulu:5.1.0
+docker pull ghcr.io/amuzetnom/cthulu:1.0.0-beta
 
 # Or latest
 docker pull ghcr.io/amuzetnom/cthulu:latest
@@ -1016,7 +1016,7 @@ docker run -d \
   -v $(pwd)/logs:/app/logs \
   -p 8181:8181 \
   --restart unless-stopped \
-  ghcr.io/amuzetnom/cthulu:apex
+  ghcr.io/amuzetnom/cthulu:Android Beta
 
 # 4. View logs
 docker logs -f cthulu
@@ -1046,15 +1046,16 @@ docker-compose up -d
 
 | Tag | Description |
 |-----|-------------|
-| `apex` | Latest v5.1.x APEX release |
-| `5.1.0` | Specific version |
+| `Android Beta` | Latest v5.1.x Android Beta release |
+| `1.0.0-beta` | Specific version |
 | `latest` | Latest stable from main branch |
 | `5.1` | Latest patch for 5.1.x |
 
 ---
 
 **Last Updated**: January 2026  
-**Version**: 5.1.0 APEX
+**Version**: 1.0.0 Beta
+
 
 
 

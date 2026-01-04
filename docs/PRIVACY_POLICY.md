@@ -30,3 +30,4 @@ You control data on your machine: delete, export, or modify as needed. Review th
 
 #### Contact
 Open an issue on GitHub for privacy concerns.
+

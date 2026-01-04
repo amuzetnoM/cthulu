@@ -1,5 +1,5 @@
 # Cthulu GCP Deployment
-> **Version**: APEX v5.1  
+> **Version**: Android Beta v5.1  
 > **Last Updated**: 2026-01-02  
 > **Status**: LIVE
 
@@ -234,3 +234,4 @@ pip install -r requirements.txt --force-reinstall
 ---
 
 **This document is the single source of truth for GCP deployment.**
+

@@ -5,7 +5,7 @@ tags: [risk-management, stop-loss, position-sizing]
 sidebar_position: 9
 ---
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 
 
 ## Overview
@@ -43,6 +43,7 @@ Future improvements:
 
 - Symbol-specific pip scaling and lot-size-aware distance calculations.
 - Volatility-based dynamic thresholds using recent ATR.
+
 
 
 

@@ -350,4 +350,5 @@ Developed for the Cthulu v5 Android initiative to enable native mobile trading.
 
 **Status**: ✅ Ready for testing on Android devices  
 **Branch**: `copilot/cthulu5-android-test`  
-**Version**: 5.1.0 + Android Support
+**Version**: 1.0.0-beta + Android Support
+

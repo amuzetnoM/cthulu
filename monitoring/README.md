@@ -1,6 +1,6 @@
 # Monitoring Services
 
- ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![Version](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 > Core monitoring infrastructure for Cthulu's indicators, signals, and system health.
@@ -13,7 +13,7 @@ Three specialized monitoring services that create comprehensive CSV outputs:
 2. **System Health Monitoring** - Process metrics, resources, and performance tracking
 3. **Comprehensive Metrics** - Trading performance, equity, and position tracking
 
-### APEX v5.1
+### Android Beta v5.1
 
 - **Real-Time Dashboard** - HTML dashboard with live charts and benchmarking
 - **RSI Reversal Tracking** - Monitors RSI extreme reversals for signal analysis
@@ -23,7 +23,7 @@ Three specialized monitoring services that create comprehensive CSV outputs:
 ## Architecture
 
 ```
-Cthulu Trading System v5.1 "Apex"
+Cthulu Trading System v5.1 "Android Beta"
     ├─→ Indicator Collector → metrics/indicator_metrics.csv
     ├─→ System Health Collector → metrics/system_health.csv
     └─→ Comprehensive Collector → metrics/comprehensive_metrics.csv
@@ -418,4 +418,5 @@ pip install psutil  # For system health monitoring
 **Outputs:** 2 canonical CSV files  
 **Design:** Extensible, JSON-configured, with automatic scoring  
 **Integration:** Direct integration with trading loop
+
 

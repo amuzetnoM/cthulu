@@ -1,7 +1,7 @@
 # System High Level Overview
 
 ## Top-level summary
-- Version/tag: **v5.1.0 APEX** — consistent across `OVERVIEW.md`, `_dev` reports and changelog.
+- Version/tag: **v1.0.0 Beta** — consistent across `OVERVIEW.md`, `_dev` reports and changelog.
 - Docs: Extensive documentation across `docs/`, `monitoring/`, `observability/`, `_dev/` and `OVERVIEW.md`.
 - Missing: No dedicated `system_map` or `system_mapping` file under `cthulu/` (added `cthulu/_dev/system_map.html`).
 

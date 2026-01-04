@@ -1,4 +1,4 @@
-# 🐙 CTHULU v5.1.0 APEX - Complete System Analysis
+# 🐙 CTHULU v1.0.0 Beta - Complete System Analysis
 
 **Generated:** 2026-01-04T00:29:25Z  
 **Classification:** COMPREHENSIVE SYSTEM OVERVIEW  
@@ -347,7 +347,7 @@ Error: Cannot determine market price for UNKNOWN
 
 | Document | Status | Notes |
 |----------|--------|-------|
-| OVERVIEW.md | ✅ Current | v5.1.0 APEX documented |
+| OVERVIEW.md | ✅ Current | v1.0.0 Beta documented |
 | _dev/SYSTEM_REPORT.md | ✅ Current | Source of truth |
 | _dev/ai_dev.md | ✅ Current | AI development notes |
 | _dev/AI_ML_RL_PROPOSAL.md | ✅ Current | Cognition blueprint |
@@ -477,5 +477,5 @@ cthulu/
 ---
 
 *Generated: 2026-01-04T00:29:25Z*
-*System: Cthulu v5.1.0 APEX*
+*System: Cthulu v1.0.0 Beta*
 *Status: Fully Operational*

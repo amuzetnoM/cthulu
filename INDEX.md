@@ -1,6 +1,6 @@
 # CTHULU TRADING SYSTEM - INDEX
 
-![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![Version](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 ![Language](https://img.shields.io/badge/Language-Python_3.10+-3776AB?style=for-the-badge&labelColor=0D1117&logo=python&logoColor=white)
 ![Integration](https://img.shields.io/badge/Integration-MetaTrader_5-00599C?style=for-the-badge&labelColor=0D1117&logo=metatrader5&logoColor=white)
 
@@ -12,7 +12,7 @@
 
 Cthulu is an **autonomous multi-strategy trading system** for MetaTrader 5 that combines advanced technical analysis, dynamic strategy selection, and comprehensive risk management. The system features 7 active trading strategies, 12 technical indicators, and a revolutionary **SAFE (Set And Forget Engine)** paradigm for fully autonomous operation.
 
-**Current Status:** v5.1.0 "APEX" — Production Ready
+**Current Status:** v1.0.0-beta "Android Beta" — Production Ready
 
 ### KEY FEATURES
 
@@ -68,7 +68,7 @@ Cthulu is an **autonomous multi-strategy trading system** for MetaTrader 5 that 
 | Document | Description | Link |
 |----------|-------------|------|
 | **Changelog** | Complete version history | [docs/Changelog/CHANGELOG.md](docs/Changelog/CHANGELOG.md) |
-| **v5.1.0 - APEX** | Latest release notes | [docs/Changelog/v5.1.0.md](docs/Changelog/v5.1.0.md) |
+| **v1.0.0-beta - Android Beta** | Latest release notes | [docs/Changelog/v1.0.0-beta.md](docs/Changelog/v1.0.0-beta.md) |
 | **v5.0.0** | Major overhaul release | [docs/Changelog/v5.0.0.md](docs/Changelog/v5.0.0.md) |
 | **v4.0.0** | Dynamic strategy selection | [docs/Changelog/v4.0.0.md](docs/Changelog/v4.0.0.md) |
 
@@ -371,3 +371,4 @@ See [LICENSE](LICENSE) file for complete details.
 ---
 
 **Built with focus on safety, testability, and production readiness. 👾**
+

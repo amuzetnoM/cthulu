@@ -5,7 +5,7 @@ tags: [conservative, balanced, aggressive, ultra-aggressive, hft, scalping]
 sidebar_position: 15
 ---
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 
 ## Overview
 
@@ -194,3 +194,4 @@ See [FEATURES_GUIDE.md](FEATURES_GUIDE.md) for complete strategy details.
 ---
 
 Action required: provide verified parameter sets for Conservative, Balanced, and Aggressive, or approve the template values to finalize this document.
+

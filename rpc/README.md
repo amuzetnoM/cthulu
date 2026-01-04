@@ -2,7 +2,7 @@
 
 Lightweight HTTP-based RPC server for programmatic control of Cthulu at runtime.
 
-![APEX](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=flat-square)
+![Android Beta](https://img.shields.io/badge/Android Beta-v1.0.0-beta-4B0082?style=flat-square)
 ![Security](https://img.shields.io/badge/Security-Hardened-brightgreen?style=flat-square)
 
 ## Quick Start
@@ -50,7 +50,7 @@ Enable in `config.json` or any mindset config:
 
 **IMPORTANT:** RPC must be explicitly enabled. Default is `false`.
 
-## Security Features (v5.1 Apex)
+## Security Features (v5.1 Android Beta)
 
 ### Intelligent Rate Limiting
 
@@ -214,3 +214,4 @@ See [docs/development_log/rpc.md](../docs/development_log/rpc.md) for complete A
 | "Rate limited" | Wait for cooldown or reduce request frequency |
 | "IP not in whitelist" | Add your IP to `security.ip_whitelist` |
 | "Blacklisted" | Wait for blacklist expiry or clear via restart |
+

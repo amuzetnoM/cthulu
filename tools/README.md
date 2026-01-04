@@ -42,3 +42,4 @@ These tools are maintained separately from the core system to:
 ## This Branch
 
 **This branch (`copilot/cthulu5-android-test`) is Android-only.** The core system uses `MT5ConnectorAndroid` directly, aliased as `MT5Connector`. The factory and platform detector are not used in the core system.
+

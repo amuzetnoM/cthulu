@@ -5,7 +5,7 @@ tags: [performance, optimization, tuning, benchmarking]
 sidebar_position: 6
 ---
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 ## Table of Contents
@@ -748,6 +748,7 @@ def suspect_function():
 
 **Last Updated**: December 2024  
 **Version**: 3.3.1
+
 
 
 

@@ -5,7 +5,7 @@ tags: [architecture, system-design, technical-overview]
 sidebar_position: 4
 ---
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 
 ### High-Level System Overview
 
@@ -802,6 +802,7 @@ flowchart TD
 
 ---
 
-**Current Status:** Production-ready v5.1.0_APEX, upgrade implementation and additional research in-progess.
+**Current Status:** Production-ready v1.0.0 Beta, upgrade implementation and additional research in-progess.
 **Architecture:** Fully modular, extensible, enterprise-grade with 6 strategies and 12 indicators  
 **Next Steps:** Performance optimization and advanced monitoring enhancements
+

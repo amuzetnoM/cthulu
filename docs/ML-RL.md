@@ -2,11 +2,11 @@
 title: Machine & Reinforcement Learning
 sidebar_position: 14
 description: Cognition Engine - ML/RL integration philosophy and implementation
-version: 5.1.0 APEX
+version: 1.0.0 Beta
 ---
 
 
-![APEX](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=for-the-badge)
+![Android Beta](https://img.shields.io/badge/Android Beta-v1.0.0-beta-4B0082?style=for-the-badge)
 ![ML](https://img.shields.io/badge/ML-Assistive-blue?style=for-the-badge)
 ![RL](https://img.shields.io/badge/RL-Training-green?style=for-the-badge)
 
@@ -374,3 +374,4 @@ If ML components fail or produce invalid output:
 *Cthulu Cognition Engine - Intelligence that assists, not replaces*
 
 </div>
+

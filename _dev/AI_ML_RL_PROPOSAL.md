@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![APEX](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=flat-square)
+![Android Beta](https://img.shields.io/badge/Android Beta-v1.0.0-beta-4B0082?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Proposal-orange?style=flat-square)
 ![Priority](https://img.shields.io/badge/Priority-High-red?style=flat-square)
 
@@ -591,3 +591,4 @@ Based on review of the Exodus brokerage platform, key patterns to adopt:
 *"Intelligence is the ability to adapt to change."* - Stephen Hawking
 
 </div>
+

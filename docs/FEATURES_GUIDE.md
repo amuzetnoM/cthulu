@@ -14,7 +14,7 @@ _________   __  .__          .__
         \/           \/                  
 ````    
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+ ![](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 
@@ -24,7 +24,7 @@ _________   __  .__          .__
 
 ### SAFE: Set And Forget Engine
 
-👾 Cthulu v5.1 "Apex" introduces the SAFE paradigm:
+👾 Cthulu v5.1 "Android Beta" introduces the SAFE paradigm:
 - **S**mart strategy selection with intelligent fallback
 - **A**daptive to all market conditions (ranging, trending, volatile)
 - **F**ully autonomous signal generation without manual intervention
@@ -56,7 +56,7 @@ _________   __  .__          .__
 
 ## Trading Strategies
 
-Cthulu v5.1 "Apex" includes **7 active trading strategies**, each optimized for specific market conditions:
+Cthulu v5.1 "Android Beta" includes **7 active trading strategies**, each optimized for specific market conditions:
 
 | Strategy | Type | Best Regime | Signal Speed | Crossover Required |
 |----------|------|-------------|--------------|-------------------|
@@ -934,7 +934,7 @@ The GUI automatically connects to the running Cthulu instance and displays data 
 
 ### Overview
 
-Cthulu v5.1 "Apex" introduces revolutionary **autonomous position management** that creates self-managing trades. This is the core of the **SAFE (Set And Forget Engine)** paradigm.
+Cthulu v5.1 "Android Beta" introduces revolutionary **autonomous position management** that creates self-managing trades. This is the core of the **SAFE (Set And Forget Engine)** paradigm.
 
 The system comprises four interconnected modules:
 1. **ProfitScaler** - Tiered partial profit taking
@@ -1199,7 +1199,7 @@ Once account gains exceed **5% of initial balance**, the system starts locking p
 
 ### Architecture Overview
 
-Cthulu v5.1 "Apex" implements a **multi-layered exit management system** that coordinates multiple exit strategies with intelligent priority adjustment. The system is designed around the principle: **"Don't hope for recovery - that's market prediction."**
+Cthulu v5.1 "Android Beta" implements a **multi-layered exit management system** that coordinates multiple exit strategies with intelligent priority adjustment. The system is designed around the principle: **"Don't hope for recovery - that's market prediction."**
 
 ### Exit Strategy Hierarchy
 
@@ -1756,7 +1756,7 @@ Metrics exported to Prometheus for external monitoring:
 
 ## Conclusion
 
-Cthulu v5.1 "Apex" is a **market-destroying beast** with:
+Cthulu v5.1 "Android Beta" is a **market-destroying beast** with:
 
 ✅ **7 Active Strategies** with intelligent selection
 ✅ **SAFE Engine** for autonomous operation
@@ -1771,7 +1771,8 @@ Cthulu v5.1 "Apex" is a **market-destroying beast** with:
 
 The system is designed to be a **Set And Forget Engine** - configure once, let it trade autonomously, and watch it adapt to any market condition.
 
-**Remember**: *"An apex predator doesn't react to the market - it dominates it."*
+**Remember**: *"An Android Beta predator doesn't react to the market - it dominates it."*
+
 
 
 

@@ -19,7 +19,7 @@ from typing import Optional
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-__version__ = "5.1.0"  # Apex Release - Market Destroyer
+__version__ = "1.0.0-beta"  # Android Native Edition - First Beta Release
 
 from core.bootstrap import CthuluBootstrap, SystemComponents
 from core.trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators
@@ -184,7 +184,7 @@ def main():
     )
     
     logger.info("=" * 80)
-    logger.info(f"Cthulu Autonomous Trading System v{__version__}")
+    logger.info(f"Cthulu Autonomous Trading System v{__version__} (Android Native)")
     logger.info("=" * 80)
     logger.info(f"Configuration: {args.config}")
     logger.info(f"Mindset: {args.mindset or 'default'}")

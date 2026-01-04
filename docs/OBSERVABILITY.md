@@ -5,7 +5,7 @@ tags: [observability, metrics, prometheus]
 sidebar_position: 10
 ---
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 
 
 ## Overview
@@ -199,5 +199,6 @@ The dashboard calculates grades based on:
 ---
 
 For examples and more details, see `docs/Changelog/CHANGELOG.md` and the tests (`tests/unit/test_metrics_improved.py`, `tests/unit/test_metrics_prometheus_integration.py`).
+
 
 

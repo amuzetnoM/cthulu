@@ -1,6 +1,6 @@
 # Ultra-Aggressive Mindset Configuration
 
-> **APEX v5.1** | High-Risk, High-Reward Trading Profile
+> **Android Beta v5.1** | High-Risk, High-Reward Trading Profile
 
 ## Overview
 
@@ -72,4 +72,5 @@ significant losses. Always:
 4. Have circuit breakers enabled
 
 ---
-*Part of Cthulu Trading System v5.1 APEX*
+*Part of Cthulu Trading System v5.1 Android Beta*
+

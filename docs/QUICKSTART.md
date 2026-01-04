@@ -5,7 +5,7 @@ tags: [quickstart, installation, setup, android, termux]
 sidebar_position: 3
 ---
 
-![](https://img.shields.io/badge/Version-5.1.0_ANDROID-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white) 
+![](https://img.shields.io/badge/Version-1.0.0_Beta-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white) 
 
 ## Prerequisites
 
@@ -333,6 +333,7 @@ python -m Cthulu --config config.json --enable-rpc       # Enable RPC for GUI
 - Discussions: https://github.com/amuzetnoM/Cthulu/discussions
 
 Happy Trading! 🚀📈
+
 
 
 

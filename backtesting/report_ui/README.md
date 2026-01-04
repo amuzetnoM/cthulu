@@ -13,3 +13,4 @@ Notes
 - HTML reports will open inline in an iframe.
 - JSON reports will be visualized using Chart.js (basic summary visualization).
 - This is intentionally small and dependency-free (no Flask) for easy local prototyping.
+

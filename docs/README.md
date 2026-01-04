@@ -10,7 +10,7 @@ sidebar_position: 1
 
 
 
-![](https://img.shields.io/badge/Version-5.1.0_ANDROID-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white) 
+![](https://img.shields.io/badge/Version-1.0.0_Beta-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white) 
 [![](https://img.shields.io/badge/DOCS-GitBook-FF6F61?style=for-the-badge&labelColor=0D1117&logo=gitbook&logoColor=white)](https://artifact-virtual.gitbook.io/Cthulu)
 
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
@@ -52,7 +52,7 @@ _________   __  .__          .__
 
 <br>
 
- **NEW in v5.1.0 <br> 
+ **NEW in v1.0.0-beta <br> 
  S A F E :<br> Set And Forget Engine**  
 > 👾 Cthulu reaches peak performance with revolutionary signal generation and the **SAFE** paradigm!
 >
@@ -1068,7 +1068,7 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.1.0
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v1.0.0-beta
 - **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
@@ -1081,8 +1081,8 @@ Past performance is not indicative of future results. Use at your own risk.
 
 | Version | Date | Status | Description |
 |---------|------|--------|-------------|
-| **5.1.0** | Dec 2025 | ✅ Current | **Apex** - RSI Reversal, multi-strategy fallback, SAFE engine |
-| **5.1.0** | Dec 2025 | ✅ Complete | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
+| **1.0.0-beta** | Dec 2025 | ✅ Current | **Android Beta** - RSI Reversal, multi-strategy fallback, SAFE engine |
+| **1.0.0-beta** | Dec 2025 | ✅ Complete | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
 | **4.0.0** | Dec 2024 | ✅ Complete | **Dynamic Strategy Selection** - Multi-strategy framework, exit strategies |
 | **3.0.0** | Dec 2024 | ✅ Complete | **Production Ready** - Zero-error test suite, MT5 funded account verified |
 | **2.0.0** | Dec 2024 | ✅ Complete | **Autonomous Trading** - Indicators, position management |
@@ -1103,6 +1103,7 @@ See [CHANGELOG.md](docs/CHANGELOG.md) for detailed release notes.
 ---
 
 **Built with focus on safety, testability, and production readiness.**
+
 
 
 

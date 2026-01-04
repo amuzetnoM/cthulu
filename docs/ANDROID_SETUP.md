@@ -407,3 +407,4 @@ Areas for contribution:
 ## License
 
 Same as Cthulu main project (AGPL-3.0)
+

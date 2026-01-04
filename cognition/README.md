@@ -3,7 +3,7 @@
 
 
 
- ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![Version](https://img.shields.io/badge/Version-1.0.0 Beta-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 **AI/ML Integration Layer for Intelligent Trading**
@@ -244,4 +244,5 @@ print(f"Final loss: {result.final_loss:.4f}")
 *"Intelligence is the ability to adapt to change."* - Stephen Hawking
 
 </div>
+
 
