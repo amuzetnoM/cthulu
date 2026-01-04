@@ -214,7 +214,7 @@ class EntryConfluenceFilter:
             quality = EntryQuality.GOOD
         elif total_score >= self.min_score_to_enter:
             quality = EntryQuality.MARGINAL
-        elif total_score >= 30:
+        elif total_score >= 20:
             quality = EntryQuality.POOR
         else:
             quality = EntryQuality.REJECT
@@ -231,11 +231,8 @@ class EntryConfluenceFilter:
         else:
             position_mult = 0.0
         
-        # Should we enter?
-        should_enter = (
-            quality not in [EntryQuality.REJECT, EntryQuality.POOR] and
-            total_score >= self.min_score_to_enter
-        )
+        # Should we enter? Allow entry if score meets minimum threshold
+        should_enter = total_score >= self.min_score_to_enter
         
         # Override: If momentum strongly against, don't enter
         if not momentum_aligned and momentum_score < 0.3:

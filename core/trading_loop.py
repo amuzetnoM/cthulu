@@ -497,8 +497,12 @@ class TradingLoop:
                     stop_loss = current_price + (atr * 2.0)
                     take_profit = current_price - (atr * 4.0)
                 
+                # Use clean base ID (strip any existing _pending suffixes to prevent cascade)
+                base_id = entry['signal_id'].replace('_pending', '').rstrip('_')
+                clean_id = f"{base_id}_exec_{int(datetime.now().timestamp())}"
+                
                 synthetic_signal = Signal(
-                    id=entry['signal_id'] + '_pending',
+                    id=clean_id,
                     timestamp=datetime.now(),
                     symbol=self.ctx.symbol,
                     timeframe=str(self.ctx.timeframe),
@@ -512,7 +516,8 @@ class TradingLoop:
                     metadata={
                         'pending_entry': True,
                         'waited_bars': entry['waited_bars'],
-                        'size_mult': size_mult
+                        'size_mult': size_mult,
+                        'skip_confluence_filter': True  # Skip re-filtering for pending entries
                     }
                 )
                 
@@ -1150,69 +1155,79 @@ class TradingLoop:
             # This is the critical addition that prevents blind entries
             # ============================================================
             entry_confluence_result = None
-            try:
-                from cthulu.cognition.entry_confluence import get_entry_confluence_filter
-                
-                # Get current market data for analysis
-                df = self.ctx.data_layer.get_cached_data(self.ctx.symbol)
-                if df is None or len(df) == 0:
-                    # Fallback: fetch fresh data
-                    rates = self.ctx.connector.get_rates(
-                        symbol=self.ctx.symbol,
-                        timeframe=self.ctx.timeframe,
-                        count=self.ctx.lookback_bars
-                    )
-                    if rates is not None:
-                        df = self.ctx.data_layer.normalize_rates(rates, symbol=self.ctx.symbol)
-                
-                if df is not None and len(df) > 20:
-                    signal_direction = 'long' if signal.side == SignalType.LONG else 'short'
-                    current_price = float(df['close'].iloc[-1])
-                    signal_price = getattr(signal, 'price', None) or getattr(signal, 'entry_price', None)
-                    atr = float(df['atr'].iloc[-1]) if 'atr' in df.columns else None
+            
+            # Skip confluence filter for pending entries (already filtered)
+            skip_confluence = (
+                hasattr(signal, 'metadata') and 
+                signal.metadata.get('skip_confluence_filter', False)
+            )
+            
+            if skip_confluence:
+                self.ctx.logger.debug("Skipping confluence filter for pending entry")
+            else:
+                try:
+                    from cthulu.cognition.entry_confluence import get_entry_confluence_filter
                     
-                    confluence_filter = get_entry_confluence_filter(config=self.ctx.config.get('entry_confluence', {}))
-                    entry_confluence_result = confluence_filter.analyze_entry(
-                        signal_direction=signal_direction,
-                        current_price=current_price,
-                        symbol=self.ctx.symbol,
-                        market_data=df,
-                        atr=atr,
-                        signal_entry_price=signal_price
-                    )
+                    # Get current market data for analysis
+                    df = self.ctx.data_layer.get_cached_data(self.ctx.symbol)
+                    if df is None or len(df) == 0:
+                        # Fallback: fetch fresh data
+                        rates = self.ctx.connector.get_rates(
+                            symbol=self.ctx.symbol,
+                            timeframe=self.ctx.timeframe,
+                            count=self.ctx.lookback_bars
+                        )
+                        if rates is not None:
+                            df = self.ctx.data_layer.normalize_rates(rates, symbol=self.ctx.symbol)
                     
-                    # Log entry analysis
-                    self.ctx.logger.info(f"Entry confluence: {entry_confluence_result.quality.value} "
-                                        f"(score={entry_confluence_result.score:.0f}, "
-                                        f"mult={entry_confluence_result.position_mult:.2f})")
-                    
-                    if entry_confluence_result.reasons:
-                        self.ctx.logger.debug(f"  Entry reasons: {entry_confluence_result.reasons[:3]}")
-                    if entry_confluence_result.warnings:
-                        self.ctx.logger.warning(f"  Entry warnings: {entry_confluence_result.warnings}")
-                    
-                    # GATE: Check if entry quality is acceptable
-                    if not entry_confluence_result.should_enter:
-                        self.ctx.logger.info(f"Entry rejected by confluence filter: "
-                                            f"{entry_confluence_result.quality.value} quality, "
-                                            f"score={entry_confluence_result.score:.0f}")
+                    if df is not None and len(df) > 20:
+                        signal_direction = 'long' if signal.side == SignalType.LONG else 'short'
+                        current_price = float(df['close'].iloc[-1])
+                        signal_price = getattr(signal, 'price', None) or getattr(signal, 'entry_price', None)
+                        atr = float(df['atr'].iloc[-1]) if 'atr' in df.columns else None
                         
-                        # Register for pending entry if waiting is recommended
-                        if entry_confluence_result.wait_for_better and entry_confluence_result.optimal_entry:
-                            confluence_filter.register_pending_entry(
-                                signal_id=signal.id,
-                                signal_direction=signal_direction,
-                                optimal_entry=entry_confluence_result.optimal_entry,
-                                symbol=self.ctx.symbol
-                            )
-                            self.ctx.logger.info(f"Signal queued: waiting for better entry at "
-                                                f"{entry_confluence_result.optimal_entry:.2f}")
-                        return
+                        confluence_filter = get_entry_confluence_filter(config=self.ctx.config.get('entry_confluence', {}))
+                        entry_confluence_result = confluence_filter.analyze_entry(
+                            signal_direction=signal_direction,
+                            current_price=current_price,
+                            symbol=self.ctx.symbol,
+                            market_data=df,
+                            atr=atr,
+                            signal_entry_price=signal_price
+                        )
                         
-            except ImportError:
-                self.ctx.logger.debug("Entry confluence filter not available, proceeding without")
-            except Exception as e:
-                self.ctx.logger.warning(f"Entry confluence analysis failed: {e}")
+                        # Log entry analysis
+                        self.ctx.logger.info(f"Entry confluence: {entry_confluence_result.quality.value} "
+                                            f"(score={entry_confluence_result.score:.0f}, "
+                                            f"mult={entry_confluence_result.position_mult:.2f})")
+                        
+                        if entry_confluence_result.reasons:
+                            self.ctx.logger.debug(f"  Entry reasons: {entry_confluence_result.reasons[:3]}")
+                        if entry_confluence_result.warnings:
+                            self.ctx.logger.warning(f"  Entry warnings: {entry_confluence_result.warnings}")
+                        
+                        # GATE: Check if entry quality is acceptable
+                        if not entry_confluence_result.should_enter:
+                            self.ctx.logger.info(f"Entry rejected by confluence filter: "
+                                                f"{entry_confluence_result.quality.value} quality, "
+                                                f"score={entry_confluence_result.score:.0f}")
+                            
+                            # Register for pending entry if waiting is recommended
+                            if entry_confluence_result.wait_for_better and entry_confluence_result.optimal_entry:
+                                confluence_filter.register_pending_entry(
+                                    signal_id=signal.id,
+                                    signal_direction=signal_direction,
+                                    optimal_entry=entry_confluence_result.optimal_entry,
+                                    symbol=self.ctx.symbol
+                                )
+                                self.ctx.logger.info(f"Signal queued: waiting for better entry at "
+                                                    f"{entry_confluence_result.optimal_entry:.2f}")
+                            return
+                            
+                except ImportError:
+                    self.ctx.logger.debug("Entry confluence filter not available, proceeding without")
+                except Exception as e:
+                    self.ctx.logger.warning(f"Entry confluence analysis failed: {e}")
             
             # Adaptive Account Manager check (if available)
             if self.ctx.adaptive_account_manager:
