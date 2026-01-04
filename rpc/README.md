@@ -101,6 +101,12 @@ Enable in `config.json` or any mindset config:
 |--------|------|-------------|
 | POST | `/trade` | Submit a trade order |
 | GET | `/provenance` | Query order audit trail |
+| GET | `/ops/status` | Get system status (mode, connector, positions) |
+| GET | `/ops/runbook?name=...` | Get runbook excerpt |
+| GET | `/ops/audit?limit=50` | Get recent audit entries |
+| POST | `/ops/command` | Submit an operational command (two-step confirm) |
+
+Note: The RPC server accepts an optional `ops_controller` in `run_rpc_server(..., ops_controller=your_controller)` which will be used to execute `ops/command` requests.
 | GET | `/health` | Server health check |
 | GET | `/status` | Trading system status |
 
