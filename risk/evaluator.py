@@ -610,6 +610,18 @@ class RiskEvaluator:
         # Check if limit exceeded
         self.check_daily_limits()
     
+    def record_trade_result(self, pnl: float):
+        """Record the P&L from a closed trade.
+        
+        This is a convenience alias for update_daily_pnl and also
+        increments the daily trade counter.
+        
+        Args:
+            pnl: Profit/loss from the closed trade
+        """
+        self.daily_tracker.increment_trades()
+        self.update_daily_pnl(pnl)
+    
     def reset_daily_tracking(self):
         """Reset daily counters (called at start of trading day)."""
         self.daily_tracker.reset_daily_tracking()

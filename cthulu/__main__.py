@@ -267,7 +267,7 @@ def main():
         try:
             cognition_engine = get_cognition_engine()
             trading_context.cognition_engine = cognition_engine
-            logger.info("🧠 Cognition Engine initialized - AI/ML signal enhancement active")
+            logger.info("Cognition Engine initialized - AI/ML signal enhancement active")
         except Exception as e:
             logger.warning(f"Cognition Engine not available: {e} - running in rule-based mode")
         

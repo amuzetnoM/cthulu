@@ -17,7 +17,6 @@ from datetime import datetime
 from enum import Enum
 
 from cthulu.strategy.base import Signal, SignalType
-from cthulu.position import risk_manager
 from cthulu import constants
 
 
@@ -757,24 +756,23 @@ class ExecutionEngine:
             if balance is not None and price is not None:
                 # Compute a proposed SL distance using RiskManager helper
                 try:
-                    # suggest_scaled_sl returns an absolute price distance to use as SL
-                    dist = self.limits = None
-                    try:
-                        # Try to use risk manager helper located in Cthulu.position.risk_manager
-                        from cthulu.position.risk_manager import suggest_sl_adjustment as _sugg_fn
-                        from cthulu.position.risk_manager import _threshold_from_config as _thr_fn
-                        # Compute a naive proposed SL by using a relative threshold
-                        threshold = _threshold_from_config(balance, self.risk_config.get('sl_balance_thresholds') if isinstance(self.risk_config, dict) else None, self.risk_config.get('sl_balance_breakpoints') if isinstance(self.risk_config, dict) else None)
-                        if order_req.side.upper() == 'BUY':
-                            proposed_sl = float(price) * (1.0 - threshold)
-                        else:
-                            proposed_sl = float(price) * (1.0 + threshold)
-                    except Exception:
-                        # Fallback: use small percent of price (1%)
-                        if order_req.side.upper() == 'BUY':
-                            proposed_sl = float(price) * 0.99
-                        else:
-                            proposed_sl = float(price) * 1.01
+                    # Import SL helpers from position.risk_manager (compatibility stubs)
+                    from cthulu.position.risk_manager import suggest_sl_adjustment as _sugg_fn
+                    from cthulu.position.risk_manager import _threshold_from_config as _thr_fn
+                    
+                    # Get threshold config for this balance tier
+                    threshold_info = _thr_fn(
+                        balance, 
+                        self.risk_config.get('sl_balance_thresholds') if isinstance(self.risk_config, dict) else None, 
+                        self.risk_config.get('sl_balance_breakpoints') if isinstance(self.risk_config, dict) else None
+                    )
+                    threshold_pct = threshold_info.get('threshold', 0.01) if isinstance(threshold_info, dict) else 0.01
+                    
+                    # Compute a naive proposed SL using the threshold
+                    if order_req.side.upper() == 'BUY':
+                        proposed_sl = float(price) * (1.0 - threshold_pct)
+                    else:
+                        proposed_sl = float(price) * (1.0 + threshold_pct)
 
                     # Ask the risk helper to refine the proposed SL
                     suggestion = _sugg_fn(
@@ -796,7 +794,15 @@ class ExecutionEngine:
                     order_req.sl = float(final_sl)
                     self.logger.info(f"Risk-managed SL for {order_req.symbol}: {order_req.sl} (balance={balance})")
                 except Exception:
-                    self.logger.exception('Failed to compute risk-managed SL; proceeding without SL')
+                    # Fallback: use small percent of price (1%) based on side
+                    try:
+                        if order_req.side.upper() == 'BUY':
+                            order_req.sl = float(price) * 0.99
+                        else:
+                            order_req.sl = float(price) * 1.01
+                        self.logger.debug(f'Using fallback SL calculation: {order_req.sl}')
+                    except Exception:
+                        self.logger.exception('Failed to compute risk-managed SL; proceeding without SL')
 
         # If we now have SL but no TP, set TP using a conservative RR (2.0) based on distance
         if order_req.sl and not order_req.tp and price is not None:
