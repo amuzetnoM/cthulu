@@ -1,35 +1,32 @@
 """
-Android MT5 Connector Module
+Android MT5 Connector - Direct Integration
 
-Provides MT5 connectivity for Android devices running Termux.
-Uses a bridge/adapter pattern to communicate with MT5 Android app.
+Simplified connector that uses MT5AndroidInterface directly.
+No bridge server required - reads MT5 files and uses intents.
 
-The connector supports multiple communication methods:
-1. REST API bridge (recommended)
-2. Socket-based communication
-3. File-based IPC (fallback)
-
-Prerequisites:
-- MT5 Android app installed
-- Bridge server running (see docs for setup)
+v1.0.0 Beta - Android Native Edition
 """
 
-import os
 import logging
 import time
-import json
-import socket
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
 from pathlib import Path
 
+from connector.mt5_android_interface import (
+    MT5AndroidInterface,
+    MT5SymbolInfo,
+    MT5AccountInfo,
+    MT5Position,
+    MT5Tick
+)
 
-# MT5 Constants - duplicated here for Android compatibility
-# These match the MetaTrader5 package constants
+
+# MT5 Constants
 class MT5Constants:
-    """MT5 API constants for Android connector."""
+    """MT5 API constants."""
     
     # Order types
     ORDER_TYPE_BUY = 0
@@ -59,6 +56,9 @@ class MT5Constants:
     
     # Trade retcodes
     TRADE_RETCODE_DONE = 10009
+    TRADE_RETCODE_PLACED = 10008
+    TRADE_RETCODE_REQUOTE = 10004
+    TRADE_RETCODE_REJECT = 10006
     TRADE_RETCODE_INVALID = 10013
     TRADE_RETCODE_TIMEOUT = 10012
     
@@ -67,14 +67,14 @@ class MT5Constants:
     TIMEFRAME_M5 = 5
     TIMEFRAME_M15 = 15
     TIMEFRAME_M30 = 30
-    TIMEFRAME_H1 = 16385
-    TIMEFRAME_H4 = 16388
-    TIMEFRAME_D1 = 16408
-    TIMEFRAME_W1 = 32769
-    TIMEFRAME_MN1 = 49153
+    TIMEFRAME_H1 = 60
+    TIMEFRAME_H4 = 240
+    TIMEFRAME_D1 = 1440
+    TIMEFRAME_W1 = 10080
+    TIMEFRAME_MN1 = 43200
 
 
-# Create module-level constants for backward compatibility
+# Module-level exports
 ORDER_TYPE_BUY = MT5Constants.ORDER_TYPE_BUY
 ORDER_TYPE_SELL = MT5Constants.ORDER_TYPE_SELL
 TRADE_ACTION_DEAL = MT5Constants.TRADE_ACTION_DEAL
@@ -85,14 +85,13 @@ TRADE_RETCODE_DONE = MT5Constants.TRADE_RETCODE_DONE
 
 
 @dataclass
-class AndroidConnectionConfig:
-    """Android MT5 connection configuration"""
-    # Bridge connection settings
-    bridge_host: str = "127.0.0.1"
-    bridge_port: int = 18812  # MT5 bridge port
-    bridge_type: str = "rest"  # rest, socket, or file
+class ConnectionConfig:
+    """Connection configuration for Android MT5."""
     
-    # MT5 account credentials (passed to bridge)
+    # MT5 data directory (auto-detected if not specified)
+    mt5_data_dir: Optional[str] = None
+    
+    # MT5 account credentials (for display purposes)
     login: int = 0
     password: str = ""
     server: str = ""
@@ -102,961 +101,20 @@ class AndroidConnectionConfig:
     max_retries: int = 3
     retry_delay: int = 5
     
-    # Bridge-specific settings
-    bridge_auth_token: Optional[str] = None
-    bridge_data_dir: Optional[str] = None  # For file-based IPC
+    # For backwards compatibility with old configs
+    bridge_type: str = "direct"  # Ignored - always direct now
+    bridge_host: str = ""  # Ignored
+    bridge_port: int = 0  # Ignored
 
 
-class MT5ConnectorAndroid:
-    """
-    Android-specific MT5 connector implementation.
-    
-    This connector provides the same interface as MT5Connector but works
-    with the MT5 Android app through a bridge/adapter layer.
-    
-    The bridge can be implemented as:
-    - REST API server running on Android
-    - Socket server for direct communication
-    - File-based IPC for simple setups
-    """
-    
-    def __init__(self, config: AndroidConnectionConfig):
-        """
-        Initialize Android MT5 connector.
-        
-        Args:
-            config: Android connection configuration
-        """
-        self.config = config
-        self.connected = False
-        self.logger = logging.getLogger("Cthulu.connector.android")
-        self._lock = Lock()
-        self._last_request_time = 0.0
-        self._min_request_interval = 0.1
-        self._session = None  # For REST API session
-        self._socket = None  # For socket connection
-        
-        self.logger.info("Initializing Android MT5 connector")
-        self.logger.info(f"Bridge type: {config.bridge_type}")
-        self.logger.info(f"Bridge endpoint: {config.bridge_host}:{config.bridge_port}")
-        
-    def _check_bridge_available(self) -> bool:
-        """
-        Check if the MT5 bridge is available and responsive.
-        
-        Returns:
-            True if bridge is available
-        """
-        try:
-            if self.config.bridge_type == "rest":
-                return self._check_rest_bridge()
-            elif self.config.bridge_type == "socket":
-                return self._check_socket_bridge()
-            elif self.config.bridge_type == "file":
-                return self._check_file_bridge()
-            else:
-                self.logger.error(f"Unknown bridge type: {self.config.bridge_type}")
-                return False
-        except Exception as e:
-            self.logger.error(f"Bridge availability check failed: {e}")
-            return False
-    
-    def _check_rest_bridge(self) -> bool:
-        """Check if REST API bridge is available."""
-        try:
-            import requests
-            url = f"http://{self.config.bridge_host}:{self.config.bridge_port}/health"
-            headers = {}
-            if self.config.bridge_auth_token:
-                headers['Authorization'] = f"Bearer {self.config.bridge_auth_token}"
-            
-            response = requests.get(url, headers=headers, timeout=5)
-            return response.status_code == 200
-        except ImportError:
-            self.logger.warning("requests library not available for REST bridge")
-            return False
-        except Exception as e:
-            self.logger.debug(f"REST bridge check failed: {e}")
-            return False
-    
-    def _check_socket_bridge(self) -> bool:
-        """Check if socket bridge is available."""
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(2)
-            result = sock.connect_ex((self.config.bridge_host, self.config.bridge_port))
-            sock.close()
-            return result == 0
-        except Exception as e:
-            self.logger.debug(f"Socket bridge check failed: {e}")
-            return False
-    
-    def _check_file_bridge(self) -> bool:
-        """Check if file-based bridge is available."""
-        try:
-            if not self.config.bridge_data_dir:
-                return False
-            
-            bridge_dir = Path(self.config.bridge_data_dir)
-            status_file = bridge_dir / "bridge_status.json"
-            
-            if not status_file.exists():
-                return False
-            
-            # Check if status file is recent (updated within last 10 seconds)
-            mtime = status_file.stat().st_mtime
-            age = time.time() - mtime
-            
-            return age < 10
-        except Exception as e:
-            self.logger.debug(f"File bridge check failed: {e}")
-            return False
-    
-    def _send_bridge_request(self, method: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """
-        Send a request to the MT5 bridge.
-        
-        Args:
-            method: API method name (e.g., 'initialize', 'get_account_info')
-            params: Method parameters
-            
-        Returns:
-            Response data or None on error
-        """
-        try:
-            if self.config.bridge_type == "rest":
-                return self._send_rest_request(method, params)
-            elif self.config.bridge_type == "socket":
-                return self._send_socket_request(method, params)
-            elif self.config.bridge_type == "file":
-                return self._send_file_request(method, params)
-            else:
-                self.logger.error(f"Unknown bridge type: {self.config.bridge_type}")
-                return None
-        except Exception as e:
-            self.logger.error(f"Bridge request failed: {e}")
-            return None
-    
-    def _send_rest_request(self, method: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Send request via REST API."""
-        try:
-            import requests
-            
-            url = f"http://{self.config.bridge_host}:{self.config.bridge_port}/api/mt5/{method}"
-            headers = {'Content-Type': 'application/json'}
-            
-            if self.config.bridge_auth_token:
-                headers['Authorization'] = f"Bearer {self.config.bridge_auth_token}"
-            
-            response = requests.post(
-                url,
-                json=params,
-                headers=headers,
-                timeout=self.config.timeout / 1000
-            )
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                self.logger.error(f"REST request failed: {response.status_code} - {response.text}")
-                return None
-                
-        except ImportError:
-            self.logger.error("requests library not available. Install with: pip install requests")
-            return None
-        except Exception as e:
-            self.logger.error(f"REST request error: {e}")
-            return None
-    
-    def _send_socket_request(self, method: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Send request via socket."""
-        try:
-            request_data = {
-                'method': method,
-                'params': params,
-                'timestamp': time.time()
-            }
-            
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(self.config.timeout / 1000)
-            sock.connect((self.config.bridge_host, self.config.bridge_port))
-            
-            # Send request
-            request_json = json.dumps(request_data).encode('utf-8')
-            sock.sendall(len(request_json).to_bytes(4, 'big'))
-            sock.sendall(request_json)
-            
-            # Receive response
-            response_len = int.from_bytes(sock.recv(4), 'big')
-            response_data = b''
-            while len(response_data) < response_len:
-                chunk = sock.recv(min(4096, response_len - len(response_data)))
-                if not chunk:
-                    break
-                response_data += chunk
-            
-            sock.close()
-            
-            return json.loads(response_data.decode('utf-8'))
-            
-        except Exception as e:
-            self.logger.error(f"Socket request error: {e}")
-            return None
-    
-    def _send_file_request(self, method: str, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Send request via file-based IPC."""
-        try:
-            if not self.config.bridge_data_dir:
-                self.logger.error("bridge_data_dir not configured for file-based IPC")
-                return None
-            
-            bridge_dir = Path(self.config.bridge_data_dir)
-            bridge_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Create request file
-            request_id = f"{int(time.time() * 1000)}_{os.getpid()}"
-            request_file = bridge_dir / f"request_{request_id}.json"
-            response_file = bridge_dir / f"response_{request_id}.json"
-            
-            request_data = {
-                'method': method,
-                'params': params,
-                'request_id': request_id,
-                'timestamp': time.time()
-            }
-            
-            with open(request_file, 'w') as f:
-                json.dump(request_data, f)
-            
-            # Wait for response (with timeout)
-            start_time = time.time()
-            timeout_seconds = self.config.timeout / 1000
-            
-            while time.time() - start_time < timeout_seconds:
-                if response_file.exists():
-                    with open(response_file, 'r') as f:
-                        response_data = json.load(f)
-                    
-                    # Clean up files
-                    try:
-                        request_file.unlink()
-                        response_file.unlink()
-                    except Exception:
-                        pass
-                    
-                    return response_data
-                
-                time.sleep(0.1)
-            
-            # Timeout - clean up request file
-            try:
-                request_file.unlink()
-            except Exception:
-                pass
-            
-            self.logger.error(f"File request timeout for method: {method}")
-            return None
-            
-        except Exception as e:
-            self.logger.error(f"File request error: {e}")
-            return None
-    
-    def connect(self) -> bool:
-        """
-        Establish connection to MT5 via Android bridge.
-        
-        Returns:
-            True if connection successful
-        """
-        with self._lock:
-            self.logger.info("Attempting to connect to MT5 Android app via bridge...")
-            
-            # Check if bridge is available
-            if not self._check_bridge_available():
-                self.logger.error("MT5 bridge is not available or not responding")
-                self.logger.error(f"Please ensure the bridge server is running on {self.config.bridge_host}:{self.config.bridge_port}")
-                self.logger.error("See documentation for bridge setup instructions")
-                return False
-            
-            # Attempt connection with retries
-            for attempt in range(1, self.config.max_retries + 1):
-                try:
-                    self.logger.info(f"Connection attempt {attempt}/{self.config.max_retries}...")
-                    
-                    # Send initialize request to bridge
-                    params = {}
-                    if self.config.login and self.config.login != 0:
-                        params['login'] = self.config.login
-                        params['password'] = self.config.password
-                        params['server'] = self.config.server
-                    
-                    response = self._send_bridge_request('initialize', params)
-                    
-                    if not response:
-                        raise ConnectionError("Bridge did not respond to initialize request")
-                    
-                    if not response.get('success'):
-                        error_msg = response.get('error', 'Unknown error')
-                        raise ConnectionError(f"Bridge initialization failed: {error_msg}")
-                    
-                    # Verify connection by getting account info
-                    account_response = self._send_bridge_request('account_info', {})
-                    if not account_response or not account_response.get('success'):
-                        raise ConnectionError("Could not retrieve account info")
-                    
-                    account_data = account_response.get('data', {})
-                    self.connected = True
-                    
-                    # Mask account login in logs
-                    acct_login = account_data.get('login', 'unknown')
-                    acct_display = str(acct_login)
-                    acct_masked = acct_display if len(acct_display) <= 4 else f"****{acct_display[-4:]}"
-                    
-                    self.logger.info(f"Successfully connected to MT5 Android app")
-                    self.logger.info(f"Server: {account_data.get('server', 'unknown')}")
-                    self.logger.info(f"Account: {acct_masked}")
-                    self.logger.info(f"Balance: ${account_data.get('balance', 0):.2f}")
-                    
-                    return True
-                    
-                except Exception as e:
-                    self.logger.error(f"Connection attempt {attempt} failed: {e}")
-                    if attempt < self.config.max_retries:
-                        time.sleep(self.config.retry_delay)
-            
-            self.logger.error("All connection attempts failed")
-            return False
-    
-    def disconnect(self):
-        """Disconnect from MT5 bridge."""
-        with self._lock:
-            if self.connected:
-                try:
-                    self._send_bridge_request('shutdown', {})
-                except Exception as e:
-                    self.logger.warning(f"Error during disconnect: {e}")
-                
-                self.connected = False
-                self.logger.info("Disconnected from MT5 Android bridge")
-    
-    def is_connected(self) -> bool:
-        """
-        Check if connected to MT5 bridge.
-        
-        Returns:
-            True if connected and healthy
-        """
-        if not self.connected:
-            return False
-        
-        try:
-            response = self._send_bridge_request('terminal_info', {})
-            return response is not None and response.get('success', False)
-        except Exception as e:
-            self.logger.error(f"Connection check failed: {e}")
-            self.connected = False
-            return False
-    
-    def reconnect(self) -> bool:
-        """
-        Reconnect to MT5 bridge.
-        
-        Returns:
-            True if reconnection successful
-        """
-        self.logger.info("Attempting reconnection...")
-        self.disconnect()
-        time.sleep(2)
-        return self.connect()
-    
-    def _rate_limit(self):
-        """Apply rate limiting between requests."""
-        current_time = time.time()
-        elapsed = current_time - self._last_request_time
-        
-        if elapsed < self._min_request_interval:
-            time.sleep(self._min_request_interval - elapsed)
-        
-        self._last_request_time = time.time()
-    
-    def get_rates(
-        self,
-        symbol: str,
-        timeframe: int,
-        count: int,
-        start_pos: int = 0
-    ) -> Optional[List[Dict[str, Any]]]:
-        """
-        Fetch historical rates for a symbol.
-        
-        Args:
-            symbol: Trading symbol
-            timeframe: MT5 timeframe constant
-            count: Number of bars to fetch
-            start_pos: Starting position (0 = most recent)
-            
-        Returns:
-            List of rate dictionaries or None on error
-        """
-        if not self.is_connected():
-            if not self.connect():
-                self.logger.error("Not connected to MT5 bridge")
-                return None
-        
-        self._rate_limit()
-        
-        try:
-            params = {
-                'symbol': symbol,
-                'timeframe': timeframe,
-                'count': count,
-                'start_pos': start_pos
-            }
-            
-            response = self._send_bridge_request('copy_rates_from_pos', params)
-            
-            if not response or not response.get('success'):
-                error = response.get('error', 'Unknown error') if response else 'No response'
-                self.logger.error(f"Failed to fetch rates: {error}")
-                return None
-            
-            return response.get('data', [])
-            
-        except Exception as e:
-            self.logger.error(f"Error fetching rates: {e}", exc_info=True)
-            return None
-    
-    def get_account_info(self) -> Optional[Dict[str, Any]]:
-        """
-        Get current account information.
-        
-        Returns:
-            Dictionary with account details or None
-        """
-        if not self.is_connected():
-            return None
-        
-        self._rate_limit()
-        
-        try:
-            response = self._send_bridge_request('account_info', {})
-            
-            if not response or not response.get('success'):
-                return None
-            
-            return response.get('data', {})
-            
-        except Exception as e:
-            self.logger.error(f"Error fetching account info: {e}")
-            return None
-    
-    def get_symbol_info(self, symbol: str) -> Optional[Dict[str, Any]]:
-        """
-        Get symbol information and trading specifications.
-        
-        Args:
-            symbol: Trading symbol
-            
-        Returns:
-            Dictionary with symbol details or None
-        """
-        if not self.is_connected():
-            return None
-        
-        self._rate_limit()
-        
-        try:
-            params = {'symbol': symbol}
-            response = self._send_bridge_request('symbol_info', params)
-            
-            if not response or not response.get('success'):
-                return None
-            
-            return response.get('data', {})
-            
-        except Exception as e:
-            self.logger.error(f"Error fetching symbol info: {e}")
-            return None
-    
-    def get_open_positions(self) -> List[Dict[str, Any]]:
-        """
-        Get all open positions from MT5.
-        
-        Returns:
-            List of position dictionaries
-        """
-        if not self.is_connected():
-            return []
-        
-        self._rate_limit()
-        
-        try:
-            response = self._send_bridge_request('positions_get', {})
-            
-            if not response or not response.get('success'):
-                return []
-            
-            return response.get('data', [])
-            
-        except Exception as e:
-            self.logger.error(f"Error fetching positions: {e}")
-            return []
-    
-    def health_check(self) -> Dict[str, Any]:
-        """
-        Perform comprehensive health check.
-        
-        Returns:
-            Dictionary with health status metrics
-        """
-        health = {
-            'connected': False,
-            'terminal_connected': False,
-            'trade_allowed': False,
-            'account_valid': False,
-            'timestamp': datetime.now().isoformat(),
-            'platform': 'android'
-        }
-        
-        try:
-            if not self.is_connected():
-                return health
-            
-            health['connected'] = True
-            
-            # Check terminal via bridge
-            terminal_response = self._send_bridge_request('terminal_info', {})
-            if terminal_response and terminal_response.get('success'):
-                terminal_data = terminal_response.get('data', {})
-                health['terminal_connected'] = terminal_data.get('connected', False)
-                health['trade_allowed'] = terminal_data.get('trade_allowed', False)
-            
-            # Check account
-            account_response = self._send_bridge_request('account_info', {})
-            if account_response and account_response.get('success'):
-                account_data = account_response.get('data', {})
-                health['account_valid'] = account_data.get('trade_allowed', False)
-                health['balance'] = account_data.get('balance', 0)
-                health['equity'] = account_data.get('equity', 0)
-                health['margin_level'] = account_data.get('margin_level', 0)
-        
-        except Exception as e:
-            self.logger.error(f"Health check error: {e}")
-            health['error'] = str(e)
-        
-        return health
-    
-    def __enter__(self):
-        """Context manager entry."""
-        self.connect()
-        return self
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit."""
-        self.disconnect()
-    
-    # Additional methods to match MT5Connector interface
-    
-    def get_point_value(self, symbol: str) -> Optional[float]:
-        """Return point value in account currency for one point movement for symbol."""
-        try:
-            info = self.get_symbol_info(symbol)
-            if not info:
-                return None
-            point = info.get('point')
-            contract = info.get('contract_size') or info.get('trade_contract_size') or info.get('contract')
-            if point is None:
-                return None
-            if contract is None:
-                contract = 1.0
-            return float(point) * float(contract)
-        except Exception:
-            return None
-    
-    def get_min_lot(self, symbol: str) -> float:
-        """Return minimum tradable lot size for symbol."""
-        try:
-            info = self.get_symbol_info(symbol)
-            if not info:
-                return 0.01
-            return float(info.get('volume_min', 0.01))
-        except Exception:
-            return 0.01
-    
-    def get_spread(self, symbol: str) -> Optional[float]:
-        """Return current spread for symbol in points or price units."""
-        try:
-            info = self.get_symbol_info(symbol)
-            if not info:
-                return None
-            spread = info.get('spread')
-            if spread is not None:
-                return float(spread)
-            bid = info.get('bid')
-            ask = info.get('ask')
-            if bid is not None and ask is not None:
-                return abs(float(ask) - float(bid))
-            return None
-        except Exception:
-            return None
-    
-    def get_position_by_ticket(self, ticket: int) -> Optional[Dict[str, Any]]:
-        """Return position information for a given MT5 position ticket."""
-        try:
-            if not self.is_connected():
-                return None
-            
-            self._rate_limit()
-            params = {'ticket': ticket}
-            response = self._send_bridge_request('position_get', params)
-            
-            if not response or not response.get('success'):
-                return None
-            
-            return response.get('data')
-            
-        except Exception as e:
-            self.logger.error(f"Error fetching position by ticket {ticket}: {e}")
-            return None
-    
-    def ensure_symbol_selected(self, symbol: str) -> Optional[str]:
-        """Ensure symbol is selected in MT5."""
-        try:
-            params = {'symbol': symbol, 'enable': True}
-            response = self._send_bridge_request('symbol_select', params)
-            
-            if response and response.get('success'):
-                return symbol
-            return None
-            
-        except Exception:
-            return None
+# Alias for backwards compatibility
+AndroidConnectionConfig = ConnectionConfig
 
-    # ========================================================================
-    # TRADING METHODS - Full MT5 Trading Implementation for Android
-    # ========================================================================
-    
-    def order_send(self, request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """
-        Send a trading order to MT5.
-        
-        This is the primary method for placing trades, closing positions,
-        and modifying orders. Matches the MetaTrader5.order_send() interface.
-        
-        Args:
-            request: Order request dictionary containing:
-                - action: Trade action (TRADE_ACTION_DEAL, etc.)
-                - symbol: Trading symbol
-                - volume: Order volume in lots
-                - type: Order type (ORDER_TYPE_BUY, ORDER_TYPE_SELL, etc.)
-                - price: Order price (for market orders, current price)
-                - sl: Stop loss price (optional)
-                - tp: Take profit price (optional)
-                - deviation: Maximum price deviation in points
-                - magic: Expert Advisor magic number
-                - comment: Order comment
-                - type_time: Order lifetime type
-                - type_filling: Order filling type
-                - position: Position ticket (for close/modify)
-                
-        Returns:
-            Order result dictionary with:
-                - retcode: Return code (10009 = success)
-                - deal: Deal ticket
-                - order: Order ticket
-                - volume: Executed volume
-                - price: Execution price
-                - bid/ask: Current prices
-                - comment: Result comment
-                - request_id: Request ID
-            None on error
-        """
-        if not self.is_connected():
-            self.logger.error("Cannot send order: not connected to MT5 bridge")
-            return None
-        
-        self._rate_limit()
-        
-        try:
-            # Validate required fields
-            if 'action' not in request:
-                self.logger.error("Order request missing 'action' field")
-                return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, "Missing action")
-            
-            if 'symbol' not in request:
-                self.logger.error("Order request missing 'symbol' field")
-                return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, "Missing symbol")
-            
-            # Ensure symbol is selected
-            symbol = request.get('symbol')
-            self.ensure_symbol_selected(symbol)
-            
-            # Log the order request (masking sensitive data)
-            self.logger.info(
-                f"Sending order: action={request.get('action')} symbol={symbol} "
-                f"type={request.get('type')} volume={request.get('volume')} "
-                f"price={request.get('price')}"
-            )
-            
-            # Send to bridge
-            response = self._send_bridge_request('order_send', request)
-            
-            if not response:
-                self.logger.error("No response from bridge for order_send")
-                return self._create_error_result(MT5Constants.TRADE_RETCODE_TIMEOUT, "Bridge timeout")
-            
-            if not response.get('success'):
-                error = response.get('error', 'Unknown error')
-                self.logger.error(f"Order rejected by bridge: {error}")
-                return self._create_error_result(
-                    response.get('retcode', MT5Constants.TRADE_RETCODE_INVALID),
-                    error
-                )
-            
-            result = response.get('data', {})
-            
-            # Log result
-            retcode = result.get('retcode', 0)
-            if retcode == MT5Constants.TRADE_RETCODE_DONE:
-                self.logger.info(
-                    f"Order executed: ticket={result.get('order')} "
-                    f"deal={result.get('deal')} volume={result.get('volume')} "
-                    f"price={result.get('price')}"
-                )
-            else:
-                self.logger.warning(
-                    f"Order result: retcode={retcode} comment={result.get('comment')}"
-                )
-            
-            return self._wrap_order_result(result)
-            
-        except Exception as e:
-            self.logger.error(f"Error sending order: {e}", exc_info=True)
-            return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, str(e))
-    
-    def _create_error_result(self, retcode: int, comment: str) -> Dict[str, Any]:
-        """Create a standardized error result object."""
-        return _OrderResult({
-            'retcode': retcode,
-            'deal': 0,
-            'order': 0,
-            'volume': 0.0,
-            'price': 0.0,
-            'bid': 0.0,
-            'ask': 0.0,
-            'comment': comment,
-            'request_id': 0
-        })
-    
-    def _wrap_order_result(self, data: Dict[str, Any]) -> '_OrderResult':
-        """Wrap order result in an object with attribute access."""
-        return _OrderResult(data)
-    
-    def positions_get(self, symbol: str = None, ticket: int = None) -> Optional[List[Any]]:
-        """
-        Get open positions from MT5.
-        
-        Args:
-            symbol: Filter by symbol (optional)
-            ticket: Get specific position by ticket (optional)
-            
-        Returns:
-            List of position objects or None on error
-        """
-        if not self.is_connected():
-            return None
-        
-        self._rate_limit()
-        
-        try:
-            params = {}
-            if symbol:
-                params['symbol'] = symbol
-            if ticket:
-                params['ticket'] = ticket
-            
-            response = self._send_bridge_request('positions_get', params)
-            
-            if not response or not response.get('success'):
-                return None
-            
-            positions_data = response.get('data', [])
-            
-            # Wrap in position objects for attribute access
-            return [_Position(p) for p in positions_data]
-            
-        except Exception as e:
-            self.logger.error(f"Error fetching positions: {e}")
-            return None
-    
-    def symbol_info_tick(self, symbol: str) -> Optional['_SymbolTick']:
-        """
-        Get current tick data for a symbol.
-        
-        Args:
-            symbol: Trading symbol
-            
-        Returns:
-            Tick object with bid, ask, last, volume, time
-        """
-        if not self.is_connected():
-            return None
-        
-        self._rate_limit()
-        
-        try:
-            params = {'symbol': symbol}
-            response = self._send_bridge_request('symbol_info_tick', params)
-            
-            if not response or not response.get('success'):
-                # Fallback to symbol_info if tick not available
-                info = self.get_symbol_info(symbol)
-                if info:
-                    return _SymbolTick({
-                        'bid': info.get('bid', 0),
-                        'ask': info.get('ask', 0),
-                        'last': info.get('last', 0),
-                        'volume': info.get('volume', 0),
-                        'time': int(time.time())
-                    })
-                return None
-            
-            return _SymbolTick(response.get('data', {}))
-            
-        except Exception as e:
-            self.logger.error(f"Error fetching tick for {symbol}: {e}")
-            return None
-    
-    def last_error(self) -> tuple:
-        """
-        Get last error from MT5.
-        
-        Returns:
-            Tuple of (error_code, error_description)
-        """
-        try:
-            response = self._send_bridge_request('last_error', {})
-            if response and response.get('success'):
-                data = response.get('data', {})
-                return (data.get('code', 0), data.get('message', 'No error'))
-            return (0, 'No error')
-        except Exception:
-            return (0, 'No error')
-    
-    def close_position_by_ticket(self, ticket: int, volume: float = None, 
-                                  deviation: int = 20, magic: int = 0,
-                                  comment: str = "Cthulu close") -> Optional[Dict[str, Any]]:
-        """
-        Close an open position by ticket number.
-        
-        Args:
-            ticket: Position ticket to close
-            volume: Volume to close (None = full position)
-            deviation: Maximum price deviation
-            magic: Magic number
-            comment: Order comment
-            
-        Returns:
-            Order result or None on error
-        """
-        try:
-            # Get position info
-            positions = self.positions_get(ticket=ticket)
-            if not positions or len(positions) == 0:
-                self.logger.error(f"Position #{ticket} not found")
-                return self._create_error_result(
-                    MT5Constants.TRADE_RETCODE_INVALID, 
-                    f"Position #{ticket} not found"
-                )
-            
-            position = positions[0]
-            
-            # Determine close volume
-            close_volume = volume if volume else position.volume
-            
-            # Determine order type (opposite of position)
-            if position.type == MT5Constants.ORDER_TYPE_BUY:
-                order_type = MT5Constants.ORDER_TYPE_SELL
-                tick = self.symbol_info_tick(position.symbol)
-                price = tick.bid if tick else 0
-            else:
-                order_type = MT5Constants.ORDER_TYPE_BUY
-                tick = self.symbol_info_tick(position.symbol)
-                price = tick.ask if tick else 0
-            
-            # Build close request
-            request = {
-                "action": MT5Constants.TRADE_ACTION_DEAL,
-                "symbol": position.symbol,
-                "volume": close_volume,
-                "type": order_type,
-                "position": ticket,
-                "price": price,
-                "deviation": deviation,
-                "magic": magic,
-                "comment": comment,
-                "type_time": MT5Constants.ORDER_TIME_GTC,
-                "type_filling": MT5Constants.ORDER_FILLING_IOC,
-            }
-            
-            return self.order_send(request)
-            
-        except Exception as e:
-            self.logger.error(f"Error closing position #{ticket}: {e}", exc_info=True)
-            return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, str(e))
-    
-    def modify_position(self, ticket: int, sl: float = None, tp: float = None) -> Optional[Dict[str, Any]]:
-        """
-        Modify stop loss and take profit of an open position.
-        
-        Args:
-            ticket: Position ticket
-            sl: New stop loss price (None = unchanged)
-            tp: New take profit price (None = unchanged)
-            
-        Returns:
-            Order result or None on error
-        """
-        try:
-            # Get position info
-            positions = self.positions_get(ticket=ticket)
-            if not positions or len(positions) == 0:
-                self.logger.error(f"Position #{ticket} not found for modification")
-                return self._create_error_result(
-                    MT5Constants.TRADE_RETCODE_INVALID,
-                    f"Position #{ticket} not found"
-                )
-            
-            position = positions[0]
-            
-            # Build modify request
-            request = {
-                "action": MT5Constants.TRADE_ACTION_SLTP,
-                "symbol": position.symbol,
-                "position": ticket,
-                "sl": sl if sl is not None else position.sl,
-                "tp": tp if tp is not None else position.tp,
-            }
-            
-            return self.order_send(request)
-            
-        except Exception as e:
-            self.logger.error(f"Error modifying position #{ticket}: {e}", exc_info=True)
-            return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, str(e))
-
-
-# ============================================================================
-# Helper Classes for MT5-like Object Interface
-# ============================================================================
 
 class _OrderResult:
-    """
-    Wrapper class for order results to provide attribute access.
-    Mimics the MetaTrader5 OrderSendResult structure.
-    """
+    """Order result wrapper for compatibility."""
     
     def __init__(self, data: Dict[str, Any]):
-        self._data = data
         self.retcode = data.get('retcode', 0)
         self.deal = data.get('deal', 0)
         self.order = data.get('order', 0)
@@ -1066,63 +124,364 @@ class _OrderResult:
         self.ask = data.get('ask', 0.0)
         self.comment = data.get('comment', '')
         self.request_id = data.get('request_id', 0)
-        self.retcode_external = data.get('retcode_external', 0)
-        # Additional fields that may be present
-        self.profit = data.get('profit', 0.0)
-        self.commission = data.get('commission', 0.0)
-    
-    def __repr__(self):
-        return f"OrderResult(retcode={self.retcode}, order={self.order}, deal={self.deal}, volume={self.volume}, price={self.price})"
+        self.queue_id = data.get('queue_id', '')
+        self.status = data.get('status', '')
 
 
 class _Position:
-    """
-    Wrapper class for position data to provide attribute access.
-    Mimics the MetaTrader5 TradePosition structure.
-    """
+    """Position wrapper for compatibility."""
     
     def __init__(self, data: Dict[str, Any]):
-        self._data = data
         self.ticket = data.get('ticket', 0)
-        self.time = data.get('time', 0)
-        self.time_msc = data.get('time_msc', 0)
-        self.time_update = data.get('time_update', 0)
-        self.time_update_msc = data.get('time_update_msc', 0)
+        self.symbol = data.get('symbol', '')
         self.type = data.get('type', 0)
-        self.magic = data.get('magic', 0)
-        self.identifier = data.get('identifier', 0)
-        self.reason = data.get('reason', 0)
         self.volume = data.get('volume', 0.0)
         self.price_open = data.get('price_open', 0.0)
+        self.price_current = data.get('price_current', 0.0)
         self.sl = data.get('sl', 0.0)
         self.tp = data.get('tp', 0.0)
-        self.price_current = data.get('price_current', 0.0)
-        self.swap = data.get('swap', 0.0)
         self.profit = data.get('profit', 0.0)
-        self.symbol = data.get('symbol', '')
+        self.swap = data.get('swap', 0.0)
+        self.magic = data.get('magic', 0)
+        self.time = data.get('time', 0)
         self.comment = data.get('comment', '')
-        self.external_id = data.get('external_id', '')
-    
-    def __repr__(self):
-        return f"Position(ticket={self.ticket}, symbol={self.symbol}, type={self.type}, volume={self.volume}, profit={self.profit})"
 
 
 class _SymbolTick:
-    """
-    Wrapper class for tick data to provide attribute access.
-    Mimics the MetaTrader5 Tick structure.
-    """
+    """Symbol tick wrapper for compatibility."""
     
     def __init__(self, data: Dict[str, Any]):
-        self._data = data
         self.time = data.get('time', 0)
         self.bid = data.get('bid', 0.0)
         self.ask = data.get('ask', 0.0)
         self.last = data.get('last', 0.0)
-        self.volume = data.get('volume', 0.0)
-        self.time_msc = data.get('time_msc', 0)
-        self.flags = data.get('flags', 0)
-        self.volume_real = data.get('volume_real', 0.0)
+        self.volume = data.get('volume', 0)
+
+
+class MT5Connector:
+    """
+    Android MT5 Connector - Direct Integration.
     
-    def __repr__(self):
-        return f"Tick(bid={self.bid}, ask={self.ask}, last={self.last})"
+    Uses MT5AndroidInterface directly to:
+    - Read MT5 data files from Android storage
+    - Queue orders for execution via MT5 app
+    - Use termux-am intents to launch MT5
+    
+    No bridge server required.
+    """
+    
+    def __init__(self, config: ConnectionConfig):
+        """
+        Initialize Android MT5 connector.
+        
+        Args:
+            config: Connection configuration
+        """
+        self.config = config
+        self.connected = False
+        self.logger = logging.getLogger("Cthulu.connector.android")
+        self._lock = Lock()
+        self._last_request_time = 0.0
+        self._min_request_interval = 0.05  # 50ms between requests
+        
+        # Initialize Android interface
+        data_dir = Path(config.mt5_data_dir) if config.mt5_data_dir else None
+        self._interface = MT5AndroidInterface(data_dir)
+        
+        self.logger.info("Initializing Android MT5 connector (Direct Mode)")
+        if self._interface.available:
+            self.logger.info(f"MT5 data directory: {self._interface.data_dir}")
+        else:
+            self.logger.warning("MT5 data directory not found - running in limited mode")
+    
+    def connect(self, params: Optional[Dict[str, Any]] = None) -> bool:
+        """
+        Establish connection to MT5 data.
+        
+        Args:
+            params: Optional connection parameters
+            
+        Returns:
+            True if connection successful
+        """
+        with self._lock:
+            self.logger.info("Connecting to MT5 Android data...")
+            
+            if not self._interface.available:
+                self.logger.error("MT5 data directory not accessible")
+                self.logger.error("Please ensure MT5 Android app is installed and has data")
+                return False
+            
+            # Verify we can read data
+            account_result = self._interface.get_account_info()
+            if not account_result.get('success'):
+                self.logger.warning("Could not read account info, but continuing...")
+            
+            self.connected = True
+            self.logger.info("Connected to MT5 Android data")
+            
+            # Log account info if available
+            if account_result.get('success'):
+                data = account_result.get('data', {})
+                login = data.get('login', 0)
+                if login:
+                    masked = f"****{str(login)[-4:]}" if len(str(login)) > 4 else str(login)
+                    self.logger.info(f"Account: {masked}")
+                    self.logger.info(f"Balance: ${data.get('balance', 0):.2f}")
+            
+            return True
+    
+    def disconnect(self):
+        """Disconnect from MT5."""
+        with self._lock:
+            self.connected = False
+            self.logger.info("Disconnected from MT5 Android")
+    
+    def is_connected(self) -> bool:
+        """Check if connected."""
+        return self.connected and self._interface.available
+    
+    def reconnect(self) -> bool:
+        """Reconnect to MT5."""
+        self.disconnect()
+        time.sleep(1)
+        return self.connect()
+    
+    def _rate_limit(self):
+        """Apply rate limiting."""
+        current_time = time.time()
+        elapsed = current_time - self._last_request_time
+        if elapsed < self._min_request_interval:
+            time.sleep(self._min_request_interval - elapsed)
+        self._last_request_time = time.time()
+    
+    # =========================================================================
+    # Account & Symbol Info
+    # =========================================================================
+    
+    def get_account_info(self) -> Optional[Dict[str, Any]]:
+        """Get account information."""
+        self._rate_limit()
+        result = self._interface.get_account_info()
+        if result.get('success'):
+            return result.get('data')
+        return None
+    
+    def get_symbol_info(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """Get symbol information."""
+        self._rate_limit()
+        result = self._interface.get_symbol_info(symbol)
+        if result.get('success'):
+            return result.get('data')
+        return None
+    
+    def symbol_info_tick(self, symbol: str) -> Optional[_SymbolTick]:
+        """Get current tick for symbol."""
+        self._rate_limit()
+        result = self._interface.get_tick(symbol)
+        if result.get('success'):
+            return _SymbolTick(result.get('data', {}))
+        
+        # Fallback: use symbol info bid/ask
+        sym_result = self._interface.get_symbol_info(symbol)
+        if sym_result.get('success'):
+            data = sym_result.get('data', {})
+            return _SymbolTick({
+                'bid': data.get('bid', 0),
+                'ask': data.get('ask', 0),
+                'time': int(time.time())
+            })
+        return None
+    
+    def ensure_symbol_selected(self, symbol: str) -> bool:
+        """Ensure symbol is selected in Market Watch."""
+        # On Android, symbols are always available if data exists
+        return True
+    
+    # =========================================================================
+    # Market Data
+    # =========================================================================
+    
+    def get_rates(
+        self,
+        symbol: str,
+        timeframe: int,
+        count: int,
+        start_pos: int = 0
+    ) -> Optional[List[Dict[str, Any]]]:
+        """
+        Fetch historical rates.
+        
+        Args:
+            symbol: Trading symbol
+            timeframe: MT5 timeframe constant
+            count: Number of bars
+            start_pos: Starting position
+            
+        Returns:
+            List of OHLCV dictionaries
+        """
+        self._rate_limit()
+        result = self._interface.get_rates(symbol, timeframe, count)
+        if result.get('success'):
+            return result.get('data', [])
+        return None
+    
+    # =========================================================================
+    # Positions
+    # =========================================================================
+    
+    def positions_get(self, ticket: Optional[int] = None) -> List[_Position]:
+        """
+        Get open positions.
+        
+        Args:
+            ticket: Optional specific ticket to retrieve
+            
+        Returns:
+            List of Position objects
+        """
+        # Note: Position reading from files requires additional implementation
+        # For now, return empty - positions managed via MT5 app
+        self.logger.debug("Position reading from files not fully implemented")
+        return []
+    
+    def get_open_positions(self) -> List[Dict[str, Any]]:
+        """Get all open positions as dictionaries."""
+        positions = self.positions_get()
+        return [p.__dict__ for p in positions]
+    
+    # =========================================================================
+    # Trading
+    # =========================================================================
+    
+    def order_send(self, request: Dict[str, Any]) -> Optional[_OrderResult]:
+        """
+        Send a trading order.
+        
+        On Android, this queues the order and opens MT5 app.
+        
+        Args:
+            request: MT5 order request dictionary
+            
+        Returns:
+            OrderResult with queue_id if successful
+        """
+        self._rate_limit()
+        
+        self.logger.info(f"Order request: {request.get('symbol')} {request.get('type')} {request.get('volume')}")
+        
+        result = self._interface.send_order(request)
+        
+        if result.get('success'):
+            data = result.get('data', {})
+            self.logger.info(f"Order queued: {data.get('queue_id')}")
+            
+            # Return result with queue info
+            return _OrderResult({
+                'retcode': TRADE_RETCODE_DONE,  # Queued successfully
+                'order': 0,
+                'deal': 0,
+                'volume': request.get('volume', 0),
+                'price': request.get('price', 0),
+                'queue_id': data.get('queue_id', ''),
+                'status': data.get('status', 'QUEUED'),
+                'comment': data.get('note', 'Order queued for manual execution')
+            })
+        else:
+            self.logger.error(f"Order failed: {result.get('error')}")
+            return _OrderResult({
+                'retcode': MT5Constants.TRADE_RETCODE_REJECT,
+                'comment': result.get('error', 'Unknown error')
+            })
+    
+    def close_position_by_ticket(self, ticket: int, volume: Optional[float] = None) -> Optional[_OrderResult]:
+        """
+        Close a position by ticket.
+        
+        Args:
+            ticket: Position ticket to close
+            volume: Volume to close (None = full position)
+            
+        Returns:
+            OrderResult
+        """
+        close_request = {
+            'action': MT5Constants.TRADE_ACTION_DEAL,
+            'position': ticket,
+            'volume': volume,
+            'type': 'CLOSE',
+            'comment': 'Cthulu close'
+        }
+        
+        return self.order_send(close_request)
+    
+    def modify_position(
+        self,
+        ticket: int,
+        sl: Optional[float] = None,
+        tp: Optional[float] = None
+    ) -> Optional[_OrderResult]:
+        """
+        Modify position SL/TP.
+        
+        Args:
+            ticket: Position ticket
+            sl: New stop loss
+            tp: New take profit
+            
+        Returns:
+            OrderResult
+        """
+        modify_request = {
+            'action': MT5Constants.TRADE_ACTION_SLTP,
+            'position': ticket,
+            'sl': sl,
+            'tp': tp,
+            'type': 'MODIFY',
+            'comment': 'Cthulu modify'
+        }
+        
+        return self.order_send(modify_request)
+    
+    # =========================================================================
+    # Error Handling
+    # =========================================================================
+    
+    def last_error(self) -> tuple:
+        """Get last error code and message."""
+        return (0, "No error")
+    
+    # =========================================================================
+    # Pending Orders (from queue)
+    # =========================================================================
+    
+    def get_pending_orders(self) -> List[Dict[str, Any]]:
+        """Get pending orders from queue."""
+        result = self._interface.get_pending_orders()
+        if result.get('success'):
+            return result.get('data', [])
+        return []
+
+
+# Alias for backwards compatibility
+MT5ConnectorAndroid = MT5Connector
+
+
+__all__ = [
+    'MT5Connector',
+    'MT5ConnectorAndroid', 
+    'ConnectionConfig',
+    'AndroidConnectionConfig',
+    'MT5Constants',
+    'ORDER_TYPE_BUY',
+    'ORDER_TYPE_SELL',
+    'TRADE_ACTION_DEAL',
+    'ORDER_TIME_GTC',
+    'ORDER_FILLING_FOK',
+    'ORDER_FILLING_IOC',
+    'TRADE_RETCODE_DONE',
+    '_OrderResult',
+    '_Position',
+    '_SymbolTick',
+]

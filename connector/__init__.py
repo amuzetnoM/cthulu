@@ -1,29 +1,21 @@
 """Connector module for MT5 integration - Android Native Version
 
-This module provides full MT5 trading capabilities for Android/Termux environments
-through a bridge architecture. All trading operations are supported.
+Direct integration with MT5 Android data files.
+No bridge server required - reads MT5 files directly.
+
+v1.0.0 Beta - Android Native Edition
 
 Exports:
-    MT5Connector: Main connector class (aliased from MT5ConnectorAndroid)
-    ConnectionConfig: Configuration class (aliased from AndroidConnectionConfig)
+    MT5Connector: Main connector class
+    ConnectionConfig: Configuration class
     MT5Constants: All MT5 API constants
-    
-    Order Types:
-        ORDER_TYPE_BUY, ORDER_TYPE_SELL, ORDER_TYPE_BUY_LIMIT, etc.
-        
-    Trade Actions:
-        TRADE_ACTION_DEAL, TRADE_ACTION_PENDING, TRADE_ACTION_SLTP, etc.
-        
-    Return Codes:
-        TRADE_RETCODE_DONE, TRADE_RETCODE_INVALID, TRADE_RETCODE_TIMEOUT
-        
-    Timeframes:
-        TIMEFRAME_M1, TIMEFRAME_M5, TIMEFRAME_H1, TIMEFRAME_D1, etc.
 """
 
 from .mt5_connector_android import (
-    MT5ConnectorAndroid as MT5Connector,
-    AndroidConnectionConfig as ConnectionConfig,
+    MT5Connector,
+    MT5ConnectorAndroid,
+    ConnectionConfig,
+    AndroidConnectionConfig,
     MT5Constants,
     # Order types
     ORDER_TYPE_BUY,
@@ -71,7 +63,9 @@ TIMEFRAME_MN1 = MT5Constants.TIMEFRAME_MN1
 
 __all__ = [
     "MT5Connector",
+    "MT5ConnectorAndroid",
     "ConnectionConfig",
+    "AndroidConnectionConfig",
     "MT5Constants",
     # Order types
     "ORDER_TYPE_BUY",
@@ -109,8 +103,8 @@ __all__ = [
     "TIMEFRAME_D1",
     "TIMEFRAME_W1",
     "TIMEFRAME_MN1",
+    # Helper classes
+    "_OrderResult",
+    "_Position",
+    "_SymbolTick",
 ]
-
-
-
-
