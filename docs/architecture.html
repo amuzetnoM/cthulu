@@ -234,12 +234,29 @@
             flex-shrink: 0;
         }
 
-        .color-cognition { background: var(--purple); }
-        .color-risk { background: var(--danger); }
-        .color-exit { background: var(--warning); }
-        .color-execution { background: var(--accent); }
-        .color-strategy { background: var(--info); }
-        .color-entry { background: #00d4ff; }
+        .color-cognition {
+            background: var(--purple);
+        }
+
+        .color-risk {
+            background: var(--danger);
+        }
+
+        .color-exit {
+            background: var(--warning);
+        }
+
+        .color-execution {
+            background: var(--accent);
+        }
+
+        .color-strategy {
+            background: var(--info);
+        }
+
+        .color-entry {
+            background: #00d4ff;
+        }
 
         table {
             width: 100%;
@@ -247,7 +264,8 @@
             font-size: 0.85rem;
         }
 
-        th, td {
+        th,
+        td {
             padding: 0.75rem 1rem;
             text-align: left;
             border-bottom: 1px solid var(--border);
@@ -266,9 +284,17 @@
             background: var(--elevated);
         }
 
-        .status-operational { color: var(--accent); }
-        .status-new { color: #00d4ff; }
-        .status-enhanced { color: var(--warning); }
+        .status-operational {
+            color: var(--accent);
+        }
+
+        .status-new {
+            color: #00d4ff;
+        }
+
+        .status-enhanced {
+            color: var(--warning);
+        }
 
         code {
             font-family: 'JetBrains Mono', monospace;
@@ -360,9 +386,17 @@
         }
 
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .page-title { font-size: 1.8rem; }
-            .legend { grid-template-columns: 1fr 1fr; }
+            .nav-links {
+                display: none;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .legend {
+                grid-template-columns: 1fr 1fr;
+            }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -486,12 +520,24 @@
                 </div>
 
                 <div class="legend">
-                    <div class="legend-item"><div class="legend-color color-cognition"></div> Cognition/AI Layer</div>
-                    <div class="legend-item"><div class="legend-color color-risk"></div> Risk Management</div>
-                    <div class="legend-item"><div class="legend-color color-exit"></div> Exit System</div>
-                    <div class="legend-item"><div class="legend-color color-execution"></div> Execution Engine</div>
-                    <div class="legend-item"><div class="legend-color color-strategy"></div> Strategy Layer</div>
-                    <div class="legend-item"><div class="legend-color color-entry"></div> Entry Confluence</div>
+                    <div class="legend-item">
+                        <div class="legend-color color-cognition"></div> Cognition/AI Layer
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-risk"></div> Risk Management
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-exit"></div> Exit System
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-execution"></div> Execution Engine
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-strategy"></div> Strategy Layer
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-entry"></div> Entry Confluence
+                    </div>
                 </div>
             </div>
         </div>
@@ -505,7 +551,8 @@
             <div class="section-content">
                 <div class="flow-note info">
                     <strong>Entry Confluence Filter:</strong> Quality gate that analyzes entry timing, price levels,
-                    and momentum alignment BEFORE execution. Prevents blind entries that turn winning signals into losers.
+                    and momentum alignment BEFORE execution. Prevents blind entries that turn winning signals into
+                    losers.
                 </div>
                 <div class="mermaid">
                     flowchart LR
@@ -548,16 +595,15 @@
                     P["Position"] --> EVAL["Exit Strategies"]
                     EVAL --> C["Confluence Exit Analysis"]
                     C --> D{"Score?"}
-                    D -->|"< 0.55"| HOLD["HOLD"]
-                    D -->|"0.55-0.74"| SCALE["SCALE_OUT"]
-                    D -->|"0.75-0.89"| CLOSE["CLOSE_NOW"]
-                    D -->|">= 0.90"| EMERG["EMERGENCY"]
-                    SCALE --> X["Execute Exit"]
-                    CLOSE --> X
-                    EMERG --> X
+                    D -->|"< 0.55"| HOLD["HOLD"] D -->|"0.55-0.74"| SCALE["SCALE_OUT"]
+                        D -->|"0.75-0.89"| CLOSE["CLOSE_NOW"]
+                        D -->|">= 0.90"| EMERG["EMERGENCY"]
+                        SCALE --> X["Execute Exit"]
+                        CLOSE --> X
+                        EMERG --> X
 
-                    style C fill:#ffaa00,stroke:#cc8800,color:#000
-                    style EMERG fill:#ff4444,stroke:#cc0000,color:#fff
+                        style C fill:#ffaa00,stroke:#cc8800,color:#000
+                        style EMERG fill:#ff4444,stroke:#cc0000,color:#fff
                 </div>
             </div>
         </div>
@@ -652,19 +698,16 @@
                     Q2["GOOD >= 70"]
                     Q3["MARGINAL >= 30"]
                     Q4["POOR >= 20"]
-                    Q5["REJECT < 20"]
-                    end
+                    Q5["REJECT < 20"] end DETECT --> SCORE --> QUALITY
 
-                    DETECT --> SCORE --> QUALITY
+                        Q1 -->|mult=1.0| EXEC["Execute"]
+                        Q2 -->|mult=0.85| EXEC
+                        Q3 -->|mult=0.6| EXEC
+                        Q4 --> WAIT["Wait/Queue"]
+                        Q5 --> SKIP["Skip"]
 
-                    Q1 -->|mult=1.0| EXEC["Execute"]
-                    Q2 -->|mult=0.85| EXEC
-                    Q3 -->|mult=0.6| EXEC
-                    Q4 --> WAIT["Wait/Queue"]
-                    Q5 --> SKIP["Skip"]
-
-                    style Q1 fill:#00ff88
-                    style Q5 fill:#ff4444
+                        style Q1 fill:#00ff88
+                        style Q5 fill:#ff4444
                 </div>
             </div>
         </div>
@@ -679,7 +722,7 @@
                 <div class="flow-note">
                     <strong>Entry Confluence Config:</strong>
                 </div>
-<pre>{
+                <pre>{
   "entry_confluence": {
     "min_score_to_enter": 30,
     "min_score_for_full_size": 60,

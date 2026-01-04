@@ -1,6 +1,8 @@
 # Live Metrics Dashboard Setup Guide
 
-> This guide explains how to configure the Cthulu trading system to display **live metrics** on the GitHub Pages website.
+> This guide explains how the Cthulu trading system is configured to display **live metrics** on the GitHub Pages website.
+> NOTE: This module is still in early development and may change in future releases.
+
 
 ## Overview
 
