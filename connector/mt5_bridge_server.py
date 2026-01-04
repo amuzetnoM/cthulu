@@ -147,6 +147,14 @@ class MT5AndroidBridge:
             self.logger.error(f"Initialize error: {e}", exc_info=True)
             return {'success': False, 'error': str(e)}
     
+    def connect(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Alias for initialize - used by connector."""
+        return self.initialize(params)
+    
+    def rates(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Alias for copy_rates_from_pos - used by connector."""
+        return self.copy_rates_from_pos(params)
+    
     def shutdown(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Shutdown MT5 connection."""
         try:

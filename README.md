@@ -1,4 +1,6 @@
-# 🐙 Cthulu v1.0.0 Beta - Android Native Edition
+#   Cthulu: Jr. 
+> Android Native 👽 <br>
+> v1.0.0 Beta 
 
 ![Version](https://img.shields.io/badge/Version-1.0.0_Beta-00FF00?style=for-the-badge&labelColor=0D1117&logo=android&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Termux-3DDC84?style=for-the-badge&logo=android)
@@ -6,7 +8,7 @@
 
 ## Executive Summary
 
-**Cthulu** is an **autonomous trading system** for MetaTrader 5 (MT5) designed to run natively on **Android devices via Termux**. This branch is fully Android-native with no Windows dependencies.
+👾 **Cthulu** is an **autonomous trading system** for MetaTrader 5 (MT5) designed to run natively on **Android devices via Termux**. This branch is fully Android-native with no Windows dependencies.
 
 ### Key Features
 
