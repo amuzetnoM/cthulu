@@ -40,6 +40,10 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
     database = None
     security_manager: Optional['RPCSecurityManager'] = None
     security_config: Optional[Dict[str, Any]] = None
+    # Optional Ops controller passed by orchestrator to allow safe operational commands
+    ops_controller = None
+    # Confirmation tokens for two-step command execution: token -> {expires, payload, user}
+    confirmation_store: Dict[str, Dict[str, Any]] = {}
 
     def _send_json(self, status_code: int, payload: dict):
         body = json.dumps(payload).encode('utf-8')
@@ -120,6 +124,91 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 self._bad_request('Invalid JSON')
                 return
         
+        # Allow ops command POSTs in addition to /trade
+        if parsed.path == '/ops/command':
+            # Authenticate
+            auth = self.headers.get('Authorization')
+            api_key = self.headers.get('X-Api-Key')
+            if self.token:
+                if auth and auth.startswith('Bearer '):
+                    token = auth.split(' ', 1)[1].strip()
+                else:
+                    token = api_key
+                if not token or token != self.token:
+                    self._unauthorized('Invalid or missing API token')
+                    if self.security_manager:
+                        self.security_manager.audit.log_security_event(
+                            "AUTH_FAILED", client_ip, ThreatLevel.MEDIUM if SECURITY_AVAILABLE else None,
+                            "Invalid or missing token for ops command"
+                        )
+                    return
+
+            # Extract command
+            cmd = payload.get('command')
+            component = payload.get('component')
+            params = payload.get('params', {})
+            confirm_token = payload.get('confirm_token')
+            actor = None
+            # Determine actor from Authorization hint or headers if available
+            if auth and auth.startswith('Bearer '):
+                actor = f"bearer:{auth.split(' ',1)[1][:8]}"
+            else:
+                actor = client_ip
+
+            # Two-step confirmation: create token if not provided
+            if not confirm_token:
+                # Create short-lived confirmation token
+                import uuid, time
+                token_val = f"confirm_{uuid.uuid4().hex[:12]}"
+                expires_in = 60
+                RPCRequestHandler.confirmation_store[token_val] = {
+                    'expires': time.time() + expires_in,
+                    'payload': {'command': cmd, 'component': component, 'params': params},
+                    'actor': actor,
+                }
+                if self.security_manager:
+                    self.security_manager.audit.log_security_event(
+                        "OPS_CMD_PENDING", client_ip, ThreatLevel.MEDIUM if SECURITY_AVAILABLE else None,
+                        f"Pending ops command {cmd} on {component} by {actor} (token={token_val[:8]})"
+                    )
+                self._send_json(200, {'requires_confirmation': True, 'confirm_token': token_val, 'expires_in': expires_in})
+                return
+
+            # Confirmation token provided — validate
+            store = RPCRequestHandler.confirmation_store.get(confirm_token)
+            import time
+            if not store:
+                self._bad_request('Invalid or expired confirmation token')
+                return
+            if time.time() > store.get('expires', 0):
+                del RPCRequestHandler.confirmation_store[confirm_token]
+                self._bad_request('Invalid or expired confirmation token')
+                return
+
+            # Execute the command if ops_controller present
+            try:
+                if not self.ops_controller:
+                    self._send_json(501, {'error': 'Ops controller not available on server'})
+                    return
+                # Perform the command; ops_controller.perform_command returns dict
+                res = self.ops_controller.perform_command(cmd, component, params, actor)
+                if self.security_manager:
+                    self.security_manager.audit.log_security_event(
+                        "OPS_CMD_EXECUTED", client_ip, ThreatLevel.MEDIUM if SECURITY_AVAILABLE else None,
+                        f"Executed ops command {cmd} on {component} by {actor}"
+                    )
+                # Remove used token
+                try:
+                    del RPCRequestHandler.confirmation_store[confirm_token]
+                except Exception:
+                    pass
+                self._send_json(200, {'result': res})
+                return
+            except Exception as e:
+                logger.exception('Failed to execute ops command')
+                self._send_json(500, {'error': 'Failed to execute command'})
+                return
+
         if parsed.path != '/trade':
             self._bad_request('Unknown endpoint')
             return
@@ -289,6 +378,103 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        # Handle Ops API GET endpoints (/ops/status, /ops/runbook, /ops/audit)
+        if parsed.path.startswith('/ops/'):
+            # Authenticate
+            auth = self.headers.get('Authorization')
+            api_key = self.headers.get('X-Api-Key')
+            if self.token:
+                if auth and auth.startswith('Bearer '):
+                    token = auth.split(' ', 1)[1].strip()
+                else:
+                    token = api_key
+                if not token or token != self.token:
+                    self._unauthorized('Invalid or missing API token')
+                    return
+
+            try:
+                if parsed.path == '/ops/status':
+                    status = {
+                        'mode': getattr(self, 'mode', 'unknown'),
+                        'execution_engine': bool(self.execution_engine),
+                        'position_manager': bool(self.position_manager),
+                        'database': bool(self.database),
+                    }
+                    # Attempt to add connector health and counts where available
+                    try:
+                        connector = getattr(self.execution_engine, 'connector', None)
+                        status['mt5_up'] = getattr(connector, 'is_connected', False) if connector is not None else None
+                    except Exception:
+                        status['mt5_up'] = None
+                    try:
+                        status['open_positions'] = len(self.position_manager.get_positions()) if self.position_manager else None
+                    except Exception:
+                        status['open_positions'] = None
+
+                    self._send_json(200, {'status': status})
+                    return
+
+                if parsed.path == '/ops/runbook':
+                    # Optional query param: name to filter; if not present return whole runbook text
+                    q = dict([p.split('=') for p in parsed.query.split('&') if p]) if parsed.query else {}
+                    name = q.get('name')
+                    try:
+                        import os
+                        runbook_path = os.path.join(os.path.dirname(__file__), '..', 'observability', 'RUNBOOK.md')
+                        if os.path.exists(runbook_path):
+                            with open(runbook_path, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                            if name:
+                                # Simple section extraction: return lines around the heading
+                                sections = content.split('\n## ')
+                                matched = [s for s in sections if s.strip().startswith(name)]
+                                excerpt = matched[0] if matched else content[:400]
+                            else:
+                                excerpt = content[:4000]
+                            self._send_json(200, {'runbook_excerpt': excerpt})
+                            return
+                        else:
+                            self._send_json(404, {'error': 'Runbook not found'})
+                            return
+                    except Exception:
+                        logger.exception('Failed to read runbook')
+                        self._send_json(500, {'error': 'Failed to fetch runbook'})
+                        return
+
+                if parsed.path == '/ops/audit':
+                    # Return recent audit/log entries; prefer security manager audit if present
+                    try:
+                        limit = int(dict([p.split('=') for p in parsed.query.split('&') if p]).get('limit', 50)) if parsed.query else 50
+                    except Exception:
+                        limit = 50
+
+                    results = []
+                    if self.security_manager:
+                        # The AuditLogger writes JSON lines to file; attempt to load last N lines
+                        try:
+                            log_path = self.security_manager.config.audit_log_path
+                            if log_path and os.path.exists(log_path):
+                                with open(log_path, 'r', encoding='utf-8') as f:
+                                    lines = f.readlines()[-limit:]
+                                results = [json.loads(l.strip().split('] ', 1)[-1]) for l in lines if l.strip()]
+                        except Exception:
+                            logger.exception('Failed to read audit log')
+                            results = []
+                    elif self.database:
+                        try:
+                            results = self.database.get_recent_provenance(limit=limit)
+                        except Exception:
+                            results = []
+
+                    self._send_json(200, {'limit': limit, 'results': results})
+                    return
+
+            except Exception:
+                logger.exception('Failed serving ops endpoint')
+                self._send_json(500, {'error': 'Internal server error'})
+                return
+
+        # Default: /provenance endpoint (existing behavior)
         if parsed.path != '/provenance':
             self.send_response(404)
             self.end_headers()
@@ -341,7 +527,8 @@ def run_rpc_server(
     position_manager,
     database,
     daemon: bool = True,
-    security_config: Optional[Dict[str, Any]] = None
+    security_config: Optional[Dict[str, Any]] = None,
+    ops_controller: Optional[object] = None
 ):
     """
     Start RPC server in background thread with security hardening.
@@ -372,6 +559,7 @@ def run_rpc_server(
     RPCRequestHandler.risk_manager = risk_manager
     RPCRequestHandler.position_manager = position_manager
     RPCRequestHandler.database = database
+    RPCRequestHandler.ops_controller = ops_controller
     
     # Initialize security manager if available
     if SECURITY_AVAILABLE:
