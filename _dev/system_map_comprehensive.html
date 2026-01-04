@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐙 Cthulu v5.1.0 APEX - Complete System Architecture & Integration Map</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+        :root {
+            --void: #000000;
+            --deep: #050508;
+            --surface: #0a0a0f;
+            --elevated: #12121a;
+            --border: #1a1a25;
+            --muted: #4a4a5a;
+            --text: #e0e0e8;
+            --bright: #ffffff;
+            --accent: #00ff88;
+            --accent-dim: #00cc6a;
+            --warning: #ffaa00;
+            --danger: #ff4444;
+            --info: #00aaff;
+            --purple: #9b59b6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--void);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 136, 0.01) 2px,
+                    rgba(0, 255, 136, 0.01) 4px);
+            z-index: 9999;
+        }
+
+        /* Grid background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Terminal window */
+        .terminal-window {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0, 255, 136, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .terminal-header {
+            background: var(--elevated);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red {
+            background: #ff5f56;
+        }
+
+        .terminal-dot.yellow {
+            background: #ffbd2e;
+        }
+
+        .terminal-dot.green {
+            background: #27ca40;
+        }
+
+        .terminal-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-left: 1rem;
+        }
+
+        .terminal-body {
+            padding: 2rem;
+        }
+
+        /* Hero section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0 2rem;
+        }
+
+        .hero-main {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--bright);
+            letter-spacing: 4px;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .hero-sub {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            color: var(--muted);
+            max-width: 900px;
+            margin: 0 auto 1rem;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--void);
+            padding: 0.4rem 0.8rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1px;
+            background: var(--border);
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .stat-card:hover {
+            background: var(--elevated);
+        }
+
+        .stat-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+        }
+
+        /* Diagram */
+        .diagram-body {
+            padding: 2rem;
+            min-height: 800px;
+            overflow: auto;
+        }
+
+        .mermaid {
+            width: 100%;
+            min-height: 600px;
+        }
+
+        /* Module cards */
+        .module-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .module-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .module-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .module-icon {
+            font-size: 1.5rem;
+        }
+
+        .module-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--bright);
+        }
+
+        .module-desc {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .module-files {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text);
+        }
+
+        .module-file {
+            padding: 0.3rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .module-file:last-child {
+            border-bottom: none;
+        }
+
+        .file-count {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Legend */
+        .legend {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .legend-header {
+            background: var(--elevated);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .legend-item {
+            background: var(--surface);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: background 0.2s;
+        }
+
+        .legend-item:hover {
+            background: var(--elevated);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .legend-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text);
+        }
+
+        /* Status indicator */
+        .last-updated {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--elevated);
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-dim);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .hero-main {
+                font-size: 3rem;
+            }
+
+            .hero-sub {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .module-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-main {
+                font-size: 2.5rem;
+            }
+
+            .hero-sub {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-bg"></div>
+
+    <!-- Status indicator -->
+    <div class="last-updated">
+        <span class="status-dot"></span>
+        <span>UPDATED: 2026-01-04 00:02 UTC</span>
+    </div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1 class="hero-main">🐙 CTHULU</h1>
+            <h2 class="hero-sub">Complete System Architecture & File Integration Map</h2>
+            <p class="hero-desc">
+                Comprehensive file-by-file analysis and architectural overview of the v5.1.0 APEX autonomous trading
+                system.
+                218 Python files across 14 subsystems with complete integration mapping.
+            </p>
+            <div>
+                <span class="version-badge">v5.1.0 APEX</span>
+                <span class="version-badge">218 Python Files</span>
+                <span class="version-badge">14 Subsystems</span>
+                <span class="version-badge">Fully Operational</span>
+            </div>
+        </section>
+
+        <!-- System Statistics -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+                <div class="terminal-title">system-statistics.json</div>
+            </div>
+            <div class="terminal-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">218</div>
+                        <div class="stat-label">Python Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">47</div>
+                        <div class="stat-label">Test Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">14</div>
+                        <div class="stat-label">Exit Strategies</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Backtesting Modules</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">11</div>
+                        <div class="stat-label">Technical Indicators</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">10</div>
+                        <div class="stat-label">Trading Strategies</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">9</div>
+                        <div class="stat-label">Cognition AI/ML</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Core Engine Files</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Diagram -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+                <div class="terminal-title">architecture-visualization.mmd</div>
+            </div>
+            <div class="diagram-body">
+                <div class="mermaid">
+                    flowchart TB
+                    %% ENTRY LAYER
+                    subgraph ENTRY["🚀 ENTRY LAYER"]
+                    direction TB
+                    MAIN["__main__.py<br />Entry Point"]
+                    WIZ["config/wizard.py<br />Setup Wizard"]
+                    CLI["CLI Arguments"]
+                    end
+
+                    %% CORE ENGINE
+                    subgraph CORE["⚙️ CORE ENGINE"]
+                    direction TB
+                    BOOT["core/bootstrap.py<br />System Initialization"]
+                    LOOP["core/trading_loop.py<br />Main Trading Loop"]
+                    SHUT["core/shutdown.py<br />Graceful Shutdown"]
+                    FACTORY["core/strategy_factory.py<br />Strategy Creation"]
+                    IND_LOADER["core/indicator_loader.py<br />Indicator Management"]
+                    EXIT_LOADER["core/exit_loader.py<br />Exit Strategy Loading"]
+                    EXC["core/exceptions.py<br />Error Handling"]
+                    end
+
+                    %% COGNITION ENGINE (AI/ML)
+                    subgraph COGNITION["🧠 COGNITION ENGINE"]
+                    direction TB
+                    COG_ENG["cognition/engine.py<br />AI Orchestrator"]
+                    REGIME["cognition/regime_classifier.py<br />Market Regime"]
+                    PREDICTOR["cognition/price_predictor.py<br />ML Price Prediction"]
+                    SENTIMENT["cognition/sentiment_analyzer.py<br />News Sentiment"]
+                    EXIT_ORACLE["cognition/exit_oracle.py<br />ML Exit Signals"]
+                    TIER_OPT["cognition/tier_optimizer.py<br />Profit Optimization"]
+                    TRAIN_LOG["cognition/training_logger.py<br />ML Training Data"]
+                    INSTR["cognition/instrumentation.py<br />ML Metrics"]
+                    end
+
+                    %% STRATEGY LAYER
+                    subgraph STRATEGY["📊 STRATEGY LAYER"]
+                    direction TB
+                    SEL["strategy/strategy_selector.py<br />Dynamic Selection"]
+                    BASE_STRAT["strategy/base.py<br />Base Strategy"]
+                    EMA["strategy/ema_crossover.py"]
+                    SMA["strategy/sma_crossover.py"]
+                    MOM["strategy/momentum_breakout.py"]
+                    SCALP["strategy/scalping.py"]
+                    TREND["strategy/trend_following.py"]
+                    RSI_REV["strategy/rsi_reversal.py"]
+                    MEAN_REV["strategy/mean_reversion.py"]
+                    end
+
+                    %% INDICATORS
+                    subgraph INDICATORS["📈 TECHNICAL INDICATORS"]
+                    direction TB
+                    BASE_IND["indicators/base.py<br />Base Indicator"]
+                    RSI["indicators/rsi.py"]
+                    MACD["indicators/macd.py"]
+                    ATR["indicators/atr.py"]
+                    ADX["indicators/adx.py"]
+                    BB["indicators/bollinger.py"]
+                    STOCH["indicators/stochastic.py"]
+                    SUPER["indicators/supertrend.py"]
+                    VWAP["indicators/vwap.py"]
+                    VOL_IND["indicators/volume_indicators.py"]
+                    EMA_IND["indicators/ema.py"]
+                    SMA_IND["indicators/sma.py"]
+                    end
+
+                    %% RISK MANAGEMENT
+                    subgraph RISK["🛡️ RISK MANAGEMENT"]
+                    direction TB
+                    EVAL["risk/evaluator.py<br />Trade Approval"]
+                    ADAPT_ACC["risk/adaptive_account_manager.py<br />Phase Sizing"]
+                    ADAPT_DD["risk/adaptive_drawdown.py<br />Drawdown Protection"]
+                    ADAPT_LOSS["risk/adaptive_loss_curve.py<br />Loss Tolerance"]
+                    EQUITY_MGR["risk/equity_curve_manager.py<br />Equity Management"]
+                    TRAP["risk/liquidity_trap_detector.py<br />Trap Detection"]
+                    DYN_SLTP["risk/dynamic_sltp.py<br />Dynamic SL/TP"]
+                    BASE_RISK["risk/base.py<br />Base Risk"]
+                    end
+
+                    %% POSITION MANAGEMENT
+                    subgraph POSITION["📦 POSITION MANAGEMENT"]
+                    direction TB
+                    POS_MGR["position/manager.py<br />Position Manager"]
+                    LIFECYCLE["position/lifecycle.py<br />Trade Lifecycle"]
+                    TRACKER["position/tracker.py<br />Position Tracking"]
+                    SCALER["position/profit_scaler.py<br />Profit Scaling"]
+                    ADOPT["position/adoption.py<br />External Trades"]
+                    TRADE_MGR["position/trade_manager.py<br />Trade Management"]
+                    POS_RISK["position/risk_manager.py<br />Position Risk"]
+                    RECONCILE["position/reconciliation.py<br />MT5 Sync"]
+                    end
+
+                    %% EXIT SYSTEM
+                    subgraph EXIT["🚪 EXIT SYSTEM"]
+                    direction TB
+                    COORD["exit/coordinator.py<br />Exit Coordinator"]
+                    BASE_EXIT["exit/base.py<br />Base Exit"]
+                    TRAIL["exit/trailing_stop.py"]
+                    TIME_EXIT["exit/time_based.py"]
+                    PROFIT_TGT["exit/profit_target.py"]
+                    CONFLUENCE["exit/confluence_exit_manager.py"]
+                    MICRO_PROT["exit/micro_account_protection.py"]
+                    ADV_MOVE["exit/adverse_movement.py"]
+                    BREAKEVEN["exit/breakeven_stop.py"]
+                    PARTIAL["exit/partial_close.py"]
+                    SURVIVAL["exit/survival_mode.py"]
+                    LIQUIDITY["exit/liquidity_exit.py"]
+                    SIGNAL_REV["exit/signal_reversal.py"]
+                    STOPLOSS["exit/stop_loss.py"]
+                    end
+
+                    %% EXECUTION ENGINE
+                    subgraph EXECUTION["⚡ EXECUTION ENGINE"]
+                    direction TB
+                    ENG["execution/engine.py<br />Order Management"]
+                    MT5["connector/mt5_connector.py<br />MT5 API"]
+                    end
+
+                    %% PERSISTENCE LAYER
+                    subgraph PERSISTENCE["💾 PERSISTENCE"]
+                    direction TB
+                    DB["persistence/database.py<br />SQLite WAL"]
+                    MODELS["persistence/models.py<br />Data Models"]
+                    end
+
+                    %% OBSERVABILITY
+                    subgraph OBSERVABILITY["📊 OBSERVABILITY"]
+                    direction TB
+                    METRICS["observability/metrics.py"]
+                    COMP_COLL["observability/comprehensive_collector.py"]
+                    PROM["observability/prometheus.py"]
+                    SERVICE["observability/service.py"]
+                    SUIT["observability/suit.py"]
+                    LOGGER["observability/logger.py"]
+                    TELEMETRY["observability/telemetry.py"]
+                    INTEGRATION["observability/integration.py"]
+                    end
+
+                    %% MONITORING
+                    subgraph MONITORING["👁️ MONITORING"]
+                    direction TB
+                    TRADE_MON["monitoring/trade_monitor.py"]
+                    SYS_HEALTH["monitoring/system_health_collector.py"]
+                    IND_COLL["monitoring/indicator_collector.py"]
+                    MON_SERVICE["monitoring/service.py"]
+                    end
+
+                    %% NEWS & DATA
+                    subgraph NEWS_DATA["📰 NEWS & DATA"]
+                    direction TB
+                    NEWS_MGR["news/manager.py"]
+                    FRED["news/fred_adapter.py"]
+                    RSS["news/rss_adapter.py"]
+                    CACHE["news/cache.py"]
+                    CALENDAR["news/calendar.py"]
+                    PARSER["news/parser.py"]
+                    FILTER["news/filter.py"]
+                    SENTIMENT_NEWS["news/sentiment.py"]
+                    BASE_NEWS["news/base.py"]
+                    end
+
+                    %% BACKTESTING
+                    subgraph BACKTEST["🧪 BACKTESTING"]
+                    direction TB
+                    BT_ENGINE["backtesting/engine.py"]
+                    BT_DATA["backtesting/data_manager.py"]
+                    BT_OPT["backtesting/optimizer.py"]
+                    BT_REP["backtesting/reporter.py"]
+                    BT_BENCH["backtesting/benchmarks.py"]
+                    BT_ENSEMBLE["backtesting/ensemble.py"]
+                    BT_ML["backtesting/ml_decision.py"]
+                    BT_HARNESS["backtesting/test_harness.py"]
+                    end
+
+                    %% ML/RL INTEGRATION
+                    subgraph ML_RL["🤖 ML/RL"]
+                    direction TB
+                    ML_TIER["ML_RL/tier_optimizer.py"]
+                    ML_INSTR["ML_RL/instrumentation.py"]
+                    end
+
+                    %% UI & RPC
+                    subgraph UI["🖥️ UI & RPC"]
+                    direction TB
+                    DESKTOP["ui/desktop.py<br />Trading Dashboard"]
+                    RPC_SERVER["rpc/server.py<br />RPC Server"]
+                    RPC_CLIENT["rpc/client.py<br />RPC Client"]
+                    end
+
+                    %% OPS & SENTINEL
+                    subgraph OPS["🔧 OPS & AUTOMATION"]
+                    direction TB
+                    OPS_CTRL["ops/controller.py<br />Ops API"]
+                    SENTINEL_MON["sentinel/monitor.py<br />Crash Monitor"]
+                    SENTINEL_RESTART["sentinel/restart_policy.py"]
+                    end
+
+                    %% ADVISORY SYSTEM
+                    subgraph ADVISORY["🎭 ADVISORY"]
+                    direction TB
+                    ADV_MGR["advisory/manager.py<br />Advisory Manager"]
+                    end
+
+                    %% MAIN FLOW CONNECTIONS
+                    ENTRY --> CORE
+                    CORE --> COGNITION
+                    CORE --> STRATEGY
+                    CORE --> RISK
+                    STRATEGY --> INDICATORS
+
+                    %% COGNITION ENHANCEMENT
+                    COGNITION -.->|Signal Enhancement| STRATEGY
+                    COGNITION -.->|Exit Signals| EXIT
+                    COGNITION -.->|Regime Info| RISK
+
+                    %% TRADING PIPELINE
+                    RISK --> POSITION
+                    POSITION --> EXIT
+                    EXIT --> EXECUTION
+                    EXECUTION --> MT5
+
+                    %% PERSISTENCE & MONITORING
+                    LOOP --> PERSISTENCE
+                    LOOP --> OBSERVABILITY
+                    LOOP --> MONITORING
+                    LOOP --> NEWS_DATA
+
+                    %% ML/RL INTEGRATION
+                    COGNITION --> ML_RL
+                    POSITION --> ML_RL
+
+                    %% ADVISORY & OPS
+                    LOOP --> ADVISORY
+                    LOOP --> OPS
+                    LOOP --> UI
+
+                    %% BACKTESTING
+                    STRATEGY --> BACKTEST
+                    INDICATORS --> BACKTEST
+
+                    %% STYLING
+                    classDef entry fill:#2d1b69,stroke:#9b59b6,stroke-width:3px,color:#fff
+                    classDef core fill:#1a1a2e,stroke:#16213e,stroke-width:2px,color:#fff
+                    classDef cognition fill:#9b59b6,stroke:#8e44ad,stroke-width:3px,color:#fff
+                    classDef strategy fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff
+                    classDef indicators fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
+                    classDef risk fill:#e74c3c,stroke:#c0392b,stroke-width:3px,color:#fff
+                    classDef position fill:#f39c12,stroke:#e67e22,stroke-width:2px,color:#fff
+                    classDef exit fill:#f1c40f,stroke:#f39c12,stroke-width:2px,color:#111
+                    classDef execution fill:#27ae60,stroke:#1e8449,stroke-width:3px,color:#fff
+                    classDef persistence fill:#34495e,stroke:#2c3e50,stroke-width:2px,color:#fff
+                    classDef observability fill:#8e44ad,stroke:#732d91,stroke-width:2px,color:#fff
+                    classDef monitoring fill:#16a085,stroke:#138d75,stroke-width:2px,color:#fff
+                    classDef news fill:#1abc9c,stroke:#16a085,stroke-width:2px,color:#fff
+                    classDef backtest fill:#e91e63,stroke:#c2185b,stroke-width:2px,color:#fff
+                    classDef ml fill:#ff6b6b,stroke:#ee5a6f,stroke-width:2px,color:#fff
+                    classDef ui fill:#4834d4,stroke:#341f97,stroke-width:2px,color:#fff
+                    classDef ops fill:#f368e0,stroke:#ee5a6f,stroke-width:2px,color:#fff
+                    classDef advisory fill:#795548,stroke:#5d4037,stroke-width:2px,color:#fff
+
+                    class ENTRY entry
+                    class CORE core
+                    class COGNITION cognition
+                    class STRATEGY strategy
+                    class INDICATORS indicators
+                    class RISK risk
+                    class POSITION position
+                    class EXIT exit
+                    class EXECUTION execution
+                    class PERSISTENCE persistence
+                    class OBSERVABILITY observability
+                    class MONITORING monitoring
+                    class NEWS_DATA news
+                    class BACKTEST backtest
+                    class ML_RL ml
+                    class UI ui
+                    class OPS ops
+                    class ADVISORY advisory
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Cards Section -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+                <div class="terminal-title">subsystem-details.json</div>
+            </div>
+            <div class="terminal-body">
+                <div class="module-cards">
+                    <!-- Core Engine -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">⚙️</div>
+                            <div class="module-title">Core Engine</div>
+                        </div>
+                        <div class="module-desc">
+                            Central system initialization, main trading loop, and strategy/indicator loading
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">8 files</span></div>
+                            <div class="module-file">• bootstrap.py - System init</div>
+                            <div class="module-file">• trading_loop.py - Main loop</div>
+                            <div class="module-file">• strategy_factory.py - Strategy creation</div>
+                            <div class="module-file">• indicator_loader.py - Indicator mgmt</div>
+                            <div class="module-file">• exit_loader.py - Exit loading</div>
+                            <div class="module-file">• shutdown.py - Graceful shutdown</div>
+                            <div class="module-file">• exceptions.py - Error handling</div>
+                        </div>
+                    </div>
+
+                    <!-- Cognition Engine -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">🧠</div>
+                            <div class="module-title">Cognition Engine (AI/ML)</div>
+                        </div>
+                        <div class="module-desc">
+                            Adaptive AI/ML layer for market regime detection, price prediction, sentiment analysis
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">9 files</span></div>
+                            <div class="module-file">• engine.py - AI orchestrator</div>
+                            <div class="module-file">• regime_classifier.py - Bull/bear/sideways</div>
+                            <div class="module-file">• price_predictor.py - ML prediction</div>
+                            <div class="module-file">• sentiment_analyzer.py - News sentiment</div>
+                            <div class="module-file">• exit_oracle.py - ML exit signals</div>
+                            <div class="module-file">• tier_optimizer.py - Profit optimization</div>
+                            <div class="module-file">• training_logger.py - ML training data</div>
+                            <div class="module-file">• instrumentation.py - ML metrics</div>
+                        </div>
+                    </div>
+
+                    <!-- Strategy Layer -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">📊</div>
+                            <div class="module-title">Strategy Layer</div>
+                        </div>
+                        <div class="module-desc">
+                            10 trading strategies with dynamic selection based on market conditions
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">10 files</span></div>
+                            <div class="module-file">• strategy_selector.py - Dynamic selection</div>
+                            <div class="module-file">• ema_crossover.py - EMA strategy</div>
+                            <div class="module-file">• sma_crossover.py - SMA strategy</div>
+                            <div class="module-file">• momentum_breakout.py - Momentum</div>
+                            <div class="module-file">• scalping.py - High-frequency</div>
+                            <div class="module-file">• trend_following.py - Trend</div>
+                            <div class="module-file">• rsi_reversal.py - RSI-based</div>
+                            <div class="module-file">• mean_reversion.py - Mean reversion</div>
+                            <div class="module-file">• base.py - Base strategy class</div>
+                        </div>
+                    </div>
+
+                    <!-- Indicators -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">📈</div>
+                            <div class="module-title">Technical Indicators</div>
+                        </div>
+                        <div class="module-desc">
+                            12 technical indicators with optimized calculations and indicator requirement resolver
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">11 files</span></div>
+                            <div class="module-file">• rsi.py, macd.py, atr.py, adx.py</div>
+                            <div class="module-file">• bollinger.py, stochastic.py</div>
+                            <div class="module-file">• supertrend.py, vwap.py</div>
+                            <div class="module-file">• volume_indicators.py</div>
+                            <div class="module-file">• ema.py, sma.py</div>
+                            <div class="module-file">• base.py - Base indicator</div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Management -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">🛡️</div>
+                            <div class="module-title">Risk Management</div>
+                        </div>
+                        <div class="module-desc">
+                            Comprehensive risk management with adaptive account sizing, drawdown protection, and dynamic
+                            SL/TP
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">8 files</span></div>
+                            <div class="module-file">• evaluator.py - Trade approval</div>
+                            <div class="module-file">• adaptive_account_manager.py - Phases</div>
+                            <div class="module-file">• adaptive_drawdown.py - DD protection</div>
+                            <div class="module-file">• adaptive_loss_curve.py - Loss tolerance</div>
+                            <div class="module-file">• equity_curve_manager.py - Equity</div>
+                            <div class="module-file">• liquidity_trap_detector.py - Traps</div>
+                            <div class="module-file">• dynamic_sltp.py - Dynamic SL/TP</div>
+                        </div>
+                    </div>
+
+                    <!-- Position Management -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">📦</div>
+                            <div class="module-title">Position Management</div>
+                        </div>
+                        <div class="module-desc">
+                            Complete position lifecycle management with tracking, profit scaling, and external trade
+                            adoption
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">8 files</span></div>
+                            <div class="module-file">• manager.py - Position manager</div>
+                            <div class="module-file">• lifecycle.py - Trade lifecycle</div>
+                            <div class="module-file">• tracker.py - Position tracking</div>
+                            <div class="module-file">• profit_scaler.py - Profit scaling</div>
+                            <div class="module-file">• adoption.py - External trades</div>
+                            <div class="module-file">• trade_manager.py - Trade mgmt</div>
+                            <div class="module-file">• reconciliation.py - MT5 sync</div>
+                        </div>
+                    </div>
+
+                    <!-- Exit System -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">🚪</div>
+                            <div class="module-title">Exit System</div>
+                        </div>
+                        <div class="module-desc">
+                            14 exit strategies with priority-based coordination and multi-indicator confluence
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">14 files</span></div>
+                            <div class="module-file">• coordinator.py - Exit coordination</div>
+                            <div class="module-file">• trailing_stop.py - Trailing stops</div>
+                            <div class="module-file">• time_based.py - Time exits</div>
+                            <div class="module-file">• profit_target.py - Take profit</div>
+                            <div class="module-file">• confluence_exit_manager.py</div>
+                            <div class="module-file">• micro_account_protection.py</div>
+                            <div class="module-file">• adverse_movement.py</div>
+                            <div class="module-file">• survival_mode.py - Emergency</div>
+                            <div class="module-file">+ 6 more exit strategies</div>
+                        </div>
+                    </div>
+
+                    <!-- Observability -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">📊</div>
+                            <div class="module-title">Observability</div>
+                        </div>
+                        <div class="module-desc">
+                            Complete observability suite with metrics collection, Prometheus export, and comprehensive
+                            logging
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">8 files</span></div>
+                            <div class="module-file">• metrics.py - Metrics collection</div>
+                            <div class="module-file">• comprehensive_collector.py</div>
+                            <div class="module-file">• prometheus.py - Prom export</div>
+                            <div class="module-file">• service.py - Observability service</div>
+                            <div class="module-file">• suit.py - Unified runner</div>
+                            <div class="module-file">• logger.py - Logging</div>
+                            <div class="module-file">• telemetry.py - Telemetry</div>
+                        </div>
+                    </div>
+
+                    <!-- News & Data -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">📰</div>
+                            <div class="module-title">News & Data</div>
+                        </div>
+                        <div class="module-desc">
+                            Economic calendar, news feeds (RSS, FRED), sentiment analysis, and caching
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">9 files</span></div>
+                            <div class="module-file">• manager.py - News manager</div>
+                            <div class="module-file">• fred_adapter.py - FRED data</div>
+                            <div class="module-file">• rss_adapter.py - RSS feeds</div>
+                            <div class="module-file">• calendar.py - Economic calendar</div>
+                            <div class="module-file">• sentiment.py - Sentiment analysis</div>
+                            <div class="module-file">• cache.py - News caching</div>
+                            <div class="module-file">• parser.py, filter.py</div>
+                        </div>
+                    </div>
+
+                    <!-- Backtesting -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">🧪</div>
+                            <div class="module-title">Backtesting</div>
+                        </div>
+                        <div class="module-desc">
+                            Full backtesting engine with optimization, benchmarking, ML integration, and reporting
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">12 files</span></div>
+                            <div class="module-file">• engine.py - Backtest engine</div>
+                            <div class="module-file">• optimizer.py - Parameter optimization</div>
+                            <div class="module-file">• benchmarks.py - Benchmarking</div>
+                            <div class="module-file">• reporter.py - Report generation</div>
+                            <div class="module-file">• ml_decision.py - ML integration</div>
+                            <div class="module-file">• ensemble.py - Ensemble methods</div>
+                            <div class="module-file">• data_manager.py - Data mgmt</div>
+                            <div class="module-file">• test_harness.py - Test harness</div>
+                        </div>
+                    </div>
+
+                    <!-- Tests -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">🧪</div>
+                            <div class="module-title">Test Suite</div>
+                        </div>
+                        <div class="module-desc">
+                            Comprehensive test suite with 47 test files covering all subsystems
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">47 files</span></div>
+                            <div class="module-file">• Unit tests for all modules</div>
+                            <div class="module-file">• Integration tests</div>
+                            <div class="module-file">• Strategy tests</div>
+                            <div class="module-file">• Indicator tests</div>
+                            <div class="module-file">• Risk management tests</div>
+                            <div class="module-file">• Exit strategy tests</div>
+                        </div>
+                    </div>
+
+                    <!-- Sentinel & Ops -->
+                    <div class="module-card">
+                        <div class="module-header">
+                            <div class="module-icon">🔧</div>
+                            <div class="module-title">Ops & Automation</div>
+                        </div>
+                        <div class="module-desc">
+                            Crash monitoring, auto-restart, operations API, and system health checks
+                        </div>
+                        <div class="module-files">
+                            <div class="module-file">📁 <span class="file-count">10 files (sentinel + ops)</span></div>
+                            <div class="module-file">• sentinel/monitor.py - Crash monitor</div>
+                            <div class="module-file">• sentinel/restart_policy.py</div>
+                            <div class="module-file">• ops/controller.py - Ops API</div>
+                            <div class="module-file">• RPC server/client</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-header">// SUBSYSTEM COLOR LEGEND</div>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #2d1b69;"></div>
+                    <div class="legend-text">Entry Layer - System initialization</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #1a1a2e;"></div>
+                    <div class="legend-text">Core Engine - Central orchestration</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9b59b6;"></div>
+                    <div class="legend-text">Cognition Engine - AI/ML intelligence</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #3498db;"></div>
+                    <div class="legend-text">Strategy Layer - Trading strategies</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e67e22;"></div>
+                    <div class="legend-text">Technical Indicators - Market analysis</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e74c3c;"></div>
+                    <div class="legend-text">Risk Management - Trade approval</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f39c12;"></div>
+                    <div class="legend-text">Position Management - Trade lifecycle</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f1c40f;"></div>
+                    <div class="legend-text">Exit System - Position closing</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #27ae60;"></div>
+                    <div class="legend-text">Execution Engine - Order placement</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #34495e;"></div>
+                    <div class="legend-text">Persistence - Database storage</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #8e44ad;"></div>
+                    <div class="legend-text">Observability - Monitoring & metrics</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #16a085;"></div>
+                    <div class="legend-text">Monitoring - System health</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #1abc9c;"></div>
+                    <div class="legend-text">News & Data - External feeds</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e91e63;"></div>
+                    <div class="legend-text">Backtesting - Historical testing</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <div class="legend-text">ML/RL - Machine learning</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4834d4;"></div>
+                    <div class="legend-text">UI & RPC - User interface</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f368e0;"></div>
+                    <div class="legend-text">Ops & Automation - Operations</div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #795548;"></div>
+                    <div class="legend-text">Advisory - Signal generation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-content">
+                <strong>🐙 CTHULU v5.1.0 APEX</strong> - Autonomous Trading System<br>
+                Generated: January 4, 2026 00:02 UTC | 218 Python files analyzed<br><br>
+                <strong>Documentation Status:</strong> ✅ OVERVIEW.md in sync with recent commits<br>
+                <strong>System Status:</strong> ✅ Fully operational and production-ready<br>
+                <strong>Last Commit:</strong> feat(ops): add Ops API endpoints and OpsController
+            </div>
+            <div class="footer-links">
+                <a href="../OVERVIEW.md">📖 System Overview</a>
+                <a href="../docs/ARCHITECTURE.md">🏗️ Architecture</a>
+                <a href="../docs/SYSTEM_MAP.html">🗺️ Official System Map</a>
+                <a href="SYSTEM_REPORT.md">📊 System Report</a>
+                <a href="ai_dev.md">🤖 AI Dev Notes</a>
+                <a href="AUTOMATION_GUIDE.md">🔧 Automation Guide</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00ff88',
+                primaryTextColor: '#e0e0e8',
+                primaryBorderColor: '#00cc6a',
+                lineColor: '#4a4a5a',
+                secondaryColor: '#12121a',
+                tertiaryColor: '#1a1a25',
+                background: '#0a0a0f',
+                mainBkg: '#0a0a0f',
+                secondBkg: '#12121a'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 15,
+                nodeSpacing: 60,
+                rankSpacing: 120
+            },
+            securityLevel: 'loose'
+        });
+
+        // Console boot sequence
+        console.log(`
+█▀▀ ▀▀█▀▀ █  █ █   █ █    █  █
+█     █   █▀▀█ █   █ █    █  █
+▀▀▀   █   █  █  ▀▀▀  ▀▀▀  ▀▀▀▀
+
+CTHULU SYSTEM ARCHITECTURE MAP v5.1.0 APEX
+============================================
+
+[BOOT] Comprehensive system map initialized
+[BOOT] 218 Python files mapped across 14 subsystems  
+[BOOT] File integration matrix generated
+[BOOT] Mermaid diagram engine loaded
+[BOOT] Terminal theme activated
+[BOOT] ✅ All systems operational
+
+ARCHITECTURE SUMMARY:
+• 14 core subsystems with complete integration
+• AI/ML cognition engine for adaptive trading
+• 10 trading strategies with dynamic selection
+• 14 exit strategies with priority-based coordination
+• 8 risk management modules
+• 47 comprehensive test files
+• Complete observability suite
+• Autonomous 24/7 operation ready
+
+For detailed file analysis: see FILE_ANALYSIS.md in _dev/
+For automation: see AUTOMATION_GUIDE.md
+        `);
+    </script>
+</body>
+
+</html>

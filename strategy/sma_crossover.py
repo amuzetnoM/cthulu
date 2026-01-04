@@ -3,10 +3,13 @@ Simple Moving Average Crossover Strategy
 
 Implementation of SMA crossover strategy.
 Entry on crossovers, exit on opposite signals or stop loss/take profit.
+
+Android Native Implementation:
+- Uses connector abstraction for MT5 constants
 """
 
 import pandas as pd
-from cthulu.connector.mt5_connector import mt5
+from cthulu.connector import MT5Constants
 from typing import Optional, Dict, Any
 from datetime import datetime
 

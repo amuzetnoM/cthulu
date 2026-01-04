@@ -351,6 +351,218 @@ class MT5AndroidBridge:
         
         except Exception as e:
             return {'success': False, 'error': str(e)}
+    
+    def position_get(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Get a specific position by ticket."""
+        ticket = params.get('ticket')
+        
+        try:
+            if self.interface_type == "mt5_package" and self.mt5_initialized:
+                positions = self.mt5.positions_get(ticket=ticket)
+                if positions and len(positions) > 0:
+                    p = positions[0]
+                    return {
+                        'success': True,
+                        'data': {
+                            'ticket': p.ticket,
+                            'symbol': p.symbol,
+                            'price_open': p.price_open,
+                            'price_current': p.price_current,
+                            'profit': p.profit,
+                            'volume': p.volume,
+                            'type': p.type,
+                            'magic': p.magic,
+                            'time': p.time,
+                            'sl': p.sl,
+                            'tp': p.tp,
+                            'swap': getattr(p, 'swap', 0),
+                            'comment': getattr(p, 'comment', ''),
+                        }
+                    }
+            
+            return {'success': False, 'error': f'Position #{ticket} not found'}
+        
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def symbol_info_tick(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Get current tick for a symbol."""
+        symbol = params.get('symbol', '')
+        
+        try:
+            if self.interface_type == "mt5_package" and self.mt5_initialized:
+                tick = self.mt5.symbol_info_tick(symbol)
+                if tick:
+                    return {
+                        'success': True,
+                        'data': {
+                            'time': tick.time,
+                            'bid': tick.bid,
+                            'ask': tick.ask,
+                            'last': tick.last,
+                            'volume': tick.volume,
+                            'time_msc': getattr(tick, 'time_msc', 0),
+                            'flags': getattr(tick, 'flags', 0),
+                            'volume_real': getattr(tick, 'volume_real', 0),
+                        }
+                    }
+            
+            # Fallback: return simulated tick based on symbol_info
+            info_result = self.symbol_info({'symbol': symbol})
+            if info_result.get('success'):
+                data = info_result.get('data', {})
+                return {
+                    'success': True,
+                    'data': {
+                        'time': int(datetime.now().timestamp()),
+                        'bid': data.get('bid', 1.10000),
+                        'ask': data.get('ask', 1.10010),
+                        'last': data.get('last', 0),
+                        'volume': 0,
+                        'time_msc': 0,
+                        'flags': 0,
+                        'volume_real': 0,
+                    }
+                }
+            
+            return {'success': False, 'error': f'Symbol {symbol} tick not available'}
+        
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def symbol_select(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Select/enable a symbol in Market Watch."""
+        symbol = params.get('symbol', '')
+        enable = params.get('enable', True)
+        
+        try:
+            if self.interface_type == "mt5_package" and self.mt5_initialized:
+                result = self.mt5.symbol_select(symbol, enable)
+                return {'success': result, 'data': {'symbol': symbol, 'enabled': enable}}
+            
+            # Simulation: always succeed
+            return {'success': True, 'data': {'symbol': symbol, 'enabled': enable}}
+        
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def order_send(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Send a trading order to MT5.
+        
+        This is the critical trading method that handles:
+        - Market orders (buy/sell)
+        - Pending orders (limit/stop)
+        - Position modifications (SL/TP changes)
+        - Position closes
+        """
+        try:
+            if self.interface_type == "mt5_package" and self.mt5_initialized:
+                # Build MT5 request from params
+                request = {
+                    "action": params.get('action'),
+                    "symbol": params.get('symbol'),
+                    "volume": float(params.get('volume', 0)),
+                    "type": params.get('type'),
+                    "price": float(params.get('price', 0)),
+                    "deviation": int(params.get('deviation', 20)),
+                    "magic": int(params.get('magic', 0)),
+                    "comment": params.get('comment', 'Cthulu'),
+                    "type_time": params.get('type_time', 0),  # ORDER_TIME_GTC
+                    "type_filling": params.get('type_filling', 1),  # ORDER_FILLING_IOC
+                }
+                
+                # Optional fields
+                if params.get('sl') is not None:
+                    request['sl'] = float(params.get('sl'))
+                if params.get('tp') is not None:
+                    request['tp'] = float(params.get('tp'))
+                if params.get('position') is not None:
+                    request['position'] = int(params.get('position'))
+                if params.get('stoplimit') is not None:
+                    request['stoplimit'] = float(params.get('stoplimit'))
+                if params.get('expiration') is not None:
+                    request['expiration'] = params.get('expiration')
+                
+                # Send order
+                result = self.mt5.order_send(request)
+                
+                if result is None:
+                    error = self.mt5.last_error()
+                    return {
+                        'success': False,
+                        'error': str(error),
+                        'retcode': error[0] if error else 0
+                    }
+                
+                # Build response
+                response_data = {
+                    'retcode': result.retcode,
+                    'deal': result.deal,
+                    'order': result.order,
+                    'volume': result.volume,
+                    'price': result.price,
+                    'bid': result.bid,
+                    'ask': result.ask,
+                    'comment': result.comment,
+                    'request_id': result.request_id,
+                    'retcode_external': getattr(result, 'retcode_external', 0),
+                }
+                
+                # Add profit if available (for close operations)
+                if hasattr(result, 'profit'):
+                    response_data['profit'] = result.profit
+                
+                # Check if order was successful
+                TRADE_RETCODE_DONE = 10009
+                if result.retcode == TRADE_RETCODE_DONE:
+                    return {'success': True, 'data': response_data}
+                else:
+                    return {
+                        'success': False,
+                        'error': result.comment,
+                        'retcode': result.retcode,
+                        'data': response_data
+                    }
+            
+            else:
+                # Simulation mode - cannot execute real trades
+                self.logger.warning("Order requested in simulation mode - no real trade executed")
+                return {
+                    'success': False,
+                    'error': 'Trading not available in simulation mode. MT5 package required.',
+                    'retcode': 10013,  # TRADE_RETCODE_INVALID
+                    'data': {
+                        'retcode': 10013,
+                        'deal': 0,
+                        'order': 0,
+                        'volume': 0,
+                        'price': 0,
+                        'comment': 'Simulation mode - no trading',
+                    }
+                }
+        
+        except Exception as e:
+            self.logger.error(f"Order send error: {e}", exc_info=True)
+            return {'success': False, 'error': str(e), 'retcode': 10013}
+    
+    def last_error(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Get last MT5 error."""
+        try:
+            if self.interface_type == "mt5_package" and self.mt5_initialized:
+                error = self.mt5.last_error()
+                return {
+                    'success': True,
+                    'data': {
+                        'code': error[0] if error else 0,
+                        'message': error[1] if error and len(error) > 1 else 'No error'
+                    }
+                }
+            
+            return {'success': True, 'data': {'code': 0, 'message': 'No error'}}
+        
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
 
 
 def create_app(bridge: MT5AndroidBridge) -> Flask:

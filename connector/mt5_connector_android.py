@@ -731,3 +731,398 @@ class MT5ConnectorAndroid:
             
         except Exception:
             return None
+
+    # ========================================================================
+    # TRADING METHODS - Full MT5 Trading Implementation for Android
+    # ========================================================================
+    
+    def order_send(self, request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Send a trading order to MT5.
+        
+        This is the primary method for placing trades, closing positions,
+        and modifying orders. Matches the MetaTrader5.order_send() interface.
+        
+        Args:
+            request: Order request dictionary containing:
+                - action: Trade action (TRADE_ACTION_DEAL, etc.)
+                - symbol: Trading symbol
+                - volume: Order volume in lots
+                - type: Order type (ORDER_TYPE_BUY, ORDER_TYPE_SELL, etc.)
+                - price: Order price (for market orders, current price)
+                - sl: Stop loss price (optional)
+                - tp: Take profit price (optional)
+                - deviation: Maximum price deviation in points
+                - magic: Expert Advisor magic number
+                - comment: Order comment
+                - type_time: Order lifetime type
+                - type_filling: Order filling type
+                - position: Position ticket (for close/modify)
+                
+        Returns:
+            Order result dictionary with:
+                - retcode: Return code (10009 = success)
+                - deal: Deal ticket
+                - order: Order ticket
+                - volume: Executed volume
+                - price: Execution price
+                - bid/ask: Current prices
+                - comment: Result comment
+                - request_id: Request ID
+            None on error
+        """
+        if not self.is_connected():
+            self.logger.error("Cannot send order: not connected to MT5 bridge")
+            return None
+        
+        self._rate_limit()
+        
+        try:
+            # Validate required fields
+            if 'action' not in request:
+                self.logger.error("Order request missing 'action' field")
+                return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, "Missing action")
+            
+            if 'symbol' not in request:
+                self.logger.error("Order request missing 'symbol' field")
+                return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, "Missing symbol")
+            
+            # Ensure symbol is selected
+            symbol = request.get('symbol')
+            self.ensure_symbol_selected(symbol)
+            
+            # Log the order request (masking sensitive data)
+            self.logger.info(
+                f"Sending order: action={request.get('action')} symbol={symbol} "
+                f"type={request.get('type')} volume={request.get('volume')} "
+                f"price={request.get('price')}"
+            )
+            
+            # Send to bridge
+            response = self._send_bridge_request('order_send', request)
+            
+            if not response:
+                self.logger.error("No response from bridge for order_send")
+                return self._create_error_result(MT5Constants.TRADE_RETCODE_TIMEOUT, "Bridge timeout")
+            
+            if not response.get('success'):
+                error = response.get('error', 'Unknown error')
+                self.logger.error(f"Order rejected by bridge: {error}")
+                return self._create_error_result(
+                    response.get('retcode', MT5Constants.TRADE_RETCODE_INVALID),
+                    error
+                )
+            
+            result = response.get('data', {})
+            
+            # Log result
+            retcode = result.get('retcode', 0)
+            if retcode == MT5Constants.TRADE_RETCODE_DONE:
+                self.logger.info(
+                    f"Order executed: ticket={result.get('order')} "
+                    f"deal={result.get('deal')} volume={result.get('volume')} "
+                    f"price={result.get('price')}"
+                )
+            else:
+                self.logger.warning(
+                    f"Order result: retcode={retcode} comment={result.get('comment')}"
+                )
+            
+            return self._wrap_order_result(result)
+            
+        except Exception as e:
+            self.logger.error(f"Error sending order: {e}", exc_info=True)
+            return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, str(e))
+    
+    def _create_error_result(self, retcode: int, comment: str) -> Dict[str, Any]:
+        """Create a standardized error result object."""
+        return _OrderResult({
+            'retcode': retcode,
+            'deal': 0,
+            'order': 0,
+            'volume': 0.0,
+            'price': 0.0,
+            'bid': 0.0,
+            'ask': 0.0,
+            'comment': comment,
+            'request_id': 0
+        })
+    
+    def _wrap_order_result(self, data: Dict[str, Any]) -> '_OrderResult':
+        """Wrap order result in an object with attribute access."""
+        return _OrderResult(data)
+    
+    def positions_get(self, symbol: str = None, ticket: int = None) -> Optional[List[Any]]:
+        """
+        Get open positions from MT5.
+        
+        Args:
+            symbol: Filter by symbol (optional)
+            ticket: Get specific position by ticket (optional)
+            
+        Returns:
+            List of position objects or None on error
+        """
+        if not self.is_connected():
+            return None
+        
+        self._rate_limit()
+        
+        try:
+            params = {}
+            if symbol:
+                params['symbol'] = symbol
+            if ticket:
+                params['ticket'] = ticket
+            
+            response = self._send_bridge_request('positions_get', params)
+            
+            if not response or not response.get('success'):
+                return None
+            
+            positions_data = response.get('data', [])
+            
+            # Wrap in position objects for attribute access
+            return [_Position(p) for p in positions_data]
+            
+        except Exception as e:
+            self.logger.error(f"Error fetching positions: {e}")
+            return None
+    
+    def symbol_info_tick(self, symbol: str) -> Optional['_SymbolTick']:
+        """
+        Get current tick data for a symbol.
+        
+        Args:
+            symbol: Trading symbol
+            
+        Returns:
+            Tick object with bid, ask, last, volume, time
+        """
+        if not self.is_connected():
+            return None
+        
+        self._rate_limit()
+        
+        try:
+            params = {'symbol': symbol}
+            response = self._send_bridge_request('symbol_info_tick', params)
+            
+            if not response or not response.get('success'):
+                # Fallback to symbol_info if tick not available
+                info = self.get_symbol_info(symbol)
+                if info:
+                    return _SymbolTick({
+                        'bid': info.get('bid', 0),
+                        'ask': info.get('ask', 0),
+                        'last': info.get('last', 0),
+                        'volume': info.get('volume', 0),
+                        'time': int(time.time())
+                    })
+                return None
+            
+            return _SymbolTick(response.get('data', {}))
+            
+        except Exception as e:
+            self.logger.error(f"Error fetching tick for {symbol}: {e}")
+            return None
+    
+    def last_error(self) -> tuple:
+        """
+        Get last error from MT5.
+        
+        Returns:
+            Tuple of (error_code, error_description)
+        """
+        try:
+            response = self._send_bridge_request('last_error', {})
+            if response and response.get('success'):
+                data = response.get('data', {})
+                return (data.get('code', 0), data.get('message', 'No error'))
+            return (0, 'No error')
+        except Exception:
+            return (0, 'No error')
+    
+    def close_position_by_ticket(self, ticket: int, volume: float = None, 
+                                  deviation: int = 20, magic: int = 0,
+                                  comment: str = "Cthulu close") -> Optional[Dict[str, Any]]:
+        """
+        Close an open position by ticket number.
+        
+        Args:
+            ticket: Position ticket to close
+            volume: Volume to close (None = full position)
+            deviation: Maximum price deviation
+            magic: Magic number
+            comment: Order comment
+            
+        Returns:
+            Order result or None on error
+        """
+        try:
+            # Get position info
+            positions = self.positions_get(ticket=ticket)
+            if not positions or len(positions) == 0:
+                self.logger.error(f"Position #{ticket} not found")
+                return self._create_error_result(
+                    MT5Constants.TRADE_RETCODE_INVALID, 
+                    f"Position #{ticket} not found"
+                )
+            
+            position = positions[0]
+            
+            # Determine close volume
+            close_volume = volume if volume else position.volume
+            
+            # Determine order type (opposite of position)
+            if position.type == MT5Constants.ORDER_TYPE_BUY:
+                order_type = MT5Constants.ORDER_TYPE_SELL
+                tick = self.symbol_info_tick(position.symbol)
+                price = tick.bid if tick else 0
+            else:
+                order_type = MT5Constants.ORDER_TYPE_BUY
+                tick = self.symbol_info_tick(position.symbol)
+                price = tick.ask if tick else 0
+            
+            # Build close request
+            request = {
+                "action": MT5Constants.TRADE_ACTION_DEAL,
+                "symbol": position.symbol,
+                "volume": close_volume,
+                "type": order_type,
+                "position": ticket,
+                "price": price,
+                "deviation": deviation,
+                "magic": magic,
+                "comment": comment,
+                "type_time": MT5Constants.ORDER_TIME_GTC,
+                "type_filling": MT5Constants.ORDER_FILLING_IOC,
+            }
+            
+            return self.order_send(request)
+            
+        except Exception as e:
+            self.logger.error(f"Error closing position #{ticket}: {e}", exc_info=True)
+            return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, str(e))
+    
+    def modify_position(self, ticket: int, sl: float = None, tp: float = None) -> Optional[Dict[str, Any]]:
+        """
+        Modify stop loss and take profit of an open position.
+        
+        Args:
+            ticket: Position ticket
+            sl: New stop loss price (None = unchanged)
+            tp: New take profit price (None = unchanged)
+            
+        Returns:
+            Order result or None on error
+        """
+        try:
+            # Get position info
+            positions = self.positions_get(ticket=ticket)
+            if not positions or len(positions) == 0:
+                self.logger.error(f"Position #{ticket} not found for modification")
+                return self._create_error_result(
+                    MT5Constants.TRADE_RETCODE_INVALID,
+                    f"Position #{ticket} not found"
+                )
+            
+            position = positions[0]
+            
+            # Build modify request
+            request = {
+                "action": MT5Constants.TRADE_ACTION_SLTP,
+                "symbol": position.symbol,
+                "position": ticket,
+                "sl": sl if sl is not None else position.sl,
+                "tp": tp if tp is not None else position.tp,
+            }
+            
+            return self.order_send(request)
+            
+        except Exception as e:
+            self.logger.error(f"Error modifying position #{ticket}: {e}", exc_info=True)
+            return self._create_error_result(MT5Constants.TRADE_RETCODE_INVALID, str(e))
+
+
+# ============================================================================
+# Helper Classes for MT5-like Object Interface
+# ============================================================================
+
+class _OrderResult:
+    """
+    Wrapper class for order results to provide attribute access.
+    Mimics the MetaTrader5 OrderSendResult structure.
+    """
+    
+    def __init__(self, data: Dict[str, Any]):
+        self._data = data
+        self.retcode = data.get('retcode', 0)
+        self.deal = data.get('deal', 0)
+        self.order = data.get('order', 0)
+        self.volume = data.get('volume', 0.0)
+        self.price = data.get('price', 0.0)
+        self.bid = data.get('bid', 0.0)
+        self.ask = data.get('ask', 0.0)
+        self.comment = data.get('comment', '')
+        self.request_id = data.get('request_id', 0)
+        self.retcode_external = data.get('retcode_external', 0)
+        # Additional fields that may be present
+        self.profit = data.get('profit', 0.0)
+        self.commission = data.get('commission', 0.0)
+    
+    def __repr__(self):
+        return f"OrderResult(retcode={self.retcode}, order={self.order}, deal={self.deal}, volume={self.volume}, price={self.price})"
+
+
+class _Position:
+    """
+    Wrapper class for position data to provide attribute access.
+    Mimics the MetaTrader5 TradePosition structure.
+    """
+    
+    def __init__(self, data: Dict[str, Any]):
+        self._data = data
+        self.ticket = data.get('ticket', 0)
+        self.time = data.get('time', 0)
+        self.time_msc = data.get('time_msc', 0)
+        self.time_update = data.get('time_update', 0)
+        self.time_update_msc = data.get('time_update_msc', 0)
+        self.type = data.get('type', 0)
+        self.magic = data.get('magic', 0)
+        self.identifier = data.get('identifier', 0)
+        self.reason = data.get('reason', 0)
+        self.volume = data.get('volume', 0.0)
+        self.price_open = data.get('price_open', 0.0)
+        self.sl = data.get('sl', 0.0)
+        self.tp = data.get('tp', 0.0)
+        self.price_current = data.get('price_current', 0.0)
+        self.swap = data.get('swap', 0.0)
+        self.profit = data.get('profit', 0.0)
+        self.symbol = data.get('symbol', '')
+        self.comment = data.get('comment', '')
+        self.external_id = data.get('external_id', '')
+    
+    def __repr__(self):
+        return f"Position(ticket={self.ticket}, symbol={self.symbol}, type={self.type}, volume={self.volume}, profit={self.profit})"
+
+
+class _SymbolTick:
+    """
+    Wrapper class for tick data to provide attribute access.
+    Mimics the MetaTrader5 Tick structure.
+    """
+    
+    def __init__(self, data: Dict[str, Any]):
+        self._data = data
+        self.time = data.get('time', 0)
+        self.bid = data.get('bid', 0.0)
+        self.ask = data.get('ask', 0.0)
+        self.last = data.get('last', 0.0)
+        self.volume = data.get('volume', 0.0)
+        self.time_msc = data.get('time_msc', 0)
+        self.flags = data.get('flags', 0)
+        self.volume_real = data.get('volume_real', 0.0)
+    
+    def __repr__(self):
+        return f"Tick(bid={self.bid}, ask={self.ask}, last={self.last})"

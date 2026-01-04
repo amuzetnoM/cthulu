@@ -370,10 +370,14 @@ class ProfitScaler:
     def _execute_sl_modification(self, ticket: int, new_sl: float) -> Dict[str, Any]:
         """Modify position stop loss"""
         try:
-            from cthulu.connector.mt5_connector import mt5
+            from cthulu.connector import TRADE_ACTION_SLTP, TRADE_RETCODE_DONE
+            
+            # Use connector for MT5 queries (Android-native)
+            if not self.connector or not self.connector.is_connected():
+                return {'success': False, 'error': 'Connector not available'}
             
             # Get current position
-            positions = mt5.positions_get(ticket=ticket)
+            positions = self.connector.positions_get(ticket=ticket)
             if not positions:
                 return {'success': False, 'error': 'Position not found'}
                 
@@ -381,16 +385,16 @@ class ProfitScaler:
             
             # Build modification request
             request = {
-                "action": mt5.TRADE_ACTION_SLTP,
+                "action": TRADE_ACTION_SLTP,
                 "symbol": pos.symbol,
                 "position": ticket,
                 "sl": new_sl,
                 "tp": pos.tp if hasattr(pos, 'tp') else None,
             }
             
-            result = mt5.order_send(request)
+            result = self.connector.order_send(request)
             
-            if result and result.retcode == mt5.TRADE_RETCODE_DONE:
+            if result and result.retcode == TRADE_RETCODE_DONE:
                 logger.info(f"SL modified for #{ticket}: {new_sl}")
                 return {'success': True, 'new_sl': new_sl}
             else:
@@ -443,10 +447,12 @@ class ProfitScaler:
         all_results = []
         
         try:
-            from cthulu.connector.mt5_connector import mt5
+            # Use connector for MT5 queries (Android-native)
+            if not self.connector or not self.connector.is_connected():
+                return []
             
             # Get all open positions
-            positions = mt5.positions_get()
+            positions = self.connector.positions_get()
             if not positions:
                 return []
                 

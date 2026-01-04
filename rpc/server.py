@@ -120,6 +120,53 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 self._bad_request('Invalid JSON')
                 return
         
+        # Allow ops import provenance POST
+        if parsed.path == '/ops/import_provenance':
+            # Authenticate
+            auth = self.headers.get('Authorization')
+            api_key = self.headers.get('X-Api-Key')
+            if self.token:
+                if auth and auth.startswith('Bearer '):
+                    token = auth.split(' ', 1)[1].strip()
+                else:
+                    token = api_key
+                if not token or token != self.token:
+                    self._unauthorized('Invalid or missing API token')
+                    if self.security_manager:
+                        self.security_manager.audit.log_security_event(
+                            "AUTH_FAILED", client_ip, ThreatLevel.MEDIUM if SECURITY_AVAILABLE else None,
+                            "Invalid or missing token for import_provenance"
+                        )
+                    return
+
+            # Expect payload to be {'rows': [ ... ]} or a single object
+            rows = []
+            if isinstance(payload, dict) and 'rows' in payload:
+                rows = payload['rows']
+            elif isinstance(payload, list):
+                rows = payload
+            elif isinstance(payload, dict):
+                rows = [payload]
+
+            if not self.database:
+                self._send_json(501, {'error': 'Database not available on server'})
+                return
+
+            recorded = []
+            for r in rows:
+                try:
+                    new_id = self.database.record_provenance(r)
+                    recorded.append({'id': new_id})
+                except Exception:
+                    recorded.append({'id': None})
+            if self.security_manager:
+                self.security_manager.audit.log_security_event(
+                    "OPS_IMPORT_PROVENANCE", client_ip, ThreatLevel.LOW if SECURITY_AVAILABLE else None,
+                    f"Imported {len(recorded)} rows via ops import"
+                )
+            self._send_json(200, {'imported': len(recorded), 'results': recorded})
+            return
+
         if parsed.path != '/trade':
             self._bad_request('Unknown endpoint')
             return

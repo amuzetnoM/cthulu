@@ -152,14 +152,15 @@ class TimeBasedExit(ExitStrategy):
         """
         # Skip weekend protection for crypto symbols
         symbol = getattr(position, 'symbol', '') or ''
-        # Handle UNKNOWN symbol - try to get from MT5 directly
+        # Handle UNKNOWN symbol - try to get from connector directly
         if not symbol or symbol.upper() == 'UNKNOWN':
             try:
-                import MetaTrader5 as mt5
-                mt5_pos = mt5.positions_get(ticket=position.ticket)
-                if mt5_pos and len(mt5_pos) > 0:
-                    symbol = mt5_pos[0].symbol
-                    position.symbol = symbol  # Fix the position object too
+                # Use connector if available (injected during init)
+                if hasattr(self, 'connector') and self.connector and self.connector.is_connected():
+                    positions = self.connector.positions_get(ticket=position.ticket)
+                    if positions and len(positions) > 0:
+                        symbol = positions[0].symbol
+                        position.symbol = symbol  # Fix the position object too
             except Exception:
                 pass
         

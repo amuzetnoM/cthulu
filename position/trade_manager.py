@@ -2,6 +2,10 @@
 
 Scans MT5 for positions that were not opened by Cthulu (different magic number) and
 adopts them into the PositionManager for management under configured policy.
+
+Android Native Implementation:
+- Uses connector abstraction instead of direct MT5 imports
+- Full trading capability through bridge
 """
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
@@ -9,7 +13,6 @@ from datetime import datetime, timezone
 import logging
 
 from cthulu.position.manager import PositionInfo, PositionManager
-from cthulu.connector.mt5_connector import mt5
 
 logger = logging.getLogger('Cthulu.trade_manager')
 
@@ -25,10 +28,12 @@ class TradeAdoptionPolicy:
 
 
 class TradeManager:
-    def __init__(self, position_manager: PositionManager, policy: Optional[TradeAdoptionPolicy] = None, magic_number: int = 0):
+    def __init__(self, position_manager: PositionManager, policy: Optional[TradeAdoptionPolicy] = None, 
+                 magic_number: int = 0, connector=None):
         self.position_manager = position_manager
         self.policy = policy or TradeAdoptionPolicy()
         self.magic_number = magic_number or 0
+        self.connector = connector
         self._adopted_tickets = set()
         self._adoption_log: List[Dict[str, Any]] = []
 
@@ -37,7 +42,12 @@ class TradeManager:
             return []
 
         try:
-            positions = mt5.positions_get()
+            # Use connector for MT5 queries (Android-native)
+            if not self.connector or not self.connector.is_connected():
+                logger.warning("Connector not available for external trade scan")
+                return []
+            
+            positions = self.connector.positions_get()
         except Exception:
             logger.exception('Failed to fetch positions from MT5')
             return []

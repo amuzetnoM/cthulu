@@ -1,0 +1,1503 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Cthulu v5.1.0 APEX - Complete System Architecture Map & File Integration Overview">
+    <title>🐙 Cthulu System Architecture | v5.1.0 APEX</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --void: #000000;
+            --deep: #050508;
+            --surface: #0a0a0f;
+            --elevated: #12121a;
+            --border: #1a1a25;
+            --muted: #4a4a5a;
+            --text: #e0e0e8;
+            --bright: #ffffff;
+            --accent: #00ff88;
+            --accent-dim: #00cc6a;
+            --warning: #ffaa00;
+            --danger: #ff4444;
+            --info: #00aaff;
+            --glow: rgba(0, 255, 136, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--void);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Scanline overlay effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 136, 0.01) 2px,
+                    rgba(0, 255, 136, 0.01) 4px);
+            z-index: 9999;
+        }
+
+        /* Grid background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.3;
+            }
+
+            90% {
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Terminal window styling */
+        .terminal-window {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0, 255, 136, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .terminal-header {
+            background: var(--elevated);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red {
+            background: #ff5f56;
+        }
+
+        .terminal-dot.yellow {
+            background: #ffbd2e;
+        }
+
+        .terminal-dot.green {
+            background: #27ca40;
+        }
+
+        .terminal-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-left: 1rem;
+        }
+
+        .terminal-body {
+            padding: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Hero section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            position: relative;
+        }
+
+        .hero-visual {
+            position: relative;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            margin-bottom: 2rem;
+        }
+
+        .hero-parallax {
+            position: relative;
+            text-align: center;
+            perspective: 900px;
+            transform-style: preserve-3d;
+        }
+
+        .hero-main {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--bright);
+            margin: 0;
+            letter-spacing: 4px;
+            transform: translateZ(0);
+            transition: transform 120ms linear;
+            pointer-events: none;
+        }
+
+        .hero-sub {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0;
+            margin-top: 0.5rem;
+            transform: translateZ(0);
+            transition: transform 140ms linear;
+            pointer-events: none;
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-top: 1rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--void);
+            padding: 0.4rem 0.8rem;
+            border-radius: 2px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Terminal controls */
+        .controls {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        select,
+        button {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            background: var(--elevated);
+            color: var(--text);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        select:hover,
+        button:hover {
+            border-color: var(--accent);
+            background: var(--surface);
+        }
+
+        button {
+            background: var(--accent);
+            border-color: var(--accent-dim);
+            color: var(--void);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: var(--accent-dim);
+            transform: translateY(-1px);
+        }
+
+        /* Metrics Dashboard */
+        .metrics-dashboard {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(0, 255, 136, 0.08), inset 0 0 60px rgba(0, 0, 0, 0.4);
+            margin: 2rem 0;
+        }
+
+        .metrics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--elevated);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .metrics-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metrics-icon {
+            font-size: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        .metrics-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+        }
+
+        .metrics-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        .metrics-status.live {
+            color: var(--accent);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            position: relative;
+            transition: background 0.2s;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            background: var(--elevated);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 1.5rem;
+            right: 1.5rem;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover::after {
+            opacity: 0.3;
+        }
+
+        .stat-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+        }
+
+        /* Diagram container as terminal */
+        .diagram-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0, 255, 136, 0.1);
+            margin: 2rem 0;
+        }
+
+        .diagram-header {
+            background: var(--elevated);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .diagram-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-left: 1rem;
+        }
+
+        .diagram-body {
+            padding: 2rem;
+            min-height: 800px;
+            overflow: auto;
+        }
+
+        /* Legend as terminal grid */
+        .legend {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .legend-header {
+            background: var(--elevated);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1px;
+            background: var(--border);
+        }
+
+        .legend-item {
+            background: var(--surface);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: background 0.2s;
+        }
+
+        .legend-item:hover {
+            background: var(--elevated);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .legend-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text);
+        }
+
+        /* Footer terminal style */
+        .footer {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-dim);
+        }
+
+        /* Status indicator */
+        .last-updated {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--elevated);
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        .auto-update-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .hero-main {
+                font-size: 3rem;
+            }
+
+            .hero-sub {
+                font-size: 1.4rem;
+            }
+
+            .diagram-body {
+                padding: 1rem;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero-main {
+                font-size: 2.5rem;
+            }
+
+            .hero-sub {
+                font-size: 1.2rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Mermaid theming */
+        .mermaid {
+            width: 100%;
+            height: auto;
+            min-height: 600px;
+        }
+
+        /* Mermaid overrides for terminal theme */
+        .mermaid .node rect,
+        .mermaid .node circle,
+        .mermaid .node ellipse,
+        .mermaid .node polygon {
+            fill: var(--surface) !important;
+            stroke: var(--accent) !important;
+        }
+
+        .mermaid .label {
+            color: var(--text) !important;
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        .mermaid .edgePath .path {
+            stroke: var(--accent) !important;
+        }
+
+        .mermaid .cluster rect {
+            fill: var(--elevated) !important;
+            stroke: var(--border) !important;
+        }
+
+        .mermaid .cluster text {
+            fill: var(--muted) !important;
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+    </style>
+</head>
+color: var(--accent);
+line-height: 1.2;
+}
+
+.stat-label {
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.7rem;
+color: var(--muted);
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-top: 0.5rem;
+}
+
+.controls {
+display: flex;
+flex-wrap: wrap;
+gap: 1rem;
+justify-content: center;
+margin: 2rem 0;
+padding: 1.5rem;
+background: var(--bg-secondary);
+border-radius: 12px;
+border: 1px solid var(--border-color);
+}
+
+.control-group {
+display: flex;
+flex-direction: column;
+gap: 0.5rem;
+}
+
+.control-group label {
+font-size: 0.9rem;
+color: var(--text-secondary);
+font-weight: 600;
+}
+
+select,
+button {
+padding: 0.6rem 1rem;
+border: 1px solid var(--border-color);
+background: var(--bg-tertiary);
+color: var(--text-primary);
+border-radius: 8px;
+font-size: 0.9rem;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+select:hover,
+button:hover {
+border-color: var(--cthulu-purple);
+}
+
+button {
+background: var(--cthulu-purple);
+border-color: var(--cthulu-dark-purple);
+font-weight: 600;
+}
+
+button:hover {
+background: var(--cthulu-dark-purple);
+transform: translateY(-1px);
+}
+
+.diagram-container {
+background: var(--bg-secondary);
+border-radius: 12px;
+padding: 2rem;
+margin: 2rem 0;
+border: 1px solid var(--border-color);
+min-height: 800px;
+overflow: auto;
+}
+
+.legend {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+gap: 1rem;
+margin: 2rem 0;
+padding: 2rem;
+background: var(--bg-secondary);
+border-radius: 12px;
+border: 1px solid var(--border-color);
+}
+
+/* Diagram container as terminal */
+.diagram-container {
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: 8px;
+overflow: hidden;
+box-shadow: 0 0 60px rgba(0, 255, 136, 0.1);
+margin: 2rem 0;
+}
+
+.diagram-header {
+background: var(--elevated);
+padding: 0.75rem 1rem;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+border-bottom: 1px solid var(--border);
+}
+
+.diagram-title {
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.75rem;
+color: var(--muted);
+margin-left: 1rem;
+}
+
+.diagram-body {
+padding: 2rem;
+min-height: 800px;
+overflow: auto;
+}
+
+/* Legend as terminal grid */
+.legend {
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: 8px;
+overflow: hidden;
+margin: 2rem 0;
+}
+
+.legend-header {
+background: var(--elevated);
+padding: 1rem 1.5rem;
+border-bottom: 1px solid var(--border);
+font-family: 'JetBrains Mono', monospace;
+font-size: 0.75rem;
+color: var(--accent);
+text-transform: uppercase;
+letter-spacing: 2px;
+}
+
+.legend-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 1px;
+background: var(--border);
+}
+
+.footer {
+text-align: center;
+margin-top: 3rem;
+padding: 2rem;
+background: var(--bg-secondary);
+border-radius: 12px;
+border: 1px solid var(--border-color);
+color: var(--text-secondary);
+}
+
+.footer-links {
+display: flex;
+justify-content: center;
+gap: 2rem;
+margin-top: 1rem;
+}
+
+.footer-links a {
+color: var(--cthulu-purple);
+text-decoration: none;
+transition: color 0.2s;
+}
+
+.footer-links a:hover {
+color: var(--cthulu-dark-purple);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+.container {
+padding: 0.5rem;
+}
+
+.diagram-container {
+padding: 1rem;
+overflow-x: auto;
+}
+}
+
+@media (max-width: 768px) {
+.controls {
+flex-direction: column;
+align-items: stretch;
+}
+
+.legend {
+grid-template-columns: 1fr;
+}
+
+.stats-grid {
+grid-template-columns: 1fr;
+}
+
+h1 {
+font-size: 1.8rem;
+}
+}
+
+/* Custom Mermaid Styling */
+.mermaid {
+width: 100%;
+height: auto;
+min-height: 600px;
+}
+
+/* Auto-update indicator */
+.last-updated {
+position: absolute;
+top: 1rem;
+right: 1rem;
+background: var(--bg-tertiary);
+padding: 0.5rem 1rem;
+border-radius: 20px;
+font-size: 0.8rem;
+color: var(--text-secondary);
+border: 1px solid var(--border-color);
+}
+
+.auto-update-indicator {
+display: inline-block;
+width: 8px;
+height: 8px;
+background: var(--accent-green);
+border-radius: 50%;
+margin-right: 0.5rem;
+animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+0%,
+100% {
+opacity: 1;
+}
+
+50% {
+opacity: 0.5;
+}
+}
+</style>
+</head>
+
+<body>
+    <!-- Grid background -->
+    <div class="grid-bg"></div>
+
+    <!-- Floating particles -->
+    <div class="particles">
+        <div class="particle" style="left: 10%; animation-delay: -5s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: -10s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: -15s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: -20s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: -25s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: -30s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: -35s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: -40s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: -45s;"></div>
+    </div>
+
+    <!-- Status indicator -->
+    <div class="last-updated">
+        <span class="auto-update-indicator"></span>
+        <span>LIVE</span> | UPDATED: 2026-01-04 18:45 UTC
+    </div>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-visual">
+                <div class="hero-parallax">
+                    <h1 class="hero-main">CTHULU</h1>
+                    <h2 class="hero-sub">SYSTEM ARCHITECTURE</h2>
+                </div>
+            </div>
+            <div class="hero-desc">
+                Complete file integration map & system overview for the v5.1.0 APEX autonomous trading system
+            </div>
+        </section>
+
+        <!-- Terminal Controls -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+                <div class="terminal-title">system-map-controls.sh</div>
+            </div>
+            <div class="terminal-body">
+                <div class="controls">
+                    <div class="control-group">
+                        <label>View Type</label>
+                        <select id="viewType" onchange="changeView()">
+                            <option value="complete">Complete Architecture</option>
+                            <option value="simplified">Simplified Flow</option>
+                            <option value="dataflow">Data Flow</option>
+                            <option value="modules">Module Dependencies</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Zoom Level</label>
+                        <select id="zoomLevel" onchange="adjustZoom()">
+                            <option value="fit">Fit to Screen</option>
+                            <option value="100">100%</option>
+                            <option value="125">125%</option>
+                            <option value="150">150%</option>
+                            <option value="200">200%</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Theme</label>
+                        <select id="themeSelect" onchange="changeTheme()">
+                            <option value="dark">Terminal (Default)</option>
+                            <option value="base">Base</option>
+                            <option value="forest">Forest</option>
+                            <option value="neutral">Neutral</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Actions</label>
+                        <button onclick="exportSVG()">Export SVG</button>
+                        <button onclick="refreshDiagram()">Refresh</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Diagram -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+                <div class="terminal-title">architecture-visualization.mmd</div>
+            </div>
+            <div class="diagram-body">
+                <div id="mermaidDiagram" class="mermaid">
+                    flowchart TB
+                    %% ENTRY LAYER
+                    subgraph ENTRY["🚀 ENTRY LAYER"]
+                    direction TB
+                    MAIN["__main__.py<br />🎯 Entry Point"]
+                    WIZ["config/wizard.py<br />🧙‍♂️ Setup Wizard"]
+                    CLI["CLI Arguments<br />⚙️ Configuration"]
+                    end
+
+                    %% CORE ENGINE
+                    subgraph CORE["⚙️ CORE ENGINE"]
+                    direction TB
+                    BOOT["core/bootstrap.py<br />🔧 System Init"]
+                    LOOP["core/trading_loop.py<br />🔄 Main Loop"]
+                    SHUT["core/shutdown.py<br />🛑 Graceful Exit"]
+                    FACTORY["core/strategy_factory.py<br />🏭 Strategy Creation"]
+                    IND_LOADER["core/indicator_loader.py<br />📊 Indicator Management"]
+                    EXIT_LOADER["core/exit_loader.py<br />🚪 Exit Strategy Loading"]
+                    end
+
+                    %% COGNITION ENGINE (AI/ML)
+                    subgraph COGNITION["🧠 COGNITION ENGINE (AI/ML)"]
+                    direction TB
+                    COG_ENG["cognition/engine.py<br />🎛️ Central Orchestrator"]
+                    REGIME["cognition/regime_classifier.py<br />📈 Market Regime Detection"]
+                    PREDICTOR["cognition/price_predictor.py<br />🔮 Price Direction ML"]
+                    SENTIMENT["cognition/sentiment_analyzer.py<br />📰 News & Calendar"]
+                    EXIT_ORACLE["cognition/exit_oracle.py<br />🎯 ML Exit Signals"]
+                    TIER_OPT["cognition/tier_optimizer.py<br />📊 Profit Optimization"]
+                    end
+
+                    %% STRATEGY LAYER
+                    subgraph STRATEGY["📊 STRATEGY LAYER"]
+                    direction TB
+                    SEL["strategy/strategy_selector.py<br />🎯 Dynamic Selection"]
+                    EMA["strategy/ema_crossover.py<br />📈 EMA Strategy"]
+                    SMA["strategy/sma_crossover.py<br />📉 SMA Strategy"]
+                    MOM["strategy/momentum_breakout.py<br />🚀 Momentum"]
+                    SCALP["strategy/scalping.py<br />⚡ Scalping"]
+                    TREND["strategy/trend_following.py<br />📈 Trend Following"]
+                    RSI_REV["strategy/rsi_reversal.py<br />🔄 RSI Reversal"]
+                    MEAN_REV["strategy/mean_reversion.py<br />↩️ Mean Reversion"]
+                    end
+
+                    %% INDICATORS
+                    subgraph INDICATORS["📈 TECHNICAL INDICATORS"]
+                    direction TB
+                    RSI["indicators/rsi.py<br />📊 RSI"]
+                    MACD["indicators/macd.py<br />📈 MACD"]
+                    ATR["indicators/atr.py<br />📏 ATR"]
+                    ADX["indicators/adx.py<br />💪 ADX"]
+                    BB["indicators/bollinger.py<br />🎈 Bollinger Bands"]
+                    STOCH["indicators/stochastic.py<br />⚡ Stochastic"]
+                    SUPER["indicators/supertrend.py<br />🎯 Supertrend"]
+                    VWAP["indicators/vwap.py<br />💰 VWAP"]
+                    VOL_IND["indicators/volume_indicators.py<br />📊 Volume"]
+                    end
+
+                    %% RISK MANAGEMENT
+                    subgraph RISK["🛡️ RISK MANAGEMENT"]
+                    direction TB
+                    EVAL["risk/evaluator.py<br />✅ Trade Approval"]
+                    ADAPT_ACC["risk/adaptive_account_manager.py<br />📊 Phase-based Sizing"]
+                    ADAPT_DD["risk/adaptive_drawdown.py<br />📉 Drawdown Protection"]
+                    EQUITY_MGR["risk/equity_curve_manager.py<br />📈 Equity Management"]
+                    TRAP["risk/liquidity_trap_detector.py<br />🕳️ Trap Detection"]
+                    DYN_SLTP["risk/dynamic_sltp.py<br />🎯 Dynamic SL/TP"]
+                    end
+
+                    %% POSITION MANAGEMENT
+                    subgraph POSITION["📦 POSITION MANAGEMENT"]
+                    direction TB
+                    POS_MGR["position/manager.py<br />👑 Position Manager"]
+                    LIFECYCLE["position/lifecycle.py<br />♻️ Lifecycle"]
+                    TRACKER["position/tracker.py<br />📍 Position Tracker"]
+                    SCALER["position/profit_scaler.py<br />💎 Profit Scaling"]
+                    ADOPT["position/adoption.py<br />🤝 External Trades"]
+                    TRADE_MGR["position/trade_manager.py<br />🎪 Trade Management"]
+                    end
+
+                    %% EXIT SYSTEM
+                    subgraph EXIT["🚪 EXIT SYSTEM"]
+                    direction TB
+                    COORD["exit/coordinator.py<br />🎯 Exit Coordinator"]
+                    TRAIL["exit/trailing_stop.py<br />📈 Trailing Stop"]
+                    TIME_EXIT["exit/time_based.py<br />⏰ Time-based Exit"]
+                    PROFIT_TGT["exit/profit_target.py<br />🎯 Profit Target"]
+                    CONFLUENCE["exit/confluence_exit_manager.py<br />🎭 Multi-indicator Exit"]
+                    MICRO_PROT["exit/micro_account_protection.py<br />🛡️ Micro Protection"]
+                    ADV_MOVE["exit/adverse_movement.py<br />⚠️ Adverse Movement"]
+                    end
+
+                    %% EXECUTION ENGINE
+                    subgraph EXECUTION["⚡ EXECUTION ENGINE"]
+                    direction TB
+                    ENG["execution/engine.py<br />🎪 Order Management"]
+                    MT5["connector/mt5_connector.py<br />🔌 MT5 API"]
+                    end
+
+                    %% PERSISTENCE LAYER
+                    subgraph PERSISTENCE["💾 PERSISTENCE LAYER"]
+                    direction TB
+                    DB["persistence/database.py<br />🗄️ SQLite WAL"]
+                    TRAIN_LOG["cognition/training_logger.py<br />📚 ML Training Data"]
+                    end
+
+                    %% OBSERVABILITY
+                    subgraph OBSERVABILITY["📊 OBSERVABILITY & MONITORING"]
+                    direction TB
+                    METRICS["observability/metrics.py<br />📈 Metrics Collection"]
+                    COMP_COLL["observability/comprehensive_collector.py<br />📊 Comprehensive Metrics"]
+                    PROM["observability/prometheus.py<br />📊 Prometheus Export"]
+                    DASH["ui/desktop.py<br />🖥️ Trading Dashboard"]
+                    TRADE_MON["monitoring/trade_monitor.py<br />👁️ Trade Monitor"]
+                    SYS_HEALTH["monitoring/system_health_collector.py<br />💊 Health Check"]
+                    end
+
+                    %% NEWS & DATA
+                    subgraph NEWS_DATA["📰 NEWS & DATA"]
+                    direction TB
+                    NEWS_MGR["news/manager.py<br />📰 News Manager"]
+                    FRED["news/fred_adapter.py<br />🏛️ FRED Data"]
+                    RSS["news/rss_adapter.py<br />📡 RSS Feeds"]
+                    CACHE["news/cache.py<br />💾 News Cache"]
+                    end
+
+                    %% ML/RL INTEGRATION
+                    subgraph ML_RL["🤖 ML/RL INTEGRATION"]
+                    direction TB
+                    ML_TIER["ML_RL/tier_optimizer.py<br />🎯 Tier Optimization"]
+                    ML_INSTR["ML_RL/instrumentation.py<br />📊 ML Instrumentation"]
+                    end
+
+                    %% ADVISORY SYSTEM
+                    subgraph ADVISORY["🎭 ADVISORY SYSTEM"]
+                    direction TB
+                    ADV_MGR["advisory/manager.py<br />🎭 Advisory Manager"]
+                    end
+
+                    %% MAIN FLOW CONNECTIONS
+                    ENTRY --> CORE
+                    CORE --> COGNITION
+                    CORE --> STRATEGY
+                    CORE --> RISK
+                    STRATEGY --> INDICATORS
+
+                    %% COGNITION ENHANCEMENT FLOWS
+                    COGNITION -.->|Signal Enhancement| STRATEGY
+                    COGNITION -.->|Exit Signals| EXIT
+                    COGNITION -.->|Regime Info| RISK
+                    COGNITION -.->|Market Analysis| STRATEGY
+
+                    %% TRADING PIPELINE
+                    RISK --> POSITION
+                    POSITION --> EXIT
+                    EXIT --> EXECUTION
+                    EXECUTION --> MT5
+
+                    %% PERSISTENCE & MONITORING
+                    LOOP --> PERSISTENCE
+                    LOOP --> OBSERVABILITY
+                    LOOP --> NEWS_DATA
+
+                    %% ML/RL INTEGRATION
+                    COGNITION --> ML_RL
+                    POSITION --> ML_RL
+                    OBSERVABILITY --> ML_RL
+
+                    %% ADVISORY INTEGRATION
+                    LOOP --> ADVISORY
+
+                    %% STYLING CLASSES
+                    classDef entry fill:#2d1b69,stroke:#9b59b6,stroke-width:3px,color:#fff
+                    classDef core fill:#1a1a2e,stroke:#16213e,stroke-width:2px,color:#fff
+                    classDef cognition fill:#9b59b6,stroke:#8e44ad,stroke-width:3px,color:#fff
+                    classDef strategy fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff
+                    classDef indicators fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
+                    classDef risk fill:#e74c3c,stroke:#c0392b,stroke-width:3px,color:#fff
+                    classDef position fill:#f39c12,stroke:#e67e22,stroke-width:2px,color:#fff
+                    classDef exit fill:#f1c40f,stroke:#f39c12,stroke-width:2px,color:#111
+                    classDef execution fill:#27ae60,stroke:#1e8449,stroke-width:3px,color:#fff
+                    classDef persistence fill:#34495e,stroke:#2c3e50,stroke-width:2px,color:#fff
+                    classDef observability fill:#8e44ad,stroke:#732d91,stroke-width:2px,color:#fff
+                    classDef news fill:#16a085,stroke:#138d75,stroke-width:2px,color:#fff
+                    classDef ml fill:#e91e63,stroke:#c2185b,stroke-width:2px,color:#fff
+                    classDef advisory fill:#795548,stroke:#5d4037,stroke-width:2px,color:#fff
+
+                    %% APPLY CLASSES
+                    class ENTRY entry
+                    class CORE core
+                    class COGNITION cognition
+                    class STRATEGY strategy
+                    class INDICATORS indicators
+                    class RISK risk
+                    class POSITION position
+                    class EXIT exit
+                    class EXECUTION execution
+                    class PERSISTENCE persistence
+                    class OBSERVABILITY observability
+                    class NEWS_DATA news
+                    class ML_RL ml
+                    class ADVISORY advisory
+                </div>
+            </div>
+
+            <!-- Legend Terminal -->
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot red"></div>
+                    <div class="terminal-dot yellow"></div>
+                    <div class="terminal-dot green"></div>
+                    <div class="terminal-title">subsystem-legend.json</div>
+                </div>
+                <div class="terminal-body">
+                    <div class="legend">
+                        <div class="legend-header">// Subsystem Classification</div>
+                        <div class="legend-grid">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #2d1b69;"></div>
+                                <div class="legend-text">Entry Layer - System initialization and configuration</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #1a1a2e;"></div>
+                                <div class="legend-text">Core Engine - Central system orchestration</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #9b59b6;"></div>
+                                <div class="legend-text">Cognition Engine - AI/ML intelligence layer</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #3498db;"></div>
+                                <div class="legend-text">Strategy Layer - Trading strategy implementations</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #e67e22;"></div>
+                                <div class="legend-text">Technical Indicators - Market analysis tools</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #e74c3c;"></div>
+                                <div class="legend-text">Risk Management - Trade approval and protection</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #f39c12;"></div>
+                                <div class="legend-text">Position Management - Trade lifecycle management</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #f1c40f;"></div>
+                                <div class="legend-text">Exit System - Position closing strategies</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #27ae60;"></div>
+                                <div class="legend-text">Execution Engine - Order placement and MT5 integration</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #34495e;"></div>
+                                <div class="legend-text">Persistence Layer - Database and data storage</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #8e44ad;"></div>
+                                <div class="legend-text">Observability - Monitoring, metrics, and dashboards</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #16a085;"></div>
+                                <div class="legend-text">News & Data - External data feeds and sentiment</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #e91e63;"></div>
+                                <div class="legend-text">ML/RL Integration - Machine learning optimization</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #795548;"></div>
+                                <div class="legend-text">Advisory System - Signal generation and paper trading</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Terminal -->
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot red"></div>
+                    <div class="terminal-dot yellow"></div>
+                    <div class="terminal-dot green"></div>
+                    <div class="terminal-title">system-info.txt</div>
+                </div>
+                <div class="terminal-body">
+                    <div class="footer">
+                        <div class="footer-content">
+                            <strong>🐙 CTHULU v5.1.0 APEX</strong> - Autonomous Trading System<br>
+                            Generated: January 4, 2026 | Last architectural review: January 2, 2026<br><br>
+                            💡 <strong>AUTOMATION READY:</strong> This map can be auto-updated via GitHub Actions or
+                            local Git hooks.<br>
+                            See implementation suggestions in AUTOMATION_GUIDE.md
+                        </div>
+                        <div class="footer-links">
+                            <a href="../OVERVIEW.md">📖 System Overview</a>
+                            <a href="../docs/ARCHITECTURE.md">🏗️ Architecture Docs</a>
+                            <a href="FILE_ANALYSIS.md">📋 File Analysis</a>
+                            <a href="SYSTEM_REPORT.md">📊 System Report</a>
+                            <a href="AUTOMATION_GUIDE.md">🤖 Automation Guide</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #795548;"></div>
+            <div class="legend-text">Advisory System - Signal generation and paper trading</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>🐙 Cthulu v5.1.0 APEX</strong> - Autonomous Trading System</p>
+        <p>Generated on January 4, 2026 | Last architectural review: January 2, 2026</p>
+        <div class="footer-links">
+            <a href="../OVERVIEW.md">📖 System Overview</a>
+            <a href="../docs/ARCHITECTURE.md">🏗️ Architecture Docs</a>
+            <a href="FILE_ANALYSIS.md">📋 File Analysis</a>
+            <a href="SYSTEM_REPORT.md">📊 System Report</a>
+        </div>
+        <p style="margin-top: 1rem; font-size: 0.8rem;">
+            💡 <strong>Automation Ready:</strong> This map can be auto-updated via GitHub Actions or local Git
+            hooks.
+            See implementation suggestions in the footer JavaScript section.
+        </p>
+    </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid with terminal theme
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00ff88',
+                primaryTextColor: '#e0e0e8',
+                primaryBorderColor: '#00cc6a',
+                lineColor: '#4a4a5a',
+                secondaryColor: '#12121a',
+                tertiaryColor: '#1a1a25',
+                background: '#0a0a0f',
+                mainBkg: '#0a0a0f',
+                secondBkg: '#12121a',
+                tertiaryColor: '#1a1a25'
+            },
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 15,
+                nodeSpacing: 60,
+                rankSpacing: 120
+            },
+            securityLevel: 'loose'
+        });
+
+        // Terminal-style functions
+        function changeView() {
+            const viewType = document.getElementById('viewType').value;
+            console.log(`[SYSTEM] Switching to ${viewType} view...`);
+
+            // Terminal-style feedback
+            if (viewType !== 'complete') {
+                alert(`[INFO] ${viewType.toUpperCase()} view will be implemented in next update`);
+            }
+        }
+
+        function adjustZoom() {
+            const zoom = document.getElementById('zoomLevel').value;
+            const diagram = document.querySelector('#mermaidDiagram');
+
+            console.log(`[SYSTEM] Adjusting zoom to ${zoom}%...`);
+
+            if (zoom === 'fit') {
+                diagram.style.transform = 'scale(1)';
+                diagram.style.transformOrigin = 'top left';
+            } else {
+                const scale = parseInt(zoom) / 100;
+                diagram.style.transform = `scale(${scale})`;
+                diagram.style.transformOrigin = 'top left';
+            }
+        }
+
+        function changeTheme() {
+            const theme = document.getElementById('themeSelect').value;
+            console.log(`[SYSTEM] Changing theme to ${theme}...`);
+
+            if (theme !== 'dark') {
+                // Update theme variables
+                const themeConfigs = {
+                    'base': { primaryColor: '#1f2328', accent: '#0969da' },
+                    'forest': { primaryColor: '#2da44e', accent: '#1a7f37' },
+                    'neutral': { primaryColor: '#656d76', accent: '#424a53' }
+                };
+
+                if (themeConfigs[theme]) {
+                    document.documentElement.style.setProperty('--accent', themeConfigs[theme].accent);
+                    mermaid.initialize({ theme: theme });
+                    location.reload();
+                }
+            }
+        }
+
+        function exportSVG() {
+            console.log('[SYSTEM] Exporting system map to SVG...');
+
+            const svg = document.querySelector('#mermaidDiagram svg');
+            if (svg) {
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = svgUrl;
+                downloadLink.download = 'cthulu-system-architecture-map.svg';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+
+                console.log('[SYSTEM] ✅ Export completed successfully');
+            } else {
+                console.log('[ERROR] ❌ SVG element not found');
+            }
+        }
+
+        function refreshDiagram() {
+            console.log('[SYSTEM] Refreshing system map...');
+            location.reload();
+        }
+
+        // Parallax effect for hero
+        document.addEventListener('mousemove', (e) => {
+            const heroMain = document.querySelector('.hero-main');
+            const heroSub = document.querySelector('.hero-sub');
+
+            if (heroMain && heroSub) {
+                const x = (e.clientX / window.innerWidth) - 0.5;
+                const y = (e.clientY / window.innerHeight) - 0.5;
+
+                heroMain.style.transform = `translateZ(0) rotateX(${y * 5}deg) rotateY(${x * 5}deg)`;
+                heroSub.style.transform = `translateZ(0) rotateX(${y * 3}deg) rotateY(${x * 3}deg)`;
+            }
+        });
+
+        // Terminal boot sequence
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log(`
+█▀▀ ▀▀█▀▀ █  █ █   █ █    █  █
+█     █   █▀▀█ █   █ █    █  █
+▀▀▀   █   █  █  ▀▀▀  ▀▀▀  ▀▀▀▀
+
+CTHULU SYSTEM ARCHITECTURE MAP v5.1.0 APEX
+============================================
+
+[BOOT] System map initialized
+[BOOT] 156+ files mapped across 12 subsystems  
+[BOOT] Mermaid diagram engine loaded
+[BOOT] Terminal theme activated
+[BOOT] Interactive controls ready
+[BOOT] ✅ All systems operational
+
+FEATURES:
+→ Responsive design for all screen sizes
+→ Interactive controls (zoom, theme, export)
+→ Color-coded subsystems with detailed legend  
+→ Real-time architecture visualization
+→ Automation-ready infrastructure
+
+ARCHITECTURE SUMMARY:
+• 12 core subsystems with comprehensive integration
+• AI/ML cognition engine for signal enhancement
+• Multi-layered risk management system
+• Advanced exit strategies with confluence analysis
+• Complete observability and monitoring suite
+• External trade adoption capabilities
+• Autonomous 24/7 trading operation
+
+AUTOMATION AVAILABLE:
+→ GitHub Actions workflow for auto-updates
+→ Pre-commit hooks for development integration
+→ Live monitoring system integration
+→ Scheduled update capabilities
+
+For automation setup: see AUTOMATION_GUIDE.md
+            `);
+
+            // Update timestamp every minute
+            setInterval(() => {
+                const now = new Date();
+                const timestamp = now.toISOString().replace('T', ' ').substring(0, 16) + ' UTC';
+                document.querySelector('.last-updated').innerHTML =
+                    `<span class="auto-update-indicator"></span><span>LIVE</span> | UPDATED: ${timestamp}`;
+            }, 60000);
+        });
+    </script>
+</body>
+
+</html>

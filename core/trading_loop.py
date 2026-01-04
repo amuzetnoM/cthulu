@@ -1064,10 +1064,9 @@ class TradingLoop:
             balance = float(account_info.get('balance', 0)) if account_info else 0
             equity = float(account_info.get('equity', balance)) if account_info else balance
             
-            # CRITICAL: Get positions directly from MT5 for accurate count
+            # CRITICAL: Get positions directly from connector for accurate count
             try:
-                import MetaTrader5 as mt5
-                mt5_positions = mt5.positions_get(symbol=self.ctx.symbol)
+                mt5_positions = self.ctx.connector.positions_get(symbol=self.ctx.symbol)
                 current_positions = len(mt5_positions) if mt5_positions else 0
             except Exception:
                 current_positions = len(self.ctx.position_manager.get_positions(symbol=self.ctx.symbol))
@@ -1698,21 +1697,20 @@ class TradingLoop:
             return
         
         try:
-            # Get account info from connector
-            if self.ctx.connector and self.ctx.connector.connected:
+            # Get account info from connector (Android-native)
+            if self.ctx.connector and self.ctx.connector.is_connected():
                 try:
-                    import MetaTrader5 as mt5
-                    account_info = mt5.account_info()
+                    account_info = self.ctx.connector.get_account_info()
                     if account_info:
                         self.ctx.comprehensive_collector.update_account_metrics(
-                            balance=account_info.balance,
-                            equity=account_info.equity,
-                            margin=account_info.margin,
-                            free_margin=account_info.margin_free,
-                            margin_level=account_info.margin_level if account_info.margin_level else 0.0
+                            balance=account_info.get('balance', 0),
+                            equity=account_info.get('equity', 0),
+                            margin=account_info.get('margin', 0),
+                            free_margin=account_info.get('margin_free', 0),
+                            margin_level=account_info.get('margin_level', 0) or 0.0
                         )
                 except Exception as e:
-                    self.ctx.logger.debug(f"Failed to get MT5 account info: {e}")
+                    self.ctx.logger.debug(f"Failed to get account info: {e}")
             
             # Get position info
             try:

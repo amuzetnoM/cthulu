@@ -159,14 +159,15 @@ class PositionManager:
             
             if ticket:
                 try:
-                    import MetaTrader5 as mt5
-                    if mt5.initialize():
-                        position = mt5.positions_get(ticket=int(ticket))
-                        if position and len(position) > 0:
-                            symbol = position[0].symbol
-                            volume = position[0].volume
-                            open_price = position[0].price_open
-                            side = 'BUY' if position[0].type == 0 else 'SELL'
+                    # Use connector for MT5 queries (Android-native)
+                    if self.connector and self.connector.is_connected():
+                        positions = self.connector.positions_get(ticket=int(ticket))
+                        if positions and len(positions) > 0:
+                            position = positions[0]
+                            symbol = position.symbol
+                            volume = position.volume
+                            open_price = position.price_open
+                            side = 'BUY' if position.type == 0 else 'SELL'
                 except Exception:
                     pass
             
@@ -216,12 +217,11 @@ class PositionManager:
         Returns the count of reconciled positions.
         """
         try:
-            import MetaTrader5 as mt5
-            if not mt5.initialize():
-                # Try to initialize MT5
-                mt5.initialize()
+            # Use connector for MT5 queries (Android-native)
+            if not self.connector or not self.connector.is_connected():
+                return 0
             
-            positions = mt5.positions_get()
+            positions = self.connector.positions_get()
             if positions is None:
                 positions = []
             
@@ -296,17 +296,15 @@ class PositionManager:
             ExecutionResult from the close order
         """
         from cthulu.execution.engine import OrderRequest, OrderType, ExecutionResult, OrderStatus
-        import MetaTrader5 as mt5
         
         position = self.get_position(ticket)
         
-        # Ensure MT5 is initialized before querying
+        # Ensure connector is connected before querying
         mt5_pos = None
         try:
-            if not mt5.initialize():
-                # Try to initialize MT5
-                mt5.initialize()
-            mt5_pos = mt5.positions_get(ticket=ticket)
+            if self.connector and self.connector.is_connected():
+                positions = self.connector.positions_get(ticket=ticket)
+                mt5_pos = positions if positions else None
         except Exception:
             pass
         
@@ -317,6 +315,7 @@ class PositionManager:
                     status=OrderStatus.REJECTED,
                     message=f"Position {ticket} not found in MT5 or local tracking"
                 )
+            mt5_position = mt5_pos[0]
             position = PositionInfo(
                 ticket=mt5_pos[0].ticket,
                 symbol=mt5_pos[0].symbol,

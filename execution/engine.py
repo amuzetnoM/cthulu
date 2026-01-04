@@ -3,9 +3,24 @@ Execution Engine
 
 Handles order placement, modification, and reconciliation.
 Supports market/limit orders with idempotent submission and external reconciliation.
+
+Android Native Implementation:
+- Uses connector abstraction for all MT5 operations
+- No direct MetaTrader5 package imports
+- Full trading capability through bridge
 """
 
-from cthulu.connector.mt5_connector import mt5
+# Import MT5 constants and types from connector (works on both Windows and Android)
+from cthulu.connector import (
+    MT5Constants,
+    ORDER_TYPE_BUY,
+    ORDER_TYPE_SELL,
+    TRADE_ACTION_DEAL,
+    ORDER_TIME_GTC,
+    ORDER_FILLING_IOC,
+    TRADE_RETCODE_DONE,
+)
+
 import logging
 import traceback
 import inspect
@@ -318,16 +333,16 @@ class ExecutionEngine:
             # Prepare MT5 order request
             request = self._build_mt5_request(order_req)
             
-            # Submit order
+            # Submit order via connector
             self.logger.info(
                 f"Placing {order_req.order_type.value} order: "
                 f"{order_req.side} {order_req.volume} {order_req.symbol}"
             )
             
-            result = mt5.order_send(request)
+            result = self.connector.order_send(request)
             
             if result is None:
-                error = mt5.last_error()
+                error = self.connector.last_error()
                 self.logger.error(f"Order submission failed: {error}")
                 # Instrumentation: record failed execution if collector available
                 try:
@@ -365,7 +380,7 @@ class ExecutionEngine:
                 )
 
             # Check result
-            if result.retcode == mt5.TRADE_RETCODE_DONE:
+            if result.retcode == TRADE_RETCODE_DONE:
                 # Track for idempotency
                 if order_req.client_tag:
                     # Prune oldest entries if necessary
@@ -394,7 +409,7 @@ class ExecutionEngine:
                 # Try to resolve the resulting position ticket (MT5 differentiates orders and positions)
                 position_ticket = None
                 try:
-                    positions = mt5.positions_get()
+                    positions = self.connector.positions_get()
                     if positions:
                         # Filter by symbol
                         candidates = [p for p in positions if getattr(p, 'symbol', None) == order_req.symbol]
@@ -530,9 +545,9 @@ class ExecutionEngine:
             ExecutionResult with close outcome
         """
         try:
-            # Get position
-            position = mt5.positions_get(ticket=ticket)
-            if not position:
+            # Get position via connector
+            positions = self.connector.positions_get(ticket=ticket)
+            if not positions:
                 return ExecutionResult(
                     order_id=None,
                     status=OrderStatus.REJECTED,
@@ -542,21 +557,23 @@ class ExecutionEngine:
                     error=f"Position #{ticket} not found"
                 )
                 
-            position = position[0]
+            position = positions[0]
             
             # Determine close parameters
             close_volume = volume if volume else position.volume
             
-            if position.type == mt5.ORDER_TYPE_BUY:
-                order_type = mt5.ORDER_TYPE_SELL
-                price = mt5.symbol_info_tick(position.symbol).bid
+            if position.type == ORDER_TYPE_BUY:
+                order_type = ORDER_TYPE_SELL
+                tick = self.connector.symbol_info_tick(position.symbol)
+                price = tick.bid if tick else 0
             else:
-                order_type = mt5.ORDER_TYPE_BUY
-                price = mt5.symbol_info_tick(position.symbol).ask
+                order_type = ORDER_TYPE_BUY
+                tick = self.connector.symbol_info_tick(position.symbol)
+                price = tick.ask if tick else 0
                 
             # Build close request
             request = {
-                "action": mt5.TRADE_ACTION_DEAL,
+                "action": TRADE_ACTION_DEAL,
                 "symbol": position.symbol,
                 "volume": close_volume,
                 "type": order_type,
@@ -565,14 +582,14 @@ class ExecutionEngine:
                 "deviation": self.slippage,
                 "magic": self.magic_number,
                 "comment": "Cthulu close",
-                "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_IOC,
+                "type_time": ORDER_TIME_GTC,
+                "type_filling": ORDER_FILLING_IOC,
             }
             
-            # Submit close order
-            result = mt5.order_send(request)
+            # Submit close order via connector
+            result = self.connector.order_send(request)
             
-            if result and result.retcode == mt5.TRADE_RETCODE_DONE:
+            if result and result.retcode == TRADE_RETCODE_DONE:
                 # Safely get profit - not all brokers/MT5 versions include it in order_send result
                 close_profit = getattr(result, 'profit', 0.0) or 0.0
                 self.logger.info(f"Position closed: #{ticket} | Profit: {close_profit:.2f}")
@@ -592,6 +609,7 @@ class ExecutionEngine:
                     self.logger.debug(f'ML collector recording skipped: {e}')
                 except Exception:
                     self.logger.exception('ML collector failed')
+
 
                 return ExecutionResult(
                     order_id=result.order,
@@ -691,9 +709,9 @@ class ExecutionEngine:
         """Build MT5 order request dictionary."""
         # Determine MT5 order type
         if order_req.side.upper() == 'BUY':
-            mt5_type = mt5.ORDER_TYPE_BUY
+            mt5_type = ORDER_TYPE_BUY
         else:
-            mt5_type = mt5.ORDER_TYPE_SELL
+            mt5_type = ORDER_TYPE_SELL
             
         # Ensure symbol exists and select the proper variant
         selected_symbol = self.connector.ensure_symbol_selected(order_req.symbol) or order_req.symbol
@@ -706,7 +724,7 @@ class ExecutionEngine:
                 price = symbol_info['ask'] if order_req.side.upper() == 'BUY' else symbol_info['bid']
             else:
                 # Fallback to tick data
-                tick = self.connector._mt5_symbol_info_tick(selected_symbol)
+                tick = self.connector.symbol_info_tick(selected_symbol)
                 if tick is not None:
                     price = getattr(tick, 'ask', None) if order_req.side.upper() == 'BUY' else getattr(tick, 'bid', None)
 
@@ -733,7 +751,7 @@ class ExecutionEngine:
                 pass
 
         request = {
-            "action": mt5.TRADE_ACTION_DEAL,
+            "action": TRADE_ACTION_DEAL,
             "symbol": selected_symbol,
             "volume": final_volume,
             "type": mt5_type,
@@ -741,8 +759,8 @@ class ExecutionEngine:
             "deviation": self.slippage,
             "magic": self.magic_number,
             "comment": order_req.client_tag or "Cthulu",
-            "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
+            "type_time": ORDER_TIME_GTC,
+            "type_filling": ORDER_FILLING_IOC,
         }
         
         # Add SL/TP if specified
