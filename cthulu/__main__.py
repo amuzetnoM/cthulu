@@ -261,6 +261,8 @@ def main():
             indicator_collector=getattr(components, 'indicator_collector', None),
             system_health_collector=getattr(components, 'system_health_collector', None),
             comprehensive_collector=getattr(components, 'comprehensive_collector', None),
+            hektor_adapter=getattr(components, 'hektor_adapter', None),
+            hektor_retriever=getattr(components, 'hektor_retriever', None),
         )
         
         # Initialize Cognition Engine (AI/ML layer)
@@ -277,6 +279,14 @@ def main():
                    f"system_health={trading_context.system_health_collector is not None}")
         logger.info(f"Components collectors: indicator={getattr(components, 'indicator_collector', None) is not None}, "
                    f"comprehensive={getattr(components, 'comprehensive_collector', None) is not None}")
+        
+        # Log Hektor (Vector Studio) status
+        if trading_context.hektor_adapter:
+            hektor_stats = trading_context.hektor_adapter.get_stats()
+            fallback_status = "fallback" if hektor_stats.get('using_fallback', False) else "native"
+            logger.info(f"Hektor semantic memory: ACTIVE ({fallback_status})")
+        else:
+            logger.info("Hektor semantic memory: DISABLED")
         
         trading_loop = TradingLoop(trading_context)
         logger.info("Trading loop initialized")
@@ -301,6 +311,14 @@ def main():
         # Phase 4: Graceful shutdown
         if components:
             logger.info("Phase 4: Initiating graceful shutdown...")
+            
+            # Close Hektor connection gracefully
+            try:
+                if getattr(components, 'hektor_adapter', None):
+                    components.hektor_adapter.close()
+                    logger.info("Hektor semantic memory closed")
+            except Exception as e:
+                logger.debug(f"Hektor close error: {e}")
             
             try:
                 shutdown_handler = create_shutdown_handler(

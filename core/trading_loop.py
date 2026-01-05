@@ -91,6 +91,10 @@ class TradingLoopContext:
     system_health_collector: Optional[Any] = None
     comprehensive_collector: Optional[Any] = None
     
+    # Hektor (Vector Studio) semantic memory integration
+    hektor_adapter: Optional[Any] = None
+    hektor_retriever: Optional[Any] = None
+    
     # CLI args
     args: Optional[Any] = None
 
@@ -1389,6 +1393,14 @@ class TradingLoop:
                 pass
             self.ctx.database.record_signal(signal_record)
             
+            # Store signal context in Hektor for semantic memory
+            try:
+                indicators = signal.metadata.get('indicators', {}) if signal.metadata else {}
+                regime = signal.metadata.get('regime', 'UNKNOWN') if signal.metadata else 'UNKNOWN'
+                self._store_signal_in_hektor(signal, indicators, regime)
+            except Exception:
+                pass  # Non-critical
+            
             trade_record = TradeRecord(
                 signal_id=signal.id,
                 order_id=result.order_id,
@@ -1451,6 +1463,68 @@ class TradingLoop:
         except Exception:
             pass
         self.ctx.database.record_signal(signal_record)
+    
+    def _store_signal_in_hektor(self, signal, indicators: Dict[str, Any], regime: str):
+        """Store signal context in Hektor for semantic memory.
+        
+        Args:
+            signal: Trading signal
+            indicators: Current indicator values
+            regime: Market regime classification
+        """
+        if not self.ctx.hektor_adapter:
+            return
+        
+        try:
+            context = {
+                'indicators': indicators,
+                'regime': regime,
+                'symbol': signal.symbol,
+                'timestamp': datetime.now().isoformat()
+            }
+            self.ctx.hektor_adapter.store_signal(signal, context)
+        except Exception as e:
+            self.ctx.logger.debug(f"Hektor signal storage (non-critical): {e}")
+    
+    def _store_trade_in_hektor(self, trade, outcome: Dict[str, Any]):
+        """Store completed trade in Hektor for semantic memory.
+        
+        Args:
+            trade: Completed trade record
+            outcome: Trade outcome details
+        """
+        if not self.ctx.hektor_adapter:
+            return
+        
+        try:
+            self.ctx.hektor_adapter.store_trade(trade, outcome)
+        except Exception as e:
+            self.ctx.logger.debug(f"Hektor trade storage (non-critical): {e}")
+    
+    def _get_hektor_context(self, signal, indicators: Dict[str, Any], regime: str) -> Optional[str]:
+        """Retrieve relevant historical context from Hektor.
+        
+        Args:
+            signal: Current trading signal
+            indicators: Current indicator values
+            regime: Market regime
+            
+        Returns:
+            Formatted context string or None
+        """
+        if not self.ctx.hektor_retriever:
+            return None
+        
+        try:
+            contexts = self.ctx.hektor_retriever.get_similar_signals(
+                signal, indicators, regime, k=5, min_score=0.7
+            )
+            if contexts:
+                return self.ctx.hektor_retriever.format_context_window(contexts)
+        except Exception as e:
+            self.ctx.logger.debug(f"Hektor context retrieval (non-critical): {e}")
+        
+        return None
     
     def _adopt_external_trades(self):
         """Scan and adopt external trades if enabled."""
@@ -1693,6 +1767,20 @@ class TradingLoop:
                     profit=position.unrealized_pnl,
                     exit_reason=exit_signal.reason
                 )
+                
+                # Store trade outcome in Hektor for semantic memory
+                try:
+                    outcome = {
+                        'pnl': position.unrealized_pnl,
+                        'result': 'WIN' if position.unrealized_pnl > 0 else 'LOSS' if position.unrealized_pnl < 0 else 'BREAKEVEN',
+                        'exit_price': close_result.fill_price,
+                        'exit_time': datetime.now().isoformat(),
+                        'exit_reason': exit_signal.reason,
+                        'symbol': position.symbol
+                    }
+                    self._store_trade_in_hektor(position, outcome)
+                except Exception:
+                    pass  # Non-critical
                 
                 # Record position closed for metrics
                 try:
