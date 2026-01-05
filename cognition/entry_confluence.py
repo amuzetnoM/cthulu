@@ -189,7 +189,13 @@ class EntryConfluenceFilter:
         )
         reasons.extend(structure_reasons)
         
-        # 5. Check for signal drift (price moved away from signal)
+        # 5. TREND ALIGNMENT CHECK (NEW) - Macro trend must support direction
+        trend_aligned, trend_score, trend_reasons = self._check_trend_alignment(
+            signal_direction, market_data
+        )
+        reasons.extend(trend_reasons)
+        
+        # 6. Check for signal drift (price moved away from signal)
         drift_penalty = 0.0
         if signal_entry_price is not None:
             drift = abs(current_price - signal_entry_price) / atr if atr > 0 else 0
@@ -197,12 +203,22 @@ class EntryConfluenceFilter:
                 drift_penalty = min(drift * 10, 30)  # Max 30 point penalty
                 warnings.append(f"Price drifted {drift:.1f} ATR from signal")
         
-        # Calculate weighted total score
+        # Calculate weighted total score (including trend)
+        trend_weight = 0.15  # Add trend weight
+        adjusted_weights = {
+            'level': self.level_weight * 0.85,
+            'momentum': self.momentum_weight * 0.85,
+            'timing': self.timing_weight * 0.85,
+            'structure': self.structure_weight * 0.85,
+            'trend': trend_weight
+        }
+        
         total_score = (
-            level_score * self.level_weight +
-            momentum_score * self.momentum_weight +
-            timing_score * self.timing_weight +
-            structure_score * self.structure_weight
+            level_score * adjusted_weights['level'] +
+            momentum_score * adjusted_weights['momentum'] +
+            timing_score * adjusted_weights['timing'] +
+            structure_score * adjusted_weights['structure'] +
+            trend_score * adjusted_weights['trend']
         ) * 100 - drift_penalty
         
         total_score = max(0, min(100, total_score))
@@ -239,6 +255,18 @@ class EntryConfluenceFilter:
             should_enter = False
             warnings.append("Momentum strongly against entry direction")
         
+        # CRITICAL: If trend not aligned and require_trend_alignment is True, reduce quality
+        require_trend = self.config.get('require_trend_alignment', True)
+        if require_trend and not trend_aligned:
+            if quality in [EntryQuality.PREMIUM, EntryQuality.GOOD]:
+                quality = EntryQuality.MARGINAL
+                position_mult = 0.5
+                warnings.append("Entry against macro trend - reduced size")
+            elif quality == EntryQuality.MARGINAL:
+                quality = EntryQuality.POOR
+                position_mult = 0.25
+                warnings.append("Entry against macro trend - significantly reduced")
+        
         result = EntryConfluenceResult(
             quality=quality,
             score=total_score,
@@ -261,6 +289,91 @@ class EntryConfluenceFilter:
             self.logger.warning(f"  Warnings: {warnings}")
         
         return result
+    
+    def _check_trend_alignment(
+        self,
+        direction: str,
+        data: pd.DataFrame
+    ) -> Tuple[bool, float, List[str]]:
+        """
+        Check if signal direction aligns with macro trend.
+        
+        Uses multiple EMAs and ADX to determine trend.
+        LONG signals should be in uptrend or neutral.
+        SHORT signals should be in downtrend or neutral.
+        """
+        if len(data) < 50:
+            return True, 0.5, []  # Neutral if insufficient data
+        
+        reasons = []
+        score = 0.5  # Neutral
+        aligned = True
+        
+        close = data['close'].iloc[-1]
+        
+        # Check EMA alignment
+        ema_20 = data['ema_20'].iloc[-1] if 'ema_20' in data.columns else None
+        ema_50 = data['ema_50'].iloc[-1] if 'ema_50' in data.columns else None
+        sma_50 = data['sma_50'].iloc[-1] if 'sma_50' in data.columns else None
+        
+        # Use whatever we have
+        fast_ma = ema_20
+        slow_ma = ema_50 or sma_50
+        
+        if fast_ma is not None and slow_ma is not None:
+            # Trend direction based on MA alignment
+            if fast_ma > slow_ma:
+                trend = 'up'
+                if direction == 'long':
+                    score += 0.3
+                    reasons.append("Trend UP: EMAs bullish aligned")
+                    aligned = True
+                else:  # short in uptrend
+                    score -= 0.2
+                    reasons.append("WARNING: Shorting in uptrend")
+                    aligned = False
+            elif fast_ma < slow_ma:
+                trend = 'down'
+                if direction == 'short':
+                    score += 0.3
+                    reasons.append("Trend DOWN: EMAs bearish aligned")
+                    aligned = True
+                else:  # long in downtrend
+                    score -= 0.2
+                    reasons.append("WARNING: Buying in downtrend")
+                    aligned = False
+            else:
+                trend = 'neutral'
+                reasons.append("Trend NEUTRAL: EMAs flat")
+        
+        # Price vs MA check
+        if slow_ma is not None:
+            if direction == 'long' and close < slow_ma:
+                score -= 0.15
+                reasons.append(f"Price below EMA50 ({close:.2f} < {slow_ma:.2f})")
+                if aligned:  # Don't double-penalize
+                    aligned = close > slow_ma * 0.98  # Allow 2% below
+            elif direction == 'short' and close > slow_ma:
+                score -= 0.15
+                reasons.append(f"Price above EMA50 ({close:.2f} > {slow_ma:.2f})")
+                if aligned:
+                    aligned = close < slow_ma * 1.02  # Allow 2% above
+        
+        # ADX trend strength check
+        adx = data['adx'].iloc[-1] if 'adx' in data.columns else None
+        if adx is not None:
+            if adx < 20:
+                # Weak trend - all directions acceptable
+                score += 0.1
+                reasons.append(f"ADX weak ({adx:.1f}) - ranging market")
+                aligned = True  # Override - ranging markets accept both directions
+            elif adx > 40:
+                # Strong trend - be very careful trading against it
+                if not aligned:
+                    score -= 0.2
+                    reasons.append(f"ADX strong ({adx:.1f}) - risky to fade trend")
+        
+        return aligned, max(0, min(1, score)), reasons
     
     def register_pending_entry(
         self,

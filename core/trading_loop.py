@@ -357,6 +357,12 @@ class TradingLoop:
         self.ctx = context
         self.loop_count = 0
         self._shutdown_requested = False
+        
+        # CRITICAL FIX: Trade cooldown to prevent rapid-fire entries
+        self._last_trade_time: Optional[datetime] = None
+        self._min_trade_interval_seconds = self.ctx.config.get('min_trade_interval', 60)  # 1 minute default
+        self._last_signal_direction: Optional[str] = None
+        self._consecutive_same_direction = 0
     
     def request_shutdown(self):
         """Request graceful shutdown of the trading loop."""
@@ -365,6 +371,36 @@ class TradingLoop:
     def is_shutdown_requested(self) -> bool:
         """Check if shutdown has been requested."""
         return self._shutdown_requested
+    
+    def _check_trade_cooldown(self, signal) -> bool:
+        """
+        Check if we should wait before placing another trade.
+        
+        Returns True if OK to trade, False if in cooldown.
+        """
+        if self._last_trade_time is None:
+            return True
+        
+        elapsed = (datetime.now() - self._last_trade_time).total_seconds()
+        if elapsed < self._min_trade_interval_seconds:
+            self.ctx.logger.info(
+                f"Trade cooldown active: {elapsed:.0f}s / {self._min_trade_interval_seconds}s"
+            )
+            return False
+        
+        return True
+    
+    def _record_trade_executed(self, signal):
+        """Record that a trade was executed for cooldown tracking."""
+        self._last_trade_time = datetime.now()
+        
+        # Track direction for consecutive same-direction prevention
+        direction = 'LONG' if signal.side == SignalType.LONG else 'SHORT'
+        if direction == self._last_signal_direction:
+            self._consecutive_same_direction += 1
+        else:
+            self._consecutive_same_direction = 1
+        self._last_signal_direction = direction
     
     def run(self) -> int:
         """
@@ -1134,6 +1170,8 @@ class TradingLoop:
         CRITICAL CHANGE: Now includes Entry Confluence Filter as quality gate.
         Signals must pass entry quality analysis before execution.
         
+        ADDITIONAL SAFEGUARD: Prevents opposite direction trades on same symbol.
+        
         Args:
             signal: Trading signal from strategy
         """
@@ -1141,6 +1179,13 @@ class TradingLoop:
             return
         
         try:
+            # ==========================================================
+            # COOLDOWN CHECK - Prevent rapid-fire trading
+            # ==========================================================
+            if not self._check_trade_cooldown(signal):
+                self.ctx.logger.info("Skipping signal due to trade cooldown")
+                return
+            
             # Get current account info and positions
             account_info = self.ctx.connector.get_account_info()
             balance = float(account_info.get('balance', 0)) if account_info else 0
@@ -1151,7 +1196,29 @@ class TradingLoop:
                 import MetaTrader5 as mt5
                 mt5_positions = mt5.positions_get(symbol=self.ctx.symbol)
                 current_positions = len(mt5_positions) if mt5_positions else 0
-            except Exception:
+                
+                # ==========================================================
+                # CRITICAL FIX: Prevent opposite direction trades
+                # ==========================================================
+                if mt5_positions:
+                    existing_directions = set()
+                    for pos in mt5_positions:
+                        # MT5 type: 0 = BUY, 1 = SELL
+                        pos_dir = 'LONG' if pos.type == 0 else 'SHORT'
+                        existing_directions.add(pos_dir)
+                    
+                    signal_direction = 'LONG' if signal.side == SignalType.LONG else 'SHORT'
+                    opposite_direction = 'SHORT' if signal_direction == 'LONG' else 'LONG'
+                    
+                    if opposite_direction in existing_directions:
+                        self.ctx.logger.warning(
+                            f"BLOCKED: {signal_direction} signal while {opposite_direction} positions exist. "
+                            f"Close existing positions first or let them run."
+                        )
+                        return
+                        
+            except Exception as e:
+                self.ctx.logger.debug(f"MT5 position check fallback: {e}")
                 current_positions = len(self.ctx.position_manager.get_positions(symbol=self.ctx.symbol))
             
             # ============================================================
@@ -1366,6 +1433,9 @@ class TradingLoop:
                 f"Order filled: ticket={result.order_id}, "
                 f"price={result.fill_price:.5f}"
             )
+            
+            # CRITICAL: Record trade for cooldown
+            self._record_trade_executed(signal)
             
             # Track position - ensure symbol is properly passed
             track_metadata = signal.metadata.copy() if signal.metadata else {}

@@ -378,14 +378,18 @@ class StrategySelector:
         
     def generate_signal(self, data: pd.DataFrame, bar: pd.Series) -> Optional[Signal]:
         """
-        Generate signal using selected strategy with fallback to alternatives.
+        Generate signal using selected strategy with CONTROLLED fallback.
+        
+        CRITICAL FIX: No longer tries ALL strategies blindly. Requires:
+        1. Primary strategy signal OR
+        2. At least 2 high-scoring strategies agreeing on direction
         
         Args:
             data: Full market data
             bar: Latest bar
             
         Returns:
-            Signal from selected strategy or fallback
+            Signal from selected strategy or consensus fallback
         """
         # Select best strategy
         primary_strategy = self.select_strategy(data)
@@ -393,33 +397,80 @@ class StrategySelector:
         # Try primary strategy first
         signal = primary_strategy.on_bar(bar)
         
-        # If no signal, try fallback strategies in order of score
-        if signal is None:
-            # Get all strategies sorted by score (excluding primary)
-            scores = self._calculate_all_scores(data)
-            sorted_strategies = sorted(
-                [(name, s['total']) for name, s in scores.items() if name != primary_strategy.name],
-                key=lambda x: x[1],
-                reverse=True
-            )
-            
-            # Try ALL fallback strategies (all 6 remaining)
-            for name, score in sorted_strategies:
-                fallback = self.strategies[name]
-                try:
-                    signal = fallback.on_bar(bar)
-                    if signal:
-                        self.logger.info(f"Fallback signal from {name} (score={score:.3f})")
-                        self.performance[name].add_signal(signal)
-                        return signal
-                except Exception as e:
-                    self.logger.debug(f"Fallback {name} failed: {e}")
-        
-        # Track signal for performance monitoring
         if signal:
+            # Track and return primary signal
             self.performance[primary_strategy.name].add_signal(signal)
-            
-        return signal
+            return signal
+        
+        # CRITICAL FIX: Only use fallback if we have CONSENSUS
+        # No more "try all and take first signal" approach
+        scores = self._calculate_all_scores(data)
+        sorted_strategies = sorted(
+            [(name, s['total']) for name, s in scores.items() if name != primary_strategy.name],
+            key=lambda x: x[1],
+            reverse=True
+        )
+        
+        # Only try TOP 2 highest scoring strategies for consensus
+        # AND they must have score > 0.65 (strong affinity to current regime)
+        fallback_signals = []
+        min_fallback_score = self.config.get('min_fallback_score', 0.65)
+        max_fallback_attempts = self.config.get('max_fallback_strategies', 2)
+        
+        for name, score in sorted_strategies[:max_fallback_attempts]:
+            if score < min_fallback_score:
+                self.logger.debug(f"Skipping {name} - score {score:.3f} below threshold {min_fallback_score}")
+                continue
+                
+            fallback = self.strategies[name]
+            try:
+                fb_signal = fallback.on_bar(bar)
+                if fb_signal:
+                    fallback_signals.append({
+                        'name': name,
+                        'score': score,
+                        'signal': fb_signal
+                    })
+            except Exception as e:
+                self.logger.debug(f"Fallback {name} failed: {e}")
+        
+        # CONSENSUS CHECK: Need at least 1 high-quality fallback
+        # If we have multiple, they must agree on direction
+        if len(fallback_signals) == 0:
+            self.logger.info("No valid fallback signals - market unclear, skipping")
+            return None
+        
+        if len(fallback_signals) == 1:
+            # Single high-quality fallback - use it but mark as lower confidence
+            fb = fallback_signals[0]
+            signal = fb['signal']
+            original_conf = signal.confidence
+            signal.confidence = signal.confidence * 0.85  # Reduce confidence for fallback
+            self.logger.info(
+                f"Fallback signal from {fb['name']} (score={fb['score']:.3f}, "
+                f"conf: {original_conf:.2f} → {signal.confidence:.2f})"
+            )
+            self.performance[fb['name']].add_signal(signal)
+            return signal
+        
+        # Multiple fallbacks - check for direction consensus
+        directions = [s['signal'].side for s in fallback_signals]
+        if all(d == directions[0] for d in directions):
+            # CONSENSUS - use highest scoring signal with boosted confidence
+            best = fallback_signals[0]
+            signal = best['signal']
+            signal.confidence = min(1.0, signal.confidence * 1.1)  # Slight boost for consensus
+            self.logger.info(
+                f"CONSENSUS signal ({len(fallback_signals)} strategies agree): "
+                f"{best['name']} (score={best['score']:.3f})"
+            )
+            self.performance[best['name']].add_signal(signal)
+            return signal
+        else:
+            # CONFLICT - strategies disagree, do NOT enter
+            dir_names = [(s['name'], s['signal'].side.name) for s in fallback_signals]
+            self.logger.info(f"Direction conflict between strategies: {dir_names} - NO SIGNAL")
+            return None
     
     def _calculate_all_scores(self, data: pd.DataFrame) -> Dict[str, Dict[str, float]]:
         """Calculate scores for all strategies."""
