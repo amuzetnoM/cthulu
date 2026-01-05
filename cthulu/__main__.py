@@ -13,11 +13,77 @@ import sys
 import signal as sig_module
 import logging
 import argparse
+import atexit
+import os
 from pathlib import Path
 from typing import Optional
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
+
+# Singleton lock file path
+LOCK_FILE = Path(__file__).parent.parent / "cthulu.lock"
+
+
+class SingletonLock:
+    """Prevents multiple Cthulu instances from running simultaneously."""
+    
+    def __init__(self):
+        self.lock_file = LOCK_FILE
+        self.lock_fd = None
+        
+    def acquire(self) -> bool:
+        """Acquire singleton lock. Returns True if successful, False if another instance running."""
+        try:
+            # Check if lock file exists and contains a running PID
+            if self.lock_file.exists():
+                try:
+                    existing_pid = int(self.lock_file.read_text().strip())
+                    # Check if that PID is still running
+                    if self._is_process_running(existing_pid):
+                        return False  # Another instance is running
+                except (ValueError, FileNotFoundError):
+                    pass  # Invalid or missing lock file, proceed
+            
+            # Write our PID to lock file
+            self.lock_file.write_text(str(os.getpid()))
+            atexit.register(self.release)
+            return True
+            
+        except Exception:
+            return True  # On error, allow startup but warn
+    
+    def _is_process_running(self, pid: int) -> bool:
+        """Check if a process with given PID is running."""
+        try:
+            if sys.platform == 'win32':
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+                handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+                if handle:
+                    kernel32.CloseHandle(handle)
+                    return True
+                return False
+            else:
+                os.kill(pid, 0)
+                return True
+        except (OSError, PermissionError):
+            return False
+    
+    def release(self):
+        """Release the singleton lock."""
+        try:
+            if self.lock_file.exists():
+                current_pid = self.lock_file.read_text().strip()
+                if current_pid == str(os.getpid()):
+                    self.lock_file.unlink()
+        except Exception:
+            pass
+
+
+# Global singleton lock
+_singleton_lock = SingletonLock()
 
 __version__ = "5.1.0"  # Apex Release - Market Destroyer
 
@@ -137,12 +203,26 @@ def main():
     Main entry point for Cthulu trading system.
     
     Flow:
-        1. Parse arguments
-        2. Bootstrap system (initialize all components)
-        3. Run trading loop
-        4. Graceful shutdown
+        1. Check singleton lock (prevent duplicate instances)
+        2. Parse arguments
+        3. Bootstrap system (initialize all components)
+        4. Run trading loop
+        5. Graceful shutdown
     """
     global shutdown_requested
+    
+    # CRITICAL: Prevent multiple instances from running simultaneously
+    if not _singleton_lock.acquire():
+        print("\n" + "=" * 60)
+        print("ERROR: Another Cthulu instance is already running!")
+        print("=" * 60)
+        print("\nOnly one Cthulu instance can trade at a time to prevent")
+        print("conflicting signals (e.g., simultaneous BUY and SELL).")
+        print("\nTo start a new instance:")
+        print("  1. Stop the existing instance first, OR")
+        print("  2. Delete the lock file: cthulu.lock")
+        print("=" * 60 + "\n")
+        return 1
     
     # Parse command line arguments
     args = parse_arguments()
