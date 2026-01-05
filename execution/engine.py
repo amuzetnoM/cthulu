@@ -124,7 +124,10 @@ class ExecutionEngine:
     # CRITICAL: Maximum stop loss distance as percentage
     # This prevents catastrophic losses from misconfigured stop losses
     # DO NOT increase beyond 0.15 (15%) without careful consideration
-    MAX_STOP_LOSS_PCT = 0.10  # 10% maximum stop loss distance
+    MAX_STOP_LOSS_PCT = 0.10  # 10% default maximum stop loss distance
+    
+    # Absolute hard cap - no configuration can exceed this
+    MAX_CONFIGURABLE_SL_PCT = 0.15  # 15% absolute maximum (hard cap)
     
     def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None, metrics=None, ml_collector=None, telemetry=None):
         """
@@ -155,9 +158,9 @@ class ExecutionEngine:
         # Max size to avoid unbounded growth; old entries will be pruned
         self._idempotency_max = 1000
         
-        # Allow risk_config to override max SL percentage (but cap at 15%)
+        # Allow risk_config to override max SL percentage (but cap at hard limit)
         config_max_sl = self.risk_config.get('max_sl_pct', self.MAX_STOP_LOSS_PCT)
-        self.max_sl_pct = min(float(config_max_sl), 0.15)
+        self.max_sl_pct = min(float(config_max_sl), self.MAX_CONFIGURABLE_SL_PCT)
         
     def place_order(self, order_req: OrderRequest) -> ExecutionResult:
         """
