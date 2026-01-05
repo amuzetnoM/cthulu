@@ -141,6 +141,10 @@ class StrategyFactory:
         dynamic_config = config.get('dynamic_selection', {})
         strategies_config = config.get('strategies', [])
         
+        # Extract symbol from parent config to propagate to sub-strategies
+        parent_symbol = config.get('params', {}).get('symbol')
+        parent_timeframe = config.get('timeframe')
+        
         if not strategies_config:
             raise ValueError("Dynamic mode requires at least one strategy in 'strategies' list")
         
@@ -151,6 +155,15 @@ class StrategyFactory:
         strategies = []
         for idx, strat_config in enumerate(strategies_config):
             try:
+                # Inject parent symbol/timeframe into each sub-strategy
+                if parent_symbol:
+                    if 'params' not in strat_config:
+                        strat_config['params'] = {}
+                    if 'symbol' not in strat_config.get('params', {}):
+                        strat_config['params']['symbol'] = parent_symbol
+                if parent_timeframe and 'timeframe' not in strat_config:
+                    strat_config['timeframe'] = parent_timeframe
+                
                 # Normalize each child strategy
                 normalized = self._normalize_config(strat_config)
                 strategy = self._create_single_strategy(normalized)
