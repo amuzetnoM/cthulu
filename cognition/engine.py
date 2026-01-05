@@ -18,6 +18,7 @@ from datetime import datetime
 import logging
 import json
 import os
+from datetime import datetime
 
 from .regime_classifier import (
     MarketRegimeClassifier, RegimeState, MarketRegime,
@@ -150,12 +151,19 @@ class CognitionEngine:
         enable_prediction: bool = True,
         enable_sentiment: bool = True,
         enable_exit_oracle: bool = True,
-        model_dir: Optional[str] = None
+        model_dir: Optional[str] = None,
+        hektor_adapter: Optional[Any] = None,
+        hektor_retriever: Optional[Any] = None
     ):
         self.enable_regime = enable_regime
         self.enable_prediction = enable_prediction
         self.enable_sentiment = enable_sentiment
         self.enable_exit_oracle = enable_exit_oracle
+        
+        # Hektor (Vector Studio) integration for semantic memory
+        self.hektor_adapter = hektor_adapter
+        self.hektor_retriever = hektor_retriever
+        self.enable_hektor = hektor_adapter is not None
         
         self.model_dir = model_dir or os.path.join(
             os.path.dirname(__file__), 'data', 'models'
@@ -177,8 +185,89 @@ class CognitionEngine:
         
         logger.info(f"CognitionEngine initialized: regime={enable_regime}, "
                    f"prediction={enable_prediction}, sentiment={enable_sentiment}, "
-                   f"exit_oracle={enable_exit_oracle}")
+                   f"exit_oracle={enable_exit_oracle}, hektor={self.enable_hektor}")
     
+    def _get_semantic_context(self, signal: Any, market_data: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Retrieve semantic context from Hektor for signal enhancement.
+        
+        Args:
+            signal: Trading signal to enhance
+            market_data: Current market data
+            
+        Returns:
+            Dictionary with semantic context and similar historical patterns
+        """
+        if not self.enable_hektor or not self.hektor_retriever:
+            return {}
+        
+        try:
+            # Get current market context
+            current_context = {
+                'symbol': getattr(signal, 'symbol', 'UNKNOWN'),
+                'side': getattr(signal, 'side', 'UNKNOWN'),
+                'confidence': getattr(signal, 'confidence', 0.0),
+                'regime': self._last_state.regime.regime.name if self._last_state else 'UNKNOWN',
+                'price': market_data['close'].iloc[-1] if len(market_data) > 0 else 0.0
+            }
+            
+            # Find similar historical contexts
+            similar_contexts = self.hektor_retriever.get_similar_signals(
+                signal, 
+                indicators={}, # Will be populated by retriever
+                regime=current_context['regime'],
+                k=5
+            )
+            
+            return {
+                'similar_count': len(similar_contexts),
+                'contexts': similar_contexts[:3],  # Top 3 most similar
+                'has_semantic_data': len(similar_contexts) > 0
+            }
+            
+        except Exception as e:
+            logger.debug(f"Semantic context retrieval failed: {e}")
+            return {}
+    
+    def _store_signal_context(self, signal: Any, enhancement: SignalEnhancement, market_data: pd.DataFrame):
+        """
+        Store signal and context in Hektor for future semantic retrieval.
+        
+        Args:
+            signal: Trading signal
+            enhancement: Signal enhancement applied
+            market_data: Current market data
+        """
+        if not self.enable_hektor or not self.hektor_adapter:
+            return
+            
+        try:
+            # Build context for storage
+            context = {
+                'indicators': {
+                    'rsi': market_data.get('rsi', pd.Series()).iloc[-1] if 'rsi' in market_data.columns and len(market_data) > 0 else None,
+                    'atr': market_data.get('atr', pd.Series()).iloc[-1] if 'atr' in market_data.columns and len(market_data) > 0 else None,
+                    'adx': market_data.get('adx', pd.Series()).iloc[-1] if 'adx' in market_data.columns and len(market_data) > 0 else None
+                },
+                'regime': self._last_state.regime.regime.name if self._last_state else 'UNKNOWN',
+                'enhancement': {
+                    'confidence_mult': enhancement.confidence_multiplier,
+                    'size_mult': enhancement.size_multiplier,
+                    'favorable': enhancement.is_favorable
+                },
+                'symbol': getattr(signal, 'symbol', 'UNKNOWN'),
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            # Remove None values
+            context['indicators'] = {k: v for k, v in context['indicators'].items() if v is not None}
+            
+            # Store asynchronously
+            self.hektor_adapter.store_signal(signal, context)
+            
+        except Exception as e:
+            logger.debug(f"Failed to store signal context: {e}")
+
     def _initialize_modules(self):
         """Initialize enabled cognition modules."""
         if self.enable_regime:
@@ -273,7 +362,8 @@ class CognitionEngine:
         signal_direction: str,  # 'long' or 'short'
         signal_confidence: float,
         symbol: str,
-        market_data: pd.DataFrame
+        market_data: pd.DataFrame,
+        signal: Any = None  # Actual signal object for semantic analysis
     ) -> SignalEnhancement:
         """
         Enhance or adjust a trading signal based on cognition.
@@ -283,11 +373,33 @@ class CognitionEngine:
             signal_confidence: Original signal confidence
             symbol: Trading symbol
             market_data: OHLCV DataFrame
+            signal: Actual signal object for semantic analysis (optional)
             
         Returns:
             SignalEnhancement with multipliers and reasons
         """
         # Get or refresh state
+        state = self.analyze(symbol, market_data)
+        
+        # Get semantic context from Hektor if available
+        semantic_context = self._get_semantic_context(signal, market_data) if signal else {}
+        
+        confidence_mult = 1.0
+        size_mult = 1.0
+        reasons = []
+        warnings = []
+        
+        # Semantic enhancement from historical patterns
+        if semantic_context.get('has_semantic_data', False):
+            similar_count = semantic_context.get('similar_count', 0)
+            if similar_count >= 3:
+                confidence_mult *= 1.10  # +10% boost for strong historical patterns
+                reasons.append(f"Strong historical patterns (+10% conf, {similar_count} similar)")
+            elif similar_count >= 1:
+                confidence_mult *= 1.05  # +5% boost for some patterns
+                reasons.append(f"Historical patterns (+5% conf, {similar_count} similar)")
+                
+        # Continue with existing logic...
         if self._last_state is None or (datetime.utcnow() - self._last_state.timestamp).seconds > 60:
             self.analyze(symbol, market_data)
         
@@ -379,12 +491,18 @@ class CognitionEngine:
         confidence_mult = max(confidence_mult, 0.85)
         size_mult = max(size_mult, 0.7)
         
-        return SignalEnhancement(
+        enhancement = SignalEnhancement(
             confidence_multiplier=confidence_mult,
             size_multiplier=size_mult,
             reasons=reasons,
             warnings=warnings
         )
+        
+        # Store signal context in Hektor for future learning (asynchronous)
+        if signal:
+            self._store_signal_context(signal, enhancement, market_data)
+        
+        return enhancement
     
     def get_exit_signals(
         self,
@@ -562,6 +680,38 @@ class CognitionEngine:
 
 # Module-level singleton
 _engine: Optional[CognitionEngine] = None
+
+
+def create_cognition_engine(
+    config: Dict[str, Any] = None,
+    hektor_adapter: Any = None,
+    hektor_retriever: Any = None
+) -> CognitionEngine:
+    """
+    Factory function to create a CognitionEngine with proper configuration.
+    
+    Args:
+        config: Configuration dictionary
+        hektor_adapter: Vector Studio adapter for semantic memory
+        hektor_retriever: Context retriever for semantic search
+        
+    Returns:
+        Configured CognitionEngine instance
+    """
+    if config is None:
+        config = {}
+    
+    cognition_config = config.get('cognition', {})
+    
+    return CognitionEngine(
+        enable_regime=cognition_config.get('enable_regime', True),
+        enable_prediction=cognition_config.get('enable_prediction', True),
+        enable_sentiment=cognition_config.get('enable_sentiment', True),
+        enable_exit_oracle=cognition_config.get('enable_exit_oracle', True),
+        model_dir=cognition_config.get('model_dir'),
+        hektor_adapter=hektor_adapter,
+        hektor_retriever=hektor_retriever
+    )
 
 
 def get_cognition_engine(**kwargs) -> CognitionEngine:
