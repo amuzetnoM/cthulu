@@ -8,14 +8,19 @@ def _threshold_from_config(balance: float, sl_balance_thresholds: Optional[Dict]
     """Determine threshold percentage and suggested mindset given balance and optional configs.
 
     Returns a dict: {'threshold': float, 'category': str, 'suggested_mindset': str}
+    
+    CRITICAL NOTE: Stop loss thresholds must be reasonable (1-5% range).
+    Previously 'large' was set to 0.25 (25%) which caused massive losses.
+    This has been fixed to 0.05 (5%). DO NOT increase beyond 0.10 (10%)!
     """
     # Default breakpoints and thresholds
+    # WARNING: DO NOT SET ANY THRESHOLD > 0.10 (10%) - this causes excessive losses!
     default_breakpoints = [1000.0, 5000.0, 20000.0]
     default_thresholds = {
-        'tiny': 0.01,
-        'small': 0.02,
-        'medium': 0.05,
-        'large': 0.05  # Fixed: was 0.25 (25%!) - now 5% like medium accounts
+        'tiny': 0.01,    # 1% - for accounts ≤ $1,000
+        'small': 0.02,   # 2% - for accounts ≤ $5,000
+        'medium': 0.05,  # 5% - for accounts ≤ $20,000
+        'large': 0.05    # 5% - for accounts > $20,000 (FIXED: was 0.25/25%!)
     }
     if sl_balance_thresholds and isinstance(sl_balance_thresholds, dict):
         thresholds = sl_balance_thresholds
