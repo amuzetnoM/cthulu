@@ -818,6 +818,25 @@ class ExecutionEngine:
             except Exception:
                 self.logger.exception('Failed to compute auto TP')
 
+        # Validate and cap stop loss to prevent excessive risk
+        if order_req.sl and price is not None:
+            max_sl_pct = 0.10  # Maximum 10% stop loss distance
+            sl_dist_pct = abs(float(price) - float(order_req.sl)) / float(price)
+            
+            if sl_dist_pct > max_sl_pct:
+                self.logger.warning(
+                    f"Stop loss distance {sl_dist_pct*100:.2f}% exceeds maximum {max_sl_pct*100:.0f}% - "
+                    f"capping to {max_sl_pct*100:.0f}%"
+                )
+                # Cap the SL to max allowed distance
+                if order_req.side.upper() == 'BUY':
+                    order_req.sl = float(price) * (1.0 - max_sl_pct)
+                else:
+                    order_req.sl = float(price) * (1.0 + max_sl_pct)
+                
+                order_req.metadata['sl_capped'] = True
+                order_req.metadata['original_sl_dist_pct'] = sl_dist_pct
+        
         if order_req.sl:
             request["sl"] = order_req.sl
         if order_req.tp:

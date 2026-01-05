@@ -15,7 +15,7 @@ def _threshold_from_config(balance: float, sl_balance_thresholds: Optional[Dict]
         'tiny': 0.01,
         'small': 0.02,
         'medium': 0.05,
-        'large': 0.25
+        'large': 0.05  # Fixed: was 0.25 (25%!) - now 5% like medium accounts
     }
     if sl_balance_thresholds and isinstance(sl_balance_thresholds, dict):
         thresholds = sl_balance_thresholds
