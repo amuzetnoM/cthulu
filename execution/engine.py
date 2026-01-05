@@ -836,6 +836,9 @@ class ExecutionEngine:
                 else:
                     order_req.sl = float(price) * (1.0 + max_sl_pct)
                 
+                # Ensure metadata exists before setting values
+                if order_req.metadata is None:
+                    order_req.metadata = {}
                 order_req.metadata['sl_capped'] = True
                 order_req.metadata['original_sl_dist_pct'] = sl_dist_pct
         
