@@ -63,8 +63,6 @@ Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring
 ### Documentation Meta
 | Document | Description |
 |----------|-------------|
-| [Documentation Gaps](docs/DOCUMENTATION_GAPS_ANALYSIS.md) | Analysis of documentation coverage |
-| [Documentation Review](docs/DOCUMENTATION_REVIEW_SUMMARY.md) | Executive summary of documentation status |
 | [Changelog](docs/Changelog/CHANGELOG.md) | Complete version history and release notes |
 
 ---
