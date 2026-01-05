@@ -183,7 +183,7 @@ flowchart LR
 
 | Module | Inputs From | Outputs To | Purpose |
 |--------|-------------|------------|---------|
-| **EntryConfluenceFilter** 🆕 | market_data, signal | execution gate | Entry quality assessment |
+| **EntryConfluenceFilter** | market_data, signal | execution gate | Entry quality assessment |
 | **CognitionEngine** | market_data, indicators | trading_loop, exit_coord | Signal enhancement, exit signals |
 | **RegimeClassifier** | OHLCV data | CognitionEngine, StrategySelector | Market state detection |
 | **PricePredictor** | features | CognitionEngine | Direction probability |
