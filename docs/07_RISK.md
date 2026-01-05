@@ -22,7 +22,7 @@ Key configuration entries (in `config_schema.py` under `risk`):
   "tiny": 0.01,
   "small": 0.02,
   "medium": 0.05,
-  "large": 0.25
+  "large": 0.05
 }
 ```
 
@@ -37,7 +37,17 @@ Behavior summary:
 Operational guidance:
 
 - For small accounts (<= 1k), thresholds are tight so Cthulu will favor scalping timeframes (`M1`, `M5`, `M15`) and small SLs.
-- For larger accounts, thresholds are looser and Cthulu will permit wider SLs and swing-style timeframes.
+- For larger accounts (> $20k), the threshold remains conservative at 5% to prevent excessive risk on losing trades.
+- **Critical Fix (v5.1):** The 'large' account threshold was corrected from 0.25 (25%) to 0.05 (5%) to prevent catastrophic losses on large accounts. See `docs/STOP_LOSS_BUG_FIX.md` for details.
+
+Additional safety features:
+
+- **Execution Engine Cap:** The execution engine enforces a default maximum stop loss of 10% with a hard cap at 15%, providing an additional safety layer beyond the configured thresholds.
+- **Balance Category Thresholds:**
+  - **Tiny** (≤ $1,000): 1% stop loss
+  - **Small** ($1,001 - $5,000): 2% stop loss
+  - **Medium** ($5,001 - $20,000): 5% stop loss
+  - **Large** (> $20,000): 5% stop loss
 
 Future improvements:
 
