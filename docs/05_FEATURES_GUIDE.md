@@ -3,7 +3,7 @@ title: FEATURES GUIDE
 description: Comprehensive guide to Cthulu's advanced trading strategies, next-generation indicators, and dynamic strategy selection system
 tags: [features, strategies, indicators, dynamic-selection, SAFE]
 slug: /docs/features
-sidebar_position: 2
+sidebar_position: 5
 ---
 ````
 _________   __  .__          .__         

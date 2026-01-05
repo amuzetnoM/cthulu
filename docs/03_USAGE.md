@@ -2,7 +2,7 @@
 title: TERMS OF USE
 description: Terms of use, disclaimers, and legal notices for the Cthulu trading system
 tags: [terms, legal, disclaimer, risk-disclosure]
-sidebar_position: 12
+sidebar_position: 3
 ---
 
 [![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu.svg?label=last%20updated&logo=github)](https://github.com/amuzetnoM/cthulu/commits/main)  

@@ -1,0 +1,125 @@
+{
+  "processed": {
+    "272879ae5e5a2dee3ee39e7d55995953": {
+      "title": "Introduction to MQL5 (Part 27): Mastering API and WebRequest Function in MQL5",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase1\\articles\\17774-Introduction-to-MQL5-Part-27-Mastering-API-and-WebRequest-Function-in-MQL5.md",
+      "chunks": 28,
+      "processed_at": "2026-01-05T19:32:12.855300"
+    },
+    "d570928a8492ef0bb2b37930c877a0e1": {
+      "title": "Introduction to MQL5 (Part 29): Mastering API and WebRequest Function in MQL5 (III)",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase1\\articles\\20375-Introduction-to-MQL5-Part-29-Mastering-API-and-WebRequest-Function-in-MQL5-III.md",
+      "chunks": 27,
+      "processed_at": "2026-01-05T19:32:13.013256"
+    },
+    "d13c2e4a16c46e37729deba504c572e2": {
+      "title": "Introduction to MQL5 (Part 30): Mastering API and WebRequest Function in MQL5 (IV)",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase1\\articles\\20425-Introduction-to-MQL5-Part-30-Mastering-API-and-WebRequest-Function-in-MQL5-IV.md",
+      "chunks": 26,
+      "processed_at": "2026-01-05T19:32:13.163388"
+    },
+    "c372fb1b248098a127c178020e557c2f": {
+      "title": "Implementing Practical Modules from Other Languages in MQL5 (Part 05): The Logging module from Python, Log Like a Pro",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase1\\articles\\20458-Implementing-Practical-Modules-from-Other-Languages-in-MQL5-Part-05-The-Logging-module-from-Python-Log-Like-a-Pro.md",
+      "chunks": 15,
+      "processed_at": "2026-01-05T19:32:13.249662"
+    },
+    "8da5f0c84628b82536a59877dd5628eb": {
+      "title": "Reimagining Classic Strategies (Part 19): Deep Dive Into Moving Average Crossovers",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase1\\articles\\20488-Reimagining-Classic-Strategies-Part-19-Deep-Dive-Into-Moving-Average-Crossovers.md",
+      "chunks": 17,
+      "processed_at": "2026-01-05T19:32:13.330095"
+    },
+    "8d9846432f03e698bab6e914109375f8": {
+      "title": "Chart Synchronization for Easier Technical Analysis",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase1\\articles\\noid-Chart-Synchronization-for-Easier-Technical-Analysis.md",
+      "chunks": 12,
+      "processed_at": "2026-01-05T19:32:13.402421"
+    },
+    "e240ac4a1bc5226a71fba0eb790cec1f": {
+      "title": "MQL5 Trading Tools (Part 9): Developing a First Run User Setup Wizard for Expert Advisors with Scrollable Guide",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase1\\articles\\noid-MQL5-Trading-Tools-Part-9-Developing-a-First-Run-User-Setup-Wizard-for-Expert-Advisors-with-Scrollable-Guide.md",
+      "chunks": 22,
+      "processed_at": "2026-01-05T19:32:13.523347"
+    },
+    "261865d12f844bc56d1b7a17cef050b5": {
+      "title": "The MQL5 Standard Library Explorer (Part 4): Custom Signal Library",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase1\\articles\\noid-The-MQL5-Standard-Library-Explorer-Part-4-Custom-Signal-Library.md",
+      "chunks": 26,
+      "processed_at": "2026-01-05T19:32:13.667338"
+    },
+    "1efae01c9e8da671f5ac89bb606f8cb7": {
+      "title": "Risk Management (Part 1): Fundamentals for Building a Risk Management Class",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase2\\articles\\16820-Risk-Management-Part-1-Fundamentals-for-Building-a-Risk-Management-Class.md",
+      "chunks": 24,
+      "processed_at": "2026-01-05T19:32:13.804768"
+    },
+    "baf950a6b2da98ca0f4cf5aaa76e6270": {
+      "title": "Risk Management (Part 2): Implementing Lot Calculation in a Graphical Interface",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase2\\articles\\16985-Risk-Management-Part-2-Implementing-Lot-Calculation-in-a-Graphical-Interface.md",
+      "chunks": 23,
+      "processed_at": "2026-01-05T19:32:13.939065"
+    },
+    "838ae5787852747742ebee4d10136941": {
+      "title": "Building a Trading System (Part 5): Managing Gains Through Structured Trade Exits",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase2\\articles\\19693-Building-a-Trading-System-Part-5-Managing-Gains-Through-Structured-Trade-Exits.md",
+      "chunks": 30,
+      "processed_at": "2026-01-05T19:32:14.102698"
+    },
+    "bf90450a3f46231d16a7dea427cbfb30": {
+      "title": "Building a Professional Trading System with Heikin Ashi (Part 1): Developing a custom indicator",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase2\\articles\\noid-Building-a-Professional-Trading-System-with-Heikin-Ashi-Part-1-Developing-a-custom-indicator.md",
+      "chunks": 24,
+      "processed_at": "2026-01-05T19:32:14.240359"
+    },
+    "018d417e06948cdd9e8b82aaa100ff7b": {
+      "title": "Analytical Volume Profile Trading (AVPT): Liquidity Architecture, Market Memory, and Algorithmic Execution",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase3\\articles\\noid-Analytical-Volume-Profile-Trading-AVPT-Liquidity-Architecture-Market-Memory-and-Algorithmic-Execution.md",
+      "chunks": 23,
+      "processed_at": "2026-01-05T19:32:14.364251"
+    },
+    "1d45e889dfef3bb139c7fe5353f6874a": {
+      "title": "Automating Trading Strategies in MQL5 (Part 41): Candle Range Theory (CRT) \u2013 Accumulation, Manipulation, Distribution (AMD)",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase3\\articles\\noid-Automating-Trading-Strategies-in-MQL5-Part-41-Candle-Range-Theory-CRT-Accumulation-Manipulation-Distribution-AMD.md",
+      "chunks": 20,
+      "processed_at": "2026-01-05T19:32:14.479368"
+    },
+    "e6d28f9c76e638e314d80b5342d246b5": {
+      "title": "Automating Trading Strategies in MQL5 (Part 42): Session-Based Opening Range Breakout (ORB) System",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase3\\articles\\noid-Automating-Trading-Strategies-in-MQL5-Part-42-Session-Based-Opening-Range-Breakout-ORB-System.md",
+      "chunks": 19,
+      "processed_at": "2026-01-05T19:32:14.573577"
+    },
+    "cb7706ba4dcf011f8e0e5aea2faf1b88": {
+      "title": "Automating Trading Strategies in MQL5 (Part 43): Adaptive Linear Regression Channel Strategy",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase3\\articles\\noid-Automating-Trading-Strategies-in-MQL5-Part-43-Adaptive-Linear-Regression-Channel-Strategy.md",
+      "chunks": 24,
+      "processed_at": "2026-01-05T19:32:14.753810"
+    },
+    "876e3fabc11036af23195a32afdc2baa": {
+      "title": "Developing Trading Strategy: Pseudo Pearson Correlation Approach",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase3\\articles\\noid-Developing-Trading-Strategy-Pseudo-Pearson-Correlation-Approach.md",
+      "chunks": 16,
+      "processed_at": "2026-01-05T19:32:14.876283"
+    },
+    "a9fa7f5b5571fec35b8a59be84f4b04b": {
+      "title": "Mastering Kagi Charts in MQL5 (Part I): Creating the Indicator",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase3\\articles\\noid-Mastering-Kagi-Charts-in-MQL5-Part-I-Creating-the-Indicator.md",
+      "chunks": 21,
+      "processed_at": "2026-01-05T19:32:15.037875"
+    },
+    "f8abbe240c5befe708a9ed4170b66532": {
+      "title": "Price Action Analysis Toolkit Development (Part 39): Automating BOS and ChoCH Detection in MQL5",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase3\\articles\\noid-Price-Action-Analysis-Toolkit-Development-Part-39-Automating-BOS-and-ChoCH-Detection-in-MQL5.md",
+      "chunks": 21,
+      "processed_at": "2026-01-05T19:32:15.153333"
+    },
+    "9eb747a40807263310d65014b94fed92": {
+      "title": "Statistical Arbitrage Through Cointegrated Stocks (Part 8): Rolling Windows Eigenvector Comparison for Portfolio Rebalancing",
+      "file": "C:\\workspace\\_gladius\\_dev\\mql5_handbook\\phase3\\articles\\noid-Statistical-Arbitrage-Through-Cointegrated-Stocks-Part-8-Rolling-Windows-Eigenvector-Comparison-for-Portfolio-Rebalancing.md",
+      "chunks": 20,
+      "processed_at": "2026-01-05T19:32:15.262545"
+    }
+  },
+  "last_run": "2026-01-05T19:32:15.262545"
+}

@@ -183,6 +183,19 @@ class ScalpingStrategy(Strategy):
                 self._state['last_trade_time'] = datetime.now()
                 self.logger.info(f"Bearish scalp signal: EMA cross, RSI={rsi:.1f}")
                 return signal
+        
+        # ADDITIONAL: Overbought momentum scalp SHORT (no EMA cross required)
+        # When RSI is extremely overbought, take counter-trend scalp
+        elif (rsi >= self.rsi_overbought and 
+              ema_fast < ema_slow * 1.002 and  # EMAs relatively flat/converging
+              self._state.get('last_signal') != SignalType.SHORT):  # Prevent consecutive shorts
+            
+            signal = self._create_short_signal(close, atr, bar)
+            if self.validate_signal(signal):
+                self._state['last_signal'] = SignalType.SHORT
+                self._state['last_trade_time'] = datetime.now()
+                self.logger.info(f"Overbought scalp SHORT: RSI={rsi:.1f} (no cross required)")
+                return signal
                  
         return None
         

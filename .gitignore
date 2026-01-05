@@ -123,3 +123,24 @@ metrics/
 monitoring/*.csv
 observability/**/*.csv
 *.csv
+
+# Lock files
+*.lock
+cthulu.lock
+
+# Vector database files
+vectors/
+*.pyd
+*.dll
+*.lib
+*.exp
+models/hektor/
+
+# Build artifacts
+build/
+build_*/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+Makefile

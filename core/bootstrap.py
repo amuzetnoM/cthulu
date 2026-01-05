@@ -68,6 +68,10 @@ class SystemComponents:
     indicator_collector: Any = None
     system_health_collector: Any = None
     comprehensive_collector: Any = None
+    
+    # Hektor (Vector Studio) integration
+    hektor_adapter: Any = None
+    hektor_retriever: Any = None
 
 
 class CthuluBootstrap:
@@ -375,7 +379,7 @@ class CthuluBootstrap:
                 ml_enabled = args.enable_ml
             
             if ml_enabled:
-                from cthulu.ML_RL.instrumentation import MLDataCollector
+                from cthulu.training.instrumentation import MLDataCollector
                 ml_prefix = ml_config.get('prefix', 'events')
                 ml_collector = MLDataCollector(prefix=ml_prefix)
                 self.logger.info('MLDataCollector initialized')
@@ -593,6 +597,73 @@ class CthuluBootstrap:
             self.logger.exception("Failed to initialize ProfitScaler")
             return None
     
+    def initialize_hektor(self, config: Dict[str, Any]) -> Tuple[Any, Any]:
+        """Initialize Hektor (Vector Studio) integration.
+        
+        Args:
+            config: System configuration
+            
+        Returns:
+            Tuple of (VectorStudioAdapter, ContextRetriever) or (None, None) if disabled
+        """
+        adapter = None
+        retriever = None
+        
+        try:
+            hektor_config = config.get('hektor', {})
+            if not hektor_config.get('enabled', False):
+                self.logger.info("Hektor (Vector Studio) integration disabled")
+                return None, None
+            
+            from integrations.vector_studio import VectorStudioAdapter, VectorStudioConfig
+            from integrations.retriever import ContextRetriever
+            from integrations.embedder import TradeEmbedder
+            
+            # Build config from settings
+            vs_config = VectorStudioConfig(
+                enabled=hektor_config.get('enabled', True),
+                database_path=hektor_config.get('database_path', './vectors/cthulu_memory'),
+                dimension=hektor_config.get('dimension', 512),
+                hnsw_m=hektor_config.get('hnsw_m', 16),
+                hnsw_ef_construction=hektor_config.get('hnsw_ef_construction', 200),
+                hnsw_ef_search=hektor_config.get('hnsw_ef_search', 50),
+                default_k=hektor_config.get('default_k', 10),
+                min_similarity_score=hektor_config.get('min_similarity_score', 0.7),
+                max_context_age_days=hektor_config.get('max_context_age_days', 90),
+                batch_size=hektor_config.get('batch_size', 100),
+                async_writes=hektor_config.get('async_writes', True),
+                cache_embeddings=hektor_config.get('cache_embeddings', True),
+                connection_timeout_ms=hektor_config.get('connection_timeout_ms', 5000),
+                retry_attempts=hektor_config.get('retry_attempts', 3),
+                fallback_on_failure=hektor_config.get('fallback_to_sqlite', True)
+            )
+            
+            adapter = VectorStudioAdapter(vs_config)
+            connected = adapter.connect()
+            
+            if connected:
+                if adapter.is_using_fallback():
+                    self.logger.info("Hektor connected (using SQLite fallback)")
+                else:
+                    self.logger.info("Hektor connected to Vector Studio")
+                
+                # Initialize retriever
+                embedder = TradeEmbedder()
+                retriever = ContextRetriever(adapter, embedder)
+                self.logger.info("Hektor retriever initialized")
+            else:
+                self.logger.warning("Hektor connection failed; semantic memory unavailable")
+                adapter = None
+            
+            return adapter, retriever
+            
+        except ImportError as e:
+            self.logger.warning(f"Hektor integration unavailable (missing module): {e}")
+            return None, None
+        except Exception:
+            self.logger.exception("Failed to initialize Hektor integration")
+            return None, None
+    
     def initialize_exit_strategies(self, config: Dict[str, Any]) -> list:
         """Initialize exit strategies from configuration.
         
@@ -693,6 +764,9 @@ class CthuluBootstrap:
         adaptive_drawdown_manager = self.initialize_adaptive_drawdown_manager(config)
         profit_scaler = self.initialize_profit_scaler(config, connector, execution_engine)
         
+        # Initialize Hektor (Vector Studio) semantic memory integration
+        hektor_adapter, hektor_retriever = self.initialize_hektor(config)
+        
         # Initialize exit strategies
         exit_strategies = self.initialize_exit_strategies(config)
         
@@ -718,7 +792,9 @@ class CthuluBootstrap:
             dynamic_sltp_manager=dynamic_sltp_manager,
             adaptive_drawdown_manager=adaptive_drawdown_manager,
             profit_scaler=profit_scaler,
-            exit_strategies=exit_strategies
+            exit_strategies=exit_strategies,
+            hektor_adapter=hektor_adapter,
+            hektor_retriever=hektor_retriever
         )
         # Expose trade_adoption_policy for convenience
         try:

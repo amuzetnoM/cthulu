@@ -2,7 +2,7 @@
 title: PRECISION TUNING
 description: Optimize Cthulu's performance with database tuning, memory management, CPU optimization, and benchmarking strategies
 tags: [performance, optimization, tuning, benchmarking]
-sidebar_position: 6
+sidebar_position: 12
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 

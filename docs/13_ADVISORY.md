@@ -2,7 +2,7 @@
 title: ADVISORY & GHOST MODES
 description: Safe deployment testing modes for validating Cthulu without real trades
 tags: [advisory, testing, paper-trading, validation]
-sidebar_position: 14
+sidebar_position: 13
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 

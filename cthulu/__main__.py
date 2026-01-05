@@ -13,11 +13,77 @@ import sys
 import signal as sig_module
 import logging
 import argparse
+import atexit
+import os
 from pathlib import Path
 from typing import Optional
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
+
+# Singleton lock file path
+LOCK_FILE = Path(__file__).parent.parent / "cthulu.lock"
+
+
+class SingletonLock:
+    """Prevents multiple Cthulu instances from running simultaneously."""
+    
+    def __init__(self):
+        self.lock_file = LOCK_FILE
+        self.lock_fd = None
+        
+    def acquire(self) -> bool:
+        """Acquire singleton lock. Returns True if successful, False if another instance running."""
+        try:
+            # Check if lock file exists and contains a running PID
+            if self.lock_file.exists():
+                try:
+                    existing_pid = int(self.lock_file.read_text().strip())
+                    # Check if that PID is still running
+                    if self._is_process_running(existing_pid):
+                        return False  # Another instance is running
+                except (ValueError, FileNotFoundError):
+                    pass  # Invalid or missing lock file, proceed
+            
+            # Write our PID to lock file
+            self.lock_file.write_text(str(os.getpid()))
+            atexit.register(self.release)
+            return True
+            
+        except Exception:
+            return True  # On error, allow startup but warn
+    
+    def _is_process_running(self, pid: int) -> bool:
+        """Check if a process with given PID is running."""
+        try:
+            if sys.platform == 'win32':
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+                handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+                if handle:
+                    kernel32.CloseHandle(handle)
+                    return True
+                return False
+            else:
+                os.kill(pid, 0)
+                return True
+        except (OSError, PermissionError):
+            return False
+    
+    def release(self):
+        """Release the singleton lock."""
+        try:
+            if self.lock_file.exists():
+                current_pid = self.lock_file.read_text().strip()
+                if current_pid == str(os.getpid()):
+                    self.lock_file.unlink()
+        except Exception:
+            pass
+
+
+# Global singleton lock
+_singleton_lock = SingletonLock()
 
 __version__ = "5.1.0"  # Apex Release - Market Destroyer
 
@@ -77,7 +143,7 @@ def init_ml_collector(config=None, args=None, logger=None):
                     return
             return _Stub()
 
-        from ML_RL.instrumentation import MLDataCollector
+        from training.instrumentation import MLDataCollector
         return MLDataCollector(prefix=prefix)
     except Exception:
         # Best-effort stub if ML collector is unavailable or fails to initialize
@@ -137,12 +203,26 @@ def main():
     Main entry point for Cthulu trading system.
     
     Flow:
-        1. Parse arguments
-        2. Bootstrap system (initialize all components)
-        3. Run trading loop
-        4. Graceful shutdown
+        1. Check singleton lock (prevent duplicate instances)
+        2. Parse arguments
+        3. Bootstrap system (initialize all components)
+        4. Run trading loop
+        5. Graceful shutdown
     """
     global shutdown_requested
+    
+    # CRITICAL: Prevent multiple instances from running simultaneously
+    if not _singleton_lock.acquire():
+        print("\n" + "=" * 60)
+        print("ERROR: Another Cthulu instance is already running!")
+        print("=" * 60)
+        print("\nOnly one Cthulu instance can trade at a time to prevent")
+        print("conflicting signals (e.g., simultaneous BUY and SELL).")
+        print("\nTo start a new instance:")
+        print("  1. Stop the existing instance first, OR")
+        print("  2. Delete the lock file: cthulu.lock")
+        print("=" * 60 + "\n")
+        return 1
     
     # Parse command line arguments
     args = parse_arguments()
@@ -261,6 +341,8 @@ def main():
             indicator_collector=getattr(components, 'indicator_collector', None),
             system_health_collector=getattr(components, 'system_health_collector', None),
             comprehensive_collector=getattr(components, 'comprehensive_collector', None),
+            hektor_adapter=getattr(components, 'hektor_adapter', None),
+            hektor_retriever=getattr(components, 'hektor_retriever', None),
         )
         
         # Initialize Cognition Engine (AI/ML layer)
@@ -277,6 +359,14 @@ def main():
                    f"system_health={trading_context.system_health_collector is not None}")
         logger.info(f"Components collectors: indicator={getattr(components, 'indicator_collector', None) is not None}, "
                    f"comprehensive={getattr(components, 'comprehensive_collector', None) is not None}")
+        
+        # Log Hektor (Vector Studio) status
+        if trading_context.hektor_adapter:
+            hektor_stats = trading_context.hektor_adapter.get_stats()
+            fallback_status = "fallback" if hektor_stats.get('using_fallback', False) else "native"
+            logger.info(f"Hektor semantic memory: ACTIVE ({fallback_status})")
+        else:
+            logger.info("Hektor semantic memory: DISABLED")
         
         trading_loop = TradingLoop(trading_context)
         logger.info("Trading loop initialized")
@@ -301,6 +391,14 @@ def main():
         # Phase 4: Graceful shutdown
         if components:
             logger.info("Phase 4: Initiating graceful shutdown...")
+            
+            # Close Hektor connection gracefully
+            try:
+                if getattr(components, 'hektor_adapter', None):
+                    components.hektor_adapter.close()
+                    logger.info("Hektor semantic memory closed")
+            except Exception as e:
+                logger.debug(f"Hektor close error: {e}")
             
             try:
                 shutdown_handler = create_shutdown_handler(

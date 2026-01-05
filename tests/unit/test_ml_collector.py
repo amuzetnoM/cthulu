@@ -1,7 +1,7 @@
 import os
 import time
 import glob
-from cthulu.ML_RL.instrumentation import MLDataCollector
+from cthulu.training.instrumentation import MLDataCollector
 
 
 def test_ml_collector_non_blocking(tmp_path):
@@ -16,7 +16,7 @@ def test_ml_collector_non_blocking(tmp_path):
     # Close to ensure flush
     collector.close(timeout=2.0)
 
-    base = os.path.join(os.path.dirname(__import__('Cthulu.ML_RL.instrumentation', fromlist=['']).__file__), 'data', 'raw')
+    base = os.path.join(os.path.dirname(__import__('cthulu.training.instrumentation', fromlist=['']).__file__), 'data', 'raw')
     pattern = os.path.join(base, f"{prefix}*.jsonl*")
     files = glob.glob(pattern)
 

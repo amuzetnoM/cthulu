@@ -15,7 +15,7 @@
 
 ```mermaid
 flowchart TB
-    subgraph ENTRY["😈 Entry Layer"]
+    subgraph ENTRY["📥 Entry Layer"]
         MAIN["__main__.py"]
         WIZ["wizard.py"]
         CLI["CLI Args"]
@@ -27,13 +27,14 @@ flowchart TB
         SHUT["shutdown.py"]
     end
     
-    subgraph COGNITION["🧠 Cognition Engine (AI/ML)"]
+    subgraph COGNITION["😈 Cognition Engine (AI/ML)"]
         direction TB
         COG_ENG["engine.py<br/>Central Orchestrator"]
         REGIME["regime_classifier.py<br/>Bull/Bear/Sideways"]
         PREDICTOR["price_predictor.py<br/>Softmax Direction"]
         SENTIMENT["sentiment_analyzer.py<br/>News/Calendar"]
         EXIT_ORACLE["exit_oracle.py<br/>ML Exit Signals"]
+        ENTRY_CONF["entry_confluence.py<br/>🆕 Entry Quality Gate"]
     end
     
     subgraph STRATEGY["📊 Strategy Layer"]
@@ -114,6 +115,7 @@ flowchart TB
     COG_ENG --> PREDICTOR
     COG_ENG --> SENTIMENT
     COG_ENG --> EXIT_ORACLE
+    COG_ENG --> ENTRY_CONF
     
     LOOP --> RISK
     RISK --> POSITION
@@ -128,6 +130,7 @@ flowchart TB
     COGNITION -.->|enhance signals| STRATEGY
     COGNITION -.->|exit oracle| EXIT
     COGNITION -.->|regime info| RISK
+    ENTRY_CONF -.->|quality gate| EXECUTION
     
     %% Styling
     style COGNITION fill:#9b59b6,stroke:#8e44ad,color:#fff
@@ -135,6 +138,7 @@ flowchart TB
     style EXIT fill:#f39c12,stroke:#d68910,color:#fff
     style EXECUTION fill:#27ae60,stroke:#1e8449,color:#fff
     style STRATEGY fill:#3498db,stroke:#2980b9,color:#fff
+    style ENTRY_CONF fill:#00d4ff,stroke:#00a8cc,color:#000
 ```
 
 ### Data Flow Architecture
@@ -179,6 +183,7 @@ flowchart LR
 
 | Module | Inputs From | Outputs To | Purpose |
 |--------|-------------|------------|---------|
+| **EntryConfluenceFilter** 🆕 | market_data, signal | execution gate | Entry quality assessment |
 | **CognitionEngine** | market_data, indicators | trading_loop, exit_coord | Signal enhancement, exit signals |
 | **RegimeClassifier** | OHLCV data | CognitionEngine, StrategySelector | Market state detection |
 | **PricePredictor** | features | CognitionEngine | Direction probability |
@@ -399,7 +404,56 @@ Kelly % = (Win Rate × Average Win) - (Loss Rate × Average Loss) / Average Win
 }
 ```
 
-### 7. Position Management
+### 7. Entry Confluence Filter 🆕
+
+The Entry Confluence Filter is a **quality gate** between signal generation and execution that prevents blind entries.
+
+#### Problem Solved
+The system generates revolutionary signals, but executing them at arbitrary price levels leads to poor entries. The timing between signal generation and execution was causing trades to start in stressed positions.
+
+#### Entry Quality Assessment
+
+| Factor | Weight | Description |
+|--------|--------|-------------|
+| **Level Score** | 40% | Proximity to S/R, round numbers, EMAs, previous session levels |
+| **Momentum Score** | 25% | Recent bar momentum alignment, RSI confirmation |
+| **Timing Score** | 20% | Range position (chasing vs. optimal), extension from levels |
+| **Structure Score** | 15% | Higher highs/lows, trend structure alignment |
+
+#### Quality Classifications
+
+| Classification | Score | Position Multiplier | Action |
+|---------------|-------|---------------------|--------|
+| PREMIUM | ≥ 85 | 1.0 (full) | Execute immediately |
+| GOOD | ≥ 70 | 0.85 | Execute with standard size |
+| MARGINAL | ≥ 50 | 0.6 | Execute with reduced size |
+| POOR | ≥ 30 | 0.3 | Wait for better or skip |
+| REJECT | < 30 | 0.0 | Signal rejected |
+
+#### Pending Entry Queue
+When entry quality is POOR but waiting is recommended:
+- Signal is queued with optimal entry price
+- Checked each loop iteration
+- Executes when price reaches optimal level
+- Times out after `max_wait_bars` with 0.5x size
+
+**Configuration Example:**
+```json
+{
+  "entry_confluence": {
+    "min_score_to_enter": 50,
+    "min_score_for_full_size": 75,
+    "enable_wait_mode": true,
+    "max_wait_bars": 10,
+    "level_weight": 0.40,
+    "momentum_weight": 0.25,
+    "timing_weight": 0.20,
+    "structure_weight": 0.15
+  }
+}
+```
+
+### 8. Position Management
 
 #### Position Lifecycle
 
@@ -431,7 +485,7 @@ Kelly % = (Win Rate × Average Win) - (Loss Rate × Average Loss) / Average Win
 
 **Use Case:** Take over existing positions and manage exits.
 
-### 8. Database & Persistence
+### 9. Database & Persistence
 
 #### SQLite Schema
 
@@ -453,7 +507,7 @@ Kelly % = (Win Rate × Average Win) - (Loss Rate × Average Loss) / Average Win
 - Strategy performance analysis
 - Risk-adjusted returns
 
-### 9. Observability & Monitoring
+### 10. Observability & Monitoring
 
 #### Logging
 
@@ -485,7 +539,7 @@ Optional **PrometheusExporter**:
 - Grafana dashboard ready
 - HTTP endpoint: `/metrics`
 
-### 10. User Interfaces
+### 11. User Interfaces
 
 #### Command-Line Interface
 
@@ -529,7 +583,7 @@ python __main__.py --config config.json
 - Standard wizard (guided)
 - NLP wizard (natural language)
 
-### 11. Machine Learning Integration
+### 12. Machine Learning Integration
 
 #### ML Data Collector
 
@@ -552,7 +606,7 @@ python __main__.py --config config.json
 2. **Ghost** - Small test trades to validate signals
 3. **Full** - Normal execution (default)
 
-### 12. Configuration System
+### 13. Configuration System
 
 #### Configuration File (`config.json`)
 
@@ -587,7 +641,7 @@ python __main__.py --config config.json
 - Validation errors with clear messages
 - Pydantic v2 compatible
 
-### 13. News & Market Data
+### 14. News & Market Data
 
 #### News Ingestion (Optional)
 
@@ -599,7 +653,7 @@ python __main__.py --config config.json
 
 **Use Case:** Pause trading during high-impact news events.
 
-### 14. Architectural Overhaul (Complete ✅)
+### 15. Architectural Overhaul (Complete ✅)
 
 #### Current Status: Phase 10/10 Complete (100%)
 
@@ -861,7 +915,7 @@ Cthulu/
 ├── monitoring/           # Monitoring
 ├── advisory/             # Advisory mode
 ├── news/                 # News ingestion
-├── ML_RL/                # ML integration
+├── training/             # ML/RL training & instrumentation
 ├── tests/                # Test suite
 └── docs/                 # Documentation
 ```
@@ -1040,7 +1094,7 @@ Track system updates and releases in `/docs/changelog/`
 
 ---
 
-**Last Updated**: 2025-12-29  
+**Last Updated**: 2026-01-04  
 **Status**: Active Development  
 **License**: See LICENSE file  
 **Author**: Cthulu Development Team

@@ -1,7 +1,7 @@
 import os
 import time
 import pytest
-from cthulu.ML_RL.instrumentation import MLDataCollector
+from cthulu.training.instrumentation import MLDataCollector
 
 
 pytestmark = pytest.mark.integration
@@ -45,7 +45,7 @@ def test_news_ingest_live_one_cycle():
         collector.close()
 
     # Check ML raw output files for the collector prefix
-    from cthulu.ML_RL.instrumentation import BASE as ML_BASE
+    from cthulu.training.instrumentation import BASE as ML_BASE
     files = [f for f in os.listdir(ML_BASE) if f.startswith(collector.prefix)]
     assert files, 'No ML files written by live news ingest (check provider keys and network)'
 

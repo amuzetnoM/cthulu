@@ -91,6 +91,10 @@ class TradingLoopContext:
     system_health_collector: Optional[Any] = None
     comprehensive_collector: Optional[Any] = None
     
+    # Hektor (Vector Studio) semantic memory integration
+    hektor_adapter: Optional[Any] = None
+    hektor_retriever: Optional[Any] = None
+    
     # CLI args
     args: Optional[Any] = None
 
@@ -353,6 +357,12 @@ class TradingLoop:
         self.ctx = context
         self.loop_count = 0
         self._shutdown_requested = False
+        
+        # CRITICAL FIX: Trade cooldown to prevent rapid-fire entries
+        self._last_trade_time: Optional[datetime] = None
+        self._min_trade_interval_seconds = self.ctx.config.get('min_trade_interval', 60)  # 1 minute default
+        self._last_signal_direction: Optional[str] = None
+        self._consecutive_same_direction = 0
     
     def request_shutdown(self):
         """Request graceful shutdown of the trading loop."""
@@ -361,6 +371,36 @@ class TradingLoop:
     def is_shutdown_requested(self) -> bool:
         """Check if shutdown has been requested."""
         return self._shutdown_requested
+    
+    def _check_trade_cooldown(self, signal) -> bool:
+        """
+        Check if we should wait before placing another trade.
+        
+        Returns True if OK to trade, False if in cooldown.
+        """
+        if self._last_trade_time is None:
+            return True
+        
+        elapsed = (datetime.now() - self._last_trade_time).total_seconds()
+        if elapsed < self._min_trade_interval_seconds:
+            self.ctx.logger.info(
+                f"Trade cooldown active: {elapsed:.0f}s / {self._min_trade_interval_seconds}s"
+            )
+            return False
+        
+        return True
+    
+    def _record_trade_executed(self, signal):
+        """Record that a trade was executed for cooldown tracking."""
+        self._last_trade_time = datetime.now()
+        
+        # Track direction for consecutive same-direction prevention
+        direction = 'LONG' if signal.side == SignalType.LONG else 'SHORT'
+        if direction == self._last_signal_direction:
+            self._consecutive_same_direction += 1
+        else:
+            self._consecutive_same_direction = 1
+        self._last_signal_direction = direction
     
     def run(self) -> int:
         """
@@ -436,25 +476,100 @@ class TradingLoop:
             self.ctx.logger.warning("Indicator calculation failed")
             return
         
-        # 3. Generate strategy signals
+        # 3. Check pending entries (queued for better price)
+        self._check_pending_entries(df)
+        
+        # 4. Generate strategy signals
         self.ctx.logger.info(f"Loop #{self.loop_count}: Generating signals...")
         signal = self._generate_signal(df)
         
-        # 4. Process entry signals
+        # 5. Process entry signals
         if signal:
             self._process_entry_signal(signal)
         
-        # 5. Scan and adopt external trades
+        # 6. Scan and adopt external trades
         self._adopt_external_trades()
         
-        # 6. Monitor positions and check exits
+        # 7. Monitor positions and check exits
         self._monitor_positions(df)
         
-        # 7. Health monitoring
+        # 8. Health monitoring
         self._check_connection_health()
         
-        # 8. Performance monitoring
+        # 9. Performance monitoring
         self._report_performance_metrics()
+    
+    def _check_pending_entries(self, df: pd.DataFrame):
+        """
+        Check if any pending entries should now execute.
+        
+        Pending entries are signals that were queued to wait for better price.
+        """
+        try:
+            from cthulu.cognition.entry_confluence import get_entry_confluence_filter
+            
+            confluence_filter = get_entry_confluence_filter()
+            current_price = float(df['close'].iloc[-1])
+            current_bar = df.iloc[-1]
+            
+            ready_entries = confluence_filter.check_pending_entries(
+                symbol=self.ctx.symbol,
+                current_price=current_price,
+                current_bar=current_bar
+            )
+            
+            for entry in ready_entries:
+                self.ctx.logger.info(f"Pending entry ready: {entry['signal_id']} - {entry['reason']}")
+                
+                # Create a synthetic signal for the ready entry
+                from cthulu.strategy.base import Signal, SignalType
+                
+                direction = SignalType.LONG if entry['direction'] == 'long' else SignalType.SHORT
+                size_mult = entry.get('size_mult', 1.0)
+                
+                # Get ATR for SL/TP calculation
+                atr = float(df['atr'].iloc[-1]) if 'atr' in df.columns else current_price * 0.01
+                
+                if direction == SignalType.LONG:
+                    stop_loss = current_price - (atr * 2.0)
+                    take_profit = current_price + (atr * 4.0)
+                else:
+                    stop_loss = current_price + (atr * 2.0)
+                    take_profit = current_price - (atr * 4.0)
+                
+                # Use clean base ID (strip any existing _pending suffixes to prevent cascade)
+                base_id = entry['signal_id'].replace('_pending', '').rstrip('_')
+                clean_id = f"{base_id}_exec_{int(datetime.now().timestamp())}"
+                
+                synthetic_signal = Signal(
+                    id=clean_id,
+                    timestamp=datetime.now(),
+                    symbol=self.ctx.symbol,
+                    timeframe=str(self.ctx.timeframe),
+                    side=direction,
+                    action='BUY' if direction == SignalType.LONG else 'SELL',
+                    price=current_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    confidence=0.75 if not entry.get('timeout') else 0.5,
+                    reason=f"Pending entry: {entry['reason']}",
+                    metadata={
+                        'pending_entry': True,
+                        'waited_bars': entry['waited_bars'],
+                        'size_mult': size_mult,
+                        'skip_confluence_filter': True  # Skip re-filtering for pending entries
+                    }
+                )
+                
+                # Store size multiplier for later use
+                synthetic_signal._pending_size_mult = size_mult
+                
+                self._process_entry_signal(synthetic_signal)
+                
+        except ImportError:
+            pass  # Entry confluence filter not available
+        except Exception as e:
+            self.ctx.logger.debug(f"Pending entry check failed: {e}")
     
     def _ingest_market_data(self) -> Optional[pd.DataFrame]:
         """
@@ -1052,6 +1167,11 @@ class TradingLoop:
         """
         Process an entry signal (risk approval + execution).
         
+        CRITICAL CHANGE: Now includes Entry Confluence Filter as quality gate.
+        Signals must pass entry quality analysis before execution.
+        
+        ADDITIONAL SAFEGUARD: Prevents opposite direction trades on same symbol.
+        
         Args:
             signal: Trading signal from strategy
         """
@@ -1059,6 +1179,13 @@ class TradingLoop:
             return
         
         try:
+            # ==========================================================
+            # COOLDOWN CHECK - Prevent rapid-fire trading
+            # ==========================================================
+            if not self._check_trade_cooldown(signal):
+                self.ctx.logger.info("Skipping signal due to trade cooldown")
+                return
+            
             # Get current account info and positions
             account_info = self.ctx.connector.get_account_info()
             balance = float(account_info.get('balance', 0)) if account_info else 0
@@ -1069,8 +1196,109 @@ class TradingLoop:
                 import MetaTrader5 as mt5
                 mt5_positions = mt5.positions_get(symbol=self.ctx.symbol)
                 current_positions = len(mt5_positions) if mt5_positions else 0
-            except Exception:
+                
+                # ==========================================================
+                # CRITICAL FIX: Prevent opposite direction trades
+                # ==========================================================
+                if mt5_positions:
+                    existing_directions = set()
+                    for pos in mt5_positions:
+                        # MT5 type: 0 = BUY, 1 = SELL
+                        pos_dir = 'LONG' if pos.type == 0 else 'SHORT'
+                        existing_directions.add(pos_dir)
+                    
+                    signal_direction = 'LONG' if signal.side == SignalType.LONG else 'SHORT'
+                    opposite_direction = 'SHORT' if signal_direction == 'LONG' else 'LONG'
+                    
+                    if opposite_direction in existing_directions:
+                        self.ctx.logger.warning(
+                            f"BLOCKED: {signal_direction} signal while {opposite_direction} positions exist. "
+                            f"Close existing positions first or let them run."
+                        )
+                        return
+                        
+            except Exception as e:
+                self.ctx.logger.debug(f"MT5 position check fallback: {e}")
                 current_positions = len(self.ctx.position_manager.get_positions(symbol=self.ctx.symbol))
+            
+            # ============================================================
+            # ENTRY CONFLUENCE FILTER - Quality Gate (NEW)
+            # This is the critical addition that prevents blind entries
+            # ============================================================
+            entry_confluence_result = None
+            
+            # Skip confluence filter for pending entries (already filtered)
+            skip_confluence = (
+                hasattr(signal, 'metadata') and 
+                signal.metadata.get('skip_confluence_filter', False)
+            )
+            
+            if skip_confluence:
+                self.ctx.logger.debug("Skipping confluence filter for pending entry")
+            else:
+                try:
+                    from cthulu.cognition.entry_confluence import get_entry_confluence_filter
+                    
+                    # Get current market data for analysis
+                    df = self.ctx.data_layer.get_cached_data(self.ctx.symbol)
+                    if df is None or len(df) == 0:
+                        # Fallback: fetch fresh data
+                        rates = self.ctx.connector.get_rates(
+                            symbol=self.ctx.symbol,
+                            timeframe=self.ctx.timeframe,
+                            count=self.ctx.lookback_bars
+                        )
+                        if rates is not None:
+                            df = self.ctx.data_layer.normalize_rates(rates, symbol=self.ctx.symbol)
+                    
+                    if df is not None and len(df) > 20:
+                        signal_direction = 'long' if signal.side == SignalType.LONG else 'short'
+                        current_price = float(df['close'].iloc[-1])
+                        signal_price = getattr(signal, 'price', None) or getattr(signal, 'entry_price', None)
+                        atr = float(df['atr'].iloc[-1]) if 'atr' in df.columns else None
+                        
+                        confluence_filter = get_entry_confluence_filter(config=self.ctx.config.get('entry_confluence', {}))
+                        entry_confluence_result = confluence_filter.analyze_entry(
+                            signal_direction=signal_direction,
+                            current_price=current_price,
+                            symbol=self.ctx.symbol,
+                            market_data=df,
+                            atr=atr,
+                            signal_entry_price=signal_price
+                        )
+                        
+                        # Log entry analysis
+                        self.ctx.logger.info(f"Entry confluence: {entry_confluence_result.quality.value} "
+                                            f"(score={entry_confluence_result.score:.0f}, "
+                                            f"mult={entry_confluence_result.position_mult:.2f})")
+                        
+                        if entry_confluence_result.reasons:
+                            self.ctx.logger.debug(f"  Entry reasons: {entry_confluence_result.reasons[:3]}")
+                        if entry_confluence_result.warnings:
+                            self.ctx.logger.warning(f"  Entry warnings: {entry_confluence_result.warnings}")
+                        
+                        # GATE: Check if entry quality is acceptable
+                        if not entry_confluence_result.should_enter:
+                            self.ctx.logger.info(f"Entry rejected by confluence filter: "
+                                                f"{entry_confluence_result.quality.value} quality, "
+                                                f"score={entry_confluence_result.score:.0f}")
+                            
+                            # Register for pending entry if waiting is recommended
+                            if entry_confluence_result.wait_for_better and entry_confluence_result.optimal_entry:
+                                confluence_filter.register_pending_entry(
+                                    signal_id=signal.id,
+                                    signal_direction=signal_direction,
+                                    optimal_entry=entry_confluence_result.optimal_entry,
+                                    symbol=self.ctx.symbol
+                                )
+                                self.ctx.logger.info(f"Signal queued: waiting for better entry at "
+                                                    f"{entry_confluence_result.optimal_entry:.2f}")
+                            return
+                            
+                except ImportError:
+                    self.ctx.logger.debug("Entry confluence filter not available, proceeding without")
+                except Exception as e:
+                    self.ctx.logger.warning(f"Entry confluence analysis failed: {e}")
             
             # Adaptive Account Manager check (if available)
             if self.ctx.adaptive_account_manager:
@@ -1106,6 +1334,14 @@ class TradingLoop:
                 account_info=account_info,
                 current_positions=current_positions
             )
+            
+            # Apply entry confluence position multiplier
+            if approved and entry_confluence_result and position_size > 0:
+                if entry_confluence_result.position_mult < 1.0:
+                    original_size = position_size
+                    position_size = max(0.01, round(position_size * entry_confluence_result.position_mult, 2))
+                    self.ctx.logger.info(f"Entry quality adjustment: {original_size:.2f} → {position_size:.2f} lots "
+                                        f"({entry_confluence_result.quality.value})")
             
             # Apply adaptive loss curve adjustment (if available)
             if approved and self.ctx.adaptive_loss_curve and position_size > 0:
@@ -1198,6 +1434,9 @@ class TradingLoop:
                 f"price={result.fill_price:.5f}"
             )
             
+            # CRITICAL: Record trade for cooldown
+            self._record_trade_executed(signal)
+            
             # Track position - ensure symbol is properly passed
             track_metadata = signal.metadata.copy() if signal.metadata else {}
             track_metadata['symbol'] = signal.symbol
@@ -1223,6 +1462,14 @@ class TradingLoop:
             except Exception:
                 pass
             self.ctx.database.record_signal(signal_record)
+            
+            # Store signal context in Hektor for semantic memory
+            try:
+                indicators = signal.metadata.get('indicators', {}) if signal.metadata else {}
+                regime = signal.metadata.get('regime', 'UNKNOWN') if signal.metadata else 'UNKNOWN'
+                self._store_signal_in_hektor(signal, indicators, regime)
+            except Exception:
+                pass  # Non-critical
             
             trade_record = TradeRecord(
                 signal_id=signal.id,
@@ -1286,6 +1533,68 @@ class TradingLoop:
         except Exception:
             pass
         self.ctx.database.record_signal(signal_record)
+    
+    def _store_signal_in_hektor(self, signal, indicators: Dict[str, Any], regime: str):
+        """Store signal context in Hektor for semantic memory.
+        
+        Args:
+            signal: Trading signal
+            indicators: Current indicator values
+            regime: Market regime classification
+        """
+        if not self.ctx.hektor_adapter:
+            return
+        
+        try:
+            context = {
+                'indicators': indicators,
+                'regime': regime,
+                'symbol': signal.symbol,
+                'timestamp': datetime.now().isoformat()
+            }
+            self.ctx.hektor_adapter.store_signal(signal, context)
+        except Exception as e:
+            self.ctx.logger.debug(f"Hektor signal storage (non-critical): {e}")
+    
+    def _store_trade_in_hektor(self, trade, outcome: Dict[str, Any]):
+        """Store completed trade in Hektor for semantic memory.
+        
+        Args:
+            trade: Completed trade record
+            outcome: Trade outcome details
+        """
+        if not self.ctx.hektor_adapter:
+            return
+        
+        try:
+            self.ctx.hektor_adapter.store_trade(trade, outcome)
+        except Exception as e:
+            self.ctx.logger.debug(f"Hektor trade storage (non-critical): {e}")
+    
+    def _get_hektor_context(self, signal, indicators: Dict[str, Any], regime: str) -> Optional[str]:
+        """Retrieve relevant historical context from Hektor.
+        
+        Args:
+            signal: Current trading signal
+            indicators: Current indicator values
+            regime: Market regime
+            
+        Returns:
+            Formatted context string or None
+        """
+        if not self.ctx.hektor_retriever:
+            return None
+        
+        try:
+            contexts = self.ctx.hektor_retriever.get_similar_signals(
+                signal, indicators, regime, k=5, min_score=0.7
+            )
+            if contexts:
+                return self.ctx.hektor_retriever.format_context_window(contexts)
+        except Exception as e:
+            self.ctx.logger.debug(f"Hektor context retrieval (non-critical): {e}")
+        
+        return None
     
     def _adopt_external_trades(self):
         """Scan and adopt external trades if enabled."""
@@ -1528,6 +1837,20 @@ class TradingLoop:
                     profit=position.unrealized_pnl,
                     exit_reason=exit_signal.reason
                 )
+                
+                # Store trade outcome in Hektor for semantic memory
+                try:
+                    outcome = {
+                        'pnl': position.unrealized_pnl,
+                        'result': 'WIN' if position.unrealized_pnl > 0 else 'LOSS' if position.unrealized_pnl < 0 else 'BREAKEVEN',
+                        'exit_price': close_result.fill_price,
+                        'exit_time': datetime.now().isoformat(),
+                        'exit_reason': exit_signal.reason,
+                        'symbol': position.symbol
+                    }
+                    self._store_trade_in_hektor(position, outcome)
+                except Exception:
+                    pass  # Non-critical
                 
                 # Record position closed for metrics
                 try:
