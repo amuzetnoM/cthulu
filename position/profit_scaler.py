@@ -43,23 +43,26 @@ class ScalingConfig:
     enabled: bool = True
     
     # Tiers for profit taking (applied in order)
+    # These align with TP1/TP2/TP3 targets - let trades reach actual targets
     tiers: List[ScalingTier] = field(default_factory=lambda: [
-        ScalingTier(profit_threshold_pct=0.30, close_pct=0.25, move_sl_to_entry=True, trail_pct=0.50),
-        ScalingTier(profit_threshold_pct=0.60, close_pct=0.35, move_sl_to_entry=True, trail_pct=0.60),
-        ScalingTier(profit_threshold_pct=1.00, close_pct=0.50, move_sl_to_entry=True, trail_pct=0.70),
+        ScalingTier(profit_threshold_pct=0.50, close_pct=0.25, move_sl_to_entry=True, trail_pct=0.50),   # TP1 ~50% of target
+        ScalingTier(profit_threshold_pct=0.80, close_pct=0.35, move_sl_to_entry=True, trail_pct=0.60),   # TP2 ~80% of target
+        ScalingTier(profit_threshold_pct=1.20, close_pct=0.50, move_sl_to_entry=True, trail_pct=0.70),   # TP3 ~full target+
     ])
     
     # Micro account adjustments (balance < threshold)
+    # Even micro accounts need room to breathe - don't choke trades
     micro_account_threshold: float = 100.0
     micro_tiers: List[ScalingTier] = field(default_factory=lambda: [
-        # More aggressive profit taking for micro accounts
-        ScalingTier(profit_threshold_pct=0.15, close_pct=0.30, move_sl_to_entry=True, trail_pct=0.40),
-        ScalingTier(profit_threshold_pct=0.30, close_pct=0.40, move_sl_to_entry=True, trail_pct=0.50),
-        ScalingTier(profit_threshold_pct=0.50, close_pct=0.50, move_sl_to_entry=True, trail_pct=0.60),
+        # Still let trades run to meaningful targets, just scale a bit earlier
+        ScalingTier(profit_threshold_pct=0.40, close_pct=0.30, move_sl_to_entry=True, trail_pct=0.40),   # TP1 ~40%
+        ScalingTier(profit_threshold_pct=0.70, close_pct=0.35, move_sl_to_entry=True, trail_pct=0.50),   # TP2 ~70%
+        ScalingTier(profit_threshold_pct=1.00, close_pct=0.50, move_sl_to_entry=True, trail_pct=0.60),   # TP3 full target
     ])
     
     # Minimum profit in account currency to trigger scaling
-    min_profit_amount: float = 0.10
+    # Must be meaningful profit, not pocket change
+    min_profit_amount: float = 2.00
     
     # Maximum position age before forced evaluation (hours)
     max_position_age_hours: float = 4.0
@@ -190,34 +193,70 @@ class ProfitScaler:
         actions = []
         tiers = self.get_active_tiers(balance)
         
-        # Calculate current profit
+        # Calculate current profit relative to TP target (not entry price)
+        # For GOLD/XAUUSD: TP targets are typically $10-30 from entry
+        # profit_pct should be % of the way TO the target, not % of entry price
         if side.upper() == 'BUY':
             profit_pips = current_price - state.entry_price
-            profit_pct = profit_pips / state.entry_price if state.entry_price > 0 else 0
         else:
             profit_pips = state.entry_price - current_price
-            profit_pct = profit_pips / state.entry_price if state.entry_price > 0 else 0
         
-        # Estimate profit in currency (rough approximation)
-        # For more accuracy, would need pip value calculation per symbol
-        profit_amount = profit_pct * state.current_volume * state.entry_price * 100  # Rough estimate
+        # Calculate profit as % of TP distance (if TP set) or use fixed pip targets
+        if state.current_tp and state.current_tp != state.entry_price:
+            tp_distance = abs(state.current_tp - state.entry_price)
+            profit_pct = profit_pips / tp_distance if tp_distance > 0 else 0
+        else:
+            # Fallback: Use symbol-appropriate pip value
+            # For GOLD: $10 move = good scalp profit (~100 pips equivalent)
+            # For FX pairs: 50 pips = good move
+            if 'GOLD' in state.symbol.upper() or 'XAU' in state.symbol.upper():
+                # GOLD: $15 target = 100% of tier threshold
+                pip_target = 15.0  
+            else:
+                # FX: 0.0050 (50 pips) = 100% of tier threshold
+                pip_target = 0.0050
+            profit_pct = profit_pips / pip_target if pip_target > 0 else 0
         
-        # Check each tier
+        # Estimate profit in currency
+        profit_amount = abs(profit_pips) * state.current_volume * 100  # Rough estimate
+        
+        # Check each tier - but only if we're actually in meaningful profit
+        # Skip scaling if profit is negligible (< $1 for micro, < $5 for standard)
+        min_meaningful_profit = 1.0 if balance < self.config.micro_account_threshold else 5.0
+        if profit_amount < min_meaningful_profit:
+            return []  # Don't scale tiny profits
+        
         for i, tier in enumerate(tiers):
             if i in state.tiers_executed:
                 continue
                 
             if profit_pct >= tier.profit_threshold_pct:
+                # CRITICAL: Check if position can actually be reduced
+                # If at minimum lot, we can only close entirely or leave alone
+                min_lot = 0.01
+                remaining_after_close = state.current_volume - (state.current_volume * tier.close_pct)
+                
+                # Skip partial close if it would leave less than min_lot
+                if remaining_after_close < min_lot and remaining_after_close > 0:
+                    # Can't partial close - just trail the stop instead
+                    logger.debug(f"Skipping partial close for #{ticket}: would leave {remaining_after_close:.4f} lots (below min)")
+                    continue
+                
                 # Calculate volume to close
                 close_volume = round(state.current_volume * tier.close_pct, 2)
                 
                 # Ensure minimum lot size
-                min_lot = 0.01
                 if close_volume < min_lot:
                     close_volume = min_lot
                     
                 # Don't close more than we have
                 if close_volume > state.current_volume:
+                    close_volume = state.current_volume
+                
+                # Final check: only proceed if this leaves valid remainder or closes all
+                final_remainder = state.current_volume - close_volume
+                if final_remainder > 0 and final_remainder < min_lot:
+                    # Invalid remainder - adjust to close entire position
                     close_volume = state.current_volume
                 
                 if close_volume >= min_lot:
@@ -346,8 +385,27 @@ class ProfitScaler:
         return results
     
     def _execute_partial_close(self, ticket: int, volume: float) -> Dict[str, Any]:
-        """Execute partial position close"""
+        """Execute partial position close with pre-validation"""
         try:
+            # Pre-check: verify position still exists and has enough volume
+            from cthulu.connector.mt5_connector import mt5
+            positions = mt5.positions_get(ticket=ticket)
+            if not positions:
+                logger.debug(f"Partial close skipped for #{ticket}: position no longer exists")
+                return {'success': False, 'error': 'Position closed externally', 'skipped': True}
+            
+            pos = positions[0]
+            if pos.volume < volume:
+                # Adjust volume to what's available
+                volume = pos.volume
+            
+            # Check if partial close is even possible
+            min_lot = 0.01
+            remainder = pos.volume - volume
+            if remainder > 0 and remainder < min_lot:
+                logger.debug(f"Partial close #{ticket}: adjusting to full close (remainder {remainder:.4f} < min_lot)")
+                volume = pos.volume  # Close entire position
+            
             result = self.execution_engine.close_position(ticket, volume=volume)
             if result and result.status.value == 'FILLED':
                 # Safely extract profit from metadata or result
@@ -368,16 +426,39 @@ class ProfitScaler:
             return {'success': False, 'error': str(e)}
     
     def _execute_sl_modification(self, ticket: int, new_sl: float) -> Dict[str, Any]:
-        """Modify position stop loss"""
+        """Modify position stop loss with validation"""
         try:
             from cthulu.connector.mt5_connector import mt5
             
             # Get current position
             positions = mt5.positions_get(ticket=ticket)
             if not positions:
-                return {'success': False, 'error': 'Position not found'}
+                logger.debug(f"SL modification skipped for #{ticket}: position no longer exists")
+                return {'success': False, 'error': 'Position closed externally', 'skipped': True}
                 
             pos = positions[0]
+            
+            # Validate new SL makes sense for position direction
+            # BUY: SL must be below current price
+            # SELL: SL must be above current price
+            current_price = pos.price_current
+            is_buy = pos.type == 0
+            
+            if is_buy and new_sl >= current_price:
+                logger.debug(f"SL modification skipped for #{ticket}: SL {new_sl} >= price {current_price}")
+                return {'success': False, 'error': 'Invalid SL for BUY (above current price)', 'skipped': True}
+            elif not is_buy and new_sl <= current_price:
+                logger.debug(f"SL modification skipped for #{ticket}: SL {new_sl} <= price {current_price}")
+                return {'success': False, 'error': 'Invalid SL for SELL (below current price)', 'skipped': True}
+            
+            # Don't move SL backwards (worse for the position)
+            if pos.sl and pos.sl != 0:
+                if is_buy and new_sl < pos.sl:
+                    logger.debug(f"SL modification skipped for #{ticket}: new SL {new_sl} < current {pos.sl}")
+                    return {'success': False, 'error': 'Would worsen SL', 'skipped': True}
+                elif not is_buy and new_sl > pos.sl:
+                    logger.debug(f"SL modification skipped for #{ticket}: new SL {new_sl} > current {pos.sl}")
+                    return {'success': False, 'error': 'Would worsen SL', 'skipped': True}
             
             # Build modification request
             request = {
