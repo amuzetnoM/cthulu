@@ -183,19 +183,25 @@ class EntryConfluenceFilter:
         )
         reasons.extend(timing_reasons)
         
-        # 4. STRUCTURE SCORE - Market structure alignment
+        # 4. STRUCTURE SCORE - Market structure alignment (basic)
         structure_score, structure_reasons = self._score_structure(
             signal_direction, market_data
         )
         reasons.extend(structure_reasons)
         
-        # 5. TREND ALIGNMENT CHECK (NEW) - Macro trend must support direction
+        # 5. BOS/ChoCH STRUCTURE CHECK (NEW) - Fractal-based structure confirmation
+        bos_confirmed, bos_score, bos_reasons = self._check_bos_choch_structure(
+            signal_direction, symbol, market_data
+        )
+        reasons.extend(bos_reasons)
+        
+        # 6. TREND ALIGNMENT CHECK - Macro trend must support direction
         trend_aligned, trend_score, trend_reasons = self._check_trend_alignment(
             signal_direction, market_data
         )
         reasons.extend(trend_reasons)
         
-        # 6. Check for signal drift (price moved away from signal)
+        # 7. Check for signal drift (price moved away from signal)
         drift_penalty = 0.0
         if signal_entry_price is not None:
             drift = abs(current_price - signal_entry_price) / atr if atr > 0 else 0
@@ -203,14 +209,17 @@ class EntryConfluenceFilter:
                 drift_penalty = min(drift * 10, 30)  # Max 30 point penalty
                 warnings.append(f"Price drifted {drift:.1f} ATR from signal")
         
-        # Calculate weighted total score (including trend)
-        trend_weight = 0.15  # Add trend weight
+        # Calculate weighted total score (including trend and BOS/ChoCH)
+        # Weights sum to 1.0 after adjustment
+        trend_weight = 0.12
+        bos_weight = 0.15  # BOS/ChoCH is important for entry confirmation
         adjusted_weights = {
-            'level': self.level_weight * 0.85,
-            'momentum': self.momentum_weight * 0.85,
-            'timing': self.timing_weight * 0.85,
-            'structure': self.structure_weight * 0.85,
-            'trend': trend_weight
+            'level': self.level_weight * 0.73,      # ~0.29
+            'momentum': self.momentum_weight * 0.73, # ~0.18
+            'timing': self.timing_weight * 0.73,     # ~0.15
+            'structure': self.structure_weight * 0.73, # ~0.11
+            'trend': trend_weight,                    # 0.12
+            'bos': bos_weight                         # 0.15
         }
         
         total_score = (
@@ -218,8 +227,15 @@ class EntryConfluenceFilter:
             momentum_score * adjusted_weights['momentum'] +
             timing_score * adjusted_weights['timing'] +
             structure_score * adjusted_weights['structure'] +
-            trend_score * adjusted_weights['trend']
+            trend_score * adjusted_weights['trend'] +
+            bos_score * adjusted_weights['bos']
         ) * 100 - drift_penalty
+        
+        # BOS confirmation boost: if structure strongly confirms, boost score
+        if bos_confirmed and bos_score > 0.6:
+            total_score += 5  # Bonus for structure confirmation
+        elif not bos_confirmed:
+            total_score -= 10  # Penalty for trading against structure
         
         total_score = max(0, min(100, total_score))
         
@@ -374,6 +390,69 @@ class EntryConfluenceFilter:
                     reasons.append(f"ADX strong ({adx:.1f}) - risky to fade trend")
         
         return aligned, max(0, min(1, score)), reasons
+    
+    def _check_bos_choch_structure(
+        self,
+        direction: str,
+        symbol: str,
+        data: pd.DataFrame
+    ) -> Tuple[bool, float, List[str]]:
+        """
+        Check market structure using BOS/ChoCH detection.
+        
+        Uses fractal-based structure detector for:
+        - Break of Structure (BOS): Confirmation of direction
+        - Change of Character (ChoCH): Early warning of reversal
+        
+        Args:
+            direction: 'long' or 'short'
+            symbol: Trading symbol
+            data: Market data DataFrame
+            
+        Returns:
+            Tuple of (confirmed, score, reasons)
+        """
+        if len(data) < 20:
+            return True, 0.5, []  # Neutral if insufficient data
+        
+        reasons = []
+        score = 0.5  # Neutral
+        confirmed = True
+        
+        try:
+            from cthulu.cognition.structure_detector import get_structure_detector
+            
+            detector = get_structure_detector()
+            is_confirmed, reason, conf_mult = detector.get_entry_confirmation(
+                signal_direction=direction,
+                symbol=symbol,
+                df=data
+            )
+            
+            if is_confirmed:
+                if conf_mult > 1.0:
+                    # Strong confirmation (BOS/ChoCH in our direction)
+                    score = 0.5 + min(0.3, (conf_mult - 1.0))
+                    reasons.append(f"Structure confirmed: {reason}")
+                else:
+                    # Neutral or weak confirmation
+                    score = 0.5
+                    if reason:
+                        reasons.append(f"Structure: {reason}")
+                confirmed = True
+            else:
+                # Trading against structure
+                score = 0.5 - min(0.3, (1.0 - conf_mult))
+                reasons.append(f"Structure WARNING: {reason}")
+                confirmed = False
+            
+        except ImportError:
+            # Structure detector not available, use neutral score
+            self.logger.debug("BOS/ChoCH structure detector not available")
+        except Exception as e:
+            self.logger.debug(f"BOS/ChoCH check failed: {e}")
+        
+        return confirmed, max(0, min(1, score)), reasons
     
     def register_pending_entry(
         self,
