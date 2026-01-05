@@ -121,6 +121,11 @@ class ExecutionEngine:
     - Order modification and cancellation
     """
     
+    # CRITICAL: Maximum stop loss distance as percentage
+    # This prevents catastrophic losses from misconfigured stop losses
+    # DO NOT increase beyond 0.15 (15%) without careful consideration
+    MAX_STOP_LOSS_PCT = 0.10  # 10% maximum stop loss distance
+    
     def __init__(self, connector, magic_number: int = None, slippage: int = 10, risk_config: Optional[Dict[str, Any]] = None, metrics=None, ml_collector=None, telemetry=None):
         """
         Initialize execution engine.
@@ -129,6 +134,7 @@ class ExecutionEngine:
             connector: MT5Connector instance
             magic_number: Unique identifier for bot orders (if None, use DEFAULT_MAGIC)
             slippage: Maximum allowed slippage in points
+            risk_config: Optional risk configuration (can include 'max_sl_pct' override)
         """
         self.connector = connector
         # Use provided magic number or fall back to centralized DEFAULT_MAGIC
@@ -148,6 +154,10 @@ class ExecutionEngine:
         self._submitted_orders: Dict[str, int] = {}
         # Max size to avoid unbounded growth; old entries will be pruned
         self._idempotency_max = 1000
+        
+        # Allow risk_config to override max SL percentage (but cap at 15%)
+        config_max_sl = self.risk_config.get('max_sl_pct', self.MAX_STOP_LOSS_PCT)
+        self.max_sl_pct = min(float(config_max_sl), 0.15)
         
     def place_order(self, order_req: OrderRequest) -> ExecutionResult:
         """
@@ -822,7 +832,7 @@ class ExecutionEngine:
         # CRITICAL: This safety check prevents misconfigured stop losses
         # that could cause massive losses (e.g., the 25% bug that was fixed)
         if order_req.sl and price is not None:
-            max_sl_pct = 0.10  # Maximum 10% stop loss distance - DO NOT INCREASE!
+            max_sl_pct = self.max_sl_pct  # Use configurable max from instance
             sl_dist_pct = abs(float(price) - float(order_req.sl)) / float(price)
             
             if sl_dist_pct > max_sl_pct:
