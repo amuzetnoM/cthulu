@@ -42,10 +42,12 @@ Cthulu is an **autonomous multi-strategy trading system** for MetaTrader 5 that 
 | Document | Description | Link |
 |----------|-------------|------|
 | **Architecture** | Technical architecture with comprehensive diagrams | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| **Position Management** | Profit scaling, lifecycle, and trade adoption | [docs/POSITION_MANAGEMENT.md](docs/POSITION_MANAGEMENT.md) |
 | **Deployment** | Production deployment strategies and Docker | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 | **Performance Tuning** | Optimization and benchmarking strategies | [docs/PERFORMANCE_TUNING.md](docs/PERFORMANCE_TUNING.md) |
 | **Security** | Security guidelines and best practices | [docs/SECURITY.md](docs/SECURITY.md) |
 | **Backtesting** | Strategy validation and backtesting framework | [docs/BACKTESTING.md](docs/BACKTESTING.md) |
+| **Documentation Gaps** | Analysis of documentation coverage | [docs/DOCUMENTATION_GAPS_ANALYSIS.md](docs/DOCUMENTATION_GAPS_ANALYSIS.md) |
 
 ### OPERATIONAL GUIDES
 
@@ -55,6 +57,8 @@ Cthulu is an **autonomous multi-strategy trading system** for MetaTrader 5 that 
 | **Observability** | Metrics, monitoring, and Prometheus setup | [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) |
 | **Ultra-Aggressive Guide** | High-frequency trading configuration | [docs/ULTRA_AGGRESSIVE_GUIDE.md](docs/ULTRA_AGGRESSIVE_GUIDE.md) |
 | **Advisory Modes** | Testing modes and paper trading | [docs/ADVISORY.md](docs/ADVISORY.md) |
+| **Stop Loss Bug Fix** | Critical performance fix documentation | [docs/STOP_LOSS_BUG_FIX.md](docs/STOP_LOSS_BUG_FIX.md) |
+| **Ops API** | Operational API for runtime control | [docs/OPS_API.md](docs/OPS_API.md) |
 
 ### LEGAL & POLICIES
 
