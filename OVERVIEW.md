@@ -404,7 +404,7 @@ Kelly % = (Win Rate × Average Win) - (Loss Rate × Average Loss) / Average Win
 }
 ```
 
-### 7. Entry Confluence Filter 🆕
+### 7. Entry Confluence Filter
 
 The Entry Confluence Filter is a **quality gate** between signal generation and execution that prevents blind entries.
 
