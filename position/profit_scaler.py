@@ -232,18 +232,54 @@ class ProfitScaler:
                 
             if profit_pct >= tier.profit_threshold_pct:
                 # CRITICAL: Check if position can actually be reduced
-                # If at minimum lot, we can only close entirely or leave alone
-                min_lot = 0.01
+                # Get actual minimum lot for this symbol from MT5
+                try:
+                    from cthulu.connector.mt5_connector import mt5
+                    symbol_info = mt5.symbol_info(state.symbol)
+                    if symbol_info:
+                        min_lot = symbol_info.volume_min
+                        volume_step = symbol_info.volume_step
+                    else:
+                        min_lot = 0.01
+                        volume_step = 0.01
+                except Exception:
+                    min_lot = 0.01
+                    volume_step = 0.01
+                
+                # At minimum lot - can't do partial closes, only trail stops
+                if state.current_volume <= min_lot + 0.001:  # Allow small tolerance
+                    logger.debug(f"Skipping partial close for #{ticket}: position at minimum lot ({state.current_volume:.2f}, min={min_lot})")
+                    # Still apply trailing stop if configured
+                    if tier.trail_pct > 0 and profit_pct > 0:
+                        if side.upper() == 'BUY':
+                            trail_sl = state.entry_price + (profit_pips * tier.trail_pct)
+                        else:
+                            trail_sl = state.entry_price - (profit_pips * tier.trail_pct)
+                            
+                        if state.current_sl is None or (side.upper() == 'BUY' and trail_sl > state.current_sl) or \
+                           (side.upper() == 'SELL' and trail_sl < state.current_sl):
+                            actions.append({
+                                'type': 'trail_sl',
+                                'ticket': ticket,
+                                'new_sl': trail_sl,
+                                'reason': f'Trailing stop at {tier.trail_pct*100:.0f}% of profit (min lot, no partial close)'
+                            })
+                    # Mark tier as executed even though we couldn't close
+                    state.tiers_executed.append(i)
+                    continue
+                
                 remaining_after_close = state.current_volume - (state.current_volume * tier.close_pct)
                 
                 # Skip partial close if it would leave less than min_lot
                 if remaining_after_close < min_lot and remaining_after_close > 0:
                     # Can't partial close - just trail the stop instead
-                    logger.debug(f"Skipping partial close for #{ticket}: would leave {remaining_after_close:.4f} lots (below min)")
+                    logger.debug(f"Skipping partial close for #{ticket}: would leave {remaining_after_close:.4f} lots (below min {min_lot})")
                     continue
                 
-                # Calculate volume to close
-                close_volume = round(state.current_volume * tier.close_pct, 2)
+                # Calculate volume to close (respect volume step)
+                close_volume = state.current_volume * tier.close_pct
+                # Round to nearest volume step
+                close_volume = round(round(close_volume / volume_step) * volume_step, 2)
                 
                 # Ensure minimum lot size
                 if close_volume < min_lot:
@@ -395,16 +431,38 @@ class ProfitScaler:
                 return {'success': False, 'error': 'Position closed externally', 'skipped': True}
             
             pos = positions[0]
+            
+            # Get symbol-specific volume constraints
+            symbol_info = mt5.symbol_info(pos.symbol)
+            if symbol_info:
+                min_lot = symbol_info.volume_min
+                volume_step = symbol_info.volume_step
+            else:
+                min_lot = 0.01
+                volume_step = 0.01
+            
+            # Check if position is already at minimum - can't partial close
+            if pos.volume <= min_lot + 0.0001:
+                logger.debug(f"Partial close skipped for #{ticket}: position at minimum lot ({pos.volume}, min={min_lot})")
+                return {'success': False, 'error': 'Position at minimum lot', 'skipped': True}
+            
             if pos.volume < volume:
                 # Adjust volume to what's available
                 volume = pos.volume
             
+            # Normalize volume to step
+            volume = round(round(volume / volume_step) * volume_step, 2)
+            
             # Check if partial close is even possible
-            min_lot = 0.01
             remainder = pos.volume - volume
             if remainder > 0 and remainder < min_lot:
-                logger.debug(f"Partial close #{ticket}: adjusting to full close (remainder {remainder:.4f} < min_lot)")
+                logger.debug(f"Partial close #{ticket}: adjusting to full close (remainder {remainder:.4f} < min_lot {min_lot})")
                 volume = pos.volume  # Close entire position
+            
+            # Final validation
+            if volume < min_lot:
+                logger.debug(f"Partial close skipped for #{ticket}: calculated volume {volume} < min_lot {min_lot}")
+                return {'success': False, 'error': 'Volume below minimum', 'skipped': True}
             
             result = self.execution_engine.close_position(ticket, volume=volume)
             if result and result.status.value == 'FILLED':

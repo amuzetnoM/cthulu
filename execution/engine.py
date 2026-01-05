@@ -699,6 +699,72 @@ class ExecutionEngine:
             self.logger.error(f"Legacy execute_order failed: {e}", exc_info=True)
             return None
 
+    def modify_position(self, ticket: int, sl: Optional[float] = None, 
+                       tp: Optional[float] = None) -> bool:
+        """
+        Modify stop-loss and/or take-profit for an existing position.
+        
+        Args:
+            ticket: Position ticket to modify
+            sl: New stop loss (None to keep current)
+            tp: New take profit (None to keep current)
+            
+        Returns:
+            True if modified successfully, False otherwise
+        """
+        try:
+            # Get position info
+            position = mt5.positions_get(ticket=ticket)
+            if not position:
+                self.logger.warning(f"Position {ticket} not found for modification")
+                return False
+            
+            position = position[0]
+            
+            # Get current SL/TP if not provided
+            new_sl = sl if sl is not None else position.sl
+            new_tp = tp if tp is not None else position.tp
+            
+            # Skip if values haven't changed (avoid unnecessary broker calls)
+            # Use tolerance for float comparison
+            sl_unchanged = (sl is None or abs(new_sl - position.sl) < 0.00001) if position.sl else (sl is None)
+            tp_unchanged = (tp is None or abs(new_tp - position.tp) < 0.00001) if position.tp else (tp is None)
+            
+            if sl_unchanged and tp_unchanged:
+                self.logger.debug(f"Position {ticket}: SL/TP unchanged, skipping modification")
+                return True  # Consider this a success - nothing to do
+            
+            # Build modification request
+            request = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "symbol": position.symbol,
+                "position": ticket,
+                "sl": new_sl,
+                "tp": new_tp,
+                "magic": self.magic_number,
+            }
+            
+            self.logger.debug(f"Modifying position {ticket}: SL={new_sl}, TP={new_tp}")
+            
+            # Submit modification
+            result = mt5.order_send(request)
+            
+            if result is None:
+                error = mt5.last_error()
+                self.logger.error(f"Position modification failed for {ticket}: {error}")
+                return False
+            
+            if result.retcode == mt5.TRADE_RETCODE_DONE:
+                self.logger.info(f"Position {ticket} modified: SL={new_sl}, TP={new_tp}")
+                return True
+            else:
+                self.logger.error(f"Position modification rejected for {ticket}: {result.retcode} - {result.comment}")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Error modifying position {ticket}: {e}", exc_info=True)
+            return False
+
     def _build_mt5_request(self, order_req: OrderRequest) -> Dict[str, Any]:
         """Build MT5 order request dictionary."""
         # Determine MT5 order type
