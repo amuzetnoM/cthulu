@@ -2,10 +2,11 @@
 title: OBSERVABILITY
 description: Performance metrics, Prometheus exporter, and guidance for monitoring Cthulu
 tags: [observability, metrics, prometheus]
-sidebar_position: 9
+sidebar_position: 10
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white) 
 
 
 ## Overview

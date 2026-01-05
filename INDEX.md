@@ -1,82 +1,160 @@
 # SYSTEM INDEX
 
-![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
-![Language](https://img.shields.io/badge/Language-Python_3.10+-3776AB?style=for-the-badge&labelColor=0D1117&logo=python&logoColor=white)
-![Integration](https://img.shields.io/badge/Integration-MetaTrader_5-00599C?style=for-the-badge&labelColor=0D1117&logo=metatrader5&logoColor=white)
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 <p align="center">
   <img src="assets/cthulu-black.png" width="400" />
 </p>
 
-## SYSTEM OVERVIEW
+## OVERVIEW
 
-Cthulu is an **autonomous multi-strategy trading system** for MetaTrader 5 that combines advanced technical analysis, dynamic strategy selection, and comprehensive risk management. The system features 7 active trading strategies, 12 technical indicators, and a revolutionary **SAFE (Set And Forget Engine)** paradigm for fully autonomous operation.
+Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring 7 active trading strategies, 12 technical indicators, and the revolutionary SAFE (Set And Forget Engine) paradigm for fully autonomous operation.
 
-**Current Status:** v5.1.0 "APEX" — Production Ready
-
-### KEY FEATURES
-
-- 🎯 **7 Active Strategies**: RSI Reversal, EMA/SMA Crossover, Momentum, Scalping, Mean Reversion, Trend Following
-- 📊 **12 Technical Indicators**: RSI, MACD, Bollinger Bands, Stochastic, ADX, Supertrend, VWAP, and more
-- 🔄 **Multi-Strategy Fallback**: Tries up to 4 strategies per bar for maximum opportunity capture
-- 🛡️ **Enterprise Risk Management**: Position sizing, daily loss limits, emergency shutdown
-- 🤖 **Fully Autonomous**: SAFE engine operates without manual intervention
-- 📈 **Real-Time Monitoring**: Desktop GUI, Prometheus metrics, comprehensive logging
-- 🔐 **Production Hardened**: 185+ passing tests, 95% code coverage
+**Current Version:** v5.1.0 "APEX" — Production Ready
 
 ---
 
-## DOCUMENTATION INDEX
+## CORE DOCUMENTATION
 
-### GETTING STARTED
+### Getting Started
+| Document | Description |
+|----------|-------------|
+| [Introduction](docs/01_INTRODUCTION.md) | System overview and comprehensive user guide |
+| [Quick Start](docs/02_QUICKSTART.md) | Installation and first-time setup |
+| [Usage & Terms](docs/03_USAGE.md) | Terms of use and basic operations |
 
-| Document | Description | Link |
-|----------|-------------|------|
-| **Introduction** | System overview and quick start | [docs/README.md](docs/README.md) |
-| **Features Guide** | Complete feature documentation and SAFE engine | [docs/FEATURES_GUIDE.md](docs/FEATURES_GUIDE.md) |
-| **Quick Start** | Installation and first-time setup | [docs/QUICKSTART.md](docs/QUICKSTART.md) |
-| **System Overview** | Complete system architecture and design | [OVERVIEW.md](OVERVIEW.md) |
+### System Architecture
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/04_ARCHITECTURE.md) | Technical architecture with comprehensive diagrams |
+| [Features Guide](docs/05_FEATURES_GUIDE.md) | Complete feature documentation and SAFE engine |
+| [Mindsets](docs/06_MINDSETS.md) | Trading profiles: Conservative, Balanced, Aggressive, Ultra-Aggressive |
 
-### TECHNICAL DOCUMENTATION
+### Risk & Position Management
+| Document | Description |
+|----------|-------------|
+| [Risk Management](docs/07_RISK.md) | Risk configuration and stop-loss strategies |
+| [Position Management](docs/08_POSITION_MANAGEMENT.md) | Profit scaling, lifecycle, and trade adoption |
 
-| Document | Description | Link |
-|----------|-------------|------|
-| **Architecture** | Technical architecture with comprehensive diagrams | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| **Position Management** | Profit scaling, lifecycle, and trade adoption | [docs/POSITION_MANAGEMENT.md](docs/POSITION_MANAGEMENT.md) |
-| **Deployment** | Production deployment strategies and Docker | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
-| **Performance Tuning** | Optimization and benchmarking strategies | [docs/PERFORMANCE_TUNING.md](docs/PERFORMANCE_TUNING.md) |
-| **Security** | Security guidelines and best practices | [docs/SECURITY.md](docs/SECURITY.md) |
-| **Backtesting** | Strategy validation and backtesting framework | [docs/BACKTESTING.md](docs/BACKTESTING.md) |
-| **Documentation Gaps** | Analysis of documentation coverage | [docs/DOCUMENTATION_GAPS_ANALYSIS.md](docs/DOCUMENTATION_GAPS_ANALYSIS.md) |
+### Deployment & Operations
+| Document | Description |
+|----------|-------------|
+| [Deployment](docs/09_DEPLOYMENT.md) | Production deployment strategies (Docker, systemd) |
+| [Observability](docs/10_OBSERVABILITY.md) | Metrics, monitoring, and Prometheus setup |
+| [Backtesting](docs/11_BACKTESTING.md) | Strategy validation and backtesting framework |
 
-### OPERATIONAL GUIDES
+### Advanced Topics
+| Document | Description |
+|----------|-------------|
+| [Machine Learning & RL](docs/12_ML-RL.md) | ML/RL integration philosophy and implementation |
+| [Performance Tuning](docs/13_PERFORMANCE_TUNING.md) | Optimization and benchmarking strategies |
+| [Advisory Modes](docs/14_ADVISORY.md) | Testing modes and paper trading |
+| [Utilities](docs/15_UTILITIES.md) | Infrastructure components and helper modules |
 
-| Document | Description | Link |
-|----------|-------------|------|
-| **Risk Management** | Risk configuration and position sizing | [docs/RISK.md](docs/RISK.md) |
-| **Observability** | Metrics, monitoring, and Prometheus setup | [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md) |
-| **Ultra-Aggressive Guide** | High-frequency trading configuration | [docs/ULTRA_AGGRESSIVE_GUIDE.md](docs/ULTRA_AGGRESSIVE_GUIDE.md) |
-| **Advisory Modes** | Testing modes and paper trading | [docs/ADVISORY.md](docs/ADVISORY.md) |
-| **Stop Loss Bug Fix** | Critical performance fix documentation | [docs/STOP_LOSS_BUG_FIX.md](docs/STOP_LOSS_BUG_FIX.md) |
-| **Ops API** | Operational API for runtime control | [docs/OPS_API.md](docs/OPS_API.md) |
+### Security & Compliance
+| Document | Description |
+|----------|-------------|
+| [Security](docs/16_SECURITY.md) | Security guidelines and best practices |
+| [Mathematics](docs/17_MATHEMATICS.md) | Mathematical foundations for risk and sizing |
+| [Hecktor Integration](docs/18_HECKTOR.md) | 👾 Cthulu x 👽 Hecktor vector database integration |
+| [Privacy Policy](docs/19_PRIVACY_POLICY.md) | Data handling and privacy practices |
 
-### LEGAL & POLICIES
-
-| Document | Description | Link |
-|----------|-------------|------|
-| **Terms of Use** | Legal terms and disclaimers | [docs/terms.md](docs/terms.md) |
-| **Privacy Policy** | Data handling and privacy practices | [docs/policies.md](docs/policies.md) |
-
-### CHANGELOG & RELEASES
-
-| Document | Description | Link |
-|----------|-------------|------|
-| **Changelog** | Complete version history | [docs/Changelog/CHANGELOG.md](docs/Changelog/CHANGELOG.md) |
-| **v5.1.0 - APEX** | Latest release notes | [docs/Changelog/v5.1.0.md](docs/Changelog/v5.1.0.md) |
-| **v5.0.0** | Major overhaul release | [docs/Changelog/v5.0.0.md](docs/Changelog/v5.0.0.md) |
-| **v4.0.0** | Dynamic strategy selection | [docs/Changelog/v4.0.0.md](docs/Changelog/v4.0.0.md) |
+### Documentation Meta
+| Document | Description |
+|----------|-------------|
+| [Changelog](docs/Changelog/CHANGELOG.md) | Complete version history and release notes |
 
 ---
+
+## MODULE DIRECTORIES
+
+### Core Trading System
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **advisory** | Advisory and ghost trading modes for safe testing | [README](advisory/README.md) |
+| **cognition** | ML/RL cognition engine for intelligent augmentation | [README](cognition/README.md) |
+| **execution** | Order execution engine with MT5 integration | Core module |
+| **strategy** | Trading strategies (RSI, EMA, Momentum, Scalping, etc.) | Core module |
+| **indicators** | Technical indicators (RSI, MACD, Bollinger, ADX, etc.) | Core module |
+
+### Risk & Position Management
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **risk** | Risk management and position sizing | [README](risk/README.md) |
+| **position** | Position lifecycle and profit scaling | [README](position/README.md) |
+| **exit** | Exit strategies (trailing stop, profit target, time-based) | Core module |
+
+### Infrastructure & Utilities
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **connector** | MetaTrader 5 connector and session management | Core module |
+| **utils** | Circuit breakers, rate limiters, caching, retry logic | [README](utils/README.md) |
+| **persistence** | Database layer for trades, signals, and metrics | Core module |
+| **sentinel** | System monitoring and health checks | [README](sentinel/README.md) |
+
+### Monitoring & Observability
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **monitoring** | Trade monitoring and metrics collection | [README](monitoring/README.md) |
+| **observability** | Structured logging, Prometheus metrics, runbooks | [README](observability/README.md) |
+| **rpc** | RPC server for external integrations | [README](rpc/README.md) |
+
+### Testing & Validation
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **backtesting** | Strategy validation and historical testing | [README](backtesting/README.md) |
+| **training** | ML/RL model training and validation | [README](training/README.md) |
+| **audit** | Security audits and compliance reports | [README](audit/README.md) |
+
+### Deployment & Configuration
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **deployment** | Production deployment configurations | [README](deployment/README.md) |
+| **configs** | Configuration templates and mindset presets | [README](configs/mindsets/README.md) |
+
+---
+
+## QUICK REFERENCE
+
+### Essential Links
+- **System Overview**: [OVERVIEW.md](OVERVIEW.md)
+- **Changelog**: [docs/Changelog/CHANGELOG.md](docs/Changelog/CHANGELOG.md)
+- **License**: [LICENSE](LICENSE)
+
+### Key Features
+- 7 Active Trading Strategies
+- 12 Technical Indicators
+- Multi-Strategy Fallback System
+- Enterprise Risk Management
+- Real-Time Monitoring & Alerts
+- 185+ Passing Tests, 95% Coverage
+
+### Quick Start Commands
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Start with interactive setup
+python -m cthulu --config config.json
+
+# Skip setup for automation
+python -m cthulu --config config.json --skip-setup
+
+# Dry run mode (no real orders)
+python -m cthulu --config config.json --dry-run
+```
+
+---
+
+## SUPPORT
+
+- **Issues**: Report bugs via GitHub Issues
+- **Documentation**: Browse `/docs` directory for detailed guides
+
+---
+
+**👾 Built with focus on safety, testability, and production readiness**
 
 ## SYSTEM ARCHITECTURE
 

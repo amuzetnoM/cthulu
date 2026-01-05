@@ -2,13 +2,13 @@
 title: HECKTOR INTEGRATION
 description: Technical integration specification between Cthulu autonomous trading system and Vector Studio (Hecktor) high-performance vector database for semantic trade memory
 tags: [integration, vector-database, hecktor, semantic-memory, embeddings]
-sidebar_position: 16
+sidebar_position: 18
 ---
 
 ![](https://img.shields.io/badge/Version-1.0.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
-![](https://img.shields.io/badge/Status-Implemented-27ae60?style=for-the-badge&labelColor=0D1117&logo=checkmarx&logoColor=white)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
-# 👾 Cthulu x Hecktor Integration
+# 👾 Cthulu x 👽 Hecktor Integration
 
 > **Technical Integration Specification**  
 > **Last Updated**: 2026-01-05  

@@ -5,7 +5,8 @@ tags: [terms, legal, disclaimer, risk-disclosure]
 sidebar_position: 3
 ---
 
-[![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu.svg?label=last%20updated&logo=github)](https://github.com/amuzetnoM/cthulu/commits/main)  
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)  
 
 
 **IMPORTANT DISCLAIMER:** Trading in financial markets involves substantial risk of loss. Cthulu is provided AS-IS without warranties. You are solely responsible for your trading decisions and any losses incurred. Never trade with money you cannot afford to lose.

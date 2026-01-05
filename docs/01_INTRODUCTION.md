@@ -5,9 +5,9 @@ tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 sidebar_position: 1
 
 ---
-![👾](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&logo=zap&logoColor=gold) <br>
+![](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&logo=zap&logoColor=gold)
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
-[![](https://img.shields.io/badge/CHANGELOG-GitBook-FF6F61?style=for-the-badge&labelColor=0D1117&logo=gitbook&logoColor=white)](https://artifact-virtual.gitbook.io/Cthulu)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
 
@@ -52,16 +52,16 @@ _________   __  .__          .__
  S A F E :<br> Set And Forget Engine**  
 > 👾 Cthulu reaches peak performance with revolutionary signal generation and the **SAFE** paradigm!
 >
-> - 🚀 **RSI Reversal Strategy (NEW)**: Pure RSI-based trading — signals fire instantly on RSI extremes without waiting for crossovers  
-> - 🔄 **Multi-Strategy Fallback**: When primary strategy returns no signal, system tries up to 3 alternatives automatically  
-> - 📊 **7 Active Strategies**: Complete arsenal — EMA, Momentum, Scalping, Trend, SMA, Mean Reversion, RSI Reversal  
-> - ⚡ **Aggressive Configuration**: Optimized thresholds for maximum opportunity capture (confidence: 0.15, ADX: 15)
-> - 🛡️ **Enhanced Database**: WAL mode with 30-second timeout for concurrent access  
-> - 📈 **Live Validated**: 5 trades executed autonomously within 15 minutes of deployment!
+> - **RSI Reversal Strategy (NEW)**: Pure RSI-based trading — signals fire instantly on RSI extremes without waiting for crossovers  
+> - **Multi-Strategy Fallback**: When primary strategy returns no signal, system tries up to 3 alternatives automatically  
+> - **7 Active Strategies**: Complete arsenal — EMA, Momentum, Scalping, Trend, SMA, Mean Reversion, RSI Reversal  
+> - **Aggressive Configuration**: Optimized thresholds for maximum opportunity capture (confidence: 0.15, ADX: 15)
+> - **Enhanced Database**: WAL mode with 30-second timeout for concurrent access  
+> - **Live Validated**: 5 trades executed autonomously within 15 minutes of deployment!
 >
-> **😈 S A F E <br> Smart strategy selection, <br> Adaptive to all conditions, <br> Fully autonomous, <br> Expert risk management**
+> **S A F E <br> Smart strategy selection, <br> Adaptive to all conditions, <br> Fully autonomous, <br> Expert risk management**
 >  
-> See [FEATURES_GUIDE.md](FEATURES_GUIDE.md) for full strategy ensemble, fallback mechanism, and indicator details.
+> See [05_FEATURES_GUIDE.md](05_FEATURES_GUIDE.md) for full strategy ensemble, fallback mechanism, and indicator details.
 
 
 ---
