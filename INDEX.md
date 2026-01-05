@@ -153,7 +153,6 @@ python -m cthulu --config config.json --dry-run
 
 - **Issues**: Report bugs via GitHub Issues
 - **Documentation**: Browse `/docs` directory for detailed guides
-- **Community**: See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines
 
 ---
 

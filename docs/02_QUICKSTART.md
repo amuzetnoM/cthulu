@@ -82,7 +82,7 @@ python -m Cthulu --config config.json
 
 ---
 
-## 📊 Strategy Modes
+## Strategy Modes
 
 ### Single Strategy Mode
 Choose one strategy:
@@ -120,7 +120,7 @@ Example config:
 
 ---
 
-## 📈 Technical Indicators
+## Technical Indicators
 
 Add indicators to enhance your strategy:
 
@@ -166,7 +166,7 @@ Example config:
 
 ---
 
-## 🎯 Mindset Presets
+## Mindset Presets
 
 Pre-configured risk profiles:
 
@@ -223,7 +223,7 @@ python -m Cthulu --config config.json --enable-rpc       # Enable RPC for GUI
 
 ---
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### MT5 Not Connecting
 1. Check `.env` file has correct credentials
@@ -273,7 +273,7 @@ python -m Cthulu --config config.json --enable-rpc       # Enable RPC for GUI
 - Issues: https://github.com/amuzetnoM/Cthulu/issues
 - Discussions: https://github.com/amuzetnoM/Cthulu/discussions
 
-Happy Trading! 🚀📈
+Happy Trading!
 
 
 
