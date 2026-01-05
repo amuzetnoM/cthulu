@@ -10,7 +10,7 @@ liberapay: # Replace with a single Liberapay username
 issuehunt: # Replace with a single IssueHunt username
 lfx_crowdfunding: # Replace with a single LFX Crowdfunding project-name e.g., cloud-foundry
 polar: # Replace with a single Polar username
-buy_me_a_coffee: amuzetnoM
+buy_me_a_coffee: # amuzetnoM
 thanks_dev: # Replace with a single thanks.dev username
 custom:
   - 'https://www.coinbase.com/0x74dB403364Bb0C92c2F1750A4692C4ffa3eCf4b0'
