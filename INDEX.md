@@ -1,4 +1,4 @@
-# CTHULU TRADING SYSTEM - INDEX
+# SYSTEM INDEX
 
 ![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 ![Language](https://img.shields.io/badge/Language-Python_3.10+-3776AB?style=for-the-badge&labelColor=0D1117&logo=python&logoColor=white)
