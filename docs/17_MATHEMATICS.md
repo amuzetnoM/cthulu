@@ -1,11 +1,13 @@
 ---
 title: "MATHEMATICS"
 description: "Mathematical foundations for Cthulu: risk, sizing, BOS/ChoCH detection, multi-RRR exits and performance optimization."
-version: "2.0.0
+version: "2.0.0"
 tags: [mathematics, risk-management, position-sizing, exit-strategies]
-sidebar_position: 16
-
+sidebar_position: 17
 ---
+
+![](https://img.shields.io/badge/Version-2.0.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 # MATHEMATICS
 

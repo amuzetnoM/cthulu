@@ -2,12 +2,13 @@
 title: UTILITY MODULES
 description: Infrastructure components including circuit breakers, rate limiters, caching, health monitoring, and retry logic
 tags: [utilities, infrastructure, circuit-breaker, rate-limiter, cache]
-sidebar_position: 11
+sidebar_position: 15
 ---
 
-# Utility Modules
+![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
-![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+# Utility Modules
 
 ## Overview
 

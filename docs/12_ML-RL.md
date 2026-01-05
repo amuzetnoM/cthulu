@@ -1,14 +1,13 @@
 ---
 title: Machine & Reinforcement Learning
-sidebar_position: 11
+sidebar_position: 12
 description: Cognition Engine - ML/RL integration philosophy and implementation
 version: 5.1.0 APEX
 ---
 
 
-![APEX](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=for-the-badge)
-![ML](https://img.shields.io/badge/ML-Assistive-blue?style=for-the-badge)
-![RL](https://img.shields.io/badge/RL-Training-green?style=for-the-badge)
+![](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 > **Rule-Based Foundation with Intelligent Augmentation**
 

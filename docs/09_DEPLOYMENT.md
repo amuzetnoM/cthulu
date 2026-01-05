@@ -2,7 +2,7 @@
 title: DEPLOYING CTHULU
 description: Production deployment strategies for Cthulu including Docker, Linux, Windows service, and monitoring setup
 tags: [deployment, docker, production, monitoring]
-sidebar_position: 8
+sidebar_position: 9
 ---
 
  ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
