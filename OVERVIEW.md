@@ -15,7 +15,7 @@
 
 ```mermaid
 flowchart TB
-    subgraph ENTRY["😈 Entry Layer"]
+    subgraph ENTRY["📥 Entry Layer"]
         MAIN["__main__.py"]
         WIZ["wizard.py"]
         CLI["CLI Args"]
@@ -27,7 +27,7 @@ flowchart TB
         SHUT["shutdown.py"]
     end
     
-    subgraph COGNITION["🧠 Cognition Engine (AI/ML)"]
+    subgraph COGNITION["😈 Cognition Engine (AI/ML)"]
         direction TB
         COG_ENG["engine.py<br/>Central Orchestrator"]
         REGIME["regime_classifier.py<br/>Bull/Bear/Sideways"]

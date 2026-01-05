@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Cthulu Beast Mode Optimizer
-
+Cthulu Optimizer
+>  Beast Mode
 Comprehensive optimization and tuning harness for Cthulu trading system.
 Uses walk-forward optimization, Monte Carlo simulation, and parameter sweeps
 to find optimal configuration.
@@ -23,16 +23,17 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import pandas as pd
 import numpy as np
 
-from backtesting.engine import BacktestEngine, BacktestConfig, SpeedMode
-from backtesting.optimizer import WalkForwardOptimizer, MonteCarloSimulator
-from backtesting.data_manager import DataManager
-from strategy.base import Strategy, Signal, SignalType
-from strategy.trend_following import TrendFollowingStrategy
-from strategy.scalping import ScalpingStrategy
-from strategy.mean_reversion import MeanReversionStrategy
-from strategy.sma_crossover import SMACrossover
-from strategy.ema_crossover import EMACrossover
-from observability.metrics import MetricsCollector
+from cthulu.backtesting.engine import BacktestEngine, BacktestConfig, SpeedMode
+from cthulu.backtesting.optimizer import WalkForwardOptimizer, MonteCarloSimulator
+from cthulu.backtesting.data_manager import HistoricalDataManager
+from cthulu.strategy.base import Strategy, Signal, SignalType
+from cthulu.strategy.trend_following import TrendFollowingStrategy
+from cthulu.strategy.scalping import ScalpingStrategy
+from cthulu.strategy.mean_reversion import MeanReversionStrategy
+from cthulu.strategy.sma_crossover import SmaCrossover
+from cthulu.strategy.ema_crossover import EmaCrossover
+from cthulu.observability.metrics import MetricsCollector
+from cthulu.utils.indicator_calculator import calculate_basic_indicators, validate_data_quality
 
 
 logging.basicConfig(
@@ -109,44 +110,52 @@ class StrategyFactory:
         
         # Trend Following
         if params.get("trend_weight", 0) > 0:
-            strategies.append(TrendFollowingStrategy(
-                name="trend_following",
-                atr_period=14,
-                trend_period=params.get("trend_period", 50),
-                min_adx=params.get("min_adx", 25)
-            ))
+            strategies.append(TrendFollowingStrategy({
+                "name": "trend_following",
+                "params": {
+                    "atr_period": 14,
+                    "trend_period": params.get("trend_period", 50),
+                    "min_adx": params.get("min_adx", 25)
+                }
+            }))
         
         # Scalping
         if params.get("scalping_weight", 0) > 0:
-            strategies.append(ScalpingStrategy(
-                name="scalping",
-                fast_period=params.get("scalp_fast", 5),
-                slow_period=params.get("scalp_slow", 13),
-                signal_period=params.get("scalp_signal", 3)
-            ))
+            strategies.append(ScalpingStrategy({
+                "name": "scalping",
+                "params": {
+                    "fast_period": params.get("scalp_fast", 5),
+                    "slow_period": params.get("scalp_slow", 13),
+                    "signal_period": params.get("scalp_signal", 3)
+                }
+            }))
         
         # Mean Reversion
         if params.get("mean_reversion_weight", 0) > 0:
-            strategies.append(MeanReversionStrategy(
-                name="mean_reversion",
-                bb_period=params.get("bb_period", 20),
-                bb_std=params.get("bb_std", 2.0),
-                rsi_period=params.get("rsi_period", 14)
-            ))
+            strategies.append(MeanReversionStrategy({
+                "name": "mean_reversion",
+                "params": {
+                    "bb_period": params.get("bb_period", 20),
+                    "bb_std": params.get("bb_std", 2.0),
+                    "rsi_period": params.get("rsi_period", 14)
+                }
+            }))
         
         # SMA Crossover
-        strategies.append(SMACrossover(
-            name="sma_crossover",
-            fast_period=params.get("sma_fast", 10),
-            slow_period=params.get("sma_slow", 50)
-        ))
+        strategies.append(SmaCrossover({
+            "name": "sma_crossover",
+            "fast_period": params.get("sma_fast", 10),
+            "slow_period": params.get("sma_slow", 50)
+        }))
         
         # EMA Crossover
-        strategies.append(EMACrossover(
-            name="ema_crossover",
-            fast_period=params.get("ema_fast", 12),
-            slow_period=params.get("ema_slow", 26)
-        ))
+        strategies.append(EmaCrossover({
+            "name": "ema_crossover",
+            "params": {
+                "fast_period": params.get("ema_fast", 12),
+                "slow_period": params.get("ema_slow", 26)
+            }
+        }))
         
         return strategies
 
@@ -171,7 +180,7 @@ class BeastModeOptimizer:
             config: Optimization configuration
         """
         self.config = config
-        self.data_manager = DataManager()
+        self.data_manager = HistoricalDataManager()
         self.results: List[Dict[str, Any]] = []
         
         # Create output directory
@@ -252,8 +261,19 @@ class BeastModeOptimizer:
         Returns:
             Backtest results
         """
+        # Validate data quality
+        if not validate_data_quality(data):
+            logger.warning("Data quality validation failed, proceeding with caution")
+        
         # Create strategies
         strategies = StrategyFactory.create_strategies(params)
+        
+        # Calculate indicators required by strategies
+        logger.debug("Calculating technical indicators...")
+        data_with_indicators = calculate_basic_indicators(data, strategies)
+        
+        # Validate that required indicators were calculated
+        logger.debug(f"Data columns after indicator calculation: {list(data_with_indicators.columns)}")
         
         # Create backtest config
         bt_config = BacktestConfig(
@@ -268,7 +288,7 @@ class BeastModeOptimizer:
         
         # Run backtest
         engine = BacktestEngine(strategies, bt_config)
-        results = engine.run(data)
+        results = engine.run(data_with_indicators)
         
         return {
             "params": params,
