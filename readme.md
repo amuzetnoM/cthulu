@@ -11,7 +11,7 @@
 
 Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring 7 active trading strategies, 12 technical indicators, and the revolutionary SAFE (Set And Forget Engine) paradigm for fully autonomous operation.
 
-**Current Version:** v5.1.0 "APEX" — Production Ready
+**Current Version:** v5.1.0 "APEX"
 
 ### ✪ AI-Native Trading with Hektor
 
