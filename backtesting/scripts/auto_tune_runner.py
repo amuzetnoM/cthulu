@@ -243,10 +243,17 @@ def compose_human_summary(agg: Dict[str, Any]) -> str:
 
 
 def call_llm_for_enhanced_summary(prompt: str) -> str:
+    """Call configured LLM; if none configured fall back to a deterministic local summary.
+
+    This keeps automation deterministic during tests and when no LLM is available.
+    """
     endpoint = os.environ.get('LLM_ENDPOINT')
     api_key = os.environ.get('LLM_API_KEY')
     if not endpoint:
-        raise RuntimeError("No LLM_ENDPOINT configured")
+        # Fallback deterministic summary for local/test environments
+        # Keep it simple and testable so unit tests can assert on prefix
+        summary = "[Local fallback summary] " + (prompt[:200] + '...' if len(prompt) > 200 else prompt)
+        return summary
 
     payload = {"prompt": prompt}
     headers = {'Content-Type': 'application/json'}
