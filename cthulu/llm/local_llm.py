@@ -22,9 +22,16 @@ from typing import Optional
 
 log = logging.getLogger("cthulu.llm.local")
 
-# Candidate model directories (prioritised)
-_CANDIDATE_DIRS = [r"C:\workspace\models\cthulu", r"C:\workspace\models\llama-cpp"]
-_MODEL_EXTS = ("*.bin", "*.ggml*", "*.pth", "*.pt")
+# Candidate model directories (prioritised). Default preference is llama-cpp (gguf/ggml), but
+# can be overridden by setting LLM_PREFERRED to 'cthulu' to prefer the training output dir.
+_LLM_PREFERRED = os.environ.get('LLM_PREFERRED', '').lower()
+if _LLM_PREFERRED == 'cthulu':
+    _CANDIDATE_DIRS = [r"C:\workspace\models\cthulu", r"C:\workspace\models\llama-cpp"]
+else:
+    _CANDIDATE_DIRS = [r"C:\workspace\models\llama-cpp", r"C:\workspace\models\cthulu"]
+
+# Model file patterns - include .gguf for gguf models
+_MODEL_EXTS = ("*.gguf", "*.ggml*", "*.bin", "*.pth", "*.pt")
 
 # Lazy imports
 _llama_available = False
