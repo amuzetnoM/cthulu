@@ -42,42 +42,43 @@ $argsList = @('-m', 'cthulu.backtesting.scripts.auto_tune_runner', '--symbols') 
 if ($AutoApply) { $argsList += '--auto-apply' }
 if ($NoAI) { $argsList += '--no-ai' }
 
+# Choose a python command: prefer 'py -3' launcher on Windows, otherwise 'python'
+$pyLauncher = Get-Command py -ErrorAction SilentlyContinue
+if ($pyLauncher) {
+    $pythonCmd = 'py'
+    $pythonArgsPrefix = @('-3')
+} else {
+    $pythonCmd = 'python'
+    $pythonArgsPrefix = @()
+}
+
+# Run python command and capture output; do not throw on non-zero exit code — we want to examine the log
+& $pythonCmd @pythonArgsPrefix @argsList 2>&1 | Tee-Object -FilePath $Log
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Python exited with code $LASTEXITCODE. Check $Log for details."
+}
+
+# Read final JSON line from log safely
+$lastJsonLine = $null
 try {
-    # Choose a python command: prefer 'py -3' launcher on Windows, otherwise 'python'
-    $pyLauncher = Get-Command py -ErrorAction SilentlyContinue
-    if ($pyLauncher) {
-        $pythonCmd = 'py'
-        $pythonArgsPrefix = @('-3')
-    } else {
-        $pythonCmd = 'python'
-        $pythonArgsPrefix = @()
-    }
-
-    # Run python command and capture output; do not throw on non-zero exit code — we want to examine the log
-    & $pythonCmd @pythonArgsPrefix @argsList 2>&1 | Tee-Object -FilePath $Log
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Python exited with code $LASTEXITCODE. Check $Log for details."
-    }
-
     $lastJsonLine = (Get-Content $Log | Where-Object { $_ -match '^{\s*"smoke_out_dir' } | Select-Object -Last 1)
-    if ($lastJsonLine) {
-        try {
-            $result = $lastJsonLine | ConvertFrom-Json
-            Write-Output "Run completed. Summary JSON: $($result.summary_json)"
-            if (Test-Path $result.summary_json) {
-                Write-Output "Opening summary in notepad..."
-                notepad $result.summary_json
-            }
-        } catch {
-            Write-Warning "Failed to parse result JSON: $_"
-        }
-    } else {
-        Write-Warning "No final JSON line found in log. Check $Log for details."
-    }
 } catch {
-    Write-Error "Run failed: $_"
-    Write-Output "Log saved to: $Log"
-    exit 1
+    Write-Warning "Failed to read log file: $_"
+}
+
+if ($lastJsonLine) {
+    try {
+        $result = $lastJsonLine | ConvertFrom-Json
+        Write-Output "Run completed. Summary JSON: $($result.summary_json)"
+        if (Test-Path $result.summary_json) {
+            Write-Output "Opening summary in notepad..."
+            notepad $result.summary_json
+        }
+    } catch {
+        Write-Warning "Failed to parse result JSON: $_"
+    }
+} else {
+    Write-Warning "No final JSON line found in log. Check $Log for details."
 }
 
 Write-Output "Full run finished. Logs: $Log"
