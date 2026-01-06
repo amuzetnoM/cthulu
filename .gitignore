@@ -72,6 +72,11 @@ ml/data/
 backtesting/results/
 backtesting/cache/
 
+# Auto-tune reports (do not track large per-run JSONs and summaries)
+# AUTOTUNE_ROOT writes under backtesting/reports/auto_tune by default
+backtesting/reports/auto_tune/
+backtesting/reports/auto_tune_*/
+
 # Trading data
 data/
 output/
