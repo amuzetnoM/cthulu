@@ -32,7 +32,9 @@ def apply_actions(ps, ticket, actions):
 
 def main():
     df = pd.read_csv(CSV_PATH, parse_dates=["time"], index_col="time")
-    ps = ProfitScaler(connector=None, execution_engine=None, config=ScalingConfig())
+    cfg = ScalingConfig()
+    cfg.min_time_in_trade_bars = 2
+    ps = ProfitScaler(connector=None, execution_engine=None, config=cfg)
 
     ticket = 2002
     symbol = "GOLDm#"
