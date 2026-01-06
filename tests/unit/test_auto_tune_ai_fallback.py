@@ -1,4 +1,4 @@
-from cthulu.scripts.auto_tune_ai_summary import call_llm_for_enhanced_summary
+from cthulu.backtesting.scripts.auto_tune_runner import call_llm_for_enhanced_summary
 
 
 def test_local_fallback_returns_summary():
