@@ -37,8 +37,9 @@ def main():
         except Exception as e:
             log.warning(f"Failed to fetch for symbol {s}: {e}")
 
+    from cthulu.backtesting import BACKTEST_CACHE_DIR
     print("ERROR: Unable to fetch GOLD M15 bars. Ensure the MetaTrader terminal is running and the 'MetaTrader5' Python package is installed in the active Python environment.")
-    print("If MT5 is unavailable, please provide a CSV with columns: time,open,high,low,close,volume into backtesting/cache/")
+    print(f"If MT5 is unavailable, please provide a CSV with columns: time,open,high,low,close,volume into {BACKTEST_CACHE_DIR}/")
 
 
 if __name__ == '__main__':

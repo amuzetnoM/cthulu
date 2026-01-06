@@ -1,0 +1,20 @@
+{
+  "symbol": "GOLDm#",
+  "timeframe": "M15",
+  "window_start": "2025-12-30T02:19:47.456268",
+  "window_end": "2026-01-06T02:19:47.456268",
+  "top_config": {
+    "min_time_in_trade_bars": 0,
+    "trail_pct": 0.3,
+    "concurrency": 1,
+    "metrics": {
+      "closed_volume_total": 0.05,
+      "close_actions_count": 1,
+      "trail_actions_count": 3,
+      "modify_actions_count": 0,
+      "final_remaining_volume": 0.05,
+      "first_close_bar": 283,
+      "total_profit_estimate": 509.14999999999964
+    }
+  }
+}

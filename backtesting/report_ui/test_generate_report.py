@@ -42,5 +42,6 @@ json_path = rg.generate(results, metrics, output_path='summary.json', format=Rep
 print('JSON path:', json_path)
 
 # Print manifest
-with open('backtesting/reports/index.json') as f:
+from cthulu.backtesting import BACKTEST_REPORTS_DIR
+with open(BACKTEST_REPORTS_DIR / 'index.json') as f:
     print('Manifest:', json.dumps(json.load(f), indent=2))

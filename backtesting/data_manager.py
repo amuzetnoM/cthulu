@@ -54,15 +54,17 @@ class HistoricalDataManager:
     - Data alignment and resampling
     """
     
-    def __init__(self, cache_dir: str = "backtesting/cache"):
+    def __init__(self, cache_dir: str | None = None):
         """
         Initialize data manager.
         
         Args:
-            cache_dir: Directory for caching downloaded data
+            cache_dir: Directory for caching downloaded data; if None uses package default
         """
+        from . import BACKTEST_CACHE_DIR
         self.logger = logging.getLogger("Cthulu.backtesting.data")
-        self.cache_dir = Path(cache_dir)
+        cache_dir_path = Path(cache_dir) if cache_dir else Path(BACKTEST_CACHE_DIR)
+        self.cache_dir = cache_dir_path
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._cache: Dict[str, Tuple[pd.DataFrame, DataMetadata]] = {}
         

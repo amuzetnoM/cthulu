@@ -30,7 +30,8 @@ def main():
     print()
     
     print("Step 1: Loading historical data...")
-    data_mgr = HistoricalDataManager(cache_dir="backtesting/cache")
+    from cthulu.backtesting import BACKTEST_CACHE_DIR
+    data_mgr = HistoricalDataManager(cache_dir=str(BACKTEST_CACHE_DIR))
     
     # Note: This example assumes you have MT5 running or CSV files available
     print("Example created successfully!")
