@@ -1,7 +1,7 @@
 FROM python:3.12-slim AS builder
 
 # Build arguments
-ARG VERSION=5.1.0-APEX
+ARG VERSION=5.2.0
 ARG BUILD_DATE
 
 # Set environment variables
@@ -30,7 +30,7 @@ RUN pip install --upgrade pip && \
 # Production image
 FROM python:3.12-slim
 
-ARG VERSION=5.1.0-APEX
+ARG VERSION=5.2.0
 ARG BUILD_DATE
 
 # Labels for GHCR

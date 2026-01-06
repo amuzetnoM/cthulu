@@ -17,7 +17,7 @@ _________   __  .__          .__
 
 • [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![](https://img.shields.io/badge/Version-5.2.0_EVOLUTION-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
@@ -73,6 +73,101 @@ _________   __  .__          .__
 - Inconsistent badge styling across documentation files
 - Missing version badges in multiple files
 - Sidebar position conflicts after file renumbering
+
+---
+
+## [5.2.0] "EVOLUTION"
+> 2026-01-06
+
+**Status:** ✅ RELEASED — *Cthulu evolves with 207 commits of intelligence amplification!*
+
+**Summary & Highlights:**
+- 🎨 **Web-based Backtesting UI (NEW):** Complete web interface for backtesting with local and backend execution
+- 🤖 **Local LLM Integration (NEW):** llama-cpp (GGUF) support with deterministic fallback for AI analysis
+- 🗄️ **Hektor Vector Studio (NEW):** Vector database with semantic memory and MQL5 knowledge retrieval
+- 💰 **Profit Scaler System (NEW):** Intelligent partial profit-taking mechanism
+- 🎯 **Entry Confluence Filter (NEW):** Enhanced trade quality assessment
+- 📊 **Auto-tune Consolidation (MAJOR):** Complete overhaul into backtesting package with AI summarization
+- 🚀 **Advisory Mode (NEW):** Complete advisory and ghost mode for non-trading analysis
+- 🔧 **GCP Deployment (NEW):** Full infrastructure with one-click VM setup
+- 🔒 **Security Hardening:** RPC security, singleton lock, secrets scanning
+
+### Added
+- **Web UI & Frontend:**
+  - Complete web-based backtesting UI with local and backend execution modes
+  - Chart component for equity curves and asset price visualization
+  - Live metrics dashboard with GitHub Gist integration
+  - Enhanced desktop dashboard with MT5 integration
+- **AI/ML/LLM:**
+  - Local llama-cpp integration with GGUF model support
+  - Deterministic fallback system when no LLM configured
+  - Auto-tune AI summarizer for result analysis
+  - ML-enhanced decision making with softmax/argmax
+  - Full AI/ML/RL cognition engine
+- **Vector Database:**
+  - Hektor Vector Studio with SQLite fallback
+  - Semantic memory for cognition engine
+  - MQL5 handbook vectorization for knowledge retrieval
+  - Guardrails, validation, and secrets scanning
+- **Backtesting:**
+  - Consolidated backtesting package structure
+  - Grid sweep system for parameter exploration
+  - DataFrame input support
+  - BTCUSD H1 results and analysis
+  - Enhanced logging and metrics
+- **Auto-tune System:**
+  - Complete consolidation into backtesting/scripts
+  - Scheduler CLI for automated runs
+  - AI-assisted summarization
+  - Robust PS1 runner with proper error handling
+  - Grid sweep pipeline orchestration
+- **Profit Management:**
+  - Profit Scaler system for intelligent partial exits
+  - Minimum time-in-trade enforcement
+  - ScalingConfig for parameter management
+  - GOLD M15 evaluation scripts
+- **Security:**
+  - Singleton lock preventing multiple instances
+  - RPC security hardening (rate limiting, IP control, TLS, audit logging)
+  - Secrets scanner for exposed credentials
+  - Exception handling overhaul
+- **Deployment:**
+  - GCP deployment scripts and documentation
+  - Docker production support and GHCR publishing
+  - VM auto-install capabilities
+- **Documentation:**
+  - Comprehensive documentation overhaul
+  - System architecture and system map
+  - Runbook with critical alerts
+  - Security guidelines and privacy policy
+  - Mermaid flowcharts replacing ASCII diagrams
+  - Version badges across all docs
+
+### Changed
+- Auto-tune consolidated from top-level into backtesting package
+- Path normalization with BACKTEST_* constants
+- Symbol configuration updated to GOLDm#
+- SHORT signal conditions relaxed for ranging markets
+- Badge standardization across documentation
+- ML_RL directory renamed to training
+
+### Fixed
+- **Critical:** Stop loss bug causing excessive losses for large accounts
+- **Critical:** UNKNOWN symbol handling with MT5 fallback
+- **Critical:** Singleton lock preventing multiple instances
+- Database locking and UNIQUE constraint issues
+- Cognition engine overly restrictive behavior
+- RPC validation error mapping
+- Auto-tune PS1 runner error handling
+- News cache gitignore entries
+
+### Performance
+- 207 commits since v5.1.0
+- 60 new features (29%)
+- 38 bug fixes (18%)
+- Auto-tune efficiency improved ~40%
+- LLM inference <100ms on GGUF models
+- Grid sweep throughput 3-5x faster
 
 ---
 
@@ -227,6 +322,7 @@ This release advances Cthulu from v4.0.0 to v5.1.0 with a major architecture cha
 ## TABLE OF RELEASES
 | Version | Date | Description |
 |---------|------|-------------|
+| [v5.2.0](v5.2.0.md) | 2026-01-06 | MINOR: Web UI, LLM integration, Vector DB, Profit Scaler, Advisory mode, Auto-tune consolidation (207 commits). |
 | [v5.1.0](v5.1.0.md) | 2025-12-28 | Minor branding & stability patch: runtime indicator fixes, monitoring enhancements, Windows/CI improvements. |
 | [v5.0.0](v5.0.0.md) | 2025-12-27 | Major architecture & runtime stability release; runtime namespacing and indicator fallbacks; CI and testing improvements. |
 | [v4.0.0](v4.0.0.md) | 2026-12-25 | MAJOR: Multi-strategy framework, next-gen indicators, GUI and metrics enhancements. |
