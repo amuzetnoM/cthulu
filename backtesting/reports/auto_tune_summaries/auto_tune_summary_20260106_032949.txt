@@ -1,0 +1,13 @@
+Auto-Tune Aggregate Summary
+--------------------------
+Windows processed: 16
+Average profit estimate: 715.57
+Median profit estimate: 701.76
+Mode min_time_in_trade_bars: 0
+
+Top entries (top 5):
+- file=grid_sweep_BTCUSD#_H1.json profit_est=1371.00 min_time=0 trail=0.3 concurrency=1
+- file=grid_sweep_BTCUSD#_H1.json profit_est=1371.00 min_time=0 trail=0.3 concurrency=1
+- file=grid_sweep_BTCUSD#_H1.json profit_est=1371.00 min_time=0 trail=0.3 concurrency=1
+- file=grid_sweep_BTCUSD#_H1.json profit_est=1371.00 min_time=0 trail=0.3 concurrency=1
+- file=grid_sweep_BTCUSD#_M15.json profit_est=1261.00 min_time=2 trail=0.3 concurrency=1

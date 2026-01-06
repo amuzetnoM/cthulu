@@ -1,0 +1,141 @@
+{
+  "aggregated": {
+    "count": 16,
+    "entries": [
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\BTCUSD#_H1_aggressive_2025-12-07_2026-01-06\\grid_sweep_BTCUSD#_H1.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 0,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 1370.9999999999127
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\BTCUSD#_H1_balanced_2025-12-07_2026-01-06\\grid_sweep_BTCUSD#_H1.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 0,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 1370.9999999999127
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\BTCUSD#_H1_conservative_2025-12-07_2026-01-06\\grid_sweep_BTCUSD#_H1.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 0,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 1370.9999999999127
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\BTCUSD#_H1_ultra_aggressive_2025-12-07_2026-01-06\\grid_sweep_BTCUSD#_H1.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 0,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 1370.9999999999127
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\BTCUSD#_M15_aggressive_2025-12-07_2026-01-06\\grid_sweep_BTCUSD#_M15.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 2,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 1260.9999999999127
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\BTCUSD#_M15_balanced_2025-12-07_2026-01-06\\grid_sweep_BTCUSD#_M15.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 2,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 1260.9999999999127
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\BTCUSD#_M15_conservative_2025-12-07_2026-01-06\\grid_sweep_BTCUSD#_M15.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 2,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 1260.9999999999127
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\BTCUSD#_M15_ultra_aggressive_2025-12-07_2026-01-06\\grid_sweep_BTCUSD#_M15.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 2,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 1260.9999999999127
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\GOLDm#_H1_aggressive_2025-12-07_2026-01-06\\grid_sweep_GOLDm#_H1.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 4,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 142.5199999999968
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\GOLDm#_H1_balanced_2025-12-07_2026-01-06\\grid_sweep_GOLDm#_H1.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 4,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 142.5199999999968
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\GOLDm#_H1_conservative_2025-12-07_2026-01-06\\grid_sweep_GOLDm#_H1.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 4,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 142.5199999999968
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\GOLDm#_H1_ultra_aggressive_2025-12-07_2026-01-06\\grid_sweep_GOLDm#_H1.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 4,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 142.5199999999968
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\GOLDm#_M15_aggressive_2025-12-07_2026-01-06\\grid_sweep_GOLDm#_M15.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 0,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 87.77999999999793
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\GOLDm#_M15_balanced_2025-12-07_2026-01-06\\grid_sweep_GOLDm#_M15.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 0,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 87.77999999999793
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\GOLDm#_M15_conservative_2025-12-07_2026-01-06\\grid_sweep_GOLDm#_M15.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 0,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 87.77999999999793
+      },
+      {
+        "file": "C:\\workspace\\cthulu\\backtesting\\reports\\auto_tune\\20260106_031930\\GOLDm#_M15_ultra_aggressive_2025-12-07_2026-01-06\\grid_sweep_GOLDm#_M15.json",
+        "symbol": null,
+        "min_time_in_trade_bars": 0,
+        "trail_pct": 0.3,
+        "concurrency": 1,
+        "total_profit_estimate": 87.77999999999793
+      }
+    ],
+    "stats": {
+      "avg_profit_est": 715.574999999955,
+      "median_profit_est": 701.7599999999547,
+      "min_time_mode": 0
+    }
+  },
+  "ai_summary": null
+}
