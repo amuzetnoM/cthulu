@@ -3,7 +3,8 @@ from position.profit_scaler import ProfitScaler, ScalingConfig
 
 
 def test_min_time_in_trade_bars():
-    df = pd.read_csv('backtesting/cache/GOLDm#_M15_20260105.csv', parse_dates=['time'], index_col='time')
+    from cthulu.backtesting import BACKTEST_CACHE_DIR
+    df = pd.read_csv(BACKTEST_CACHE_DIR / 'GOLDm#_M15_20260105.csv', parse_dates=['time'], index_col='time')
     cfg = ScalingConfig()
     cfg.min_time_in_trade_bars = 2
     ps = ProfitScaler(connector=None, execution_engine=None, config=cfg, use_ml_optimizer=False)

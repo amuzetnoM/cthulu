@@ -10,7 +10,8 @@ from position.profit_scaler import ProfitScaler, ScalingConfig
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("cthulu.simulate_scaling")
 
-CSV_PATH = "backtesting/cache/GOLDm#_M15_20260105.csv"
+from cthulu.backtesting import BACKTEST_CACHE_DIR
+CSV_PATH = BACKTEST_CACHE_DIR / "GOLDm#_M15_20260105.csv"
 MIN_LOT = 0.01
 
 

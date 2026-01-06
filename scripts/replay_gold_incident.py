@@ -14,12 +14,13 @@ from backtesting.engine import BacktestEngine, BacktestConfig
 from backtesting.data_manager import HistoricalDataManager, DataSource
 from core.strategy_factory import load_strategy
 from position.profit_scaler import ProfitScaler, ScalingConfig
+from cthulu.backtesting import BACKTEST_CACHE_DIR, BACKTEST_REPORTS_DIR
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("cthulu.replay_incident")
 
 MINDSET_PATH = Path('cthulu/configs/mindsets/ultra_aggressive/config_ultra_aggressive_m15.json')
-CSV_PATH = Path('backtesting/cache/GOLDm#_M15_20260105.csv')
+CSV_PATH = BACKTEST_CACHE_DIR / 'GOLDm#_M15_20260105.csv'
 
 START = datetime.fromisoformat('2026-01-05T11:00:00')
 END = datetime.fromisoformat('2026-01-05T11:30:00')
@@ -134,7 +135,7 @@ if __name__ == '__main__':
         'timeline_default': timeline_default,
         'timeline_guarded': timeline_guarded
     }
-    out = Path('backtesting/reports')
+    out = BACKTEST_REPORTS_DIR
     out.mkdir(parents=True, exist_ok=True)
     (out / 'gold_incident_replay.json').write_text(json.dumps(report, default=str, indent=2))
-    print('\nReport written to backtesting/reports/gold_incident_replay.json')
+    print(f'\nReport written to {out / "gold_incident_replay.json"}')

@@ -56,8 +56,8 @@ class ReportGenerator:
         Returns:
             The final path to the generated report (as a string).
         """
-        # Central reports directory
-        reports_dir = Path('backtesting') / 'reports'
+        # Central reports directory (package-local)
+        from . import BACKTEST_REPORTS_DIR as reports_dir
         reports_dir.mkdir(parents=True, exist_ok=True)
 
         # Determine final output path: always place reports under reports_dir

@@ -18,5 +18,15 @@
         "symbol": "ETHUSD#",
         "weekend_trading": true,
         "min_lot": 0.001
+    },
+    "XRPUSD#": {
+        "symbol": "XRPUSD#",
+        "weekend_trading": true,
+        "min_lot": 0.001
+    },
+    "USDTUSD#": {
+        "symbol": "USDTUSD#",
+        "weekend_trading": true,
+        "min_lot": 0.001
     }
 }

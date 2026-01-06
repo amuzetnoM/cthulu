@@ -12,11 +12,12 @@ import pandas as pd
 from position.profit_scaler import ProfitScaler, ScalingConfig, ScalingTier
 from backtesting.engine import BacktestEngine, BacktestConfig, SpeedMode
 from core.strategy_factory import load_strategy
+from cthulu.backtesting import BACKTEST_CACHE_DIR
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("cthulu.grid_sweep")
 
-CSV_PATH = Path('backtesting/cache/GOLDm#_M15_20260105.csv')
+CSV_PATH = BACKTEST_CACHE_DIR / 'GOLDm#_M15_20260105.csv'
 START_IDX = 0
 
 
@@ -160,7 +161,17 @@ def run_simulation_on_df(cfg: ScalingConfig, df, symbol: str, timeframe: str, ba
     strat_cfg['params']['timeframe'] = timeframe
     strat_cfg['timeframe'] = f'TIMEFRAME_{timeframe}'
 
-    strat = load_strategy(strat_cfg)
+    # Load strategy; if dynamic mindset config is invalid (e.g., no child strategies), fall back to default dynamic selector
+    try:
+        strat = load_strategy(strat_cfg)
+    except ValueError as e:
+        log.warning(f"Mindset strategy config invalid or incomplete ({e}), falling back to default dynamic selector")
+        fallback_cfg = {
+            'type': 'sma_crossover',
+            'timeframe': f'TIMEFRAME_{timeframe}',
+            'params': {'symbol': symbol, 'short': 5, 'long': 13}
+        }
+        strat = load_strategy(fallback_cfg)
 
     bt_cfg = BacktestConfig()
     bt_cfg.speed_mode = SpeedMode.NORMAL

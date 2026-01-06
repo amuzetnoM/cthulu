@@ -34,6 +34,13 @@ Usage:
     predictor = PricePredictor(prediction_horizon=5)
 """
 
+from pathlib import Path
+
+# Package-local paths for backtesting data and reports
+BASE_DIR = Path(__file__).resolve().parent
+BACKTEST_CACHE_DIR = BASE_DIR / "cache"
+BACKTEST_REPORTS_DIR = BASE_DIR / "reports"
+
 from .engine import BacktestEngine, BacktestConfig, SpeedMode
 from .data_manager import HistoricalDataManager, DataSource
 from .ensemble import EnsembleStrategy, EnsembleConfig, WeightingMethod
