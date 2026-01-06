@@ -56,7 +56,7 @@ _________   __  .__          .__
 >
 > - **Web Backtesting UI**: Flask-based browser interface with interactive charts and real-time results  
 > - **Local LLM Integration**: Ollama support for AI-powered trade analysis and market insights  
-> - **Vector Database**: ChromaDB integration for intelligent market pattern recognition  
+> - **Hektor**: Vector Studio integration for intelligent market pattern recognition  
 > - **Intelligent Profit Scaling**: Dynamic profit target adjustments based on market conditions  
 > - **7 Active Strategies**: Complete arsenal — EMA, Momentum, Scalping, Trend, SMA, Mean Reversion, RSI Reversal  
 > - **Aggressive Configuration**: Optimized thresholds for maximum opportunity capture (confidence: 0.15, ADX: 15)
