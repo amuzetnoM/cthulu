@@ -106,7 +106,15 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
             
             if not allowed:
                 logger.warning(f"Request blocked from {client_ip}: {reason}")
-                self._send_json(429 if 'limit' in reason.lower() else 403, {'error': reason})
+                # Map validation-type reasons to 400, rate-limit to 429, otherwise 403
+                reason_lower = reason.lower() if isinstance(reason, str) else ''
+                if 'limit' in reason_lower:
+                    status_code = 429
+                elif any(k in reason_lower for k in ('missing', 'invalid', 'volume', 'price', 'symbol', 'side')):
+                    status_code = 400
+                else:
+                    status_code = 403
+                self._send_json(status_code, {'error': reason})
                 return
             
             # Validate and sanitize payload for trade requests

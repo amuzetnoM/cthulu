@@ -88,20 +88,17 @@ class TradeMonitor:
             
     def _scan_and_record(self):
         """Scan positions and record snapshots."""
-        # Get positions from position manager
-        positions = self._get_positions()
-        
-        if not positions:
-            return
-            
-        # Record position snapshots
-        for ticket, pos in positions.items():
-            self._record_position_snapshot(pos)
-            
-        # Check news events if news manager available
+        # Check news events first (news alerts should be handled regardless of open positions)
         if self.news_manager and time.time() - self._last_news_check > self._news_check_interval:
             self._check_news_events()
             self._last_news_check = time.time()
+
+        # Get positions from position manager
+        positions = self._get_positions()
+
+        # Record position snapshots
+        for ticket, pos in positions.items():
+            self._record_position_snapshot(pos)
             
     def _get_positions(self) -> Dict[int, Any]:
         """Get positions from position manager."""
