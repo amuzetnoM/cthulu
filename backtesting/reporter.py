@@ -376,3 +376,54 @@ Bars/Second:          {results['bars_per_second']:>10,.0f}
             
         df = pd.DataFrame(trade_data)
         df.to_csv(output_path, index=False, encoding='utf-8')
+
+class BacktestReporter:
+    """
+    Compatibility wrapper for the backtesting UI.
+    """
+    
+    def __init__(self):
+        self.generator = ReportGenerator()
+        
+    def generate_report(self, results: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate a report dictionary for the UI.
+        
+        Args:
+            results: Backtest results from engine.run()
+            
+        Returns:
+            Dictionary containing metrics and report data
+        """
+        metrics = results.get('metrics')
+        
+        # If metrics is an object, convert to dict
+        if hasattr(metrics, 'to_dict'):
+            metrics_data = metrics.to_dict()
+        elif hasattr(metrics, '__dict__'):
+            metrics_data = metrics.__dict__
+        else:
+            metrics_data = metrics or {}
+            
+        return {
+            'summary': metrics_data,
+            'equity_curve': [
+                {'time': t.isoformat() if hasattr(t, 'isoformat') else str(t), 'equity': e}
+                for t, e in results.get('equity_curve', [])
+            ],
+            'trades': [
+                {
+                    'ticket': t.ticket,
+                    'symbol': t.symbol,
+                    'side': t.side.value if hasattr(t.side, 'value') else str(t.side),
+                    'entry_time': t.entry_time.isoformat() if hasattr(t.entry_time, 'isoformat') else str(t.entry_time),
+                    'exit_time': t.exit_time.isoformat() if hasattr(t.exit_time, 'isoformat') else str(t.exit_time),
+                    'entry_price': t.entry_price,
+                    'exit_price': t.exit_price,
+                    'pnl': t.pnl,
+                    'reason': t.exit_reason
+                }
+                for t in results.get('trades', [])
+            ],
+            'config': results.get('config', {})
+        }

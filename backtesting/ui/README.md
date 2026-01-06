@@ -1,9 +1,7 @@
-# Backtester Web Interface
+# Cthulhu Backtester (Web Dashboard)
 
-
-![Version](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
-![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white) 
-![Status](https://img.shields.io/badge/Status-Prototype-10b981?style=for-the-badge&labelColor=0D1117)
+![Version](https://img.shields.io/badge/Version-3.3_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![Status](https://img.shields.io/badge/Status-Live_Prototype-10b981?style=for-the-badge&labelColor=0D1117)
 ![AI](https://img.shields.io/badge/Powered_By-Gemini_2.5-4285F4?style=for-the-badge&labelColor=0D1117&logo=google&logoColor=white)
 
 > The official web-based simulation engine and dashboard for the Cthulhu Algorithmic Trading Framework.
@@ -18,6 +16,7 @@ This application serves as the **frontend interface** and **client-side simulato
 3.  **Run Simulations**: Execute backtests locally in the browser using a high-performance TypeScript engine.
 4.  **Optimize Parameters**: Perform grid-search optimization to find the best performing Moving Average periods.
 5.  **AI Analysis**: Generate institutional-grade performance reports using **Google Gemini 2.5 Flash**.
+6.  **Broadcast Signals**: Relay generated trade signals to external execution engines (MT5) via Webhooks.
 
 ---
 
@@ -28,7 +27,18 @@ This application serves as the **frontend interface** and **client-side simulato
 -   **Vectorized-like Performance**: Capable of processing thousands of candles in milliseconds (FAST mode).
 -   **Execution Modeling**: Simulates Commission and Slippage to provide realistic Net PnL.
 
-### 🧠 AI Analyst (Gemini Integration)
+### 🧠 Advanced Strategy Modules
+-   **Ensemble Logic**: Implements a **Consensus Voting System** running three parallel strategies (Core, Fast, Slow). Trades are taken only when the weighted vote confidence exceeds a user-defined threshold.
+-   **ML / Risk Filter**:
+    -   **Regime Detection**: Uses RSI and Relative Volume to identify favorable market conditions.
+    -   **Dynamic Slippage**: Models liquidity by adjusting slippage based on volume (High Vol = Low Slippage).
+    -   **Selection Policies**: Supports `ARGMAX` (Greedy) or `SOFTMAX` (Probabilistic) trade selection.
+
+### 📡 Live Operations (MT5 Bridge)
+-   **Webhook Relay**: Capability to broadcast specific trade signals to a configurable HTTP endpoint.
+-   **Integration**: Designed to connect with MetaTrader 5 (via Python Bridge) or other execution servers.
+
+### 🤖 AI Analyst (Gemini Integration)
 -   **Generative Reporting**: Converts raw backtest metrics into a rich, styled HTML report.
 -   **Scoring System**: Automatically grades strategies (A+ to F) based on Sharpe Ratio and Risk-Adjusted Returns.
 -   **Tactical Feedback**: Provides specific, actionable recommendations to improve strategy parameters.
@@ -58,6 +68,13 @@ This application serves as the **frontend interface** and **client-side simulato
 To enable the AI features, you must provide your Google Gemini API Key via environment variables.
 The app expects: `process.env['API_KEY']`.
 
+### Webhook Configuration
+To use the "Broadcast" feature:
+1.  Go to the **Execution** tab.
+2.  Select **Data Source: MT5 Webhook Relay**.
+3.  Check **Enable Outbound Signals**.
+4.  Enter the URL of your local execution server (e.g., `http://localhost:8080/signal`).
+
 ### Data Source
 The application accepts CSV files. Ensure your data follows this schema:
 ```csv
@@ -80,4 +97,4 @@ Date,Open,High,Low,Close,Volume
 
 ---
 
-*Cthulhu Backtester Web Dashboard - v3.1*
+*Cthulhu Backtester Web Dashboard - v3.3*

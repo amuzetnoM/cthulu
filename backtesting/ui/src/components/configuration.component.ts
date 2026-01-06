@@ -13,6 +13,10 @@ export interface ConfigData {
   speedMode: SpeedMode;
   dataSource: DataSource;
   
+  // Webhook / Live
+  webhookUrl: string;
+  enableWebhooks: boolean;
+
   // Ensemble
   useEnsemble: boolean;
   ensembleConfig: {
@@ -93,7 +97,7 @@ export interface ConfigData {
             <div class="flex gap-2 mb-2">
                <select [(ngModel)]="dataSource" class="bg-slate-800 border border-slate-600 rounded p-1 text-white text-xs w-full focus:border-emerald-500 outline-none">
                   <option [value]="DataSource.CSV">CSV File</option>
-                  <option [value]="DataSource.MT5" disabled>MT5 Bridge (Offline)</option>
+                  <option [value]="DataSource.MT5">MT5 Webhook Relay</option>
                </select>
             </div>
             
@@ -109,6 +113,22 @@ export interface ConfigData {
               </div>
               <p class="text-[10px] text-slate-600 mt-1">Accepts .csv with OHLCV data.</p>
             }
+
+            @if(dataSource === DataSource.MT5) {
+               <div class="space-y-2 animate-fade-in">
+                  <div class="flex items-center space-x-2">
+                     <input type="checkbox" [(ngModel)]="enableWebhooks" id="webhook-en" class="rounded bg-slate-700 border-slate-600 text-blue-500">
+                     <label for="webhook-en" class="text-blue-400 font-bold text-xs">Enable Outbound Signals</label>
+                  </div>
+                  @if(enableWebhooks) {
+                     <div>
+                       <label class="text-slate-500 text-[10px] mb-1 block">MT5 Webhook URL</label>
+                       <input type="text" [(ngModel)]="webhookUrl" placeholder="http://localhost:8080/signal" 
+                         class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-white text-xs focus:border-blue-500 outline-none font-mono" />
+                     </div>
+                  }
+               </div>
+            }
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -123,7 +143,6 @@ export interface ConfigData {
                  <option [value]="SpeedMode.NORMAL">NORMAL</option>
                  <option [value]="SpeedMode.SLOW">SLOW (Debug)</option>
                  <option [value]="SpeedMode.REALTIME">REALTIME</option>
-                 <option [value]="SpeedMode.HFT_TEST">HFT_TEST</option>
                </select>
              </div>
              <div class="flex flex-col">
@@ -293,6 +312,10 @@ export class ConfigurationComponent {
   speedMode = SpeedMode.FAST;
   dataSource = DataSource.CSV;
 
+  // Webhook
+  webhookUrl = 'http://localhost:8080/webhook';
+  enableWebhooks = false;
+
   // Strategy Defaults
   fastMa = 10;
   slowMa = 50;
@@ -334,6 +357,8 @@ export class ConfigurationComponent {
       slowMa: this.slowMa,
       speedMode: this.speedMode,
       dataSource: this.dataSource,
+      webhookUrl: this.webhookUrl,
+      enableWebhooks: this.enableWebhooks,
       useEnsemble: this.useEnsemble,
       ensembleConfig: {
         weighting: this.weightingMethod,

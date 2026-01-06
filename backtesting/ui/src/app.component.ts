@@ -1,48 +1,35 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
-import { provideHttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ConfigurationComponent, ConfigData } from './components/configuration.component';
 import { ChartComponent } from './components/chart.component';
 import { MetricsComponent } from './components/metrics.component';
-import { SimulationService, BacktestResult, Candle, OptimizationResult } from './services/simulation.service';
+import { SimulationService, BacktestResult, Candle, OptimizationResult, Trade } from './services/simulation.service';
 import { AiService } from './services/ai.service';
-import { BackendService } from './services/backend.service';
 
 @Component({
-    selector: 'app-root',
-    standalone: true,
-    imports: [CommonModule, HttpClientModule, ConfigurationComponent, ChartComponent, MetricsComponent],
-    template: `
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, ConfigurationComponent, ChartComponent, MetricsComponent],
+  template: `
     <div class="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-emerald-500/30">
       <div class="w-full px-4 md:px-6 lg:px-8 py-6">
         <header class="mb-8 flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
               <i class="fa-solid fa-layer-group mr-2 text-emerald-500"></i>
-              CTHULU BACKTESTER <span class="text-slate-600 text-lg font-mono">v5.1</span>
+              BACKTESTER <span class="text-slate-600 text-lg font-mono">v3.2</span>
             </h1>
             <p class="text-slate-500 text-sm mt-1">High-Frequency Backtesting & Optimization Engine</p>
           </div>
-          <div class="flex items-center space-x-4">
-            <!-- Backend Connection Status -->
-            <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg" 
-                 [class]="backendService.connectionStatus() === 'connected' ? 'bg-emerald-900/30 border border-emerald-500/30' : 'bg-red-900/30 border border-red-500/30'">
-              <i class="fa-solid fa-circle text-xs" 
-                 [class]="backendService.connectionStatus() === 'connected' ? 'text-emerald-400 animate-pulse' : 'text-red-400'"></i>
-              <span class="text-xs font-mono">
-                {{backendService.connectionStatus() === 'connected' ? 'Backend Connected' : 'Local Mode'}}
-              </span>
-            </div>
-            <!-- Mode Toggle -->
-            <button (click)="toggleMode()" 
-                    class="px-3 py-1.5 rounded-lg text-xs font-mono transition-colors"
-                    [class]="useBackend() ? 'bg-cyan-900/30 border border-cyan-500/30 text-cyan-400' : 'bg-slate-800 border border-slate-700 text-slate-400'">
-              <i class="fa-solid fa-server mr-1"></i>
-              {{useBackend() ? 'Backend Mode' : 'Client Mode'}}
-            </button>
-          </div>
+          
+          <!-- Webhook Status Indicator -->
+          @if (webhookConfig()?.enableWebhooks) {
+             <div class="flex items-center space-x-2 bg-slate-900 border border-blue-900 px-3 py-1 rounded-full animate-pulse">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span class="text-xs font-mono text-blue-400">MT5 BRIDGE ACTIVE</span>
+             </div>
+          }
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -77,16 +64,6 @@ import { BackendService } from './services/backend.service';
                       <span class="font-mono text-purple-400 font-bold">{{opt.bestProfitFactor.toFixed(2)}}</span>
                     </div>
                  </div>
-              </div>
-            }
-            
-            <!-- Backend Job Status -->
-            @if (isRunning()) {
-              <div class="bg-slate-900 border border-cyan-500/30 rounded-lg p-4 shadow-lg animate-pulse">
-                <h3 class="text-cyan-400 font-bold mb-3 flex items-center">
-                  <i class="fa-solid fa-spinner fa-spin mr-2"></i> Running...
-                </h3>
-                <p class="text-sm text-slate-400">Job ID: {{currentJobId()}}</p>
               </div>
             }
           </div>
@@ -140,6 +117,7 @@ import { BackendService } from './services/backend.service';
                           <th class="pb-2">Exit Date</th>
                           <th class="pb-2">Price</th>
                           <th class="pb-2 text-right">PnL</th>
+                          <th class="pb-2 text-center" *ngIf="webhookConfig()?.enableWebhooks">Broadcast</th>
                         </tr>
                       </thead>
                       <tbody class="divide-y divide-slate-800">
@@ -154,6 +132,11 @@ import { BackendService } from './services/backend.service';
                             <td class="py-2 font-mono text-slate-300">{{trade.exitPrice.toFixed(2)}}</td>
                             <td class="py-2 font-mono text-right font-bold" [class]="trade.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'">
                               {{trade.pnl.toFixed(2)}}
+                            </td>
+                            <td class="py-2 text-center" *ngIf="webhookConfig()?.enableWebhooks">
+                               <button (click)="broadcast(trade)" class="text-blue-400 hover:text-blue-300 transition-colors" title="Send to MT5">
+                                 <i class="fa-solid fa-tower-broadcast"></i>
+                               </button>
                             </td>
                           </tr>
                         }
@@ -175,260 +158,117 @@ import { BackendService } from './services/backend.service';
   `
 })
 export class AppComponent {
-    private simulationService = inject(SimulationService);
-    private aiService = inject(AiService);
-    private sanitizer: DomSanitizer = inject(DomSanitizer);
-    public backendService = inject(BackendService);
+  private simulationService = inject(SimulationService);
+  private aiService = inject(AiService);
+  private sanitizer: DomSanitizer = inject(DomSanitizer);
 
-    candles = signal<Candle[]>([]);
-    results = signal<BacktestResult | null>(null);
-    optResult = signal<OptimizationResult | null>(null);
+  candles = signal<Candle[]>([]);
+  results = signal<BacktestResult | null>(null);
+  optResult = signal<OptimizationResult | null>(null);
+  webhookConfig = signal<{webhookUrl: string, enableWebhooks: boolean} | null>(null);
+  
+  aiAnalysis = signal<SafeHtml | null>(null);
+  isAnalyzing = signal<boolean>(false);
 
-    aiAnalysis = signal<SafeHtml | null>(null);
-    isAnalyzing = signal<boolean>(false);
+  constructor() {
+    // Initialize with mock data so it works out of the box
+    this.candles.set(this.simulationService.generateData(365));
+  }
 
-    // Backend integration
-    useBackend = signal<boolean>(false);
-    currentJobId = signal<string | null>(null);
-    isRunning = signal<boolean>(false);
+  lastTrades = computed(() => {
+    const res = this.results();
+    if (!res) return [];
+    // Return last 10 trades reversed
+    return [...res.trades].reverse().slice(0, 10);
+  });
 
-    constructor() {
-        // Initialize with mock data so it works out of the box
-        this.candles.set(this.simulationService.generateData(365));
-
-        // Check backend connection on startup
-        this.backendService.checkConnection().then(connected => {
-            if (connected) {
-                console.log('✅ Backend connected');
-                // Auto-enable backend mode if available
-                this.useBackend.set(true);
-            } else {
-                console.log('⚠️ Backend not available, using client-side simulation');
-            }
-        });
-
-        // Subscribe to backend progress updates
-        this.backendService.progress$.subscribe(progress => {
-            console.log(`Job ${progress.job_id}: ${progress.message}`);
-        });
+  onFileLoaded(csvContent: string) {
+    const parsedCandles = this.simulationService.parseCsvData(csvContent);
+    if (parsedCandles.length > 0) {
+      this.candles.set(parsedCandles);
+      // Reset results on new data load
+      this.results.set(null);
+      this.optResult.set(null);
+      this.aiAnalysis.set(null);
+    } else {
+      alert('Failed to parse CSV. Ensure format: Date,Open,High,Low,Close,Volume');
     }
+  }
 
-    lastTrades = computed(() => {
-        const res = this.results();
-        if (!res) return [];
-        // Return last 10 trades reversed
-        return [...res.trades].reverse().slice(0, 10);
+  handleRun(config: ConfigData) {
+    // Reset AI analysis when new simulation runs
+    this.aiAnalysis.set(null);
+    this.optResult.set(null); // Clear previous optimization if running manual
+    
+    // Store webhook settings
+    this.webhookConfig.set({
+      webhookUrl: config.webhookUrl,
+      enableWebhooks: config.enableWebhooks
     });
 
-    onFileLoaded(csvContent: string) {
-        const parsedCandles = this.simulationService.parseCsvData(csvContent);
-        if (parsedCandles.length > 0) {
-            this.candles.set(parsedCandles);
-            // Reset results on new data load
-            this.results.set(null);
-            this.optResult.set(null);
-            this.aiAnalysis.set(null);
-        } else {
-            alert('Failed to parse CSV. Ensure format: Date,Open,High,Low,Close,Volume');
-        }
+    // Ensure we have data
+    if (this.candles().length === 0) {
+      this.candles.set(this.simulationService.generateData(365));
     }
 
-    toggleMode() {
-        if (this.backendService.connectionStatus() === 'connected') {
-            this.useBackend.update(v => !v);
-            console.log(`Switched to ${this.useBackend() ? 'Backend' : 'Client'} mode`);
-        } else {
-            alert('Backend is not available. Please start the backend server.');
-        }
+    if (config.mode === 'single') {
+      const res = this.simulationService.runBacktest(
+        this.candles(),
+        config.initialCapital,
+        config.commission,
+        config.slippage,
+        config.fastMa,
+        config.slowMa,
+        // Pass optional Ensemble/ML configs
+        config.useEnsemble ? config.ensembleConfig : undefined,
+        config.mlConfig
+      );
+      this.results.set(res);
+    } 
+    else if (config.mode === 'optimize' && config.optimization) {
+      const opt = this.simulationService.optimizeStrategy(
+        this.candles(),
+        config.initialCapital,
+        config.commission,
+        config.slippage,
+        config.optimization.fastStart,
+        config.optimization.fastEnd,
+        config.optimization.fastStep,
+        config.optimization.slowStart,
+        config.optimization.slowEnd,
+        config.optimization.slowStep
+      );
+      
+      this.optResult.set(opt);
+      this.results.set(opt.bestResult);
     }
+  }
 
-    handleRun(config: ConfigData) {
-        // Reset AI analysis when new simulation runs
-        this.aiAnalysis.set(null);
-        this.optResult.set(null); // Clear previous optimization if running manual
+  async analyze() {
+    const metrics = this.results()?.metrics;
+    if (!metrics) return;
 
-        // Ensure we have data
-        if (this.candles().length === 0) {
-            this.candles.set(this.simulationService.generateData(365));
-        }
+    this.isAnalyzing.set(true);
+    const rawHtml = await this.aiService.analyzeBacktest(metrics);
+    // Sanitize the HTML to prevent XSS while allowing styling
+    this.aiAnalysis.set(this.sanitizer.bypassSecurityTrustHtml(rawHtml));
+    this.isAnalyzing.set(false);
+  }
 
-        if (this.useBackend() && this.backendService.connectionStatus() === 'connected') {
-            // Run on backend
-            this.runOnBackend(config);
-        } else {
-            // Run locally
-            this.runLocally(config);
-        }
+  async broadcast(trade: Trade) {
+    const conf = this.webhookConfig();
+    if (!conf || !conf.enableWebhooks) return;
+    
+    // Optimistic UI interaction
+    const success = await this.simulationService.broadcastSignal(trade, conf.webhookUrl);
+    if (success) {
+      alert('Signal broadcast successfully to MT5 Bridge!');
+    } else {
+      alert('Failed to broadcast signal. Check console for CORS or network errors.');
     }
+  }
 
-    private runLocally(config: ConfigData) {
-        if (config.mode === 'single') {
-            const res = this.simulationService.runBacktest(
-                this.candles(),
-                config.initialCapital,
-                config.commission,
-                config.slippage,
-                config.fastMa,
-                config.slowMa
-            );
-            this.results.set(res);
-        }
-        else if (config.mode === 'optimize' && config.optimization) {
-            const opt = this.simulationService.optimizeStrategy(
-                this.candles(),
-                config.initialCapital,
-                config.commission,
-                config.slippage,
-                config.optimization.fastStart,
-                config.optimization.fastEnd,
-                config.optimization.fastStep,
-                config.optimization.slowStart,
-                config.optimization.slowEnd,
-                config.optimization.slowStep
-            );
-
-            this.optResult.set(opt);
-            this.results.set(opt.bestResult);
-        }
-    }
-
-    private runOnBackend(config: ConfigData) {
-        this.isRunning.set(true);
-
-        // Convert CSV data to string if available
-        const csvData = this.candles().length > 0 ? this.convertCandlesToCsv() : undefined;
-
-        // Create backend config
-        const backendConfig = this.backendService.convertToBackendConfig(
-            config.initialCapital,
-            config.commission,
-            config.slippage,
-            config.fastMa,
-            config.slowMa,
-            csvData
-        );
-
-        if (config.mode === 'single') {
-            // Run single backtest
-            this.backendService.runBacktest(backendConfig).subscribe({
-                next: (job) => {
-                    this.currentJobId.set(job.job_id);
-                    console.log('Backtest submitted:', job.job_id);
-
-                    // Poll for results
-                    this.backendService.pollJobUntilComplete(job.job_id).subscribe({
-                        next: (updatedJob) => {
-                            if (updatedJob.status === 'COMPLETED' && updatedJob.result) {
-                                const results = this.backendService.convertFromBackendResults(updatedJob.result);
-                                this.results.set(results);
-                                this.isRunning.set(false);
-                                console.log('✅ Backtest completed');
-                            } else if (updatedJob.status === 'FAILED') {
-                                alert(`Backtest failed: ${updatedJob.error}`);
-                                this.isRunning.set(false);
-                            }
-                        },
-                        error: (error) => {
-                            console.error('Error polling job:', error);
-                            this.isRunning.set(false);
-                            alert('Error running backtest. Check console for details.');
-                        }
-                    });
-                },
-                error: (error) => {
-                    console.error('Error submitting backtest:', error);
-                    this.isRunning.set(false);
-                    alert('Failed to submit backtest. Is the backend running?');
-                }
-            });
-        } else if (config.mode === 'optimize' && config.optimization) {
-            // Run optimization
-            const optConfig = {
-                method: 'grid_search' as const,
-                param_grid: {
-                    'strategy.fast_period': this.range(
-                        config.optimization.fastStart,
-                        config.optimization.fastEnd,
-                        config.optimization.fastStep
-                    ),
-                    'strategy.slow_period': this.range(
-                        config.optimization.slowStart,
-                        config.optimization.slowEnd,
-                        config.optimization.slowStep
-                    )
-                },
-                objective: 'sharpe_ratio'
-            };
-
-            this.backendService.runOptimization(backendConfig, optConfig).subscribe({
-                next: (job) => {
-                    this.currentJobId.set(job.job_id);
-                    console.log('Optimization submitted:', job.job_id);
-
-                    // Poll for results
-                    this.backendService.pollJobUntilComplete(job.job_id).subscribe({
-                        next: (updatedJob) => {
-                            if (updatedJob.status === 'COMPLETED' && updatedJob.result) {
-                                // Convert optimization results
-                                const bestResult = updatedJob.result.results[0];
-                                this.optResult.set({
-                                    iterations: updatedJob.result.total_iterations,
-                                    bestFastMa: bestResult.config['strategy.fast_period'],
-                                    bestSlowMa: bestResult.config['strategy.slow_period'],
-                                    bestProfitFactor: bestResult.metrics.profit_factor,
-                                    bestResult: this.backendService.convertFromBackendResults(bestResult.metrics)
-                                });
-                                this.results.set(this.optResult()!.bestResult);
-                                this.isRunning.set(false);
-                                console.log('✅ Optimization completed');
-                            } else if (updatedJob.status === 'FAILED') {
-                                alert(`Optimization failed: ${updatedJob.error}`);
-                                this.isRunning.set(false);
-                            }
-                        },
-                        error: (error) => {
-                            console.error('Error polling optimization:', error);
-                            this.isRunning.set(false);
-                        }
-                    });
-                },
-                error: (error) => {
-                    console.error('Error submitting optimization:', error);
-                    this.isRunning.set(false);
-                    alert('Failed to submit optimization. Is the backend running?');
-                }
-            });
-        }
-    }
-
-    private convertCandlesToCsv(): string {
-        const header = 'Date,Open,High,Low,Close,Volume\n';
-        const rows = this.candles().map(c =>
-            `${new Date(c.time).toISOString()},${c.open},${c.high},${c.low},${c.close},${c.volume}`
-        ).join('\n');
-        return header + rows;
-    }
-
-    private range(start: number, end: number, step: number): number[] {
-        const result = [];
-        for (let i = start; i <= end; i += step) {
-            result.push(i);
-        }
-        return result;
-    }
-
-    async analyze() {
-        const metrics = this.results()?.metrics;
-        if (!metrics) return;
-
-        this.isAnalyzing.set(true);
-        const rawHtml = await this.aiService.analyzeBacktest(metrics);
-        // Sanitize the HTML to prevent XSS while allowing styling
-        this.aiAnalysis.set(this.sanitizer.bypassSecurityTrustHtml(rawHtml));
-        this.isAnalyzing.set(false);
-    }
-
-    formatDate(ts: number): string {
-        return new Date(ts).toLocaleDateString();
-    }
+  formatDate(ts: number): string {
+    return new Date(ts).toLocaleDateString();
+  }
 }

@@ -11,6 +11,9 @@ __all__ = [
     "utils",
 ]
 
+import sys
+import importlib
+
 # Lazy imports to avoid heavy import-time side-effects
 _LAZY_IMPORTS = {
     "config": "cthulu.config",

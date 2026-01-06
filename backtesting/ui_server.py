@@ -95,7 +95,7 @@ class BacktestServer:
         """
         self.app = Flask(__name__)
         CORS(self.app)  # Enable CORS for Angular frontend
-        self.socketio = SocketIO(self.app, cors_allowed_origins="*")
+        self.socketio = SocketIO(self.app, cors_allowed_origins="*", async_mode='threading')
         
         self.host = host
         self.port = port
@@ -281,19 +281,25 @@ class BacktestServer:
         @self.app.route('/', methods=['GET'])
         def serve_index():
             """Serve UI index page"""
-            ui_dir = Path(__file__).parent / 'ui'
+            ui_dir = Path(__file__).parent / 'ui' / 'dist'
+            if not ui_dir.exists():
+                ui_dir = Path(__file__).parent / 'ui'
             return send_from_directory(ui_dir, 'index.html')
         
         @self.app.route('/api/ui/<path:filename>', methods=['GET'])
         def serve_ui(filename):
             """Serve UI files"""
-            ui_dir = Path(__file__).parent / 'ui'
+            ui_dir = Path(__file__).parent / 'ui' / 'dist'
+            if not ui_dir.exists():
+                ui_dir = Path(__file__).parent / 'ui'
             return send_from_directory(ui_dir, filename)
         
         @self.app.route('/<path:filename>', methods=['GET'])
         def serve_ui_files(filename):
             """Serve any UI file"""
-            ui_dir = Path(__file__).parent / 'ui'
+            ui_dir = Path(__file__).parent / 'ui' / 'dist'
+            if not ui_dir.exists():
+                ui_dir = Path(__file__).parent / 'ui'
             try:
                 return send_from_directory(ui_dir, filename)
             except:
@@ -470,25 +476,74 @@ class BacktestServer:
             'error': error
         })
     
-    def _load_market_data(self, data_source: Dict[str, Any]):
+    def _load_market_data(self, data_source: Optional[Dict[str, Any]]):
         """Load market data from source"""
-        # TODO: Implement data loading from various sources
-        # For now, return dummy data
         import pandas as pd
         
-        # Load from CSV if provided
-        if 'csv_path' in data_source:
-            return pd.read_csv(data_source['csv_path'], parse_dates=['Date'], index_col='Date')
+        # 1. Try CSV path if provided
+        if data_source and 'csv_path' in data_source:
+            path = Path(data_source['csv_path'])
+            if path.exists():
+                return pd.read_csv(path, parse_dates=['Date'], index_col='Date')
         
-        # Otherwise return empty DataFrame
-        return pd.DataFrame()
+        # 2. Try default project data path
+        default_data = Path(__file__).parent.parent / "test_pattern_data.csv"
+        if default_data.exists():
+            df = pd.read_csv(default_data)
+            # Normalize column names for SMA/EMA indicators
+            if 'Date' in df.columns:
+                df['Date'] = pd.to_datetime(df['Date'])
+                df.set_index('Date', inplace=True)
+            return df
+        
+        # 3. Create dummy data as last resort
+        import numpy as np
+        dates = pd.date_range(start='2023-01-01', periods=1000, freq='H')
+        prices = 1.1000 + np.cumsum(np.random.normal(0, 0.001, 1000))
+        df = pd.DataFrame({
+            'open': prices,
+            'high': prices + 0.0005,
+            'low': prices - 0.0005,
+            'close': prices,
+            'volume': np.random.randint(100, 1000, 1000)
+        }, index=dates)
+        
+        # Add required indicators if missing
+        df['ema_9'] = df['close'].ewm(span=9).mean()
+        df['ema_12'] = df['close'].ewm(span=12).mean()
+        df['ema_21'] = df['close'].ewm(span=21).mean()
+        df['ema_26'] = df['close'].ewm(span=26).mean()
+        df['atr'] = 0.0010 # Constant ATR for dummy
+        
+        return df
     
     def _create_strategies(self, strategy_configs: List[Dict[str, Any]]) -> List[Strategy]:
         """Create strategy instances from configurations"""
+        from strategy import (
+            SmaCrossover, EmaCrossover, MomentumBreakout, 
+            ScalpingStrategy, MeanReversionStrategy, 
+            TrendFollowingStrategy, RsiReversalStrategy
+        )
+        
+        STRATEGY_MAP = {
+            'sma_crossover': SmaCrossover,
+            'ema_crossover': EmaCrossover,
+            'momentum_breakout': MomentumBreakout,
+            'scalping': ScalpingStrategy,
+            'mean_reversion': MeanReversionStrategy,
+            'trend_following': TrendFollowingStrategy,
+            'rsi_reversal': RsiReversalStrategy
+        }
+        
         strategies = []
         
-        # TODO: Implement strategy creation from config
-        # For now, return empty list
+        for config in strategy_configs:
+            strategy_type = config.get('type')
+            if strategy_type in STRATEGY_MAP:
+                strategy_cls = STRATEGY_MAP[strategy_type]
+                strategies.append(strategy_cls(config))
+            else:
+                self.logger.warning(f"Unknown strategy type: {strategy_type}")
         
         return strategies
     
