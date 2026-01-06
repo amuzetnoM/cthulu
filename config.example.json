@@ -20,7 +20,10 @@
   },
   "trading": {
     "symbol": "BTCUSD#",
-    "timeframe": "TIMEFRAME_H1",
+    "timeframe": "H1",
+    "min_time_in_trade_bars": 0,
+    "trail_pct": 0.3,
+    "concurrency": 1,
     "poll_interval": 60,
     "lookback_bars": 500
   },
@@ -105,8 +108,3 @@
   },
   "cache_enabled": true
 }
-
-
-
-
-
