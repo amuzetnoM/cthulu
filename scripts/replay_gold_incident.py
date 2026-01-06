@@ -19,7 +19,7 @@ from cthulu.backtesting import BACKTEST_CACHE_DIR, BACKTEST_REPORTS_DIR
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("cthulu.replay_incident")
 
-MINDSET_PATH = Path('cthulu/configs/mindsets/ultra_aggressive/config_ultra_aggressive_m15.json')
+MINDSET_PATH = Path('configs/mindsets/ultra_aggressive/config_ultra_aggressive_m15.json')
 CSV_PATH = BACKTEST_CACHE_DIR / 'GOLDm#_M15_20260105.csv'
 
 START = datetime.fromisoformat('2026-01-05T11:00:00')

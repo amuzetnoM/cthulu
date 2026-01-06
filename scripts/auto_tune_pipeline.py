@@ -84,7 +84,7 @@ def run_full_sweep(symbols: list, timeframes: list = None, days_list: list | Non
 
                     # Discover all mindset configs that match timeframe
                     mindset_cfgs = []
-                    mindsets_dir = Path('cthulu/configs/mindsets')
+                    mindsets_dir = Path('configs/mindsets')
                     if mindsets_dir.exists():
                         for ms_dir in mindsets_dir.iterdir():
                             if ms_dir.is_dir():
@@ -140,7 +140,7 @@ def run_smoke_sweep(symbols: list, timeframes: list = None, days: int = 30, mind
 
                 # Discover available mindset configs for timeframe
                 mindset_cfgs = []
-                mindsets_dir = Path('cthulu/configs/mindsets')
+                mindsets_dir = Path('configs/mindsets')
                 if mindsets_dir.exists():
                     for ms_dir in mindsets_dir.iterdir():
                         if ms_dir.is_dir():
