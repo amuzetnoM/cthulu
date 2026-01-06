@@ -258,9 +258,24 @@ def call_llm_for_enhanced_summary(prompt: str) -> str:
                 return llm_summarize(prompt)
             except Exception as e:
                 log.warning(f"Local LLM generation failed: {e}")
-    except Exception:
-        # local LLM not present or failed to import - fall through
-        pass
+    except Exception as e:
+        # local LLM not present or failed to import - try adding project root to sys.path as a fallback
+        log.debug("Initial import of local LLM failed: %s", e)
+        try:
+            import sys
+            from pathlib import Path
+            project_root = Path(__file__).resolve().parents[2]
+            if str(project_root) not in sys.path:
+                sys.path.insert(0, str(project_root))
+            from cthulu.llm.local_llm import available as llm_available, summarize as llm_summarize
+            if llm_available():
+                try:
+                    return llm_summarize(prompt)
+                except Exception as e2:
+                    log.warning(f"Local LLM generation failed after sys.path fix: {e2}")
+        except Exception as e2:
+            log.debug("Failed to import local LLM after sys.path adjustment: %s", e2)
+
 
     # Remote LLM endpoint support (legacy)
     endpoint = os.environ.get('LLM_ENDPOINT')
