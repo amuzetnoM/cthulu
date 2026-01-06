@@ -16,6 +16,7 @@ ENV/
 venv312/
 backtesting/ui/metadata.json
 backtesting/ui/angular.json
+news/cache/news_manager.json
 
 # Python Build
 *.egg-info/
