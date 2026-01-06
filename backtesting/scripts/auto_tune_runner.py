@@ -22,6 +22,10 @@ log = logging.getLogger("cthulu.auto_tune.runner")
 DEFAULT_TIMEFRAMES = ['M1', 'M5', 'M15', 'H1', 'H4', 'D1']
 SYMBOLS_CFG = Path('config/symbols.json')
 
+# Single root for all auto-tune artifacts to keep repo tidy
+AUTOTUNE_ROOT = BACKTEST_REPORTS_DIR / 'auto_tune'
+AUTOTUNE_ROOT.mkdir(parents=True, exist_ok=True)
+
 
 def load_symbols():
     if SYMBOLS_CFG.exists():
@@ -52,8 +56,8 @@ def run_smoke_sweep(symbols: List[str], timeframes: List[str] | None = None, day
     sym_cfgs = load_symbols()
     timeframes = timeframes or DEFAULT_TIMEFRAMES
 
-    now = datetime.utcnow()
-    base_out_root = out_root or (BACKTEST_REPORTS_DIR / 'auto_tune_runs')
+    now = datetime.now().astimezone()
+    base_out_root = out_root or (AUTOTUNE_ROOT / 'runs')
     out_root = base_out_root / now.strftime('%Y%m%d_%H%M%S')
     out_root.mkdir(parents=True, exist_ok=True)
 
@@ -106,6 +110,70 @@ def run_smoke_sweep(symbols: List[str], timeframes: List[str] | None = None, day
 
     return out_root
 
+
+def run_full_sweep(symbols: list, timeframes: list = None, days_list: list | None = None, mindsets: list = None):
+    """Run expanded sweep across multiple rolling windows (days_list)."""
+    days_list = days_list or [30]
+    results_root = AUTOTUNE_ROOT / 'full' / datetime.now().astimezone().strftime('%Y%m%d_%H%M%S')
+    results_root.mkdir(parents=True, exist_ok=True)
+
+    for days in days_list:
+        log.info(f"Starting sweeps for window={days} days")
+        out_root = results_root / f"window_{days}d"
+        out_root.mkdir(parents=True, exist_ok=True)
+
+        dm = HistoricalDataManager()
+        sym_cfgs = load_symbols()
+        timeframes = timeframes or DEFAULT_TIMEFRAMES
+
+        now = datetime.now().astimezone()
+        windows = rolling_windows(now, days=days)
+
+        for symbol in symbols:
+            cfg = sym_cfgs.get(symbol, {})
+            for timeframe in timeframes:
+                for (start, end) in windows:
+                    if not cfg.get('weekend_trading', False) and _is_weekend_only_range(start, end):
+                        log.info(f"Skipping weekend-only window for {symbol} {timeframe} {start} -> {end}")
+                        continue
+
+                    try:
+                        df, meta = dm.fetch_data(symbol, start, end, timeframe=timeframe, source=DataSource.MT5, use_cache=True)
+                    except Exception as e:
+                        log.warning(f"Failed to fetch {symbol} {timeframe} {start}->{end}: {e}")
+                        continue
+
+                    mindset_cfgs = []
+                    mindsets_dir = Path('configs/mindsets')
+                    if mindsets_dir.exists():
+                        for ms_dir in mindsets_dir.iterdir():
+                            if ms_dir.is_dir():
+                                candidate = ms_dir / f'config_{ms_dir.name}_{timeframe.lower()}.json'
+                                if candidate.exists():
+                                    try:
+                                        cfg_parsed = json.loads(candidate.read_text())
+                                        mindset_cfgs.append({'name': ms_dir.name, 'cfg': cfg_parsed})
+                                    except Exception:
+                                        log.warning(f"Failed to parse mindset config {candidate}")
+
+                    if not mindset_cfgs:
+                        mindset_cfgs = [{'name': 'default_dynamic', 'cfg': None}]
+
+                    for m in mindset_cfgs:
+                        out_dir = out_root / f"{symbol}_{timeframe}_{m['name']}_{start.date()}_{end.date()}"
+                        ranked = run_grid_sweep_for_df(df, symbol, timeframe, m['cfg'], out_dir)
+                        summary = {
+                            'symbol': symbol,
+                            'timeframe': timeframe,
+                            'mindset': m['name'],
+                            'window_start': start.isoformat(),
+                            'window_end': end.isoformat(),
+                            'top_config': ranked[0] if ranked else None
+                        }
+                        (out_dir / 'summary.json').write_text(json.dumps(summary, indent=2, default=str))
+                        log.info(f"Completed sweep for {symbol} {timeframe} mindset={m['name']} ({start.date()} -> {end.date()}); results at {out_dir}")
+
+    return results_root
 
 # Summarizer utilities (self-contained; writes into BACKTEST_REPORTS_DIR/auto_tune_summaries by default)
 import statistics
@@ -192,7 +260,7 @@ def call_llm_for_enhanced_summary(prompt: str) -> str:
 
 
 def summarize_reports(report_dirs: List[Path], output_dir: Path | None = None, call_ai_if_available: bool = True) -> Path:
-    output_dir = Path(output_dir or (Path(BACKTEST_REPORTS_DIR) / 'auto_tune_summaries'))
+    output_dir = Path(output_dir or (AUTOTUNE_ROOT / 'summaries'))
     output_dir.mkdir(parents=True, exist_ok=True)
 
     agg = aggregate_rankings(report_dirs)
@@ -205,7 +273,7 @@ def summarize_reports(report_dirs: List[Path], output_dir: Path | None = None, c
         except Exception as e:
             log.warning(f"LLM call failed: {e}")
 
-    ts = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    ts = datetime.now().astimezone().strftime('%Y%m%d_%H%M%S')
     out_json = output_dir / f'auto_tune_summary_{ts}.json'
     out_txt = output_dir / f'auto_tune_summary_{ts}.txt'
 
@@ -218,7 +286,7 @@ def summarize_reports(report_dirs: List[Path], output_dir: Path | None = None, c
 
 def apply_recommendations_from_dirs(report_dirs: List[Path], output_dir: Path | None = None, auto_apply: bool = False) -> Path:
     # Aggregate top configs and write a recommendations file. If auto_apply True, a recommended config file will be written into configs/recommendations.
-    output_dir = Path(output_dir or (Path(BACKTEST_REPORTS_DIR) / 'auto_tune_recommendations'))
+    output_dir = Path(output_dir or (AUTOTUNE_ROOT / 'recommendations'))
     output_dir.mkdir(parents=True, exist_ok=True)
 
     agg = aggregate_rankings(report_dirs)
@@ -234,7 +302,7 @@ def apply_recommendations_from_dirs(report_dirs: List[Path], output_dir: Path | 
         'source_count': agg.get('count', 0)
     }
 
-    ts = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    ts = datetime.now().astimezone().strftime('%Y%m%d_%H%M%S')
     out = output_dir / f'recommendations_{ts}.json'
     out.write_text(json.dumps(rec, indent=2))
 

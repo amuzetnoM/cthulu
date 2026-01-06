@@ -52,8 +52,11 @@ if ($pyLauncher) {
     $pythonArgsPrefix = @()
 }
 
-# Run python command and capture output; do not throw on non-zero exit code — we want to examine the log
+# Run python command; temporarily set ErrorActionPreference to avoid native command output being treated as termination
+$prevErr = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
 & $pythonCmd @pythonArgsPrefix @argsList 2>&1 | Tee-Object -FilePath $Log
+$ErrorActionPreference = $prevErr
 if ($LASTEXITCODE -ne 0) {
     Write-Warning "Python exited with code $LASTEXITCODE. Check $Log for details."
 }
