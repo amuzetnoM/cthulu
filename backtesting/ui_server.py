@@ -8,22 +8,39 @@ Provides REST API endpoints and WebSocket support for real-time updates.
 import logging
 import json
 import asyncio
+import sys
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 from dataclasses import dataclass, asdict
 import uuid
 
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 
-# Cthulu imports
-from backtesting.engine import BacktestEngine, BacktestConfig, SpeedMode
-from backtesting.optimizer import ParameterOptimizer
-from backtesting.reporter import BacktestReporter
-from strategy.base import Strategy
-from config.loader import load_config
+# Cthulu imports - use try/except for graceful degradation
+try:
+    from backtesting.engine import BacktestEngine, BacktestConfig, SpeedMode
+    from backtesting.optimizer import ParameterOptimizer
+    from backtesting.reporter import BacktestReporter
+    from strategy.base import Strategy
+    from config.loader import load_config
+    CTHULU_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Some Cthulu modules not available: {e}")
+    print("Server will run in limited mode")
+    CTHULU_AVAILABLE = False
+    # Create dummy classes for type hints
+    class BacktestEngine: pass
+    class BacktestConfig: pass
+    class SpeedMode: pass
+    class ParameterOptimizer: pass
+    class BacktestReporter: pass
+    class Strategy: pass
 
 logger = logging.getLogger(__name__)
 
@@ -261,11 +278,27 @@ class BacktestServer:
                 self.logger.error(f"Error starting optimization: {e}")
                 return jsonify({'error': str(e)}), 500
         
+        @self.app.route('/', methods=['GET'])
+        def serve_index():
+            """Serve UI index page"""
+            ui_dir = Path(__file__).parent / 'ui'
+            return send_from_directory(ui_dir, 'index.html')
+        
         @self.app.route('/api/ui/<path:filename>', methods=['GET'])
         def serve_ui(filename):
             """Serve UI files"""
             ui_dir = Path(__file__).parent / 'ui'
             return send_from_directory(ui_dir, filename)
+        
+        @self.app.route('/<path:filename>', methods=['GET'])
+        def serve_ui_files(filename):
+            """Serve any UI file"""
+            ui_dir = Path(__file__).parent / 'ui'
+            try:
+                return send_from_directory(ui_dir, filename)
+            except:
+                # If file not found, return index.html for SPA routing
+                return send_from_directory(ui_dir, 'index.html')
     
     def _setup_socketio(self):
         """Setup SocketIO event handlers"""
@@ -471,7 +504,13 @@ class BacktestServer:
     def run(self):
         """Start the server"""
         self.logger.info(f"Starting backtest server on {self.host}:{self.port}")
-        self.socketio.run(self.app, host=self.host, port=self.port, debug=True)
+        self.socketio.run(
+            self.app, 
+            host=self.host, 
+            port=self.port, 
+            debug=True,
+            allow_unsafe_werkzeug=True  # Allow development mode
+        )
 
 
 def main():
