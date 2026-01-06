@@ -27,6 +27,9 @@ The Cthulu Backtesting Framework provides a complete environment for strategy va
 | **ML Integration** | Softmax/Argmax selection, price prediction, signal blending |
 | **Optimization** | Walk-forward analysis, Monte Carlo simulation, grid search |
 | **Reporting** | HTML, JSON, CSV exports with interactive charts |
+| **Hektor Integration** | Semantic backtest storage, pattern recognition, AI optimization |
+| **Web UI** | Real-time backtesting with WebSocket updates |
+| **Auto-Optimization** | Bayesian optimization with historical pattern learning |
 
 ---
 
@@ -475,6 +478,220 @@ reporter.generate(
 
 ---
 
+## 🆕 Hektor-Powered Features
+
+### Web-Based Backtesting UI
+
+Start the Flask server for web-based backtesting with real-time updates:
+
+```bash
+# Start UI server
+python backtesting/ui_server.py
+
+# Server runs on http://127.0.0.1:5000
+# Access REST API or connect Angular frontend
+```
+
+**REST API Endpoints**:
+- `POST /api/backtest/run` - Start backtest
+- `GET /api/backtest/status/{id}` - Get status
+- `GET /api/backtest/results/{id}` - Get results
+- `GET /api/configs` - List saved configurations
+- `POST /api/configs` - Save configuration
+- `POST /api/optimize` - Run optimization
+
+**WebSocket Events**:
+- `progress` - Real-time progress updates
+- `complete` - Backtest completion
+- `error` - Error notifications
+
+### Semantic Backtest Storage
+
+Store and search backtest results using Hektor vector database:
+
+```python
+from backtesting.hektor_backtest import HektorBacktest
+from integrations.vector_studio import VectorStudioAdapter, VectorStudioConfig
+
+# Initialize Hektor
+vector_config = VectorStudioConfig(enabled=True)
+adapter = VectorStudioAdapter(vector_config)
+adapter.connect()
+
+hektor_bt = HektorBacktest(adapter)
+
+# Store backtest result
+hektor_bt.store_backtest_result(config, results)
+
+# Find similar configurations
+similar = hektor_bt.find_similar_backtests(config, k=10)
+
+# Get best performing configurations
+best = hektor_bt.get_best_configurations(metric='sharpe_ratio', k=10)
+
+# Compare live vs backtest
+comparison = hektor_bt.compare_live_vs_backtest(live_performance)
+```
+
+### AI-Powered Optimization
+
+Automated configuration discovery using Bayesian optimization and historical patterns:
+
+```python
+from backtesting.auto_optimizer import AutoOptimizer
+
+optimizer = AutoOptimizer(hektor_backtest)
+
+# Grid search with Hektor pruning (10x faster!)
+param_grid = {
+    'risk.position_size_pct': [1, 2, 5, 10],
+    'strategy.ema_fast': [5, 10, 12],
+    'strategy.ema_slow': [20, 26, 30]
+}
+
+results = optimizer.optimize_grid_search(
+    data=market_data,
+    param_grid=param_grid,
+    base_config=config,
+    objective='sharpe_ratio'
+)
+
+# Bayesian optimization using historical patterns
+param_bounds = {
+    'risk.position_size_pct': (1.0, 15.0),
+    'strategy.ema_fast': (5.0, 15.0),
+    'strategy.ema_slow': (20.0, 50.0)
+}
+
+results = optimizer.optimize_bayesian(
+    data=market_data,
+    param_bounds=param_bounds,
+    base_config=config,
+    n_iterations=50
+)
+
+# Multi-objective optimization
+results = optimizer.optimize_multi_objective(
+    data=market_data,
+    param_grid=param_grid,
+    base_config=config,
+    objectives=['sharpe_ratio', 'max_drawdown', 'win_rate']
+)
+
+print(f"Best configuration: {results[0].config}")
+print(f"Sharpe: {results[0].metrics['sharpe_ratio']:.2f}")
+```
+
+### Production Backtest Runner
+
+Command-line interface for automated backtesting:
+
+```bash
+# Single backtest
+python scripts/run_backtest_suite.py \
+  --data data/EURUSD_M15.csv \
+  --config config.json \
+  --mode single
+
+# Optimization
+python scripts/run_backtest_suite.py \
+  --data data/EURUSD_M15.csv \
+  --config config.json \
+  --mode optimize
+
+# Configuration comparison
+python scripts/run_backtest_suite.py \
+  --data data/EURUSD_M15.csv \
+  --config config.json \
+  --mode compare
+
+# Disable Hektor (use standalone mode)
+python scripts/run_backtest_suite.py \
+  --data data/EURUSD_M15.csv \
+  --config config.json \
+  --mode optimize \
+  --no-hektor
+```
+
+### Pattern Recognition in Backtesting
+
+Analyze chart patterns during backtesting:
+
+```python
+from cognition.pattern_recognition import PatternRecognizer
+
+recognizer = PatternRecognizer(vector_adapter, retriever)
+
+# Detect patterns in backtest data
+patterns = recognizer.detect_patterns(data, lookback_bars=50)
+
+# Analyze pattern performance
+for pattern in patterns:
+    analysis = recognizer.analyze_pattern(pattern, data, symbol)
+    print(f"{pattern}: {analysis.win_rate:.1%} win rate")
+    print(f"Recommendation: {analysis.recommendation}")
+
+# Adjust backtest confidence based on patterns
+adjusted_confidence = recognizer.get_pattern_confidence_adjustment(
+    detected_patterns=patterns,
+    current_data=data,
+    symbol=symbol,
+    base_confidence=0.7
+)
+```
+
+### ML Training Data Export
+
+Export backtest results for machine learning:
+
+```python
+from integrations.ml_exporter import MLDataExporter
+
+exporter = MLDataExporter(vector_adapter, output_dir="./training_data")
+
+# Export training data
+files = exporter.export_training_data(
+    start_date=datetime(2025, 1, 1),
+    end_date=datetime(2026, 1, 1),
+    symbols=["EURUSD", "GBPUSD"],
+    test_split=0.2
+)
+
+# Export successful patterns
+exporter.export_successful_patterns(
+    min_win_rate=0.6,
+    min_samples=10
+)
+```
+
+### Performance Analytics
+
+Analyze backtest performance semantically:
+
+```python
+from integrations.performance_analyzer import PerformanceAnalyzer
+
+analyzer = PerformanceAnalyzer(vector_adapter, retriever)
+
+# Generate comprehensive report
+report = analyzer.generate_performance_report("EURUSD", lookback_days=90)
+
+# Find optimal conditions
+optimal = analyzer.find_optimal_conditions(
+    symbol="EURUSD",
+    min_win_rate=0.6,
+    min_samples=10
+)
+
+# Analyze regime performance
+regime_insights = analyzer.analyze_regime_performance("EURUSD")
+
+# Time-of-day analysis
+time_insights = analyzer.analyze_time_of_day_performance("EURUSD")
+```
+
+---
+
 ## Directory Structure
 
 ```
@@ -486,9 +703,16 @@ backtesting/
 ├── benchmarks.py            # Performance metrics
 ├── reporter.py              # Report generation
 ├── optimizer.py             # Optimization tools
+├── 🆕 ui_server.py          # Flask server for web UI
+├── 🆕 hektor_backtest.py    # Hektor-enhanced backtesting
+├── 🆕 auto_optimizer.py     # AI-powered optimization
 ├── cache/                   # Cached historical data
 ├── reports/                 # Generated reports
-└── examples/                # Example scripts
+├── examples/                # Example scripts
+└── ui/                      # 🆕 Angular web interface
+    ├── index.html
+    ├── src/
+    └── README.md
 ```
 
 ---

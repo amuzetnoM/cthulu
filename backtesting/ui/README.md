@@ -1,7 +1,8 @@
-# Cthulhu Backtester (Web Dashboard)
+# Backtester Web Interface
+
 
 ![Version](https://img.shields.io/badge/Version-3.1_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
-![Status](https://img.shields.io/badge/Status-Live_Prototype-10b981?style=for-the-badge&labelColor=0D1117)
+![Status](https://img.shields.io/badge/Status-Prototype-10b981?style=for-the-badge&labelColor=0D1117)
 ![AI](https://img.shields.io/badge/Powered_By-Gemini_2.5-4285F4?style=for-the-badge&labelColor=0D1117&logo=google&logoColor=white)
 
 > The official web-based simulation engine and dashboard for the Cthulhu Algorithmic Trading Framework.

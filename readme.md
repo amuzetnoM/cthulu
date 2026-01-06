@@ -13,6 +13,16 @@ Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring
 
 **Current Version:** v5.1.0 "APEX" — Production Ready
 
+### ✪ AI-Native Trading with Hektor
+
+Cthulu now features **semantic pattern recognition**, **ML model training**, and **automated optimization** powered by Hektor Vector Studio:
+
+- **Pattern Recognition**: Detect and analyze 16 chart patterns with historical outcome analysis
+- **Performance Analytics**: Identify optimal trading conditions using semantic search
+- **ML Training Pipeline**: Export structured data for machine learning model training
+- **Automated Optimization**: AI-powered configuration discovery with Bayesian optimization
+- **Backtesting UI**: Web-based backtesting with real-time progress updates
+
 ---
 
 ## CORE DOCUMENTATION
@@ -107,6 +117,16 @@ Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring
 | **training** | ML/RL model training and validation | [README](training/README.md) |
 | **audit** | Security audits and compliance reports | [README](audit/README.md) |
 
+### AI/ML Integrations (🆕 Hektor-Powered)
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| **cognition/pattern_recognition** | Chart pattern detection with semantic analysis | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
+| **integrations/ml_exporter** | ML training data export (CSV, Parquet, JSON) | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
+| **integrations/performance_analyzer** | Semantic performance analytics | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
+| **backtesting/ui_server** | Web-based backtesting UI with real-time updates | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
+| **backtesting/hektor_backtest** | Semantic backtest result storage and search | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
+| **backtesting/auto_optimizer** | AI-powered configuration optimization | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
+
 ### Deployment & Configuration
 | Module | Description | Documentation |
 |--------|-------------|---------------|
@@ -129,11 +149,17 @@ Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring
 - Enterprise Risk Management
 - Real-Time Monitoring & Alerts
 - 185+ Passing Tests, 95% Coverage
+- **🆕 16 Chart Patterns with AI Analysis**
+- **🆕 Semantic Performance Analytics**
+- **🆕 ML Training Data Pipeline**
+- **🆕 Automated Configuration Optimization**
+- **🆕 Web-Based Backtesting UI**
 
 ### Quick Start Commands
 ```bash
 # Install dependencies
 pip install -r requirements.txt
+pip install -r requirements-hektor.txt  # 🆕 For Hektor enhancements
 
 # Start with interactive setup
 python -m cthulu --config config.json
@@ -143,6 +169,12 @@ python -m cthulu --config config.json --skip-setup
 
 # Dry run mode (no real orders)
 python -m cthulu --config config.json --dry-run
+
+# 🆕 Start backtesting UI server
+python backtesting/ui_server.py
+
+# 🆕 Run automated optimization
+python scripts/run_backtest_suite.py --data data.csv --config config.json --mode optimize
 ```
 
 ---

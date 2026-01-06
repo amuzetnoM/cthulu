@@ -1,5 +1,10 @@
-venv/
-# Python
+# ============================================================================
+# CTHULU TRADING SYSTEM - GITIGNORE
+# ============================================================================
+
+# ============================================================================
+# PYTHON
+# ============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,16 +12,7 @@ __pycache__/
 .Python
 *.pyc
 *.pyo
-
-# Virtual Environments
-venv/
-env/
-ENV/
-.venv/
-venv312/
-backtesting/ui/metadata.json
-backtesting/ui/angular.json
-news/cache/news_manager.json
+*.pyd
 
 # Python Build
 *.egg-info/
@@ -25,7 +21,21 @@ build/
 *.egg
 .eggs/
 
-# Configuration (contains sensitive data)
+# ============================================================================
+# VIRTUAL ENVIRONMENTS
+# ============================================================================
+venv/
+env/
+ENV/
+.venv/
+venv312/
+.conda/
+*.virtualenv
+
+# ============================================================================
+# CONFIGURATION & SECRETS
+# ============================================================================
+# Configuration files (contain sensitive data)
 config.yaml
 config.json
 config/*.yaml
@@ -33,6 +43,7 @@ config/*.yaml
 !config.example.json
 .env
 .env.local
+.env.*.local
 config_battle_test.json
 config_aggressive*.json
 config_ultra*.json
@@ -40,18 +51,75 @@ configs/*.json
 !configs/*.example.json
 _dev/
 
-# Build Plan (private development roadmap)
-build_plan.md
-**/build_plan.md
-docs/development_log
+# API Keys & Credentials
+*.key
+*.pem
+*.crt
+*.cer
+secrets/
+credentials/
+.secrets/
 
-# Logs
+# ============================================================================
+# BACKUP FILES
+# ============================================================================
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*~
+*.swp
+*.swo
+*.tmp
+*.temp
+config.json.bak
+*.db.bak
+*.sqlite.bak
+
+# ============================================================================
+# LOCK FILES
+# ============================================================================
+*.lock
+*.lck
+cthulu.lock
+.lock
+*.pid
+*.seed
+
+# ============================================================================
+# DATABASE FILES
+# ============================================================================
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqp
+*.sql
+cthulu.db
+Cthulu.db
+*.mdb
+*.accdb
+
+# ============================================================================
+# LOGS
+# ============================================================================
 logs/
 *.log
 *.log.*
+*.log.gz
+*.log.zip
 Cthulu.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
-# IDE
+# ============================================================================
+# IDE & EDITORS
+# ============================================================================
 .vscode/
 .idea/
 *.swp
@@ -59,95 +127,134 @@ Cthulu.log
 *~
 .project
 .pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.vscode-test/
+.history/
 
-# OS
+# ============================================================================
+# OS SPECIFIC
+# ============================================================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-*.tmp
+Desktop.ini
+$RECYCLE.BIN/
 
-# Machine Learning
+# ============================================================================
+# MACHINE LEARNING
+# ============================================================================
 ml/models/*.pkl
 ml/models/*.h5
 ml/models/*.pt
+ml/models/*.pth
+ml/models/*.onnx
+ml/models/*.pb
 ml/data/
+models/hektor/
+*.model
+*.weights
+*.checkpoint
+checkpoints/
 
-# Backtesting results
+# Training data
+training_data/
+*.tfrecord
+*.parquet
+
+# ============================================================================
+# BACKTESTING
+# ============================================================================
 backtesting/results/
 backtesting/cache/
-
-# Auto-tune reports (do not track large per-run JSONs and summaries)
-# AUTOTUNE_ROOT writes under backtesting/reports/auto_tune by default
 backtesting/reports/auto_tune/
 backtesting/reports/auto_tune_*/
+optimization_results/
+*.backtest
 
-# News cache (runtime files)
+# ============================================================================
+# HEKTOR / VECTOR DATABASE
+# ============================================================================
+vectors/
+*.vector
+*.index
+*.faiss
+vector_cache/
+
+# ============================================================================
+# NEWS & DATA CACHE
+# ============================================================================
 news/cache/
-
-# Trading data
+news/cache/news_manager.json
 data/
+cache/
+*.cache
+
+# ============================================================================
+# TRADING DATA & OUTPUT
+# ============================================================================
 output/
-*.db
-*.db-shm
-*.db-wal
-*.sqlite
-*.sqlite3
-cthulu.db
-Cthulu.db
+trades/
+*.trade
+*.position
+*.order
 
-# Jupyter Notebooks
-.ipynb_checkpoints/
-*.ipynb
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.mypy_cache/
-.ruff_cache/
-
-# Benchmarks
+# ============================================================================
+# CSV & DATA FILES
+# ============================================================================
+*.csv
+!**/example*.csv
+!**/sample*.csv
+monitoring/*.csv
+observability/**/*.csv
 indicator_metrics.csv
 system_health.csv
 comprehensive_metrics.csv
 
-# Documentation builds
+# ============================================================================
+# JUPYTER NOTEBOOKS
+# ============================================================================
+.ipynb_checkpoints/
+*.ipynb
+!**/example*.ipynb
+!**/tutorial*.ipynb
+
+# ============================================================================
+# TESTING
+# ============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+*.cover
+*.py,cover
+.cache
+nosetests.xml
+coverage.xml
+*.coveragerc
+
+# ============================================================================
+# DOCUMENTATION BUILDS
+# ============================================================================
 docs/_build/
+docs/development_log/
 site/
+_site/
+.docusaurus/
+.cache-loader/
 
-# Git
-.git/
-
-# articles
-docs/changelog/mql5_handbook
-
-# Ignore backup config containing credentials
-config.json.bak
-
-
-
-
-# Ignore Prometheus metrics textfile
-metrics/
-
-# Observability CSV files (contain runtime data)
-monitoring/*.csv
-observability/**/*.csv
-*.csv
-
-# Lock files
-*.lock
-cthulu.lock
-
-# Vector database files
-vectors/
-*.pyd
-*.dll
-*.lib
-*.exp
-models/hektor/
-
-# Build artifacts
+# ============================================================================
+# BUILD ARTIFACTS
+# ============================================================================
 build/
 build_*/
 CMakeCache.txt
@@ -155,3 +262,98 @@ CMakeFiles/
 cmake_install.cmake
 compile_commands.json
 Makefile
+*.o
+*.obj
+*.lib
+*.exp
+*.dll
+*.exe
+*.out
+*.app
+
+# ============================================================================
+# PACKAGE MANAGERS
+# ============================================================================
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnp/
+.pnp.js
+.yarn/
+
+# ============================================================================
+# ANGULAR / FRONTEND
+# ============================================================================
+backtesting/ui/metadata.json
+backtesting/ui/angular.json
+backtesting/ui/dist/
+backtesting/ui/.angular/
+backtesting/ui/node_modules/
+
+# ============================================================================
+# METRICS & MONITORING
+# ============================================================================
+metrics/
+prometheus/
+grafana/
+*.metrics
+*.prom
+
+# ============================================================================
+# PRIVATE DEVELOPMENT
+# ============================================================================
+build_plan.md
+**/build_plan.md
+docs/changelog/mql5_handbook
+.agent/
+TODO.md
+NOTES.md
+SCRATCH.md
+
+# ============================================================================
+# ARCHIVES & COMPRESSED
+# ============================================================================
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.gz
+*.bz2
+*.xz
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+tmp/
+temp/
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# ============================================================================
+# GIT
+# ============================================================================
+.git/
+*.patch
+*.diff
+
+# ============================================================================
+# MISC
+# ============================================================================
+*.bak
+*.old
+*.orig
+*.rej
+*.swo
+*.swp
+*~
+.*.sw[a-z]
+*.un~
+Session.vim
+.netrwhist
+tags
+.tags

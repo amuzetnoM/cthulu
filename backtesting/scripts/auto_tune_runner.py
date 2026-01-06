@@ -15,6 +15,7 @@ from typing import List, Dict, Any
 from cthulu.backtesting import BACKTEST_REPORTS_DIR
 from scripts.grid_sweep_scaler import run_grid_sweep_for_df
 from backtesting.data_manager import HistoricalDataManager, DataSource
+from cthulu.ops.guardrails import allow_auto_apply
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("cthulu.auto_tune.runner")
@@ -346,12 +347,16 @@ def apply_recommendations_from_dirs(report_dirs: List[Path], output_dir: Path | 
     out.write_text(json.dumps(rec, indent=2))
 
     if auto_apply:
-        # Write recommended file into configs/recommendations for review/appliance
-        rec_cfg_dir = Path('configs/recommendations')
-        rec_cfg_dir.mkdir(parents=True, exist_ok=True)
-        rec_cfg_file = rec_cfg_dir / f'recommended_{ts}.json'
-        rec_cfg_file.write_text(json.dumps(rec, indent=2))
-        log.info(f"Auto-applied recommendations to {rec_cfg_file}")
+        # Require explicit opt-in to auto-apply recommendations for safety
+        if not allow_auto_apply():
+            log.warning("Auto-apply requested but guardrails prevent auto application. Set AUTO_APPLY_RECOMMENDATIONS=true and LIVE_RUN_CONFIRM=1 to enable.")
+        else:
+            # Write recommended file into configs/recommendations for review/application
+            rec_cfg_dir = Path('configs/recommendations')
+            rec_cfg_dir.mkdir(parents=True, exist_ok=True)
+            rec_cfg_file = rec_cfg_dir / f'recommended_{ts}.json'
+            rec_cfg_file.write_text(json.dumps(rec, indent=2))
+            log.info(f"Auto-applied recommendations to {rec_cfg_file}")
 
     log.info(f"Wrote recommendations to {out}")
     return out

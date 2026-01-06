@@ -1,16 +1,18 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ConfigurationComponent, ConfigData } from './components/configuration.component';
 import { ChartComponent } from './components/chart.component';
 import { MetricsComponent } from './components/metrics.component';
 import { SimulationService, BacktestResult, Candle, OptimizationResult } from './services/simulation.service';
 import { AiService } from './services/ai.service';
+import { BackendService } from './services/backend.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, ConfigurationComponent, ChartComponent, MetricsComponent],
+  imports: [CommonModule, HttpClientModule, ConfigurationComponent, ChartComponent, MetricsComponent],
   template: `
     <div class="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-emerald-500/30">
       <div class="w-full px-4 md:px-6 lg:px-8 py-6">
@@ -18,9 +20,27 @@ import { AiService } from './services/ai.service';
           <div>
             <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
               <i class="fa-solid fa-layer-group mr-2 text-emerald-500"></i>
-              QUANT FRAMEWORK <span class="text-slate-600 text-lg font-mono">v3.1</span>
+              CTHULU BACKTESTER <span class="text-slate-600 text-lg font-mono">v5.1</span>
             </h1>
             <p class="text-slate-500 text-sm mt-1">High-Frequency Backtesting & Optimization Engine</p>
+          </div>
+          <div class="flex items-center space-x-4">
+            <!-- Backend Connection Status -->
+            <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg" 
+                 [class]="backendService.connectionStatus() === 'connected' ? 'bg-emerald-900/30 border border-emerald-500/30' : 'bg-red-900/30 border border-red-500/30'">
+              <i class="fa-solid fa-circle text-xs" 
+                 [class]="backendService.connectionStatus() === 'connected' ? 'text-emerald-400 animate-pulse' : 'text-red-400'"></i>
+              <span class="text-xs font-mono">
+                {{backendService.connectionStatus() === 'connected' ? 'Backend Connected' : 'Local Mode'}}
+              </span>
+            </div>
+            <!-- Mode Toggle -->
+            <button (click)="toggleMode()" 
+                    class="px-3 py-1.5 rounded-lg text-xs font-mono transition-colors"
+                    [class]="useBackend() ? 'bg-cyan-900/30 border border-cyan-500/30 text-cyan-400' : 'bg-slate-800 border border-slate-700 text-slate-400'">
+              <i class="fa-solid fa-server mr-1"></i>
+              {{useBackend() ? 'Backend Mode' : 'Client Mode'}}
+            </button>
           </div>
         </header>
 
@@ -151,7 +171,7 @@ export class AppComponent {
   candles = signal<Candle[]>([]);
   results = signal<BacktestResult | null>(null);
   optResult = signal<OptimizationResult | null>(null);
-  
+
   aiAnalysis = signal<SafeHtml | null>(null);
   isAnalyzing = signal<boolean>(false);
 
@@ -184,7 +204,7 @@ export class AppComponent {
     // Reset AI analysis when new simulation runs
     this.aiAnalysis.set(null);
     this.optResult.set(null); // Clear previous optimization if running manual
-    
+
     // Ensure we have data
     if (this.candles().length === 0) {
       this.candles.set(this.simulationService.generateData(365));
@@ -200,7 +220,7 @@ export class AppComponent {
         config.slowMa
       );
       this.results.set(res);
-    } 
+    }
     else if (config.mode === 'optimize' && config.optimization) {
       const opt = this.simulationService.optimizeStrategy(
         this.candles(),
@@ -214,7 +234,7 @@ export class AppComponent {
         config.optimization.slowEnd,
         config.optimization.slowStep
       );
-      
+
       this.optResult.set(opt);
       this.results.set(opt.bestResult);
     }
