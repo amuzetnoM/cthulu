@@ -242,28 +242,45 @@ def compose_human_summary(agg: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+# Prefer local LLM via llama-cpp when available, else deterministic fallback
 def call_llm_for_enhanced_summary(prompt: str) -> str:
-    """Call configured LLM; if none configured fall back to a deterministic local summary.
+    """Return an enhanced summary using configured LLM backend.
 
-    This keeps automation deterministic during tests and when no LLM is available.
+    Priority:
+    1. Local LLM (llama-cpp via cthulu.llm.local_llm)
+    2. Remote LLM endpoint if LLM_ENDPOINT set
+    3. Deterministic local fallback (tests/CI)
     """
+    try:
+        from cthulu.llm.local_llm import available as llm_available, summarize as llm_summarize
+        if llm_available():
+            try:
+                return llm_summarize(prompt)
+            except Exception as e:
+                log.warning(f"Local LLM generation failed: {e}")
+    except Exception:
+        # local LLM not present or failed to import - fall through
+        pass
+
+    # Remote LLM endpoint support (legacy)
     endpoint = os.environ.get('LLM_ENDPOINT')
     api_key = os.environ.get('LLM_API_KEY')
-    if not endpoint:
-        # Fallback deterministic summary for local/test environments
-        # Keep it simple and testable so unit tests can assert on prefix
-        summary = "[Local fallback summary] " + (prompt[:200] + '...' if len(prompt) > 200 else prompt)
-        return summary
+    if endpoint:
+        try:
+            payload = {"prompt": prompt}
+            headers = {'Content-Type': 'application/json'}
+            if api_key:
+                headers['Authorization'] = f"Bearer {api_key}"
+            resp = requests.post(endpoint, json=payload, headers=headers, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get('text') or data.get('response') or json.dumps(data)
+        except Exception as e:
+            log.warning(f"Remote LLM call failed: {e}")
 
-    payload = {"prompt": prompt}
-    headers = {'Content-Type': 'application/json'}
-    if api_key:
-        headers['Authorization'] = f"Bearer {api_key}"
-
-    resp = requests.post(endpoint, json=payload, headers=headers, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    return data.get('text') or data.get('response') or json.dumps(data)
+    # Deterministic fallback
+    from cthulu.llm.local_llm import deterministic_fallback
+    return deterministic_fallback(prompt)
 
 
 def summarize_reports(report_dirs: List[Path], output_dir: Path | None = None, call_ai_if_available: bool = True) -> Path:
