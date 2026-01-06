@@ -47,9 +47,10 @@ def main():
 
     timeline = []
 
-    for ts, row in df.iterrows():
+    for idx, (ts, row) in enumerate(df.iterrows()):
         price = float(row['close'])
-        actions = ps.evaluate_position(ticket, price, 'BUY', balance)
+        # pass bars_elapsed so min_time_in_trade_bars can be enforced
+        actions = ps.evaluate_position(ticket, price, 'BUY', balance, bars_elapsed=idx)
         executed = []
         if actions:
             executed = apply_actions(ps, ticket, actions)

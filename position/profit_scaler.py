@@ -66,6 +66,10 @@ class ScalingConfig:
     
     # Maximum position age before forced evaluation (hours)
     max_position_age_hours: float = 4.0
+
+    # Minimum number of bars to wait before allowing scaling/close actions.
+    # This prevents immediate partial exits right after entry (useful for thin/timezone-sensitive markets)
+    min_time_in_trade_bars: int = 0
     
     # Emergency profit lock threshold (% of balance)
     emergency_lock_threshold_pct: float = 0.10  # Lock profits if > 10% of balance
@@ -170,7 +174,7 @@ class ProfitScaler:
             logger.info(f"Unregistered position #{ticket} from profit scaling")
     
     def evaluate_position(self, ticket: int, current_price: float, 
-                         side: str, balance: float) -> List[Dict[str, Any]]:
+                         side: str, balance: float, bars_elapsed: int | None = None) -> List[Dict[str, Any]]:
         """
         Evaluate a position for profit scaling actions.
         
@@ -179,10 +183,16 @@ class ProfitScaler:
             current_price: Current market price
             side: 'BUY' or 'SELL'
             balance: Current account balance
+            bars_elapsed: Optional number of bars elapsed since position entry (if provided, used to enforce min_time_in_trade_bars)
             
         Returns:
             List of actions to take (close_partial, modify_sl, etc.)
         """
+        # Enforce minimum time-in-trade (in bars) guard if requested
+        if bars_elapsed is not None and self.config.min_time_in_trade_bars and bars_elapsed < self.config.min_time_in_trade_bars:
+            logger.debug(f"Skipping scaling for #{ticket}: only {bars_elapsed} bars elapsed (< {self.config.min_time_in_trade_bars})")
+            return []
+
         if not self.config.enabled:
             return []
             
