@@ -3,6 +3,7 @@ title: INTRODUCTION
 description: Advanced multi-strategy autonomous trading system with MetaTrader 5 integration, dynamic strategy selection, and comprehensive risk management
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 sidebar_position: 1
+version: 5.2.0
 
 ---
 ![](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&logo=zap&logoColor=gold)

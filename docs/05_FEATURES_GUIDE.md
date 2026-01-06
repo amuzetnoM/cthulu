@@ -4,6 +4,7 @@ description: Comprehensive guide to Cthulu's advanced trading strategies, next-g
 tags: [features, strategies, indicators, dynamic-selection, SAFE]
 slug: /docs/features
 sidebar_position: 5
+version: 5.2.0
 ---
 ````
 _________   __  .__          .__         

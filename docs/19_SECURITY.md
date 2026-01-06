@@ -2,7 +2,8 @@
 title: SECURITY
 description: Security guidelines for Cthulu including credential management, API security, network protection, and access control
 tags: [security, credentials, api-security, access-control]
-sidebar_position: 16
+sidebar_position: 19
+version: 5.2.0
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 

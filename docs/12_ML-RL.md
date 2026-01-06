@@ -1,8 +1,8 @@
 ---
-title: Machine & Reinforcement Learning
+title: MACHINE & REINFORCEMENT LEARNING
 sidebar_position: 12
 description: Cognition Engine - ML/RL integration philosophy and implementation
-version: 5.1.0 APEX
+version: 5.2.0
 ---
 
 

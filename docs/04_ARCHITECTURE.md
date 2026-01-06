@@ -3,6 +3,7 @@ title: ARCHITECTURE
 description: Technical architecture and system design of the Cthulu multi-strategy autonomous trading platform
 tags: [architecture, system-design, technical-overview]
 sidebar_position: 4
+version: 5.2.0
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)

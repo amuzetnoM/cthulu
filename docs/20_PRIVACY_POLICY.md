@@ -2,7 +2,8 @@
 title: PRIVACY POLICY
 description: Privacy policy and data handling practices for the Cthulu trading system
 tags: [privacy, policies, data-handling, legal]
-sidebar_position: 19
+sidebar_position: 20
+version: 5.2.0
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)

@@ -1,3 +1,14 @@
+---
+title: LLM AUTO-TUNE
+description: Configuration and usage of LLM endpoints for AI-assisted summarization and PR generation in the Cthulu trading system
+tags: [llm, ai, auto_tune, integration]
+sidebar_position: 13
+version: 5.2.0
+---
+
+![](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
+
 # LLM integration for auto_tune
 
 This document explains how to configure an LLM endpoint for AI-assisted summarization and PR generation.

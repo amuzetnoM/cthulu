@@ -3,6 +3,7 @@ title: POSITION MANAGEMENT
 description: Comprehensive guide to Cthulu's position management system including profit scaling, lifecycle management, and external trade adoption
 tags: [position-management, profit-scaling, trade-adoption, lifecycle]
 sidebar_position: 8
+version: 5.2.0
 ---
 
 ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
