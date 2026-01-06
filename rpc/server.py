@@ -87,8 +87,12 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 self._bad_request('Invalid JSON')
                 return
             
-            # Determine volume for rate limiting
-            volume = float(payload.get('volume', 0)) if payload.get('volume') else 0.0
+            # Determine volume for rate limiting (robust parsing)
+            raw_volume = payload.get('volume', 0)
+            try:
+                volume = float(raw_volume) if raw_volume is not None and raw_volume != '' else 0.0
+            except (TypeError, ValueError):
+                volume = 0.0
             
             # Comprehensive security check
             allowed, reason = self.security_manager.check_request(
@@ -599,6 +603,8 @@ def run_rpc_server(
                 if 'audit_log_path' in security_config:
                     sec_config.audit_log_path = security_config['audit_log_path']
             
+            # If the server is started with no token, do not require auth
+            sec_config.require_auth = bool(token)
             RPCRequestHandler.security_manager = RPCSecurityManager(sec_config)
             RPCRequestHandler.security_config = security_config
             

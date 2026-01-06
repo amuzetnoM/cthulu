@@ -357,15 +357,16 @@ class RequestValidator:
         sanitized = {}
         
         # Symbol validation
-        symbol = payload.get('symbol', '')
-        if not symbol:
+        symbol_raw = str(payload.get('symbol', '')).strip()
+        symbol = symbol_raw.upper()
+        if not symbol_raw:
             errors.append("Missing required field: symbol")
         elif len(symbol) > self.config.max_symbol_length:
             errors.append(f"Symbol too long (max {self.config.max_symbol_length})")
         elif not self._symbol_pattern.match(symbol):
-            errors.append(f"Invalid symbol format: {symbol}")
+            errors.append(f"Invalid symbol format: {symbol_raw}")
         else:
-            sanitized['symbol'] = symbol.upper().strip()
+            sanitized['symbol'] = symbol
         
         # Side validation
         side = payload.get('side', '').upper().strip()
