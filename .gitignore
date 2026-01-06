@@ -14,6 +14,8 @@ env/
 ENV/
 .venv/
 venv312/
+backtesting/ui/metadata.json
+backtesting/ui/angular.json
 
 # Python Build
 *.egg-info/
