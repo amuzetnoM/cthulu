@@ -1,6 +1,7 @@
 # Complete System Overview
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white) 
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 ## Executive Summary
@@ -11,7 +12,7 @@
 
 ## System Architecture
 
-### Complete System Architecture (v5.1.0 APEX)
+### Complete System Architecture (v5.2.0)
 
 ```mermaid
 flowchart TB
@@ -1068,7 +1069,13 @@ Track system updates and releases in `/docs/changelog/`
 
 ## Version History
 
-- **v5.1.0** - Current (Architectural overhaul complete, 6 strategies, 12 indicators)
+- **v5.2.0** - Current (Web backtesting UI, LLM integration, vector DB, profit scaling)
+   - 207 commits since v5.1.0 with major feature additions
+   - Flask-based backtesting UI with interactive charts
+   - Ollama LLM integration for AI-powered analysis
+   - ChromaDB vector database for pattern recognition
+   - Intelligent profit scaling system
+- **v5.1.0** - Previous (Architectural overhaul complete, 6 strategies, 12 indicators)
    - Complete rebranding from `herald` → `Cthulu` (package, CLI, logs, DB)
    - 150+ files modified; ~978 references updated across the repo
    - CI/CD: GitHub Actions workflow added for multi-OS / multi-Python testing

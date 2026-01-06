@@ -1,5 +1,5 @@
 # Cthulu GCP Deployment
-> **Version**: APEX v5.1  
+> **Version**: v5.2.0  
 > **Last Updated**: 2026-01-02  
 > **Status**: LIVE
 

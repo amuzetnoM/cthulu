@@ -6,7 +6,8 @@ sidebar_position: 10
 version: 5.2.0
 ---
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white) 
 
 
@@ -136,9 +137,9 @@ For complete RPC documentation, see [development_log/rpc.md](development_log/rpc
 
 ---
 
-## Real-Time Dashboard & Benchmarking (NEW in v5.1)
+## Real-Time Dashboard & Benchmarking (Since v5.1)
 
-Cthulu v5.1 includes a comprehensive real-time monitoring dashboard with benchmarking capabilities.
+Cthulu v5.2.0 includes a comprehensive real-time monitoring dashboard with benchmarking capabilities.
 
 ### Dashboard Location
 `observability/reporting/dashboard.html`

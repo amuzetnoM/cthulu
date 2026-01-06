@@ -1,5 +1,5 @@
 """
-Cthulu Trading Dashboard v5.1.0 APEX
+Cthulu Trading Dashboard v5.2.0
 
 A comprehensive real-time trading dashboard that displays:
 - Live positions from MT5 with real-time P&L
@@ -176,7 +176,7 @@ def format_percent(value):
 
 class CthuluGUI:
     """
-    Comprehensive Cthulu Trading Dashboard v5.1.0 APEX
+    Comprehensive Cthulu Trading Dashboard v5.2.0
     
     Features:
     - Live MT5 positions with real-time P&L
@@ -189,7 +189,7 @@ class CthuluGUI:
     
     def __init__(self, root):
         self.root = root
-        root.title('Cthulu APEX — Trading Dashboard v5.1.0')
+        root.title('Cthulu — Trading Dashboard v5.2.0')
         root.geometry('1400x900')
         root.minsize(1200, 700)
         root.configure(bg=THEME_BG)

@@ -58,7 +58,7 @@ This document specifies the technical integration between Cthulu (autonomous MT5
 
 ## System Overview: Cthulu
 
-Cthulu v5.1.0 APEX is a multi-strategy autonomous trading system for MetaTrader 5.
+Cthulu v5.2.0 is a multi-strategy autonomous trading system for MetaTrader 5.
 
 ### Core Architecture
 

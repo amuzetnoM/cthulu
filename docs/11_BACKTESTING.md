@@ -8,7 +8,8 @@ version: 5.2.0
 
 
 
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 > Professional-grade strategy validation with ML-enhanced decision making, ensemble testing, and institutional-grade benchmarking.
@@ -738,4 +739,4 @@ backtesting/
 
 ---
 
-*Cthulu Backtesting Framework v5.1.0 "Apex" - Professional-grade strategy validation.*
+*Cthulu Backtesting Framework v5.2.0 - Professional-grade strategy validation.*

@@ -4,7 +4,7 @@ Sentiment Analyzer - The Ears of Cognition
 News and market sentiment integration for trading decisions.
 Aggregates multiple sources: news, economic calendar, fear/greed indices.
 
-Part of Cthulu Cognition Engine v5.1.0 APEX
+Part of Cthulu Cognition Engine v5.2.0
 """
 from __future__ import annotations
 import numpy as np

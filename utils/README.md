@@ -1,6 +1,7 @@
 # Utility Modules
 
-![Version](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=flat-square)
+![Version](https://img.shields.io/badge/Version-5.2.0-4B0082?style=flat-square)
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=flat-square&logo=calendar)
 
 ## Overview
 
@@ -306,5 +307,5 @@ python -m pytest tests/unit/test_rate_limiter.py -v
 
 ---
 
-**Module Version:** 5.1.0  
-**Last Updated:** 2026-01-05
+**Module Version:** 5.2.0  
+**Last Updated:** 2026-01-06

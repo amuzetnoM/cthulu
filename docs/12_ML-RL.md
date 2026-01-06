@@ -6,7 +6,8 @@ version: 5.2.0
 ---
 
 
-![](https://img.shields.io/badge/APEX-v5.1.0-4B0082?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117)
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 > **Rule-Based Foundation with Intelligent Augmentation**

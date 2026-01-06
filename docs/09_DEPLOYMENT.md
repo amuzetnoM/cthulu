@@ -6,7 +6,8 @@ sidebar_position: 9
 version: 5.2.0
 ---
 
- ![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+ ![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+ ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 ## Table of Contents
@@ -69,7 +70,7 @@ docker-compose logs -f Cthulu
 docker build -t Cthulu:latest .
 
 # Or build with specific version
-docker build -t Cthulu:5.1.0 .
+docker build -t Cthulu:5.2.0 .
 ```
 
 #### 2. Environment Configuration
@@ -663,14 +664,14 @@ sudo systemctl restart Cthulu
 The fastest way to get started - pull the official image from GHCR:
 
 ```bash
-# Pull latest APEX release
-docker pull ghcr.io/amuzetnom/cthulu:apex
+# Pull latest release
+docker pull ghcr.io/amuzetnom/cthulu:latest
 
 # Or specific version
-docker pull ghcr.io/amuzetnom/cthulu:5.1.0
+docker pull ghcr.io/amuzetnom/cthulu:5.2.0
 
-# Or latest
-docker pull ghcr.io/amuzetnom/cthulu:latest
+# Or major version
+docker pull ghcr.io/amuzetnom/cthulu:5.2
 ```
 
 ### Run from GHCR Image
@@ -696,7 +697,7 @@ docker run -d \
   -v $(pwd)/logs:/app/logs \
   -p 8181:8181 \
   --restart unless-stopped \
-  ghcr.io/amuzetnom/cthulu:apex
+  ghcr.io/amuzetnom/cthulu:latest
 
 # 4. View logs
 docker logs -f cthulu
@@ -726,15 +727,15 @@ docker-compose up -d
 
 | Tag | Description |
 |-----|-------------|
-| `apex` | Latest v5.1.x APEX release |
-| `5.1.0` | Specific version |
-| `latest` | Latest stable from main branch |
-| `5.1` | Latest patch for 5.1.x |
+| `latest` | Latest stable release (5.2.0) |
+| `5.2.0` | Specific version 5.2.0 |
+| `5.2` | Latest patch for 5.2.x |
+| `5.1.0` | Previous version 5.1.0 |
 
 ---
 
 **Last Updated**: January 2026  
-**Version**: 5.1.0 APEX
+**Version**: 5.2.0
 
 
 

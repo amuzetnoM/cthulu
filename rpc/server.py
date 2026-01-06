@@ -3,7 +3,7 @@
 Provides a minimal POST /trade endpoint protected by a bearer token.
 Designed to be local-only (binds to 127.0.0.1 by default) and dependency-free (uses http.server).
 
-Security Features (v5.1 Apex):
+Security Features (v5.2.0):
 - Intelligent rate limiting with adaptive thresholds
 - IP whitelist/blacklist with automatic threat detection
 - Request validation and sanitization

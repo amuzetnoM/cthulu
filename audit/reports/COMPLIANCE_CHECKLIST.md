@@ -2,7 +2,7 @@
 ## International Standards Compliance - Cthulu Trading System
 
 **Audit Date:** January 1, 2026  
-**Version:** 5.1.0  
+**Version:** 5.2.0  
 **Status:** Partial Compliance with Multiple Standards  
 
 ---

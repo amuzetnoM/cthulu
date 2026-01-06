@@ -7,7 +7,8 @@ version: 5.2.0
 
 ---
 ![](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&logo=zap&logoColor=gold)
-![](https://img.shields.io/badge/Version-5.1.0_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
@@ -49,12 +50,14 @@ _________   __  .__          .__
 
 <br>
 
- **NEW in v5.1.0 <br> 
- S A F E :<br> Set And Forget Engine**  
-> 👾 Cthulu reaches peak performance with revolutionary signal generation and the **SAFE** paradigm!
+ **NEW in v5.2.0:**<br> 
+ **Web Backtesting UI, LLM Integration, Vector DB**  
+> 👾 Cthulu evolves with AI-powered insights and professional backtesting tools!
 >
-> - **RSI Reversal Strategy (NEW)**: Pure RSI-based trading — signals fire instantly on RSI extremes without waiting for crossovers  
-> - **Multi-Strategy Fallback**: When primary strategy returns no signal, system tries up to 3 alternatives automatically  
+> - **Web Backtesting UI**: Flask-based browser interface with interactive charts and real-time results  
+> - **Local LLM Integration**: Ollama support for AI-powered trade analysis and market insights  
+> - **Vector Database**: ChromaDB integration for intelligent market pattern recognition  
+> - **Intelligent Profit Scaling**: Dynamic profit target adjustments based on market conditions  
 > - **7 Active Strategies**: Complete arsenal — EMA, Momentum, Scalping, Trend, SMA, Mean Reversion, RSI Reversal  
 > - **Aggressive Configuration**: Optimized thresholds for maximum opportunity capture (confidence: 0.15, ADX: 15)
 > - **Enhanced Database**: WAL mode with 30-second timeout for concurrent access  
@@ -1065,7 +1068,7 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.1.0
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.2.0
 - **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
@@ -1078,7 +1081,8 @@ Past performance is not indicative of future results. Use at your own risk.
 
 | Version | Date | Status | Description |
 |---------|------|--------|-------------|
-| **5.1.0** | Dec 2025 | ✅ Current | **Apex** - RSI Reversal, multi-strategy fallback, SAFE engine |
+| **5.2.0** | Jan 2026 | ✅ Current | Web backtesting UI, LLM integration, vector DB, profit scaling |
+| **5.1.0** | Dec 2025 | ✅ Complete | RSI Reversal, multi-strategy fallback, SAFE engine |
 | **5.1.0** | Dec 2025 | ✅ Complete | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
 | **4.0.0** | Dec 2024 | ✅ Complete | **Dynamic Strategy Selection** - Multi-strategy framework, exit strategies |
 | **3.0.0** | Dec 2024 | ✅ Complete | **Production Ready** - Zero-error test suite, MT5 funded account verified |

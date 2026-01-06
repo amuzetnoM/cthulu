@@ -1,7 +1,8 @@
 # Backtester Web Interface
 
 
-![Version](https://img.shields.io/badge/Version-3.1_APEX-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![Version](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white) 
 ![Status](https://img.shields.io/badge/Status-Prototype-10b981?style=for-the-badge&labelColor=0D1117)
 ![AI](https://img.shields.io/badge/Powered_By-Gemini_2.5-4285F4?style=for-the-badge&labelColor=0D1117&logo=google&logoColor=white)
 
