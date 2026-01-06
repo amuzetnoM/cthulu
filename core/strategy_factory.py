@@ -17,6 +17,7 @@ from cthulu.strategy.trend_following import TrendFollowingStrategy
 from cthulu.strategy.mean_reversion import MeanReversionStrategy
 from cthulu.strategy.rsi_reversal import RsiReversalStrategy
 from cthulu.strategy.strategy_selector import StrategySelector
+from cthulu.strategy.selector_adapter import StrategySelectorAdapter
 
 
 # Strategy registry mapping type names to classes
@@ -176,8 +177,13 @@ class StrategyFactory:
         if not strategies:
             raise ValueError("Failed to create any strategies for dynamic mode")
         
+        selector = StrategySelector(strategies=strategies, config=dynamic_config)
         self.logger.info(f"Created dynamic strategy selector with {len(strategies)} strategies")
-        return StrategySelector(strategies=strategies, config=dynamic_config)
+        # Wrap the selector in an adapter so it is compatible with BacktestEngine (implements Strategy interface)
+        adapter = StrategySelectorAdapter(selector, name=selector.__class__.__name__)
+        # Expose the underlying selector for code that needs it
+        adapter.selector = selector
+        return adapter
     
     def register_strategy(self, name: str, strategy_class):
         """Register a custom strategy type.
