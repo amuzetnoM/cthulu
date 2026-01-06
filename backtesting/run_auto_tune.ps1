@@ -53,12 +53,10 @@ try {
         $pythonArgsPrefix = @()
     }
 
-    try {
-        & $pythonCmd @pythonArgsPrefix @argsList 2>&1 | Tee-Object -FilePath $Log
-    } catch {
-        Write-Error "Run failed (script execution): $_"
-        Write-Output "Log saved to: $Log"
-        exit 1
+    # Run python command and capture output; do not throw on non-zero exit code — we want to examine the log
+    & $pythonCmd @pythonArgsPrefix @argsList 2>&1 | Tee-Object -FilePath $Log
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Python exited with code $LASTEXITCODE. Check $Log for details."
     }
 
     $lastJsonLine = (Get-Content $Log | Where-Object { $_ -match '^{\s*"smoke_out_dir' } | Select-Object -Last 1)
