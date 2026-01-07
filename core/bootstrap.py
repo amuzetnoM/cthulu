@@ -268,13 +268,14 @@ class CthuluBootstrap:
     
     def initialize_trade_adoption_manager(self, connector: MT5Connector, position_tracker: PositionTracker,
                                           position_lifecycle: PositionLifecycle,
-                                          config: Dict[str, Any]) -> TradeAdoptionManager:
+                                          config: Dict[str, Any], position_manager: Optional[Any] = None) -> TradeAdoptionManager:
         """Initialize trade adoption manager for external trade adoption.
         
         Args:
             position_tracker: Position tracker instance
             position_lifecycle: Position lifecycle instance
             config: System configuration
+            position_manager: Optional PositionManager instance to register adopted trades with
             
         Returns:
             Initialized TradeAdoptionManager instance
@@ -624,7 +625,7 @@ class CthuluBootstrap:
         self.logger.info('RiskEvaluator initialized with runtime dependencies')
         
         position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, position_tracker, database)
-        trade_adoption_manager = self.initialize_trade_adoption_manager(connector, position_tracker, position_lifecycle, config)
+        trade_adoption_manager = self.initialize_trade_adoption_manager(connector, position_tracker, position_lifecycle, config, position_manager=position_manager)
         
         # Initialize strategy
         strategy = self.initialize_strategy(config)
