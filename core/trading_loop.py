@@ -965,6 +965,12 @@ class TradingLoop:
                     signal = self.ctx.strategy.on_bar(current_bar)
             
             if signal:
+                # Ensure signal has a valid symbol; fall back to system symbol if missing or UNKNOWN
+                if not signal.symbol or str(signal.symbol).upper() == 'UNKNOWN':
+                    old = signal.symbol
+                    signal.symbol = self.ctx.symbol
+                    self.ctx.logger.warning(f"Signal symbol '{old}' replaced with system symbol '{signal.symbol}'")
+
                 self.ctx.logger.info(
                     f"Signal generated: {signal.side.name} {signal.symbol} "
                     f"(confidence: {signal.confidence:.2f})"

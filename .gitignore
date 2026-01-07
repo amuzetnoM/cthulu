@@ -30,7 +30,7 @@ config/*.yaml
 !config.example.json
 .env
 .env.local
-config_battle_test.json
+config_battle.json
 config_aggressive*.json
 config_ultra*.json
 configs/*.json
