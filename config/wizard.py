@@ -453,52 +453,89 @@ def configure_strategy(current_strategy: Dict[str, Any]) -> Dict[str, Any]:
         
         # Configure which strategies to include
         print()
-        print("  Select strategies to include (comma-separated):\n")
-        print_option("1", "SMA Crossover", "Simple Moving Average crossover")
-        print_option("2", "EMA Crossover", "Exponential Moving Average crossover")
-        print_option("3", "Momentum Breakout", "Price momentum and breakout detection")
-        print_option("4", "Scalping", "Fast scalping with tight stops")
-        print_option("5", "Mean Reversion", "Bollinger Band bounce strategy")
-        print_option("6", "Trend Following", "ADX-confirmed trend following")
+        print("  Strategy set selection — choose a preset or customize:")
+        print_option("A", "All Supported", "Include all supported strategies automatically")
+        print_option("S", "Safe Set", "Conservative set: SMA Crossover, Mean Reversion")
+        print_option("B", "Balanced Set", "Balanced set: EMA Crossover, Momentum Breakout, Mean Reversion")
+        print_option("C", "Custom", "Select strategies manually (then you'll be prompted)")
         print()
-        
-        strategies_choice = get_input("Select strategies (1-6, e.g., 1,2)", "1,2")
+        strategies_choice = get_input("Select preset (A/S/B/C)", "B")
         strategies_list = []
-        
-        for choice in strategies_choice.split(','):
-            choice = choice.strip()
-            if not choice:
-                continue
-            if choice == "1":
-                strategies_list.append({
-                    'type': 'sma_crossover',
-                    'params': {'fast_period': 10, 'slow_period': 30}
-                })
-            elif choice == "2":
-                strategies_list.append({
-                    'type': 'ema_crossover',
-                    'params': {'fast_period': 12, 'slow_period': 26}
-                })
-            elif choice == "3":
-                strategies_list.append({
-                    'type': 'momentum_breakout',
-                    'params': {'lookback_period': 20, 'breakout_threshold': 1.5}
-                })
-            elif choice == "4":
-                strategies_list.append({
-                    'type': 'scalping',
-                    'params': {'quick_period': 5, 'trend_period': 20}
-                })
-            elif choice == "5":
-                strategies_list.append({
-                    'type': 'mean_reversion',
-                    'params': {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}
-                })
-            elif choice == "6":
-                strategies_list.append({
-                    'type': 'trend_following',
-                    'params': {'adx_period': 14, 'adx_threshold': 25, 'supertrend_period': 10}
-                })
+
+        if strategies_choice.upper() == 'A':
+            strategies_list = [
+                {'type': 'sma_crossover', 'params': {'fast_period': 10, 'slow_period': 30}},
+                {'type': 'ema_crossover', 'params': {'fast_period': 12, 'slow_period': 26}},
+                {'type': 'momentum_breakout', 'params': {'lookback_period': 20, 'breakout_threshold': 1.5}},
+                {'type': 'scalping', 'params': {'quick_period': 5, 'trend_period': 20}},
+                {'type': 'mean_reversion', 'params': {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}},
+                {'type': 'trend_following', 'params': {'adx_period': 14, 'adx_threshold': 25, 'supertrend_period': 10}},
+                {'type': 'rsi_reversal', 'params': {'rsi_period': 14, 'rsi_extreme_oversold': 25, 'rsi_extreme_overbought': 85}}
+            ]
+        elif strategies_choice.upper() == 'S':
+            strategies_list = [
+                {'type': 'sma_crossover', 'params': {'fast_period': 10, 'slow_period': 30}},
+                {'type': 'mean_reversion', 'params': {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}}
+            ]
+        elif strategies_choice.upper() == 'B':
+            strategies_list = [
+                {'type': 'ema_crossover', 'params': {'fast_period': 12, 'slow_period': 26}},
+                {'type': 'momentum_breakout', 'params': {'lookback_period': 20, 'breakout_threshold': 1.5}},
+                {'type': 'mean_reversion', 'params': {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}}
+            ]
+        elif strategies_choice.upper() == 'C':
+            # Fall back to manual selection to preserve original behaviour
+            print()
+            print("  Select strategies to include (comma-separated):\n")
+            print_option("1", "SMA Crossover", "Simple Moving Average crossover")
+            print_option("2", "EMA Crossover", "Exponential Moving Average crossover")
+            print_option("3", "Momentum Breakout", "Price momentum and breakout detection")
+            print_option("4", "Scalping", "Fast scalping with tight stops")
+            print_option("5", "Mean Reversion", "Bollinger Band bounce strategy")
+            print_option("6", "Trend Following", "ADX-confirmed trend following")
+            print_option("7", "RSI Reversal", "RSI extremes reversal strategy (instant signals)")
+            print()
+            strategies_choice = get_input("Select strategies (1-7, e.g., 1,2)", "1,2")
+            
+            for choice in strategies_choice.split(','):
+                choice = choice.strip()
+                if not choice:
+                    continue
+                if choice == "1":
+                    strategies_list.append({
+                        'type': 'sma_crossover',
+                        'params': {'fast_period': 10, 'slow_period': 30}
+                    })
+                elif choice == "2":
+                    strategies_list.append({
+                        'type': 'ema_crossover',
+                        'params': {'fast_period': 12, 'slow_period': 26}
+                    })
+                elif choice == "3":
+                    strategies_list.append({
+                        'type': 'momentum_breakout',
+                        'params': {'lookback_period': 20, 'breakout_threshold': 1.5}
+                    })
+                elif choice == "4":
+                    strategies_list.append({
+                        'type': 'scalping',
+                        'params': {'quick_period': 5, 'trend_period': 20}
+                    })
+                elif choice == "5":
+                    strategies_list.append({
+                        'type': 'mean_reversion',
+                        'params': {'bollinger_period': 20, 'bollinger_std': 2.0, 'rsi_period': 14}
+                    })
+                elif choice == "6":
+                    strategies_list.append({
+                        'type': 'trend_following',
+                        'params': {'adx_period': 14, 'adx_threshold': 25, 'supertrend_period': 10}
+                    })
+                elif choice == "7":
+                    strategies_list.append({
+                        'type': 'rsi_reversal',
+                        'params': {'rsi_period': 14, 'rsi_extreme_oversold': 25, 'rsi_extreme_overbought': 85}
+                    })
         
         # Ensure at least two strategies are present for dynamic mode (safe defaults)
         if not strategies_list:
