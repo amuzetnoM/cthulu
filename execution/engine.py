@@ -746,6 +746,33 @@ class ExecutionEngine:
             
             self.logger.debug(f"Modifying position {ticket}: SL={new_sl}, TP={new_tp}")
             
+            # Validate stop distances against broker minimums when available
+            try:
+                sym_info = self.connector.get_symbol_info(position.symbol)
+                point = float(sym_info.get('point')) if sym_info and sym_info.get('point') else None
+                stops_level = None
+                if sym_info:
+                    stops_level = sym_info.get('trade_stops_level') or sym_info.get('trade_freeze_level')
+                if point and stops_level:
+                    min_dist = float(point) * float(stops_level)
+                    # For buy: price - sl must be >= min_dist; For sell: sl - price must be >= min_dist
+                    cur_price = getattr(position, 'price_current', None) or getattr(position, 'price_open', None)
+                    if cur_price is not None and new_sl is not None:
+                        if (new_sl >= cur_price and position.type == mt5.ORDER_TYPE_BUY) or (
+                            (new_sl <= cur_price) and position.type == mt5.ORDER_TYPE_SELL
+                        ):
+                            self.logger.error(f"Rejected SL {new_sl} for {ticket}: wrong side relative to current price {cur_price}")
+                            return False
+                        if position.type == mt5.ORDER_TYPE_BUY and (cur_price - new_sl) < min_dist - 1e-12:
+                            self.logger.error(f"Rejected SL {new_sl} for {ticket}: too close to price {cur_price} (min_dist={min_dist})")
+                            return False
+                        if position.type == mt5.ORDER_TYPE_SELL and (new_sl - cur_price) < min_dist - 1e-12:
+                            self.logger.error(f"Rejected SL {new_sl} for {ticket}: too close to price {cur_price} (min_dist={min_dist})")
+                            return False
+            except Exception:
+                # Non-fatal: proceed to broker and let it decide
+                pass
+
             # Submit modification
             result = mt5.order_send(request)
             
@@ -762,7 +789,7 @@ class ExecutionEngine:
                     self.logger.info(f"Position {ticket} modified: SL={new_sl}, TP={new_tp}")
                 return True
             else:
-                self.logger.error(f"Position modification rejected for {ticket}: {result.retcode} - {result.comment}")
+                self.logger.error(f"Position modification rejected for {ticket}: {result.retcode} - {getattr(result, 'comment', '')}")
                 return False
                 
         except Exception as e:

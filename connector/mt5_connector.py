@@ -480,12 +480,17 @@ class MT5Connector:
             self.logger.debug(f"Found candidate symbols for {symbol}: {matches}")
             for m in matches:
                 try:
+                    # Only select symbols that appear tradable (have point and volume_min)
+                    info = self.get_symbol_info(m)
+                    if not info or info.get('point') is None or info.get('volume_min') is None:
+                        self.logger.debug(f"Skipping non-tradable candidate symbol: {m}")
+                        continue
                     if mt5.symbol_select(m, True):
                         self.logger.info(f"Selected symbol variant: {m} for requested {symbol}")
                         return m
                 except Exception:
                     continue
-            self.logger.warning(f"Found candidate symbols but failed to select any for {symbol}: {matches}")
+            self.logger.warning(f"Found candidate symbols but failed to select any tradable one for {symbol}: {matches}")
         else:
             # Include hint about available symbols for debugging
             try:
@@ -618,15 +623,17 @@ class MT5Connector:
                 'ask': info.ask,
                 'spread': info.spread,
                 'digits': info.digits,
-                'point': info.point,
-                'trade_mode': info.trade_mode,
-                'volume_min': info.volume_min,
-                'volume_max': info.volume_max,
-                'volume_step': info.volume_step,
-                'contract_size': info.trade_contract_size,
-                'currency_base': info.currency_base,
-                'currency_profit': info.currency_profit,
-                'currency_margin': info.currency_margin,
+                'point': getattr(info, 'point', None),
+                'trade_mode': getattr(info, 'trade_mode', None),
+                'trade_stops_level': getattr(info, 'trade_stops_level', None),
+                'trade_freeze_level': getattr(info, 'trade_freeze_level', None),
+                'volume_min': getattr(info, 'volume_min', None),
+                'volume_max': getattr(info, 'volume_max', None),
+                'volume_step': getattr(info, 'volume_step', None),
+                'contract_size': getattr(info, 'trade_contract_size', None) or getattr(info, 'contract_size', None),
+                'currency_base': getattr(info, 'currency_base', None),
+                'currency_profit': getattr(info, 'currency_profit', None),
+                'currency_margin': getattr(info, 'currency_margin', None),
             }
         except Exception as e:
             self.logger.error(f"Error fetching symbol info: {e}")

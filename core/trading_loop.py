@@ -1777,8 +1777,8 @@ class TradingLoop:
             symbol_info = None
             try:
                 sym = getattr(position, 'symbol', None)
-                if sym:
-                    symbol_info = self.connector.get_symbol_info(sym)
+                if sym and getattr(self.ctx, 'connector', None):
+                    symbol_info = self.ctx.connector.get_symbol_info(sym)
             except Exception:
                 symbol_info = None
 
@@ -1825,10 +1825,35 @@ class TradingLoop:
                 new_sl = update['new_sl'] if update['update_sl'] else current_sl
                 new_tp = update['new_tp'] if update['update_tp'] else current_tp
                 
-                # Modify position via execution engine
-                success = self.ctx.position_lifecycle.modify_position(
-                    position.ticket, sl=new_sl, tp=new_tp
-                )
+                # Broker-level sanity: check symbol's minimum stops before attempting modify
+                try:
+                    sym = getattr(position, 'symbol', None)
+                    if sym and symbol_info:
+                        point = symbol_info.get('point')
+                        stops_level = symbol_info.get('trade_stops_level') or symbol_info.get('trade_freeze_level')
+                        if point and stops_level and update.get('update_sl') and new_sl is not None:
+                            min_dist = float(point) * float(stops_level)
+                            diff = abs(current_price - float(new_sl))
+                        self.ctx.logger.debug(f"Broker min check: point={point}, stops_level={stops_level}, min_dist={min_dist}, diff={diff}")
+                        if diff < min_dist - 1e-12:
+                                self.ctx.logger.warning(
+                                    f"Skipping SL update for {position.ticket}: desired SL {new_sl} is within broker min stop distance {min_dist} of current price {current_price}"
+                                )
+                                # Emit metric and do not attempt modify
+                                try:
+                                    if getattr(self.ctx, 'metrics', None):
+                                        self.ctx.metrics.increment('dynamic_sltp.skipped_too_close')
+                                except Exception:
+                                    pass
+                                update['update_sl'] = False
+                except Exception:
+                    pass
+
+                # If still needs update, attempt modify
+                if update.get('update_sl') or update.get('update_tp'):
+                    success = self.ctx.position_lifecycle.modify_position(
+                        position.ticket, sl=new_sl, tp=new_tp
+                    )
                 # Retry once after refreshing tracker from MT5 to handle transient state mismatches
                 if not success:
                     try:
