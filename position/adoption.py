@@ -74,7 +74,7 @@ class TradeAdoptionManager:
     """
     
     def __init__(self, connector, position_tracker, position_lifecycle, 
-                 policy: Optional[TradeAdoptionPolicy] = None):
+                 policy: Optional[TradeAdoptionPolicy] = None, position_manager=None):
         """
         Initialize the trade adoption manager.
         
@@ -83,10 +83,12 @@ class TradeAdoptionManager:
             position_tracker: PositionTracker instance
             position_lifecycle: PositionLifecycle instance
             policy: TradeAdoptionPolicy configuration
+            position_manager: Optional PositionManager instance to add adopted trades to
         """
         self.connector = connector
         self.tracker = position_tracker
         self.lifecycle = position_lifecycle
+        self.position_manager = position_manager
         self.policy = policy or TradeAdoptionPolicy()
         
         # Track which tickets we've already adopted
@@ -291,6 +293,27 @@ class TradeAdoptionManager:
             
             # Persist to database
             self.lifecycle.persist_position(position)
+
+            # Also register with PositionManager (if available) so adopted trades are actively managed
+            try:
+                if self.position_manager:
+                    from cthulu.position.manager import PositionInfo as ManagerPositionInfo
+                    mgr_pos = ManagerPositionInfo(
+                        ticket=int(ticket),
+                        symbol=symbol,
+                        volume=float(volume),
+                        open_price=float(open_price),
+                        current_price=float(current_price),
+                        open_time=open_time,
+                        side=type_str.upper(),
+                        stop_loss=sl,
+                        take_profit=tp,
+                        metadata={'adopted': True, 'magic': magic}
+                    )
+                    self.position_manager.add_position(mgr_pos)
+                    logger.info(f"Also added adopted trade {ticket} to PositionManager")
+            except Exception:
+                logger.exception('Failed to add adopted trade to PositionManager')
             
             # Mark as adopted
             self._adopted_tickets.add(ticket)

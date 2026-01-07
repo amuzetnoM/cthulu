@@ -300,7 +300,8 @@ class CthuluBootstrap:
             connector,
             position_tracker,
             position_lifecycle,
-            trade_adoption_policy
+            trade_adoption_policy,
+            position_manager=position_manager
         )
         
         if trade_adoption_policy.enabled:
