@@ -375,7 +375,19 @@ class MT5Connector:
         self._tick_manager.unsubscribe(symbol, callback)
 
     def _find_matching_symbol(self, desired: str) -> List[str]:
-        """Return a list of available MT5 symbol names whose normalized form matches desired (or contains it)."""
+        """Return a list of available MT5 symbol names that best match `desired`.
+
+        Matching strategy (in order):
+        1. Exact normalized match
+        2. Token-equality on the human-readable name (prefers whole-word matches)
+        3. Prefix match where the remainder is short (e.g., "GOLD" -> "GOLDM") to allow mailbox-style suffixes
+        4. Fallback substring match for longer queries
+        
+        This avoids accidental matches like "GOLD" -> "Goldman Sachs" while still allowing
+        reasonable matches like "GOLD" -> "GOLDm#".
+        """
+        import re
+
         matches: List[str] = []
         try:
             all_symbols = mt5.symbols_get()
@@ -383,14 +395,54 @@ class MT5Connector:
             return matches
         if not all_symbols:
             return matches
+
         desired_norm = self._normalize_symbol(desired)
+
+        # Stage 1: exact normalized match
         for s in all_symbols:
             try:
                 name_norm = self._normalize_symbol(s.name)
-                if name_norm == desired_norm or desired_norm in name_norm or name_norm in desired_norm:
+                if name_norm == desired_norm:
                     matches.append(s.name)
             except Exception:
                 continue
+        if matches:
+            return matches
+
+        # Stage 2: token-equality on human-readable name
+        for s in all_symbols:
+            try:
+                tokens = re.split(r"[^A-Za-z0-9]+", s.name or "")
+                token_norms = [self._normalize_symbol(t) for t in tokens if t]
+                if desired_norm in token_norms:
+                    matches.append(s.name)
+            except Exception:
+                continue
+        if matches:
+            return matches
+
+        # Stage 3: prefix match where the remainder is short (to allow "GOLD" -> "GOLDM")
+        for s in all_symbols:
+            try:
+                name_norm = self._normalize_symbol(s.name)
+                if name_norm.startswith(desired_norm):
+                    remainder = name_norm[len(desired_norm):]
+                    if len(remainder) > 0 and len(remainder) <= 2:
+                        matches.append(s.name)
+            except Exception:
+                continue
+        if matches:
+            return matches
+
+        # Stage 4: fallback substring match for longer queries only
+        if len(desired_norm) >= 5:
+            for s in all_symbols:
+                try:
+                    name_norm = self._normalize_symbol(s.name)
+                    if desired_norm in name_norm or name_norm in desired_norm:
+                        matches.append(s.name)
+                except Exception:
+                    continue
         return matches
 
     def ensure_symbol_selected(self, symbol: str) -> Optional[str]:

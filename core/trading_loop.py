@@ -1773,6 +1773,15 @@ class TradingLoop:
             if current_tp is None:
                 current_tp = getattr(position, 'take_profit', None)
             
+            # Get symbol info for symbol-aware SL/TP safety
+            symbol_info = None
+            try:
+                sym = getattr(position, 'symbol', None)
+                if sym:
+                    symbol_info = self.connector.get_symbol_info(sym)
+            except Exception:
+                symbol_info = None
+
             # Get update recommendation
             update = self.ctx.dynamic_sltp_manager.update_position_sltp(
                 ticket=position.ticket,
@@ -1785,7 +1794,8 @@ class TradingLoop:
                 balance=balance,
                 equity=equity,
                 drawdown_pct=drawdown_pct,
-                initial_balance=initial_balance
+                initial_balance=initial_balance,
+                symbol_info=symbol_info
             )
 
             # Log ATR and reasoning for transparency

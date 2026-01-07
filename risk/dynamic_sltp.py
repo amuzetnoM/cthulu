@@ -36,6 +36,8 @@ class DynamicSLTP:
     """Dynamic SL/TP values with metadata."""
     stop_loss: float
     take_profit: float
+    sl_distance: Optional[float] = None
+    tp_distance: Optional[float] = None
     breakeven_level: Optional[float] = None
     partial_tp_1: Optional[float] = None   # First partial TP (33%)
     partial_tp_2: Optional[float] = None   # Second partial TP (66%)
@@ -78,6 +80,14 @@ class DynamicSLTPManager:
         # Trailing settings
         self.trail_activation_pct = self.config.get('trail_activation_pct', 0.7)
         self.trail_distance_atr_mult = self.config.get('trail_distance_atr_mult', 1.5)
+        
+        # Safety settings
+        # Minimum SL distance as a percent of entry price (e.g., 0.02 => 0.02%)
+        self.min_sl_distance_pct = self.config.get('min_sl_distance_pct', 0.02)
+        # Fallback minimum expressed as a multiple of ATR
+        self.min_sl_distance_atr_mult = self.config.get('min_sl_distance_atr_mult', 0.25)
+        # Per-symbol absolute minimum SL distance (price units), e.g. {"XAUUSD": 0.1}
+        self.per_symbol_min_sl = self.config.get('per_symbol_min_sl', {})
         
         # Mode adjustments
         self.mode_adjustments = {
@@ -133,6 +143,15 @@ class DynamicSLTPManager:
         
         self.current_mode = SLTPMode.NORMAL
         return SLTPMode.NORMAL
+
+    def _round_to_tick(self, price: float, tick_size: Optional[float]) -> float:
+        """Round a price to the nearest tick if tick_size is provided."""
+        try:
+            if tick_size and tick_size > 0:
+                return round(price / tick_size) * tick_size
+        except Exception:
+            pass
+        return price
     
     def calculate_dynamic_sltp(
         self,
@@ -209,7 +228,93 @@ class DynamicSLTPManager:
         
         # Calculate trail distance
         trail_distance = atr * self.trail_distance_atr_mult
-        
+
+        # --- Enforce symbol-aware minimum SL distance and tick rounding ---
+        tick = None
+        symbol_name = None
+        if symbol_info:
+            tick = symbol_info.get('point') or symbol_info.get('tick_size')
+            symbol_name = symbol_info.get('name') or symbol_info.get('symbol')
+
+        # Minimums
+        min_by_pct = entry_price * (self.min_sl_distance_pct / 100)
+        min_by_atr = atr * self.min_sl_distance_atr_mult
+        min_by_symbol = 0.0
+        if symbol_info:
+            point = symbol_info.get('point')
+            # If broker provides a trade stops level (minimum stop distance in points), honor it
+            stops_level = symbol_info.get('trade_stops_level') or symbol_info.get('stops_level')
+            if point:
+                try:
+                    min_by_symbol = float(point) * (int(stops_level) if stops_level else float(point))
+                except Exception:
+                    min_by_symbol = float(point)
+
+        per_symbol_override = 0.0
+        try:
+            if symbol_name and self.per_symbol_min_sl:
+                per_symbol_override = float(self.per_symbol_min_sl.get(symbol_name, 0.0))
+        except Exception:
+            per_symbol_override = 0.0
+
+        effective_min = max(min_by_pct, min_by_atr, min_by_symbol, per_symbol_override)
+
+        # Enforce minimum SL distance and ensure TP follows configured RR
+        if sl_distance < effective_min:
+            sl_distance = effective_min
+            # Ensure TP respects minimum R:R
+            if tp_distance / sl_distance < min_rr:
+                tp_distance = sl_distance * min_rr
+            if risk_reward_target > min_rr:
+                tp_distance = sl_distance * risk_reward_target
+
+        # Recompute prices based on possibly updated distances
+        if side.upper() == 'BUY':
+            stop_loss = entry_price - sl_distance
+            take_profit = entry_price + tp_distance
+            breakeven = entry_price + (sl_distance * self.breakeven_activation_pct)
+            partial_tp_1 = entry_price + (tp_distance * self.partial_tp_1_pct)
+            partial_tp_2 = entry_price + (tp_distance * self.partial_tp_2_pct)
+            trail_activation = entry_price + (tp_distance * self.trail_activation_pct)
+        else:
+            stop_loss = entry_price + sl_distance
+            take_profit = entry_price - tp_distance
+            breakeven = entry_price - (sl_distance * self.breakeven_activation_pct)
+            partial_tp_1 = entry_price - (tp_distance * self.partial_tp_1_pct)
+            partial_tp_2 = entry_price - (tp_distance * self.partial_tp_2_pct)
+            trail_activation = entry_price - (tp_distance * self.trail_activation_pct)
+
+        # Round prices to tick if available
+        if tick:
+            stop_loss = self._round_to_tick(stop_loss, tick)
+            take_profit = self._round_to_tick(take_profit, tick)
+            breakeven = self._round_to_tick(breakeven, tick)
+            partial_tp_1 = self._round_to_tick(partial_tp_1, tick) if partial_tp_1 else None
+            partial_tp_2 = self._round_to_tick(partial_tp_2, tick) if partial_tp_2 else None
+            trail_activation = self._round_to_tick(trail_activation, tick)
+
+        ratio = (tp_distance / sl_distance) if sl_distance > 0 else 0.0
+        reasoning = (
+            f"Mode: {mode.value}, ATR: {atr:.2f}, "
+            f"SL dist: {sl_distance:.6f}, TP dist: {tp_distance:.6f}, "
+            f"MinReq: {effective_min:.6f}, Tick: {tick if tick else 'NA'}, R:R: {ratio:.2f}"
+        )
+
+        # Return distances in DynamicSLTP for downstream decision logic
+        # (sl_distance and tp_distance included for safety checks elsewhere)
+        return DynamicSLTP(
+            stop_loss=stop_loss,
+            take_profit=take_profit,
+            sl_distance=sl_distance,
+            tp_distance=tp_distance,
+            breakeven_level=breakeven,
+            partial_tp_1=partial_tp_1 if self.partial_tp_enabled else None,
+            partial_tp_2=partial_tp_2 if self.partial_tp_enabled else None,
+            trail_activation=trail_activation,
+            trail_distance=trail_distance,
+            mode=mode,
+            reasoning=reasoning
+        )        
         reasoning = (
             f"Mode: {mode.value}, ATR: {atr:.2f}, "
             f"SL dist: {sl_distance:.2f}, TP dist: {tp_distance:.2f}, "
@@ -235,7 +340,9 @@ class DynamicSLTPManager:
         current_price: float,
         side: str,
         current_sl: Optional[float],
-        breakeven_level: float
+        breakeven_level: float,
+        sl_distance: Optional[float] = None,
+        symbol_info: Optional[Dict[str, Any]] = None
     ) -> Tuple[bool, Optional[float]]:
         """
         Check if SL should be moved to breakeven.
@@ -259,6 +366,11 @@ class DynamicSLTPManager:
                 # Calculate new SL at entry + small buffer
                 buffer = entry_price * self.breakeven_buffer_pct / 100
                 new_sl = entry_price + buffer
+
+                # Round to tick if available
+                tick = symbol_info.get('point') if symbol_info else None
+                if tick:
+                    new_sl = self._round_to_tick(new_sl, tick)
                 
                 # Only move if it's an improvement
                 if current_sl is None or new_sl > current_sl:
@@ -266,13 +378,28 @@ class DynamicSLTPManager:
                     return True, new_sl
         else:
             if current_price <= breakeven_level:
-                buffer = entry_price * self.breakeven_buffer_pct / 100
+                # Prefer buffer relative to SL distance when available, but keep a fallback to percent of entry
+                try:
+                    entry_buffer = entry_price * self.breakeven_buffer_pct / 100
+                    if sl_distance and sl_distance > 0:
+                        # Cap buffer so it is not absurdly larger than the volatility-based SL distance
+                        buffer = min(entry_buffer, sl_distance * 0.5)
+                    else:
+                        buffer = entry_buffer
+                except Exception:
+                    buffer = entry_price * self.breakeven_buffer_pct / 100
+
                 new_sl = entry_price - buffer
-                
+
+                # Round to tick if available
+                tick = symbol_info.get('point') if symbol_info else None
+                if tick:
+                    new_sl = self._round_to_tick(new_sl, tick)
+
                 if current_sl is None or new_sl < current_sl:
-                    logger.info(f"Position {ticket}: Moving SL to breakeven {new_sl:.5f}")
+                    logger.info(f"Position {ticket}: Moving SL to breakeven {new_sl:.5f} (buffer={buffer:.5f})")
                     return True, new_sl
-        
+
         return False, None
     
     def calculate_trailing_sl(
@@ -357,7 +484,8 @@ class DynamicSLTPManager:
         balance: float,
         equity: float,
         drawdown_pct: float,
-        initial_balance: float
+        initial_balance: float,
+        symbol_info: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Comprehensive SL/TP update for a position.
@@ -385,13 +513,14 @@ class DynamicSLTPManager:
             balance=balance,
             equity=equity,
             drawdown_pct=drawdown_pct,
-            initial_balance=initial_balance
+            initial_balance=initial_balance,
+            symbol_info=symbol_info
         )
         
         # Check breakeven first
         should_be, new_sl = self.should_move_to_breakeven(
             ticket, entry_price, current_price, side,
-            current_sl, dynamic.breakeven_level
+            current_sl, dynamic.breakeven_level, dynamic.sl_distance, symbol_info
         )
         
         if should_be and new_sl is not None:
