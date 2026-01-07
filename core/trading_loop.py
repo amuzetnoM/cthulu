@@ -1639,6 +1639,9 @@ class TradingLoop:
                         for sr in scaling_results:
                             if sr.get('success'):
                                 self.ctx.logger.info(f"Profit scaling: {sr}")
+                            elif sr.get('skipped'):
+                                # Non-actionable condition (e.g., position at minimum lot) - log at debug level to avoid noise
+                                self.ctx.logger.debug(f"Profit scaling skipped: {sr.get('error')}")
                             elif sr.get('error'):
                                 self.ctx.logger.warning(f"Profit scaling issue: {sr.get('error')}")
                 except Exception as e:
@@ -1760,9 +1763,15 @@ class TradingLoop:
             # Get position details
             entry_price = position.open_price
             current_price = position.current_price
-            side = position.side
-            current_sl = getattr(position, 'stop_loss', None)
-            current_tp = getattr(position, 'take_profit', None)
+            # Be defensive about attribute names: some PositionInfo instances use 'side' or 'type'
+            side = getattr(position, 'side', None) or getattr(position, 'type', None) or getattr(position, 'position_type', None)
+            # Some modules use 'sl'/'tp' while others use 'stop_loss'/'take_profit'
+            current_sl = getattr(position, 'sl', None)
+            if current_sl is None:
+                current_sl = getattr(position, 'stop_loss', None)
+            current_tp = getattr(position, 'tp', None)
+            if current_tp is None:
+                current_tp = getattr(position, 'take_profit', None)
             
             # Get update recommendation
             update = self.ctx.dynamic_sltp_manager.update_position_sltp(
@@ -1778,7 +1787,29 @@ class TradingLoop:
                 drawdown_pct=drawdown_pct,
                 initial_balance=initial_balance
             )
-            
+
+            # Log ATR and reasoning for transparency
+            try:
+                self.ctx.logger.info(
+                    f"Dynamic SL/TP proposal for {position.ticket}: atr={atr_value:.4f}, reason={update.get('reasoning', '')}, action={update.get('action')}"
+                )
+            except Exception:
+                pass
+
+            # Sanity guard: reject SL/TP that are unreasonably close to current price
+            try:
+                min_sl_pct = float(self.ctx.config.get('dynamic_sltp', {}).get('min_sl_distance_pct', 0.001))
+                min_sl_distance = max(current_price * min_sl_pct, 0.0001)
+                if update.get('update_sl') and update.get('new_sl') is not None:
+                    new_sl_val = float(update['new_sl'])
+                    if abs(new_sl_val - current_price) < min_sl_distance:
+                        self.ctx.logger.warning(
+                            f"Sanity check: skipping SL update for {position.ticket} as new SL ({new_sl_val}) is within {min_sl_distance:.4f} of current price {current_price}"
+                        )
+                        update['update_sl'] = False
+            except Exception:
+                pass
+
             # Apply updates if needed
             if update['update_sl'] or update['update_tp']:
                 new_sl = update['new_sl'] if update['update_sl'] else current_sl
@@ -1788,16 +1819,45 @@ class TradingLoop:
                 success = self.ctx.position_lifecycle.modify_position(
                     position.ticket, sl=new_sl, tp=new_tp
                 )
-                
+                # Retry once after refreshing tracker from MT5 to handle transient state mismatches
+                if not success:
+                    try:
+                        self.ctx.position_lifecycle.refresh_positions()
+                        success = self.ctx.position_lifecycle.modify_position(position.ticket, sl=new_sl, tp=new_tp)
+                    except Exception:
+                        # Ignore errors during retry
+                        pass
+
                 if success:
                     self.ctx.logger.info(
                         f"Dynamic SL/TP: {update['action']} - Position {position.ticket} "
                         f"SL: {current_sl} -> {new_sl}, TP: {current_tp} -> {new_tp}"
                     )
                 else:
+                    # Gather diagnostics for failed SL/TP application
+                    tracker_state = None
+                    try:
+                        tracker_state = self.ctx.position_tracker.get_position(position.ticket) if getattr(self.ctx, 'position_tracker', None) else None
+                    except Exception:
+                        tracker_state = "<error_reading_tracker>"
+                    mt5_state = None
+                    try:
+                        mt5_state = self.ctx.connector.get_position_by_ticket(position.ticket) if getattr(self.ctx, 'connector', None) else None
+                    except Exception as e:
+                        mt5_state = f"<error_fetching_mt5:{e}>"
+
                     self.ctx.logger.warning(
-                        f"Failed to apply dynamic SL/TP to position {position.ticket}"
+                        f"Failed to apply dynamic SL/TP to position {position.ticket} after retry. "
+                        f"update={update}, tracker={tracker_state}, mt5={mt5_state}, "
+                        f"current_sl={current_sl}, current_tp={current_tp}, new_sl={new_sl}, new_tp={new_tp}"
                     )
+
+                    # Emit metric if metrics collector available
+                    try:
+                        if getattr(self.ctx, 'metrics', None):
+                            self.ctx.metrics.increment('dynamic_sltp.failures')
+                    except Exception:
+                        pass
         
         except Exception as e:
             self.ctx.logger.error(f"Error applying dynamic SL/TP: {e}", exc_info=True)

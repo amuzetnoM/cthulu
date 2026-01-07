@@ -48,6 +48,12 @@ class PositionLifecycle:
         self.execution_engine = execution_engine
         self.tracker = position_tracker
         self.db = db_handler
+        # Expose logger on instance for callers that expect self.logger
+        self.logger = logger
+        # Track in-flight close operations to prevent duplicate submissions
+        import threading
+        self._inflight_closes = set()
+        self._inflight_lock = threading.Lock()
         logger.info("PositionLifecycle initialized")
     
     def open_position(self, symbol: str, order_type: str, volume: float,
@@ -146,36 +152,57 @@ class PositionLifecycle:
             if not position:
                 logger.warning(f"Position {ticket} not found in tracker")
                 return False
-            
-            # Close via execution engine
-            result = self.execution_engine.close_position(ticket)
 
-            # Support both legacy boolean return values and ExecutionResult objects
-            success = False
+            # Prevent duplicate concurrent close attempts
+            with self._inflight_lock:
+                if ticket in self._inflight_closes:
+                    logger.warning(f"Close already in-flight for position {ticket}, skipping duplicate request")
+                    return False
+                self._inflight_closes.add(ticket)
+
             try:
-                # If engine returned an ExecutionResult-like object, inspect status
-                if hasattr(result, 'status'):
-                    from cthulu.execution.engine import OrderStatus
-                    success = (getattr(result, 'status', None) == OrderStatus.FILLED)
+                # Close via execution engine
+                result = self.execution_engine.close_position(ticket)
+
+                # Support both legacy boolean return values and ExecutionResult objects
+                success = False
+                try:
+                    # If engine returned an ExecutionResult-like object, inspect status
+                    if hasattr(result, 'status'):
+                        from cthulu.execution.engine import OrderStatus
+                        success = (getattr(result, 'status', None) == OrderStatus.FILLED)
+                    else:
+                        # Fallback: truthiness for legacy boolean API
+                        success = bool(result)
+                except (ImportError, AttributeError) as e:
+                    logger.warning(f"Error checking close result for {ticket}: {e}")
+                    success = bool(result) if result else False
+
+                if success:
+                    # Remove from tracker
+                    self.tracker.remove_position(ticket)
+
+                    # Remove from database (closed positions don't need to persist)
+                    self.db.remove_position(ticket)
+
+                    logger.info(f"Closed position {ticket}: {reason}")
+                    return True
                 else:
-                    # Fallback: truthiness for legacy boolean API
-                    success = bool(result)
-            except (ImportError, AttributeError) as e:
-                logger.warning(f"Error checking close result for {ticket}: {e}")
-                success = bool(result) if result else False
-            if success:
-                # Remove from tracker
-                self.tracker.remove_position(ticket)
-                
-                # Remove from database (closed positions don't need to persist)
-                self.db.remove_position(ticket)
-                
-                logger.info(f"Closed position {ticket}: {reason}")
-                return True
-            else:
-                logger.error(f"Failed to close position {ticket}")
+                    logger.error(f"Failed to close position {ticket}")
+                    return False
+
+            except Exception as e:
+                logger.error(f"Error closing position {ticket}: {e}", exc_info=True)
                 return False
-                
+
+            finally:
+                # Ensure we clear in-flight marker
+                try:
+                    with self._inflight_lock:
+                        self._inflight_closes.discard(ticket)
+                except Exception:
+                    pass
+
         except Exception as e:
             logger.error(f"Error closing position {ticket}: {e}", exc_info=True)
             return False
@@ -226,11 +253,66 @@ class PositionLifecycle:
         """
         try:
             position = self.tracker.get_position(ticket)
+            # If position is not currently tracked, attempt to fetch live MT5 position
             if not position:
-                logger.warning(f"Position {ticket} not found")
-                return False
-            
-            # Use execution engine to modify
+                logger.debug(f"Position {ticket} not found in tracker, checking MT5 directly")
+                try:
+                    mt5_pos = self.connector.get_position_by_ticket(ticket)
+                except Exception as e:
+                    logger.error(f"Error fetching MT5 position for {ticket}: {e}")
+                    return False
+
+                if not mt5_pos:
+                    logger.warning(f"Position {ticket} not found")
+                    return False
+
+                # Try to apply modification directly to MT5 position
+                success = self.execution_engine.modify_position(ticket, sl, tp)
+                if not success:
+                    try:
+                        mt5_pos = self.connector.get_position_by_ticket(ticket)
+                    except Exception as e:
+                        mt5_pos = f"<error_fetching_mt5:{e}>"
+                    logger.error(f"Failed to modify untracked MT5 position {ticket}; mt5_pos={mt5_pos}")
+                    return False
+
+                # On success, create a tracked PositionInfo and persist it so the system knows about it
+                try:
+                    from cthulu.position.tracker import PositionInfo
+                except ImportError:
+                    try:
+                        from position.tracker import PositionInfo
+                    except Exception as import_err:
+                        logger.error(f"Failed to import PositionInfo: {import_err}")
+                        return True  # Modification succeeded on MT5; treat as success even if we can't track
+
+                # Build PositionInfo from MT5 data and applied SL/TP
+                tracked_pos = PositionInfo(
+                    ticket=ticket,
+                    symbol=mt5_pos.get('symbol'),
+                    type=("buy" if mt5_pos.get('type') == 0 else "sell"),
+                    volume=mt5_pos.get('volume', 0.0),
+                    open_price=mt5_pos.get('price_open', 0.0),
+                    current_price=mt5_pos.get('price_current', mt5_pos.get('price_open', 0.0)),
+                    sl=(sl if sl is not None else mt5_pos.get('sl')),
+                    tp=(tp if tp is not None else mt5_pos.get('tp')),
+                    profit=mt5_pos.get('profit', 0.0),
+                    open_time=mt5_pos.get('time', datetime.now()),
+                    magic_number=mt5_pos.get('magic', 0),
+                    comment="[ADOPTED_SYNC]",
+                )
+
+                # Track and persist
+                try:
+                    self.tracker.track_position(tracked_pos)
+                    self.persist_position(tracked_pos)
+                except Exception as e:
+                    logger.warning(f"Modified MT5 position {ticket} but failed to track/persist: {e}")
+
+                logger.info(f"Modified and tracked untracked position {ticket}: SL={tracked_pos.sl}, TP={tracked_pos.tp}")
+                return True
+        
+            # Position exists in tracker - proceed with normal modification
             success = self.execution_engine.modify_position(ticket, sl, tp)
             
             if success:
@@ -243,7 +325,34 @@ class PositionLifecycle:
                 logger.info(f"Modified position {ticket}: SL={sl}, TP={tp}")
                 return True
             else:
-                logger.error(f"Failed to modify position {ticket}")
+                try:
+                    mt5_pos = self.connector.get_position_by_ticket(ticket)
+                except Exception as e:
+                    mt5_pos = f"<error_fetching_mt5:{e}>"
+
+                # If MT5 already reports the requested values (within tolerance), accept as success
+                try:
+                    actual_sl = None
+                    actual_tp = None
+                    if isinstance(mt5_pos, dict):
+                        actual_sl = mt5_pos.get('sl') if 'sl' in mt5_pos else mt5_pos.get('stop_loss')
+                        actual_tp = mt5_pos.get('tp') if 'tp' in mt5_pos else mt5_pos.get('take_profit')
+                    tol = 1e-4
+                    sl_ok = (sl is None) or (actual_sl is not None and abs(actual_sl - sl) <= tol)
+                    tp_ok = (tp is None) or (actual_tp is not None and abs(actual_tp - tp) <= tol)
+                    if sl_ok and tp_ok:
+                        if sl is not None:
+                            position.sl = sl
+                        if tp is not None:
+                            position.tp = tp
+                        logger.info(f"Modification considered successful for {ticket}: MT5 reports desired SL/TP")
+                        return True
+                except Exception:
+                    pass
+
+                logger.error(
+                    f"Failed to modify position {ticket}; tracker_sl={getattr(position,'sl',None)}, tracker_tp={getattr(position,'tp',None)}, requested_sl={sl}, requested_tp={tp}, mt5_pos={mt5_pos}"
+                )
                 return False
                 
         except Exception as e:

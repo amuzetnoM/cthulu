@@ -754,8 +754,12 @@ class ExecutionEngine:
                 self.logger.error(f"Position modification failed for {ticket}: {error}")
                 return False
             
-            if result.retcode == mt5.TRADE_RETCODE_DONE:
-                self.logger.info(f"Position {ticket} modified: SL={new_sl}, TP={new_tp}")
+            # Consider 'DONE' or broker-specific 'No changes' retcode (10025) as success for idempotency
+            if result.retcode == getattr(mt5, 'TRADE_RETCODE_DONE', None) or getattr(result, 'retcode', None) == 10025:
+                if getattr(result, 'retcode', None) == 10025:
+                    self.logger.info(f"Position modification returned 'No changes' for {ticket} (retcode={result.retcode}), treating as success")
+                else:
+                    self.logger.info(f"Position {ticket} modified: SL={new_sl}, TP={new_tp}")
                 return True
             else:
                 self.logger.error(f"Position modification rejected for {ticket}: {result.retcode} - {result.comment}")

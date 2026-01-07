@@ -438,6 +438,7 @@ When adopting an external trade:
 - Check symbol trading settings
 - Review logs for specific error codes
 - Monitor `cthulu_sl_tp_failure_total` metric
+- Note: adoption now applies SL/TP directly on MT5 even if the position wasn't previously tracked; if an SL/TP is still missing, check the logs for modification failures and retry metrics
 
 ---
 

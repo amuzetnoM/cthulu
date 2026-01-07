@@ -236,18 +236,20 @@ class StrategySelector:
         if len(data) < 50:
             return MarketRegime.RANGING_TIGHT
             
-        # Get latest values
-        adx = data['adx'].iloc[-1] if 'adx' in data.columns else None
-        rsi = data['rsi'].iloc[-1] if 'rsi' in data.columns else 50
-        macd = data['macd'].iloc[-1] if 'macd' in data.columns else 0
-        macd_signal = data['macd_signal'].iloc[-1] if 'macd_signal' in data.columns else 0
-        bb_upper = data['bb_upper'].iloc[-1] if 'bb_upper' in data.columns else data['high'].iloc[-1]
-        bb_lower = data['bb_lower'].iloc[-1] if 'bb_lower' in data.columns else data['low'].iloc[-1]
+        # Get latest values (coerce to safe numeric defaults when missing)
+        adx = data['adx'].iloc[-1] if 'adx' in data.columns and pd.notna(data['adx'].iloc[-1]) else 0.0
+        rsi = data['rsi'].iloc[-1] if 'rsi' in data.columns and pd.notna(data['rsi'].iloc[-1]) else 50.0
+        macd = data['macd'].iloc[-1] if 'macd' in data.columns and pd.notna(data['macd'].iloc[-1]) else 0.0
+        macd_signal = data['macd_signal'].iloc[-1] if 'macd_signal' in data.columns and pd.notna(data['macd_signal'].iloc[-1]) else 0.0
+        bb_upper = data['bb_upper'].iloc[-1] if 'bb_upper' in data.columns and pd.notna(data['bb_upper'].iloc[-1]) else data['high'].iloc[-1]
+        bb_lower = data['bb_lower'].iloc[-1] if 'bb_lower' in data.columns and pd.notna(data['bb_lower'].iloc[-1]) else data['low'].iloc[-1]
         
-        # Calculate additional metrics
+        # Calculate additional metrics (guard against NaN)
         returns = data['close'].pct_change(20).iloc[-1]
+        returns = returns if pd.notna(returns) else 0.0
         volatility = data['close'].pct_change().rolling(20).std().iloc[-1]
-        bb_width = (bb_upper - bb_lower) / data['close'].iloc[-1]  # Normalized BB width
+        volatility = volatility if pd.notna(volatility) else 0.0
+        bb_width = (bb_upper - bb_lower) / data['close'].iloc[-1] if pd.notna(data['close'].iloc[-1]) and (bb_upper - bb_lower) != 0 else 0.0  # Normalized BB width
         
         # Trend strength indicators
         trend_strength = adx if adx else abs(returns) * 100
