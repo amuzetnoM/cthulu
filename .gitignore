@@ -122,3 +122,21 @@ metrics/
 monitoring/*.csv
 observability/**/*.csv
 *.csv
+
+# Node / JavaScript artifacts
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Local dev, generated files, and locks
+.agent/
+_dev/
+cthulu.lock
+
+# UI package lock (if local installs exist)
+backtesting/ui/package-lock.json
