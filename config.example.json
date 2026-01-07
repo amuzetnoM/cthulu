@@ -100,6 +100,21 @@
       }
     }
   ],
+  "orphan_trades": {
+    "enabled": false,
+    "adopt_symbols": null,
+    "ignore_symbols": [],
+    "max_adoption_age_hours": 24,
+    "min_age_seconds": 60,
+    "min_volume": 0.0,
+    "max_volume": null,
+    "excluded_magic_numbers": [],
+    "apply_emergency_sl": true,
+    "emergency_sl_points": 100,
+    "apply_emergency_tp": false,
+    "emergency_tp_points": 100,
+    "log_only": false
+  },
   "database": {
     "path": "${DATABASE_PATH}"
   },
