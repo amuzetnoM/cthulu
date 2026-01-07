@@ -716,11 +716,19 @@ class ExecutionEngine:
                 max_v = float(symbol_info.get('volume_max', 100.0))
                 step = float(symbol_info.get('volume_step', 0.01))
                 if final_volume < min_v:
-                    raise ValueError(f"Requested volume {final_volume} < minimum {min_v} for {selected_symbol}")
+                    # Auto-adjust to symbol minimum instead of rejecting outright
+                    self.logger.warning(f"Requested volume {final_volume} < minimum {min_v} for {selected_symbol}; adjusting to {min_v}")
+                    final_volume = float(min_v)
                 if final_volume > max_v:
-                    raise ValueError(f"Requested volume {final_volume} > maximum {max_v} for {selected_symbol}")
+                    # Cap at symbol maximum
+                    self.logger.warning(f"Requested volume {final_volume} > maximum {max_v} for {selected_symbol}; capping to {max_v}")
+                    final_volume = float(max_v)
                 # Normalize to step
-                final_volume = round(round(final_volume / step) * step, 2)
+                try:
+                    final_volume = round(round(final_volume / step) * step, 2)
+                except Exception:
+                    # Fallback to final_volume as float
+                    final_volume = float(final_volume)
             except Exception:
                 # If validation fails, let the order submit and let MT5 reject with clearer message
                 pass

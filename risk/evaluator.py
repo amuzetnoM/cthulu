@@ -418,8 +418,13 @@ class RiskEvaluator:
                     volume = max(min_lot, round(volume / min_lot) * min_lot)
                     return volume
                 else:
-                    # Default to small size if no SL info
-                    return 0.01
+                    # Default: use symbol minimum lot when we don't have SL-based sizing.
+                    # This prevents placing volumes below a symbol's supported minimum
+                    try:
+                        min_lot = float(self.connector.get_min_lot(symbol) or 0.01)
+                    except Exception:
+                        min_lot = 0.01
+                    return float(min_lot)
             
             elif method == "volatility":
                 # Volatility-adjusted sizing

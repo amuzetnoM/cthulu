@@ -11,11 +11,13 @@ logger = logging.getLogger('Cthulu.risk')
 
 
 class RiskManager:
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None, connector: Optional[object] = None):
         self.config = config or {}
         self.max_positions = int(self.config.get('max_positions', 5))
         self.per_trade_risk_pct = float(self.config.get('per_trade_risk_pct', 0.01))
         self.min_lot = float(self.config.get('min_lot', 0.01))
+        # Optional connector (e.g., MT5 connector) for symbol-specific queries
+        self.connector = connector
 
     def approve(self, signal, account_info: Optional[Dict[str, Any]] = None, current_positions: int = 0) -> Tuple[bool, str, float]:
         """Decide whether a signal/order should be approved.
@@ -47,9 +49,19 @@ class RiskManager:
                 else:
                     position_size = self.min_lot
 
-            # Enforce min lot
-            if position_size < self.min_lot:
-                position_size = self.min_lot
+            # If we have connector and a symbol, enforce symbol-specific min lot
+            try:
+                symbol = getattr(signal, 'symbol', None)
+                if self.connector and symbol:
+                    try:
+                        sym_min = float(self.connector.get_min_lot(symbol) or self.min_lot)
+                    except Exception:
+                        sym_min = self.min_lot
+                    if position_size < sym_min:
+                        position_size = sym_min
+            except Exception:
+                # Keep original position_size on errors
+                pass
 
             return True, 'approved', float(position_size)
         except Exception as e:
