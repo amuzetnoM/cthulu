@@ -140,3 +140,10 @@ cthulu.lock
 
 # UI package lock (if local installs exist)
 backtesting/ui/package-lock.json
+
+# Backtesting reports and UI caches
+backtesting/reports/
+backtesting/ui/.angular/
+backtesting/ui/metadata.json
+backtesting/ui/.tsbuildinfo
+backtesting/ui/dist/
