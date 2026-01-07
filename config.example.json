@@ -102,7 +102,7 @@
   ],
   "orphan_trades": {
     "enabled": false,
-    "adopt_symbols": null,
+    "adopt_symbols": [],
     "ignore_symbols": [],
     "max_adoption_age_hours": 24,
     "min_age_seconds": 60,
