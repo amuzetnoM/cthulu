@@ -37,6 +37,7 @@ configs/*.json
 !configs/*.example.json
 # Ignore real mindset configs; keep generated example files
 configs/mindsets/**/config_*.json
+news/cache/news_manager.json
 
 # Build Plan (private development roadmap)
 build_plan.md
