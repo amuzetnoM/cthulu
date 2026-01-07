@@ -240,6 +240,18 @@ class CthuluBootstrap:
         try:
             from core.strategy_factory import load_strategy
             strat_cfg = config.get('strategy', {}) if isinstance(config, dict) else {}
+            # Ensure strategy symbol inherits from main trading symbol when not set
+            try:
+                if 'params' not in strat_cfg:
+                    strat_cfg['params'] = {}
+                if 'symbol' not in strat_cfg['params'] or not strat_cfg['params'].get('symbol'):
+                    main_symbol = config.get('trading', {}).get('symbol')
+                    if main_symbol:
+                        strat_cfg['params']['symbol'] = main_symbol
+                        self.logger.info(f"Strategy symbol not set; defaulting to main trading symbol '{main_symbol}'")
+            except Exception:
+                self.logger.debug('Failed to inject main trading symbol into strategy params')
+
             strategy = load_strategy(strat_cfg)
             self.logger.info(f"Strategy initialized: {strategy.__class__.__name__}")
             return strategy
