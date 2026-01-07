@@ -335,7 +335,21 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
                 logger.exception('Failed to compute inline ATR for scalping strategy')
     except Exception:
         pass
-    
+
+    # Compute EMA columns inline for any required EMA periods detected earlier.
+    try:
+        if required_emas:
+            for p in sorted(required_emas):
+                col = f'ema_{p}'
+                if col not in df.columns and 'close' in df.columns:
+                    try:
+                        df[col] = df['close'].ewm(span=int(p), adjust=False).mean()
+                        logger.debug(f"Computed runtime EMA column: {col}")
+                    except Exception:
+                        logger.exception(f"Failed to compute runtime EMA for period {p}")
+    except Exception:
+        logger.exception('Failed during runtime EMA computation')
+
     return extra_indicators
 
 

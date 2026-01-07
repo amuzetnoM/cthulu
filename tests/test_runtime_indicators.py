@@ -44,6 +44,9 @@ def test_ensure_runtime_indicators_computes_ema_and_rsi():
         if data is not None:
             df = df.join(data, how='left')
 
+    # Ensure that ensure_runtime_indicators computed EMA columns inline
+    assert 'ema_5' in df.columns or 'ema_10' in df.columns or any(c.startswith('ema_') for c in df.columns)
+
     # Compute EMA columns via TradingLoop helper (simulate main loop behavior)
     from cthulu.core.trading_loop import TradingLoop, TradingLoopContext
     local_logger = logging.getLogger('Cthulu.tests')
