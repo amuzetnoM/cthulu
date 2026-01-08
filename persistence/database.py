@@ -90,12 +90,13 @@ class Database:
             self.conn = sqlite3.connect(
                 self.db_path,
                 detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
-                timeout=30.0  # 30 second timeout to reduce lock conflicts
+                timeout=60.0,  # 60 second timeout for locked database
+                check_same_thread=False  # Allow multi-threaded access
             )
             self.conn.row_factory = sqlite3.Row
             # Enable WAL mode for better concurrent access
             self.conn.execute("PRAGMA journal_mode=WAL")
-            self.conn.execute("PRAGMA busy_timeout=30000")
+            self.conn.execute("PRAGMA busy_timeout=60000")  # 60 seconds
             
             cursor = self.conn.cursor()
             
@@ -411,7 +412,7 @@ class Database:
         try:
             cursor = self.conn.cursor()
             cursor.execute("""
-                INSERT INTO signals (
+                INSERT OR REPLACE INTO signals (
                     signal_id, timestamp, symbol, timeframe, side, action,
                     confidence, price, stop_loss, take_profit, reason, executed, execution_timestamp, metadata
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -443,6 +444,52 @@ class Database:
             return -1
             
     def record_trade(self, trade_record: TradeRecord) -> int:
+        """Record a trade with retry on lock."""
+        import time
+        max_retries = 3
+        retry_delay = 0.5
+        
+        for attempt in range(max_retries):
+            try:
+                cursor = self.conn.cursor()
+                cursor.execute("""
+                    INSERT INTO trades (
+                        signal_id, order_id, symbol, side, volume,
+                        entry_price, exit_price, stop_loss, take_profit,
+                        entry_time, exit_time, profit, status, exit_reason, metadata
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    trade_record.signal_id,
+                    trade_record.order_id,
+                    trade_record.symbol,
+                    trade_record.side,
+                    trade_record.volume,
+                    trade_record.entry_price,
+                    trade_record.exit_price,
+                    trade_record.stop_loss,
+                    trade_record.take_profit,
+                    self._normalize_timestamp(trade_record.entry_time),
+                    self._normalize_timestamp(trade_record.exit_time),
+                    trade_record.profit,
+                    trade_record.status,
+                    trade_record.exit_reason,
+                    trade_record.metadata
+                ))
+                self.conn.commit()
+                
+                row_id = cursor.lastrowid
+                self.logger.debug(f"Trade recorded: {trade_record.order_id} (ID: {row_id})")
+                return row_id
+            except sqlite3.OperationalError as e:
+                if 'locked' in str(e).lower() and attempt < max_retries - 1:
+                    time.sleep(retry_delay * (attempt + 1))
+                    continue
+                self.logger.error(f"Failed to record trade: {e}", exc_info=True)
+                return -1
+            except Exception as e:
+                self.logger.error(f"Failed to record trade: {e}", exc_info=True)
+                return -1
+        return -1
         """
         Record a trade entry.
         

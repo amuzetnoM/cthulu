@@ -128,7 +128,7 @@ class EmaCrossover(Strategy):
         return Signal(
             id=self.generate_signal_id(),
             timestamp=bar.name,
-            symbol=self.config.get('params', {}).get('symbol', 'UNKNOWN'),
+            symbol=self.config.get('symbol', 'UNKNOWN'),
             timeframe=self.config.get('timeframe', '1H'),
             side=SignalType.LONG,
             action='BUY',
@@ -159,7 +159,7 @@ class EmaCrossover(Strategy):
         return Signal(
             id=self.generate_signal_id(),
             timestamp=bar.name,
-            symbol=self.config.get('params', {}).get('symbol', 'UNKNOWN'),
+            symbol=self.config.get('symbol', 'UNKNOWN'),
             timeframe=self.config.get('timeframe', '1H'),
             side=SignalType.SHORT,
             action='SELL',
