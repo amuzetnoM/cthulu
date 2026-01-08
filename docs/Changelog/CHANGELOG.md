@@ -25,7 +25,29 @@ _________   __  .__          .__
 
 ## UNRELEASED
 
-*No unreleased changes — see v5.1.0 "Apex" below*
+### Fixed (2026-01-08)
+- **🔧 Database Locking & Constraint Errors:**
+  - Increased database timeout: 30s → 60s
+  - Added `check_same_thread=False` for multi-threaded access
+  - Increased `busy_timeout`: 30000ms → 60000ms
+  - Added retry logic (3 attempts with exponential backoff) for `record_provenance()` and `record_trade()`
+  - Changed `INSERT` to `INSERT OR REPLACE` for signals table (handles duplicates gracefully)
+  - **Result:** Eliminated all database locking errors during high-frequency signal generation
+
+- **🎯 Strategy Symbol Resolution:**
+  - Fixed all 7 strategies returning `symbol='UNKNOWN'` in signals
+  - **Root Cause:** Strategies used `self.config.get('params', {}).get('symbol', 'UNKNOWN')` but symbol is at root config level
+  - **Fixed in:** `trend_following.py`, `sma_crossover.py`, `ema_crossover.py`, `scalping.py`, `rsi_reversal.py`, `momentum_breakout.py`, `mean_reversion.py` (14 occurrences total)
+  - Changed to: `symbol=self.config.get('symbol', 'UNKNOWN')`
+  - **Result:** All signals now correctly show `GOLDm#` symbol
+
+- **🪟 Windows Shutdown Handler:**
+  - Fixed Windows "Terminate batch job (Y/N)?" prompt overriding Cthulu's shutdown menu
+  - Added Windows-specific `SetConsoleCtrlHandler` registration at startup
+  - **Result:** Now properly shows A/S/N shutdown menu (Close ALL/Leave open/Select specific)
+  - Properly closes all positions when user chooses "A"
+
+**Commits:** `6f45cd5`, `23928d7`, `ccc8a1a`
 
 ---
 
