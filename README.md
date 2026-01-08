@@ -1,3 +1,11 @@
+# AI-NATIVE VERSION
+> Windows  
+> **UNSTABLE**
+
+⚠️ **WARNING**: This branch is EXPERIMENTAL. For production, use **windows** branch (rule-based, stable).
+
+---
+
 # RULE-BASED VERSION
 > Windows  
 > **stable**
