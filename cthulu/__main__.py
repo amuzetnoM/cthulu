@@ -28,6 +28,16 @@ from config_schema import Config
 from config.mindsets import apply_mindset, list_mindsets
 from observability.logger import setup_logger
 
+# Global flag for shutdown coordination
+_shutdown_requested = False
+
+def signal_handler(signum, frame):
+    """Handle SIGINT/SIGTERM gracefully."""
+    global _shutdown_requested
+    _shutdown_requested = True
+    # Raise KeyboardInterrupt to interrupt the current execution
+    raise KeyboardInterrupt()
+
 # Backwards-compatible helper for tests & integrations
 # Signature matches older tests: init_ml_collector(config, args, logger)
 def init_ml_collector(config=None, args=None, logger=None):
