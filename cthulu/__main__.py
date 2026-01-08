@@ -153,6 +153,27 @@ def main():
     """
     global shutdown_requested
     
+    # Windows-specific: Register console control handler FIRST to prevent "Terminate batch job?" prompt
+    if sys.platform == 'win32':
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            
+            def console_ctrl_handler(ctrl_type):
+                """Handle Windows console control events."""
+                if ctrl_type in (0, 1, 2):  # CTRL_C, CTRL_BREAK, CTRL_CLOSE
+                    signal_handler(sig_module.SIGINT, None)
+                    return 1  # Handled - prevents Windows prompt
+                return 0  # Not handled
+            
+            # Create persistent reference to prevent garbage collection
+            global _console_handler_ref
+            _console_handler_ref = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_uint)(console_ctrl_handler)
+            kernel32.SetConsoleCtrlHandler(_console_handler_ref, 1)
+        except Exception:
+            # If Windows handler registration fails, continue anyway
+            pass
+    
     # Parse command line arguments
     args = parse_arguments()
     
