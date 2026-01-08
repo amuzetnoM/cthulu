@@ -1,18 +1,5 @@
-# AI-NATIVE VERSION
-> Windows  
-> **UNSTABLE**
+# INDEX
 
-⚠️ **WARNING**: This branch is EXPERIMENTAL. For production, use **windows** branch (rule-based, stable).
-
----
-
-# RULE-BASED VERSION
-> Windows  
-> **stable**
-
-## Cthulu Autonomous Trading System v5.1.0
-
-**Apex Release** - Rule-based algorithmic trading system for MT5.
 
 ### Overview
 This is the **rule-based version** optimized for Windows. It uses:

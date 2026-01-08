@@ -7,6 +7,12 @@ sidebar_position: 1
 
 ---
 
+# APEX
+> Rule Native Version (no AI)  <br>
+> **STABLE** <br>
+
+
+
 
 ![version-badge](https://img.shields.io/badge/version-5.1.0-indigo.svg) ![last-updated](https://img.shields.io/badge/last_updated-2025--12--31-brightgreen.svg)
 
