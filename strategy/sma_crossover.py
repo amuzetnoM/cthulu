@@ -64,12 +64,18 @@ class SmaCrossover(Strategy):
         Returns:
             Signal if crossover detected, None otherwise
         """
-        # Need SMA values
+        # Need SMA values - try multiple column naming conventions
         sma_short_col = f'sma_{self.short_window}'
         sma_long_col = f'sma_{self.long_window}'
         
+        # Fallback to generic names if specific not found
+        if sma_short_col not in bar and 'sma_short' in bar:
+            sma_short_col = 'sma_short'
+        if sma_long_col not in bar and 'sma_long' in bar:
+            sma_long_col = 'sma_long'
+        
         if sma_short_col not in bar or sma_long_col not in bar:
-            self.logger.warning("SMA indicators not found in bar data")
+            self.logger.debug(f"SMA indicators not found - looking for: {sma_short_col}, {sma_long_col}")
             return None
             
         if 'atr' not in bar:

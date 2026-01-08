@@ -57,19 +57,20 @@ class TradingLoopContext:
     database: Database
     metrics: MetricsCollector
     logger: logging.Logger
+    entry_confluence_filter: Optional[Any] = None
     
     # Configuration
-    symbol: str
-    timeframe: Any  # MT5 timeframe constant
-    poll_interval: int
-    lookback_bars: int
-    dry_run: bool
+    symbol: str = ""
+    timeframe: Any = None
+    poll_interval: int = 15
+    lookback_bars: int = 500
+    dry_run: bool = False
     
     # Trading components
-    indicators: List[Any]
-    exit_strategies: List[Any]
-    trade_adoption_policy: TradeAdoptionPolicy
-    config: Dict[str, Any]
+    indicators: List[Any] = None
+    exit_strategies: List[Any] = None
+    trade_adoption_policy: Optional[TradeAdoptionPolicy] = None
+    config: Dict[str, Any] = None
     
     # Optional components
     strategy: Optional[Strategy] = None
@@ -963,6 +964,45 @@ class TradingLoop:
                     signal = self.ctx.strategy.generate_signal(df, current_bar)
                 else:
                     signal = self.ctx.strategy.on_bar(current_bar)
+            
+            # Process signal through entry confluence filter
+            if signal and self.ctx.entry_confluence_filter:
+                try:
+                    from cthulu.data.layer import get_current_price
+                    current_price = get_current_price(df) if hasattr(df, '__len__') and len(df) > 0 else current_bar.get('close')
+                    
+                    confluence_result = self.ctx.entry_confluence_filter.analyze_entry(
+                        signal_direction=signal.side.name.lower(),
+                        current_price=current_price,
+                        symbol=self.ctx.symbol,
+                        market_data=df,
+                        atr=df['atr'].iloc[-1] if 'atr' in df.columns else None,
+                        signal_entry_price=getattr(signal, 'entry_price', None)
+                    )
+                    
+                    self.ctx.logger.info(f"Entry Confluence: {confluence_result.summary}")
+                    
+                    if not confluence_result.should_enter:
+                        self.ctx.logger.warning(f"Entry REJECTED: {', '.join(confluence_result.reasons[:2])}")
+                        if confluence_result.wait_for_better:
+                            self.ctx.logger.info(f"Wait for better entry near {confluence_result.optimal_entry}")
+                        signal = None
+                    else:
+                        # Adjust confidence based on entry quality
+                        original_conf = signal.confidence
+                        signal.confidence *= confluence_result.position_mult
+                        self.ctx.logger.info(f"Entry: {confluence_result.quality.value} "
+                                           f"(conf: {original_conf:.2f}->{signal.confidence:.2f})")
+                        
+                        if not hasattr(signal, 'metadata'):
+                            signal.metadata = {}
+                        signal.metadata['entry_confluence'] = {
+                            'quality': confluence_result.quality.value,
+                            'score': confluence_result.score,
+                            'position_mult': confluence_result.position_mult
+                        }
+                except Exception as e:
+                    self.ctx.logger.error(f"Entry confluence error: {e}", exc_info=True)
             
             if signal:
                 # Ensure signal has a valid symbol; fall back to system symbol if missing or UNKNOWN

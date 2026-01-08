@@ -62,12 +62,18 @@ class EmaCrossover(Strategy):
         Returns:
             Signal if crossover detected, None otherwise
         """
-        # Need EMA values
+        # Need EMA values - try multiple column naming conventions
         ema_fast_col = f'ema_{self.fast_period}'
         ema_slow_col = f'ema_{self.slow_period}'
         
+        # Fallback to generic names if specific not found
+        if ema_fast_col not in bar and 'ema_fast' in bar:
+            ema_fast_col = 'ema_fast'
+        if ema_slow_col not in bar and 'ema_slow' in bar:
+            ema_slow_col = 'ema_slow'
+        
         if ema_fast_col not in bar or ema_slow_col not in bar:
-            self.logger.warning("EMA indicators not found in bar data")
+            self.logger.debug(f"EMA indicators not found - looking for: {ema_fast_col}, {ema_slow_col}")
             return None
             
         if 'atr' not in bar:

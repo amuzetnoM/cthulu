@@ -46,6 +46,7 @@ class SystemComponents:
     exit_coordinator: PositionLifecycle
     database: Database
     metrics: MetricsCollector
+    entry_confluence_filter: Optional[Any] = None
     
     # Strategy and indicators (loaded separately)
     strategy: Any = None
@@ -320,6 +321,24 @@ class CthuluBootstrap:
             self.logger.info("External trade adoption disabled")
         
         return trade_manager
+    
+    def initialize_entry_confluence_filter(self, config: Dict[str, Any]):
+        """Initialize entry confluence filter for signal quality gating."""
+        try:
+            from cognition.entry_confluence import EntryConfluenceFilter
+            
+            confluence_config = config.get('entry_confluence', {})
+            entry_filter = EntryConfluenceFilter(confluence_config)
+            
+            if confluence_config.get('enabled', True):
+                self.logger.info("Entry Confluence Filter ENABLED - signals will be quality-gated")
+            else:
+                self.logger.info("Entry Confluence Filter disabled")
+            
+            return entry_filter
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize entry confluence filter: {e}")
+            return None
     
     def initialize_database(self, config: Dict[str, Any]) -> Database:
         """Initialize database.
@@ -634,6 +653,9 @@ class CthuluBootstrap:
         position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, position_tracker, database, position_manager)
         trade_adoption_manager = self.initialize_trade_adoption_manager(connector, position_tracker, position_lifecycle, config, position_manager=position_manager)
         
+        # Initialize entry confluence filter
+        entry_confluence_filter = self.initialize_entry_confluence_filter(config)
+        
         # Initialize strategy
         strategy = self.initialize_strategy(config)
         
@@ -668,6 +690,7 @@ class CthuluBootstrap:
             position_manager=position_manager,
             position_lifecycle=position_lifecycle,
             trade_adoption_manager=trade_adoption_manager,
+            entry_confluence_filter=entry_confluence_filter,
             exit_coordinator=position_lifecycle,
             database=database,
             metrics=metrics,
