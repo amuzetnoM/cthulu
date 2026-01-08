@@ -1346,7 +1346,22 @@ class TradingLoop:
                 initial_balance=initial_balance
             )
             
-            self.ctx.logger.info(f"update_position_sltp returned: {update}")
+            # Format SLTP update result for readability (wrap at 60 cols)
+            update_str = f"update_position_sltp returned:\n"
+            update_str += f"  update_sl={update.get('update_sl')}\n"
+            update_str += f"  update_tp={update.get('update_tp')}\n"
+            update_str += f"  new_sl={update.get('new_sl')}\n"
+            update_str += f"  new_tp={update.get('new_tp')}\n"
+            update_str += f"  action={update.get('action')}\n"
+            reasoning = update.get('reasoning', '')
+            if len(reasoning) > 60:
+                # Wrap long reasoning
+                import textwrap
+                wrapped = textwrap.fill(reasoning, width=60, subsequent_indent='    ')
+                update_str += f"  reasoning:\n    {wrapped}"
+            else:
+                update_str += f"  reasoning: {reasoning}"
+            self.ctx.logger.info(update_str)
             
             # Apply updates if needed
             if update['update_sl'] or update['update_tp']:

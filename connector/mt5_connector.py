@@ -398,38 +398,50 @@ class MT5Connector:
 
         Returns the actual selected symbol name on success, or None on failure.
         """
-        # Try direct selection
+        # Try EXACT case-sensitive match first (most important)
         try:
             if mt5.symbol_select(symbol, True):
+                self.logger.debug(f"Exact match found for symbol: {symbol}")
                 return symbol
         except Exception:
             pass
 
-        # Try common variant swaps (#m <-> m#)
+        # Try common variant swaps (#m <-> m#) but PRESERVE CASE
         variants = []
-        if '#m' in symbol and 'm#' not in symbol:
-            variants.append(symbol.replace('#m', 'm#'))
-        if 'm#' in symbol and '#m' not in symbol:
-            variants.append(symbol.replace('m#', '#m'))
-        # Try removing # or m
-        variants.append(symbol.replace('#', ''))
-        variants.append(symbol.replace('m', ''))
+        if '#m' in symbol.lower() and 'm#' not in symbol.lower():
+            # swap #m to m# preserving case
+            variants.append(symbol.replace('#m', 'm#').replace('#M', 'M#'))
+        if 'm#' in symbol.lower() and '#m' not in symbol.lower():
+            # swap m# to #m preserving case
+            variants.append(symbol.replace('m#', '#m').replace('M#', '#M'))
 
         for v in variants:
             try:
                 if mt5.symbol_select(v, True):
+                    self.logger.info(f"Symbol variant match: {v} for requested {symbol}")
                     return v
             except Exception:
                 continue
 
-        # Try scanning available symbols with normalized comparison
-        matches = self._find_matching_symbol(symbol)
+        # ONLY if exact match and swaps fail, try case-insensitive normalized matching
+        # But prioritize case-preserving matches
+        matches = self._find_matching_symbol_exact(symbol)
         if matches:
             self.logger.debug(f"Found candidate symbols for {symbol}: {matches}")
+            # Try exact case match first
+            for m in matches:
+                if m == symbol:  # Exact match including case
+                    try:
+                        if mt5.symbol_select(m, True):
+                            self.logger.info(f"Selected exact symbol: {m}")
+                            return m
+                    except Exception:
+                        continue
+            # Then try case-insensitive matches
             for m in matches:
                 try:
                     if mt5.symbol_select(m, True):
-                        self.logger.info(f"Selected symbol variant: {m} for requested {symbol}")
+                        self.logger.warning(f"Selected symbol variant: {m} for requested {symbol} (case mismatch)")
                         return m
                 except Exception:
                     continue
@@ -444,6 +456,34 @@ class MT5Connector:
                 pass
 
         return None
+    
+    def _find_matching_symbol_exact(self, desired: str) -> List[str]:
+        """Return list of available MT5 symbols prioritizing case-sensitive matches."""
+        matches: List[str] = []
+        exact_matches: List[str] = []
+        try:
+            all_symbols = mt5.symbols_get()
+        except Exception:
+            return matches
+        if not all_symbols:
+            return matches
+        
+        desired_norm = self._normalize_symbol(desired)
+        for s in all_symbols:
+            try:
+                # Exact case-sensitive match - highest priority
+                if s.name == desired:
+                    exact_matches.append(s.name)
+                    continue
+                # Then normalized match
+                name_norm = self._normalize_symbol(s.name)
+                if name_norm == desired_norm:
+                    matches.append(s.name)
+            except Exception:
+                continue
+        
+        # Return exact matches first, then normalized
+        return exact_matches + matches
 
     def get_rates(
         self,

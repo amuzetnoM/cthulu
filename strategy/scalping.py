@@ -181,7 +181,7 @@ class ScalpingStrategy(Strategy):
                     signal_type = "POSITION"
                 else:
                     signal_type = "CONTRARIAN_RSI"
-                self.logger.info(f"✅ LONG scalp ({signal_type}): EMA={ema_fast:.1f}/{ema_slow:.1f}, RSI={rsi:.1f}")
+                self.logger.info(f"🟢 LONG scalp ({signal_type}): EMA={ema_fast:.1f}/{ema_slow:.1f}, RSI={rsi:.1f}")
                 return signal
                  
         # Bearish scalp conditions:
@@ -205,7 +205,7 @@ class ScalpingStrategy(Strategy):
                     signal_type = "POSITION"
                 else:
                     signal_type = "CONTRARIAN_RSI"
-                self.logger.info(f"✅ SHORT scalp ({signal_type}): EMA={ema_fast:.1f}/{ema_slow:.1f}, RSI={rsi:.1f}")
+                self.logger.info(f"🔴 SHORT scalp ({signal_type}): EMA={ema_fast:.1f}/{ema_slow:.1f}, RSI={rsi:.1f}")
                 return signal
                  
         return None
