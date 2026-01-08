@@ -22,7 +22,7 @@ from cthulu.risk.evaluator import RiskEvaluator, RiskLimits
 from cthulu.execution.engine import ExecutionEngine
 from cthulu.position.tracker import PositionTracker
 from cthulu.position.lifecycle import PositionLifecycle
-from cthulu.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
+from cthulu.position.trade_manager import TradeManager, TradeAdoptionPolicy
 from cthulu.persistence.database import Database
 from cthulu.observability.metrics import MetricsCollector
 from config_schema import Config
@@ -42,7 +42,7 @@ class SystemComponents:
     position_tracker: PositionTracker
     position_manager: Optional[Any]
     position_lifecycle: PositionLifecycle
-    trade_adoption_manager: TradeAdoptionManager
+    trade_adoption_manager: TradeManager
     exit_coordinator: PositionLifecycle
     database: Database
     metrics: MetricsCollector
@@ -280,51 +280,44 @@ class CthuluBootstrap:
     
     def initialize_trade_adoption_manager(self, connector: MT5Connector, position_tracker: PositionTracker,
                                           position_lifecycle: PositionLifecycle,
-                                          config: Dict[str, Any], position_manager: Optional[Any] = None) -> TradeAdoptionManager:
+                                          config: Dict[str, Any], position_manager: Optional[Any] = None) -> TradeManager:
         """Initialize trade adoption manager for external trade adoption.
         
-        Args:
-            position_tracker: Position tracker instance
-            position_lifecycle: Position lifecycle instance
-            config: System configuration
-            position_manager: Optional PositionManager instance to register adopted trades with
-            
         Returns:
-            Initialized TradeAdoptionManager instance
+            Initialized TradeManager instance
         """
         trade_adoption_config = config.get('orphan_trades', {})
         trade_adoption_policy = TradeAdoptionPolicy(
-            enabled=trade_adoption_config.get('enabled', False),
-            allowed_symbols=trade_adoption_config.get('adopt_symbols') or None,
-            blocked_symbols=trade_adoption_config.get('ignore_symbols', []),
-            max_age_hours=trade_adoption_config.get('max_adoption_age_hours'),
-            min_age_seconds=trade_adoption_config.get('min_age_seconds', 60),
-            min_volume=trade_adoption_config.get('min_volume'),
-            max_volume=trade_adoption_config.get('max_volume'),
-            excluded_magic_numbers=set(trade_adoption_config.get('excluded_magic_numbers', [])),
-            apply_emergency_sl=trade_adoption_config.get('apply_emergency_sl', True),
-            emergency_sl_points=trade_adoption_config.get('emergency_sl_points', 100),
-            apply_emergency_tp=trade_adoption_config.get('apply_emergency_tp', False),
-            emergency_tp_points=trade_adoption_config.get('emergency_tp_points', 100),
+            enabled=trade_adoption_config.get('enabled', True),
+            adopt_symbols=trade_adoption_config.get('adopt_symbols', []),
+            ignore_symbols=trade_adoption_config.get('ignore_symbols', []),
+            max_adoption_age_hours=trade_adoption_config.get('max_adoption_age_hours', 0.0),
             log_only=trade_adoption_config.get('log_only', False)
         )
         
-        trade_adoption_manager = TradeAdoptionManager(
-            connector,
-            position_tracker,
-            position_lifecycle,
-            trade_adoption_policy,
-            position_manager=position_manager
+        # Get execution engine magic number
+        try:
+            magic = getattr(self, 'execution_engine', None)
+            if magic:
+                magic = getattr(magic, 'magic_number', 0)
+            else:
+                magic = 0
+        except Exception:
+            magic = 0
+        
+        from cthulu.position.manager import PositionManager
+        trade_manager = TradeManager(
+            position_manager=position_manager or PositionManager(),
+            policy=trade_adoption_policy,
+            magic_number=magic
         )
         
         if trade_adoption_policy.enabled:
-            self.logger.info(
-                f"External trade adoption ENABLED (log_only: {trade_adoption_policy.log_only})"
-            )
+            self.logger.info(f"External trade adoption ENABLED (log_only: {trade_adoption_policy.log_only})")
         else:
             self.logger.info("External trade adoption disabled")
         
-        return trade_adoption_manager
+        return trade_manager
     
     def initialize_database(self, config: Dict[str, Any]) -> Database:
         """Initialize database.
@@ -476,7 +469,7 @@ class CthuluBootstrap:
     
     def initialize_trade_monitor(self, position_tracker: PositionTracker,
                                  position_lifecycle: PositionLifecycle,
-                                 trade_adoption_manager: TradeAdoptionManager,
+                                 trade_adoption_manager: TradeManager,
                                  config: Dict[str, Any],
                                  ml_collector: Any) -> Optional[Any]:
         """Initialize trade monitor (optional).

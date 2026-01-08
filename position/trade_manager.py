@@ -46,42 +46,56 @@ class TradeManager:
         now_ts = datetime.now(timezone.utc).timestamp()
         for p in positions or []:
             try:
-                # Skip if Cthulu's own magic number
-                if getattr(p, 'magic', None) == self.magic_number:
+                ticket = int(getattr(p, 'ticket', 0))
+                magic = getattr(p, 'magic', None)
+                symbol = getattr(p, 'symbol', None)
+                
+                logger.debug(f"Scanning position {ticket}: symbol={symbol}, magic={magic}, self.magic={self.magic_number}")
+                
+                # Skip if Cthulu's own magic number (non-zero match)
+                if magic == self.magic_number and self.magic_number != 0:
+                    logger.debug(f"Skipping {ticket}: same magic number")
                     continue
 
-                symbol = getattr(p, 'symbol', None)
                 if not symbol:
+                    logger.debug(f"Skipping {ticket}: no symbol")
                     continue
 
                 if self.policy.adopt_symbols and symbol not in self.policy.adopt_symbols:
+                    logger.debug(f"Skipping {ticket}: {symbol} not in adopt_symbols")
                     continue
                 if symbol in self.policy.ignore_symbols:
+                    logger.debug(f"Skipping {ticket}: {symbol} in ignore_symbols")
                     continue
 
                 # Age check
                 if self.policy.max_adoption_age_hours and getattr(p, 'time', None):
                     age_hours = (now_ts - float(getattr(p, 'time')))/3600.0
                     if age_hours > float(self.policy.max_adoption_age_hours):
+                        logger.debug(f"Skipping {ticket}: age {age_hours:.1f}h exceeds max {self.policy.max_adoption_age_hours}h")
                         continue
 
                 side = 'BUY' if getattr(p, 'type', None) == getattr(mt5, 'ORDER_TYPE_BUY', 0) else 'SELL'
 
                 pos = PositionInfo(
-                    ticket=int(getattr(p, 'ticket', 0)),
+                    ticket=ticket,
                     symbol=symbol,
                     volume=float(getattr(p, 'volume', 0.0)),
                     open_price=float(getattr(p, 'price_open', getattr(p, 'open_price', 0.0))),
                     open_time=datetime.fromtimestamp(float(getattr(p, 'time', now_ts)), tz=timezone.utc),
                     current_price=float(getattr(p, 'price_current', getattr(p, 'price', 0.0))),
                     side=side,
-                    metadata={'magic': getattr(p, 'magic', None), 'comment': getattr(p, 'comment', None)}
+                    stop_loss=getattr(p, 'sl', None) or None,
+                    take_profit=getattr(p, 'tp', None) or None,
+                    metadata={'magic': magic, 'comment': getattr(p, 'comment', None), 'external': True}
                 )
+                logger.info(f"Found external trade to adopt: {ticket} {symbol} {side}")
                 result.append(pos)
             except Exception:
                 logger.exception('Failed to process MT5 position')
                 continue
 
+        logger.info(f"Adoption scan complete: {len(result)} external trades found")
         return result
 
     def adopt_trades(self, trades: List[PositionInfo]) -> int:
@@ -115,7 +129,9 @@ class TradeManager:
 
     # Backwards compatible name used in trading loop
     def scan_and_adopt(self) -> int:
+        logger.info(f"TradeManager.scan_and_adopt: policy.enabled={self.policy.enabled}")
         trades = self.scan_for_external_trades()
+        logger.info(f"TradeManager: scan_for_external_trades returned {len(trades)} trades")
         if not trades:
             return 0
         return self.adopt_trades(trades)

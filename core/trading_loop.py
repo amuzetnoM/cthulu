@@ -30,7 +30,7 @@ from cthulu.execution.engine import ExecutionEngine, OrderRequest, OrderType, Or
 from cthulu.risk.evaluator import RiskEvaluator
 from cthulu.position.tracker import PositionTracker
 from cthulu.position.lifecycle import PositionLifecycle
-from cthulu.position.adoption import TradeAdoptionManager, TradeAdoptionPolicy
+from cthulu.position.trade_manager import TradeManager, TradeAdoptionPolicy
 from cthulu.persistence.database import Database, TradeRecord, SignalRecord
 from cthulu.observability.metrics import MetricsCollector
 from cthulu.connector.mt5_connector import MT5Connector
@@ -52,7 +52,7 @@ class TradingLoopContext:
     risk_manager: RiskEvaluator
     position_tracker: PositionTracker
     position_lifecycle: PositionLifecycle
-    trade_adoption_manager: TradeAdoptionManager
+    trade_adoption_manager: TradeManager
     exit_coordinator: PositionLifecycle
     database: Database
     metrics: MetricsCollector
@@ -1166,12 +1166,21 @@ class TradingLoop:
     def _adopt_external_trades(self):
         """Scan and adopt external trades if enabled."""
         try:
-            if self.ctx.trade_adoption_policy and getattr(self.ctx.trade_adoption_policy, 'enabled', False):
-                adopted = self.ctx.trade_adoption_manager.scan_and_adopt()
-                if adopted > 0:
-                    self.ctx.logger.info(f"Adopted {adopted} external trade(s)")
+            if not self.ctx.trade_adoption_policy:
+                self.ctx.logger.info("ADOPTION SKIP: No trade adoption policy configured")
+                return
+            if not getattr(self.ctx.trade_adoption_policy, 'enabled', False):
+                self.ctx.logger.info("ADOPTION SKIP: Trade adoption policy disabled")
+                return
+            
+            self.ctx.logger.info("ADOPTION: Running scan...")
+            adopted = self.ctx.trade_adoption_manager.scan_and_adopt()
+            if adopted > 0:
+                self.ctx.logger.info(f"ADOPTION: Adopted {adopted} external trade(s)")
+            else:
+                self.ctx.logger.info("ADOPTION: 0 trades adopted")
         except Exception as e:
-            self.ctx.logger.error(f"Trade adoption scan error: {e}", exc_info=True)
+            self.ctx.logger.error(f"ADOPTION ERROR: {e}", exc_info=True)
     
     def _monitor_positions(self, df: pd.DataFrame):
         """
