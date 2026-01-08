@@ -1,0 +1,46 @@
+name: Critical Path Tests
+
+on:
+  push:
+    branches: [ main, windows, windows-ml ]
+  pull_request:
+    branches: [ main, windows, windows-ml ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest
+    
+    - name: Run Critical Path Tests
+      run: |
+        pytest tests/test_critical_paths.py -v --tb=short
+    
+    - name: Verify Entry Confluence exists
+      run: |
+        if [ ! -f "cognition/entry_confluence.py" ]; then
+          echo "CRITICAL: entry_confluence.py missing!"
+          exit 1
+        fi
+    
+    - name: Verify config completeness
+      run: |
+        python -c "
+import json
+with open('config.json') as f:
+    cfg = json.load(f)
+    assert 'entry_confluence' in cfg, 'entry_confluence missing'
+    assert 'orphan_trades' in cfg, 'orphan_trades missing'
+    print('✅ Config validated')
+"
