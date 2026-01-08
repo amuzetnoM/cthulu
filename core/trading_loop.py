@@ -1209,11 +1209,15 @@ class TradingLoop:
             # Check each position against exit strategies
             for position in positions:
                 # DYNAMIC SL/TP MANAGEMENT
+                self.ctx.logger.info(f"Position {position.ticket}: dynamic_sltp_manager={bool(self.ctx.dynamic_sltp_manager)}, atr={atr_value}, account_info={bool(account_info)}")
                 if self.ctx.dynamic_sltp_manager and atr_value and account_info:
                     try:
+                        self.ctx.logger.info(f"Calling _apply_dynamic_sltp for {position.ticket}")
                         self._apply_dynamic_sltp(position, atr_value, account_info, df)
                     except Exception as e:
                         self.ctx.logger.error(f"Dynamic SL/TP error for {position.ticket}: {e}")
+                else:
+                    self.ctx.logger.warning(f"Skipping dynamic SLTP for {position.ticket}: manager={bool(self.ctx.dynamic_sltp_manager)}, atr={atr_value}, acct={bool(account_info)}")
                 
                 # Prepare market data for exit strategies
                 exit_data = {
@@ -1278,7 +1282,16 @@ class TradingLoop:
             current_sl = getattr(position, 'stop_loss', None)
             current_tp = getattr(position, 'take_profit', None)
             
+            # Treat 0.0 as None
+            if current_sl == 0.0:
+                current_sl = None
+            if current_tp == 0.0:
+                current_tp = None
+            
+            self.ctx.logger.info(f"Position {position.ticket} SLTP check: sl={current_sl}, tp={current_tp}")
+            
             # Get update recommendation
+            self.ctx.logger.info(f"Calling update_position_sltp for {position.ticket}")
             update = self.ctx.dynamic_sltp_manager.update_position_sltp(
                 ticket=position.ticket,
                 entry_price=entry_price,
@@ -1293,10 +1306,14 @@ class TradingLoop:
                 initial_balance=initial_balance
             )
             
+            self.ctx.logger.info(f"update_position_sltp returned: {update}")
+            
             # Apply updates if needed
             if update['update_sl'] or update['update_tp']:
                 new_sl = update['new_sl'] if update['update_sl'] else current_sl
                 new_tp = update['new_tp'] if update['update_tp'] else current_tp
+                
+                self.ctx.logger.info(f"Attempting to modify position {position.ticket}: sl={new_sl}, tp={new_tp}")
                 
                 # Modify position via execution engine
                 success = self.ctx.position_lifecycle.modify_position(
@@ -1312,6 +1329,8 @@ class TradingLoop:
                     self.ctx.logger.warning(
                         f"Failed to apply dynamic SL/TP to position {position.ticket}"
                     )
+            else:
+                self.ctx.logger.info(f"No SLTP update needed for {position.ticket}: {update['reasoning']}")
         
         except Exception as e:
             self.ctx.logger.error(f"Error applying dynamic SL/TP: {e}", exc_info=True)

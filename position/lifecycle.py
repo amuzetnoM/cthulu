@@ -34,7 +34,7 @@ class PositionLifecycle:
     from opening to closing, including modifications and exit strategy application.
     """
     
-    def __init__(self, connector, execution_engine, position_tracker, db_handler):
+    def __init__(self, connector, execution_engine, position_tracker, db_handler, position_manager=None):
         """
         Initialize the position lifecycle manager.
         
@@ -43,11 +43,13 @@ class PositionLifecycle:
             execution_engine: ExecutionEngine for order placement
             position_tracker: PositionTracker for state management
             db_handler: Database handler for persistence
+            position_manager: Optional PositionManager for adopted trades
         """
         self.connector = connector
         self.execution_engine = execution_engine
         self.tracker = position_tracker
         self.db = db_handler
+        self.position_manager = position_manager
         logger.info("PositionLifecycle initialized")
     
     def open_position(self, symbol: str, order_type: str, volume: float,
@@ -221,20 +223,52 @@ class PositionLifecycle:
             True if modified successfully, False otherwise
         """
         try:
+            # Check tracker first, then manager if available
             position = self.tracker.get_position(ticket)
+            if not position and self.position_manager:
+                position = self.position_manager.get_position(ticket)
+            
             if not position:
                 logger.warning(f"Position {ticket} not found")
                 return False
             
-            # Use execution engine to modify
-            success = self.execution_engine.modify_position(ticket, sl, tp)
+            # Modify SL/TP directly via MT5
+            try:
+                from cthulu.connector.mt5_connector import mt5
+                request = {"action": mt5.TRADE_ACTION_SLTP, "position": ticket, "symbol": position.symbol}
+                if sl is not None:
+                    request["sl"] = float(sl)
+                if tp is not None:
+                    request["tp"] = float(tp)
+                request["magic"] = getattr(self.execution_engine, 'magic_number', 0)
+                
+                logger.info(f"Sending MT5 SLTP modify request: ticket={ticket}, sl={sl}, tp={tp}")
+                result = mt5.order_send(request)
+                
+                if result:
+                    logger.info(f"MT5 modify result: retcode={result.retcode}, comment={getattr(result, 'comment', '')}")
+                    success = bool(result.retcode == mt5.TRADE_RETCODE_DONE)
+                else:
+                    logger.error(f"MT5 order_send returned None")
+                    success = False
+            except Exception as e:
+                logger.exception(f'MT5 SLTP modify failed: {e}')
+                success = False
             
             if success:
-                # Update tracker
+                # Update tracker/manager
                 if sl is not None:
                     position.sl = sl
+                    try:
+                        position.stop_loss = sl
+                    except Exception:
+                        pass
                 if tp is not None:
                     position.tp = tp
+                    try:
+                        position.take_profit = tp
+                    except Exception:
+                        pass
                 
                 logger.info(f"Modified position {ticket}: SL={sl}, TP={tp}")
                 return True

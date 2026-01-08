@@ -388,6 +388,21 @@ class DynamicSLTPManager:
             initial_balance=initial_balance
         )
         
+        # Apply baseline SL/TP if missing
+        if current_sl is None or current_tp is None:
+            logger.info(f"Position {ticket}: applying baseline SLTP (sl={current_sl}, tp={current_tp}, atr={atr})")
+            is_long = side.upper() == 'BUY'
+            base_sl = entry_price - (atr * self.base_sl_atr_mult) if is_long else entry_price + (atr * self.base_sl_atr_mult)
+            base_tp = entry_price + (atr * self.base_tp_atr_mult) if is_long else entry_price - (atr * self.base_tp_atr_mult)
+            result['update_sl'] = current_sl is None
+            result['update_tp'] = current_tp is None
+            result['new_sl'] = base_sl if current_sl is None else current_sl
+            result['new_tp'] = base_tp if current_tp is None else current_tp
+            result['action'] = 'initial_sltp'
+            result['reasoning'] = f"Applied baseline SL/TP (SL={result['new_sl']:.2f}, TP={result['new_tp']:.2f})"
+            logger.info(f"Baseline SLTP for {ticket}: {result['reasoning']}")
+            return result
+        
         # Check breakeven first
         should_be, new_sl = self.should_move_to_breakeven(
             ticket, entry_price, current_price, side,

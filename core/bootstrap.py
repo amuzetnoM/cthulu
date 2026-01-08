@@ -262,7 +262,8 @@ class CthuluBootstrap:
     def initialize_position_lifecycle(self, connector: MT5Connector,
                                       execution_engine: ExecutionEngine,
                                       position_tracker: PositionTracker,
-                                      database: Database) -> PositionLifecycle:
+                                      database: Database,
+                                      position_manager=None) -> PositionLifecycle:
         """Initialize position lifecycle manager.
         
         Args:
@@ -270,12 +271,13 @@ class CthuluBootstrap:
             execution_engine: Execution engine instance
             position_tracker: PositionTracker instance
             database: Database instance
+            position_manager: Optional PositionManager for adopted trades
             
         Returns:
             Initialized PositionLifecycle instance
         """
         self.logger.info("Initializing position lifecycle...")
-        position_lifecycle = PositionLifecycle(connector, execution_engine, position_tracker, database)
+        position_lifecycle = PositionLifecycle(connector, execution_engine, position_tracker, database, position_manager)
         return position_lifecycle
     
     def initialize_trade_adoption_manager(self, connector: MT5Connector, position_tracker: PositionTracker,
@@ -629,7 +631,7 @@ class CthuluBootstrap:
         risk_manager = RiskEvaluator(connector, position_tracker, limits=risk_limits)
         self.logger.info('RiskEvaluator initialized with runtime dependencies')
         
-        position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, position_tracker, database)
+        position_lifecycle = self.initialize_position_lifecycle(connector, execution_engine, position_tracker, database, position_manager)
         trade_adoption_manager = self.initialize_trade_adoption_manager(connector, position_tracker, position_lifecycle, config, position_manager=position_manager)
         
         # Initialize strategy
