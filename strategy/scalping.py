@@ -160,28 +160,52 @@ class ScalpingStrategy(Strategy):
         if prev_fast is None or prev_slow is None:
             return None
         
-        # Bullish scalp: Fast EMA crosses above slow + RSI oversold recovery
-        # More aggressive: allow signals when RSI is recovering from oversold
-        if (prev_fast <= prev_slow and ema_fast > ema_slow and 
+        # Bullish scalp conditions:
+        # 1. Traditional: Fast EMA crosses above slow + RSI recovering from oversold
+        # 2. Aggressive: Fast EMA > slow (already crossed) + RSI deeply oversold (bounce opportunity)
+        # 3. CONTRARIAN: RSI near/at oversold (< 32) - catch the bounce even in downtrend
+        bullish_cross = prev_fast <= prev_slow and ema_fast > ema_slow
+        bullish_position = ema_fast > ema_slow and rsi < self.rsi_oversold + 5  
+        bullish_contrarian = rsi < 32  # Near oversold - high probability bounce
+        
+        if ((bullish_cross or bullish_position or bullish_contrarian) and 
             rsi > self.rsi_oversold and rsi < self.rsi_long_max):
             
             signal = self._create_long_signal(close, atr, bar)
             if self.validate_signal(signal):
                 self._state['last_signal'] = SignalType.LONG
                 self._state['last_trade_time'] = datetime.now()
-                self.logger.info(f"Bullish scalp signal: EMA cross, RSI={rsi:.1f}")
+                if bullish_cross:
+                    signal_type = "EMA_CROSS"
+                elif bullish_position:
+                    signal_type = "POSITION"
+                else:
+                    signal_type = "CONTRARIAN_RSI"
+                self.logger.info(f"✅ LONG scalp ({signal_type}): EMA={ema_fast:.1f}/{ema_slow:.1f}, RSI={rsi:.1f}")
                 return signal
                  
-        # Bearish scalp: Fast EMA crosses below slow + RSI overbought recovery
-        # More aggressive: allow signals when RSI is recovering from overbought
-        elif (prev_fast >= prev_slow and ema_fast < ema_slow and 
+        # Bearish scalp conditions:
+        # 1. Traditional: Fast EMA crosses below slow + RSI recovering from overbought
+        # 2. Aggressive: Fast EMA < slow (already crossed) + RSI deeply overbought (reversal opportunity)
+        # 3. CONTRARIAN: RSI near/at overbought (> 68) - catch the drop even in uptrend
+        bearish_cross = prev_fast >= prev_slow and ema_fast < ema_slow
+        bearish_position = ema_fast < ema_slow and rsi > self.rsi_overbought - 5
+        bearish_contrarian = rsi > 68  # Near overbought - high probability drop
+        
+        if ((bearish_cross or bearish_position or bearish_contrarian) and 
               rsi < self.rsi_overbought and rsi > self.rsi_short_min):
             
             signal = self._create_short_signal(close, atr, bar)
             if self.validate_signal(signal):
                 self._state['last_signal'] = SignalType.SHORT
                 self._state['last_trade_time'] = datetime.now()
-                self.logger.info(f"Bearish scalp signal: EMA cross, RSI={rsi:.1f}")
+                if bearish_cross:
+                    signal_type = "EMA_CROSS"
+                elif bearish_position:
+                    signal_type = "POSITION"
+                else:
+                    signal_type = "CONTRARIAN_RSI"
+                self.logger.info(f"✅ SHORT scalp ({signal_type}): EMA={ema_fast:.1f}/{ema_slow:.1f}, RSI={rsi:.1f}")
                 return signal
                  
         return None
