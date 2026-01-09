@@ -87,6 +87,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
     def _verify_signature(self, body: bytes, signature: Optional[str]) -> bool:
         """
         Verify webhook signature.
+        Supports both plain hexdigest and prefixed formats (e.g., 'sha256=...').
         
         Args:
             body: Request body
@@ -99,11 +100,17 @@ class WebhookHandler(BaseHTTPRequestHandler):
             return False
         
         try:
+            # Generate expected signature
             expected_signature = hmac.new(
                 self.server.secret_key.encode('utf-8'),
                 body,
                 hashlib.sha256
             ).hexdigest()
+            
+            # Support prefixed signatures (e.g., 'sha256=abc123...')
+            if '=' in signature:
+                prefix, sig_value = signature.split('=', 1)
+                signature = sig_value
             
             return hmac.compare_digest(signature, expected_signature)
         

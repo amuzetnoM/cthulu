@@ -125,7 +125,7 @@ class WebhookClient:
             # Prepare headers
             headers = {
                 'Content-Type': 'application/json',
-                'User-Agent': 'Cthulu-Webhook-Client/1.0'
+                'User-Agent': 'Cthulhu-Webhook-Client/1.0'
             }
             headers.update(self.custom_headers)
             

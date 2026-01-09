@@ -285,6 +285,7 @@ Both servers run in daemon threads and are non-blocking:
 - Servers can be started and will run in the background
 - Main application continues execution
 - Servers automatically stop when main application exits
+- **Note**: Daemon threads may be forcibly terminated on exit. For graceful shutdown, explicitly call `server.stop()` before application exit to ensure all active requests are completed.
 
 ## Logging
 
