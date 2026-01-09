@@ -61,14 +61,17 @@ class StrategySelector:
         from .sma_crossover import SMACrossoverStrategy
         from .ema_crossover import EMACrossoverStrategy
         from .scalping import ScalpingStrategy
+        from .momentum import MomentumStrategy
         
         sma_config = self.config.get('sma_crossover', {})
         ema_config = self.config.get('ema_crossover', {})
         scalp_config = self.config.get('scalping', {})
+        momentum_config = self.config.get('momentum', {})
         
         self.strategies['sma_crossover'] = SMACrossoverStrategy(sma_config, self.symbol)
         self.strategies['ema_crossover'] = EMACrossoverStrategy(ema_config, self.symbol)
         self.strategies['scalping'] = ScalpingStrategy(scalp_config, self.symbol)
+        self.strategies['momentum'] = MomentumStrategy(momentum_config, self.symbol)
         
         for name, strategy in self.strategies.items():
             logger.info(f"Initialized strategy: {name}")

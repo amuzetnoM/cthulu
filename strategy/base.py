@@ -89,6 +89,18 @@ class BaseStrategy(ABC):
         if data is None or len(data) == 0:
             return False
         
+        # Use timestamp if available, otherwise use length
+        if hasattr(data, 'index') and len(data) > 0:
+            try:
+                current_bar_time = data.index[-1]
+                if hasattr(self, '_last_bar_time') and current_bar_time == self._last_bar_time:
+                    return False
+                self._last_bar_time = current_bar_time
+                return True
+            except:
+                pass
+        
+        # Fallback to length-based check
         current_bar = len(data) - 1
         if current_bar != self._last_signal_bar:
             self._last_signal_bar = current_bar

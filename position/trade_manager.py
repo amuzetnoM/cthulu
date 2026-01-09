@@ -119,22 +119,19 @@ class TradeManager:
         
         try:
             mt5_positions = self.connector.get_positions()
+            logger.debug(f"MT5 returned {len(mt5_positions)} positions")
             
             for pos in mt5_positions:
                 ticket = pos.ticket
+                logger.debug(f"Checking position {ticket}: magic={pos.magic}, already_tracked={ticket in self._positions}")
                 
                 # Skip if already tracked
                 if ticket in self._positions:
                     continue
                 
-                # Skip if it's our own trade
-                if pos.magic == self.CTHULU_MAGIC:
-                    continue
-                
-                # Check trade age
-                trade_age = time.time() - pos.time
-                if trade_age < self.min_trade_age:
-                    continue
+                # Note: We adopt ALL trades not already tracked, even with our magic number
+                # This handles manual trades and test trades placed via scripts
+                # The _positions dict is the source of truth, not magic number
                 
                 # This is an external trade
                 external = TrackedPosition(
@@ -182,6 +179,13 @@ class TradeManager:
         logger.info(f"Adopted trade {ticket}: {position.symbol} {position.direction} @ {position.price_open}")
         
         return True
+    
+    def update_position_sltp(self, ticket: int, sl: float, tp: float):
+        """Update SLTP for a position."""
+        if ticket in self._positions:
+            self._positions[ticket].sl = sl if sl != 0 else None
+            self._positions[ticket].tp = tp if tp != 0 else None
+            logger.debug(f"Updated {ticket} SLTP: SL={sl}, TP={tp}")
     
     def scan_and_adopt(self) -> int:
         """

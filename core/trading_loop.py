@@ -331,6 +331,12 @@ class TradingLoop:
                 
                 if success:
                     logger.info(f"Initial SL/TP applied to {ticket}: SL={result['sl']:.2f}, TP={result['tp']:.2f}")
+                    # Update trade manager so position tracking is current
+                    self.components.trade_manager.update_position_sltp(
+                        ticket=ticket,
+                        sl=result['sl'],
+                        tp=result['tp']
+                    )
                 else:
                     logger.warning(f"Failed to apply initial SL/TP to {ticket}")
                     
@@ -352,7 +358,10 @@ class TradingLoop:
                     if position.sl is None or position.tp is None:
                         await self._apply_initial_sltp(
                             ticket=position.ticket,
-                            signal={'direction': 'buy' if position.type == 0 else 'sell'}
+                            signal={
+                                'direction': 'buy' if position.type == 0 else 'sell',
+                                'entry_price': position.price_open
+                            }
                         )
             else:
                 logger.info("ADOPTION: Found 0 external trades")
@@ -392,6 +401,12 @@ class TradingLoop:
                     
                     if success:
                         managed += 1
+                        # Update position tracking
+                        self.components.trade_manager.update_position_sltp(
+                            ticket=position.ticket,
+                            sl=result['new_sl'] if result['update_sl'] else position.sl,
+                            tp=result['new_tp'] if result['update_tp'] else position.tp
+                        )
                     else:
                         logger.warning(f"Failed to modify position {position.ticket}")
                         
@@ -412,13 +427,14 @@ class TradingLoop:
                     indicators=self._indicators
                 )
                 
-                if exit_signal['should_exit']:
-                    logger.info(f"Exit signal for {position.ticket}: {exit_signal['reason']}")
+                # ExitSignal is a dataclass, access attributes directly
+                if exit_signal.should_exit:
+                    logger.info(f"Exit signal for {position.ticket}: {exit_signal.reason}")
                     
                     # Execute exit
                     self.components.execution_engine.close_position(
                         ticket=position.ticket,
-                        reason=exit_signal['reason']
+                        reason=exit_signal.reason
                     )
                     
         except Exception as e:

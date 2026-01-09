@@ -219,12 +219,13 @@ class CthuluBootstrap:
         """Initialize strategy layer."""
         logger.info("Initializing strategies...")
         
-        from strategy.strategy_selector import StrategySelector
+        from strategy.selector import StrategySelector
         
         strategy_config = self.components.config.get('strategy_selector', {})
+        symbol = self.components.config.get('symbol', 'GOLDm#')
         self.components.strategy_selector = StrategySelector(
             config=strategy_config,
-            data_layer=self.components.data_layer
+            symbol=symbol
         )
         self.components.strategy = self.components.strategy_selector
         

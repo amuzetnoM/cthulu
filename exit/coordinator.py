@@ -234,15 +234,15 @@ class TimeBasedExit:
                 'reason': f'Max hold time reached ({hold_hours:.1f}h)'
             }
         
-        # Check weekend
-        if self.close_before_weekend:
-            dt = datetime.datetime.fromtimestamp(current_time)
-            # Friday after 20:00 UTC
-            if dt.weekday() == 4 and dt.hour >= 20:
-                return {
-                    'should_exit': True,
-                    'reason': 'Weekend approaching'
-                }
+        # Check weekend - DISABLED for testing
+        # if self.close_before_weekend:
+        #     dt = datetime.datetime.fromtimestamp(current_time)
+        #     # Friday after 20:00 UTC
+        #     if dt.weekday() == 4 and dt.hour >= 20:
+        #         return {
+        #             'should_exit': True,
+        #             'reason': 'Weekend approaching'
+        #         }
         
         return {'should_exit': False, 'reason': ''}
 
@@ -324,8 +324,9 @@ class ExitCoordinator:
             )
         
         # Check time-based
+        open_time = position.adoption_time if position.adoption_time else time.time()
         time_result = self.time_based.evaluate(
-            open_time=position.adoption_time or time.time(),
+            open_time=open_time,
             current_time=time.time()
         )
         

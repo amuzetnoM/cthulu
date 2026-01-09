@@ -162,36 +162,40 @@ class EMACrossoverStrategy(BaseStrategy):
     def _check_continuation(
         self, close, fast_ema, slow_ema, rsi, atr, entry_price
     ) -> Optional[Signal]:
-        """Check for continuation entry."""
+        """Check for continuation entry - more permissive RSI ranges."""
         
         if self._last_trend == 'bullish' and fast_ema > slow_ema:
-            # RSI pullback from overbought
-            if 45 < rsi < 60:
+            # Allow entries when RSI is not extremely overbought
+            if 35 < rsi < 70:
+                # Higher confidence for pullbacks (RSI 40-55)
+                confidence = 0.65 if 40 <= rsi <= 55 else 0.55
                 sl, tp = self._calculate_atr_based_sltp(entry_price, 'buy', atr)
                 return Signal(
                     direction='buy',
                     symbol=self.symbol,
-                    confidence=0.60,
+                    confidence=confidence,
                     strategy_name='ema_crossover',
                     entry_price=entry_price,
                     sl=sl,
                     tp=tp,
-                    reason="EMA continuation: bullish trend RSI pullback"
+                    reason=f"EMA continuation: bullish trend, RSI={rsi:.1f}"
                 )
         
         elif self._last_trend == 'bearish' and fast_ema < slow_ema:
-            # RSI pullback from oversold
-            if 40 < rsi < 55:
+            # Allow entries when RSI is not extremely oversold
+            if 30 < rsi < 65:
+                # Higher confidence for pullbacks (RSI 45-60)
+                confidence = 0.65 if 45 <= rsi <= 60 else 0.55
                 sl, tp = self._calculate_atr_based_sltp(entry_price, 'sell', atr)
                 return Signal(
                     direction='sell',
                     symbol=self.symbol,
-                    confidence=0.60,
+                    confidence=confidence,
                     strategy_name='ema_crossover',
                     entry_price=entry_price,
                     sl=sl,
                     tp=tp,
-                    reason="EMA continuation: bearish trend RSI pullback"
+                    reason=f"EMA continuation: bearish trend, RSI={rsi:.1f}"
                 )
         
         return None

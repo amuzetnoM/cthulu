@@ -3,13 +3,11 @@
     "timeframe": "M5",
     "mode": "live",
     "loop_interval": 15,
-    
     "mt5": {
         "login": 0,
         "password": "",
         "server": ""
     },
-    
     "risk": {
         "max_positions": 3,
         "max_positions_per_symbol": 3,
@@ -18,7 +16,6 @@
         "default_lot_size": 0.1,
         "max_lot_size": 1.0
     },
-    
     "dynamic_sltp": {
         "base_sl_atr": 2.0,
         "base_tp_atr": 4.0,
@@ -26,7 +23,6 @@
         "trailing_trigger_atr": 1.5,
         "trailing_lock_pct": 0.5
     },
-    
     "entry_confluence": {
         "enabled": true,
         "min_score_to_enter": 50,
@@ -36,14 +32,12 @@
         "timing_weight": 0.20,
         "structure_weight": 0.15
     },
-    
     "adoption_policy": {
         "enabled": true,
         "min_trade_age_seconds": 0,
         "apply_sltp_on_adopt": true,
         "log_only": false
     },
-    
     "strategy_selector": {
         "enabled_strategies": [
             "sma_crossover",
@@ -58,7 +52,6 @@
         "performance_weight": 0.35,
         "confidence_weight": 0.25
     },
-    
     "exit_strategies": {
         "trailing_stop": {
             "mode": "protective",
@@ -68,8 +61,14 @@
         },
         "partial_profit": {
             "levels": [
-                {"profit_pips": 20, "exit_portion": 0.5},
-                {"profit_pips": 40, "exit_portion": 0.25}
+                {
+                    "profit_pips": 20,
+                    "exit_portion": 0.5
+                },
+                {
+                    "profit_pips": 40,
+                    "exit_portion": 0.25
+                }
             ]
         },
         "time_based": {
@@ -77,23 +76,19 @@
             "close_before_weekend": true
         }
     },
-    
     "adaptive_drawdown": {
         "trailing_lock": 0.5,
         "survival_threshold": 50.0,
         "recovery_factor": 0.5
     },
-    
     "execution": {
         "max_slippage_points": 50,
         "retry_count": 3,
         "retry_delay_ms": 500
     },
-    
     "data": {
         "cache_ttl_seconds": 5
     },
-    
     "database": {
         "name": "cthulu.db"
     }
