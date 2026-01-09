@@ -96,6 +96,16 @@ class RiskEvaluator:
                 'risk_score': 0
             }
         
+        # CRITICAL: Check for hedge/conflicting direction
+        existing_direction = self._get_existing_direction(symbol)
+        if existing_direction and existing_direction != direction:
+            return {
+                'approved': False,
+                'lot_size': 0,
+                'reason': f'Hedge rejected: existing {existing_direction} position(s) on {symbol}',
+                'risk_score': 100
+            }
+        
         # Calculate position size
         lot_size = self._calculate_position_size(signal, balance)
         
@@ -119,6 +129,18 @@ class RiskEvaluator:
         if symbol:
             return len([p for p in positions if p.symbol == symbol])
         return len(positions)
+    
+    def _get_existing_direction(self, symbol: str) -> Optional[str]:
+        """
+        Get existing position direction for symbol.
+        Returns 'buy' or 'sell' if positions exist, None otherwise.
+        """
+        positions = self.connector.get_positions()
+        for p in positions:
+            if p.symbol == symbol:
+                # MT5: type 0 = BUY, type 1 = SELL
+                return 'buy' if p.type == 0 else 'sell'
+        return None
     
     def _calculate_position_size(
         self,
