@@ -32,6 +32,21 @@
         "timing_weight": 0.20,
         "structure_weight": 0.15
     },
+    "session_orb": {
+        "enabled": true,
+        "range_duration": 30,
+        "confirm_bars": 1,
+        "min_range_size_atr": 0.5,
+        "max_range_size_atr": 3.0,
+        "sessions": ["london", "new_york"]
+    },
+    "order_blocks": {
+        "enabled": true,
+        "swing_lookback": 5,
+        "min_move_atr": 1.5,
+        "max_age_bars": 100,
+        "use_body_only": true
+    },
     "adoption_policy": {
         "enabled": true,
         "min_trade_age_seconds": 0,

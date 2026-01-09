@@ -60,6 +60,43 @@ class TradingLoop:
         self._market_data = None
         self._indicators = {}
         
+        # Initialize Session ORB and Order Block detectors
+        self._init_advanced_detectors()
+        
+    def _init_advanced_detectors(self):
+        """Initialize Session ORB and Order Block detection systems."""
+        try:
+            from cognition import SessionORBDetector, OrderBlockDetector, SessionType
+            
+            # Session ORB - detect opening range breakouts
+            orb_config = self.config.get('session_orb', {})
+            if orb_config.get('enabled', True):
+                self._session_orb = SessionORBDetector(
+                    sessions=[SessionType.LONDON, SessionType.NEW_YORK],
+                    range_duration_minutes=orb_config.get('range_duration', 30),
+                    confirm_bars=orb_config.get('confirm_bars', 1),
+                )
+                logger.info("Session ORB Detector initialized")
+            else:
+                self._session_orb = None
+                
+            # Order Block detection
+            ob_config = self.config.get('order_blocks', {})
+            if ob_config.get('enabled', True):
+                self._order_block_detector = OrderBlockDetector(
+                    swing_lookback=ob_config.get('swing_lookback', 5),
+                    min_move_atr=ob_config.get('min_move_atr', 1.5),
+                    max_age_bars=ob_config.get('max_age_bars', 100),
+                )
+                logger.info("Order Block Detector initialized")
+            else:
+                self._order_block_detector = None
+                
+        except Exception as e:
+            logger.warning(f"Advanced detectors init error (non-fatal): {e}")
+            self._session_orb = None
+            self._order_block_detector = None
+        
     async def run(self):
         """Main trading loop - runs until stopped."""
         self._running = True
@@ -226,9 +263,25 @@ class TradingLoop:
             self._current_regime = "unknown"
     
     async def _generate_signal(self):
-        """Generate trading signal using strategy selector."""
+        """Generate trading signal using strategy selector + advanced detectors."""
         try:
-            # Get strategy selection and signal
+            # Get current price and ATR for advanced detectors
+            current_price = self._market_data['close'].iloc[-1] if self._market_data is not None else 0
+            atr = self._indicators.get('ATR', 10.0)
+            
+            # Check Session ORB first (high priority signals)
+            orb_signal = await self._check_session_orb(current_price, atr)
+            if orb_signal:
+                logger.info(f"Session ORB signal detected!")
+                return self._format_orb_signal(orb_signal)
+            
+            # Check Order Blocks (high priority zones)
+            ob_signal = await self._check_order_blocks(current_price, atr)
+            if ob_signal:
+                logger.info(f"Order Block signal detected!")
+                return self._format_ob_signal(ob_signal)
+            
+            # Fall back to strategy selector
             signal = self.components.strategy_selector.generate_signal(
                 data=self._market_data,
                 indicators=self._indicators,
@@ -269,6 +322,72 @@ class TradingLoop:
         except Exception as e:
             logger.error(f"Signal generation error: {e}")
             return None
+    
+    async def _check_session_orb(self, current_price: float, atr: float):
+        """Check for Session ORB breakout signals."""
+        if self._session_orb is None or self._market_data is None:
+            return None
+        
+        try:
+            timestamp = datetime.now()
+            signal = self._session_orb.update(
+                df=self._market_data,
+                current_price=current_price,
+                atr=atr,
+                timestamp=timestamp
+            )
+            return signal
+        except Exception as e:
+            logger.debug(f"Session ORB check error: {e}")
+            return None
+    
+    async def _check_order_blocks(self, current_price: float, atr: float):
+        """Check for Order Block entry signals."""
+        if self._order_block_detector is None or self._market_data is None:
+            return None
+        
+        try:
+            timestamp = datetime.now()
+            signal = self._order_block_detector.update(
+                df=self._market_data,
+                current_price=current_price,
+                atr=atr,
+                timestamp=timestamp
+            )
+            return signal
+        except Exception as e:
+            logger.debug(f"Order Block check error: {e}")
+            return None
+    
+    def _format_orb_signal(self, orb_signal: Dict[str, Any]) -> Dict[str, Any]:
+        """Format ORB signal for execution."""
+        direction = 'buy' if orb_signal['direction'] == 'long' else 'sell'
+        return {
+            'direction': direction,
+            'symbol': self.symbol,
+            'entry_price': orb_signal['entry_price'],
+            'stop_loss': orb_signal['stop_loss'],
+            'take_profit': orb_signal['take_profit'],
+            'confidence': orb_signal['confidence'],
+            'strategy': 'session_orb',
+            'reason': orb_signal['reason'],
+            'session': orb_signal.get('session', 'unknown'),
+        }
+    
+    def _format_ob_signal(self, ob_signal: Dict[str, Any]) -> Dict[str, Any]:
+        """Format Order Block signal for execution."""
+        direction = 'buy' if ob_signal['direction'] == 'long' else 'sell'
+        return {
+            'direction': direction,
+            'symbol': self.symbol,
+            'entry_price': ob_signal['entry_price'],
+            'stop_loss': ob_signal['stop_loss'],
+            'take_profit': ob_signal['take_profit'],
+            'confidence': ob_signal['confidence'],
+            'strategy': 'order_block',
+            'reason': ob_signal['reason'],
+            'ob_type': ob_signal.get('ob_type', 'unknown'),
+        }
     
     async def _execute_signal(self, signal: Dict[str, Any]) -> bool:
         """Execute an approved signal."""
