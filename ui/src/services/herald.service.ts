@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { GoogleGenAI } from "@google/genai";
 import { firstValueFrom } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
 
 export interface Trade {
   id: string;
@@ -52,6 +53,8 @@ export interface OrderBook {
 export class HeraldService {
   private http = inject(HttpClient);
   private API_URL = 'http://localhost:5000/api';
+  private WS_URL = 'http://localhost:5000';
+  private socket: Socket | null = null;
 
   // State Signals
   readonly price = signal<number>(0); // 0 indicates unknown
@@ -79,16 +82,50 @@ export class HeraldService {
 
   constructor() {
     this.ai = new GoogleGenAI({ apiKey: '' });
+    this.initWebSocket();
     this.initPolling();
   }
 
+  private initWebSocket() {
+    this.socket = io(this.WS_URL, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000
+    });
+
+    this.socket.on('connect', () => {
+      console.log('WebSocket connected');
+      this.isConnected.set(true);
+      this.localLog('INFO', 'Live price feed connected', 'SYSTEM');
+    });
+
+    this.socket.on('disconnect', () => {
+      console.log('WebSocket disconnected');
+      this.isConnected.set(false);
+    });
+
+    this.socket.on('price', (data: { value: number, time: number, symbol: string }) => {
+      if (data && data.value) {
+        this.updatePrice(data.value);
+      }
+    });
+
+    this.socket.on('trade', (trade: Trade) => {
+      // Real-time trade notification
+      this.trades.update(t => [trade, ...t].slice(0, 100));
+      this.localLog('TRADE', `${trade.type} ${trade.size} @ ${trade.price}`, 'SYSTEM');
+    });
+  }
+
   private initPolling() {
-    // Poll faster for status, slower for heavy data
-    setInterval(() => this.checkStatus(), 2000);
+    // Poll for status and heavy data (slower)
+    setInterval(() => this.checkStatus(), 5000);
     this.timer = setInterval(() => {
       if (!this.isConnected()) return;
-      this.tick();
-    }, 2000); // 2s data refresh
+      this.fetchTrades();
+      this.fetchLogs();
+      this.fetchSignals();
+    }, 3000); // 3s for non-price data
 
     // Initial Load
     this.fetchHistory();
@@ -108,32 +145,13 @@ export class HeraldService {
     }
   }
 
-  private tick() {
-    this.fetchTrades();
-    this.fetchLogs();
-    this.fetchSignals();
-    this.fetchTicker(); // Live Price
-  }
-
-  private fetchTicker() {
-    this.http.get<any>(`${this.API_URL}/ticker?symbol=BTC-USD`).subscribe({
-      next: (data) => {
-        if (data && data.price) {
-          this.updatePrice(data.price);
-        }
-      }
-    });
-  }
-
   private fetchHistory() {
-    // Get 1 day of minute data for initial chart
-    this.http.get<any[]>(`${this.API_URL}/history?symbol=BTC-USD&period=1d&interval=1m`).subscribe({
+    // Get price history from trades
+    this.http.get<any[]>(`${this.API_URL}/history`).subscribe({
       next: (data) => {
         if (data && data.length > 0) {
-          // Transform for chart
           const history = data.map(d => ({ time: d.time, value: d.close }));
           this.priceHistory.set(history);
-          // Calc initial indicators
           const closes = history.map(h => h.value);
           this.currentRSI.set(this.calculateRSI(closes));
         }
