@@ -160,11 +160,17 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
                 except (ValueError, TypeError):
                     pass  # Non-integer period values are skipped
     
-    # Strategy instance inspection
+    # Strategy instance inspection (handle StrategySelectorAdapter wrapping)
     try:
         from cthulu.strategy.strategy_selector import StrategySelector
-        if isinstance(strategy, StrategySelector):
-            for s in strategy.strategies.values():
+        from cthulu.strategy.selector_adapter import StrategySelectorAdapter
+        
+        strategy_to_inspect = strategy
+        if isinstance(strategy_to_inspect, StrategySelectorAdapter):
+            strategy_to_inspect = getattr(strategy_to_inspect, 'selector', strategy_to_inspect)
+        
+        if isinstance(strategy_to_inspect, StrategySelector):
+            for s in strategy_to_inspect.strategies.values():
                 collect_ema_periods(s)
         else:
             collect_ema_periods(strategy)
@@ -198,10 +204,16 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     needs_rsi = False
     rsi_period = 14  # default
     try:
-        # If strategy is a selector, check sub-strategies for RSI needs
+        # If strategy is a selector (or adapter), check sub-strategies for RSI needs
         from cthulu.strategy.strategy_selector import StrategySelector
-        if isinstance(strategy, StrategySelector):
-            for s in strategy.strategies.values():
+        from cthulu.strategy.selector_adapter import StrategySelectorAdapter
+        
+        strategy_to_check = strategy
+        if isinstance(strategy_to_check, StrategySelectorAdapter):
+            strategy_to_check = getattr(strategy_to_check, 'selector', strategy_to_check)
+        
+        if isinstance(strategy_to_check, StrategySelector):
+            for s in strategy_to_check.strategies.values():
                 if hasattr(s, 'rsi_period'):
                     needs_rsi = True
                     rsi_period = int(getattr(s, 'rsi_period'))
@@ -268,7 +280,13 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
     needs_adx = False
     try:
         from cthulu.strategy.strategy_selector import StrategySelector
-        if isinstance(strategy, StrategySelector):
+        from cthulu.strategy.selector_adapter import StrategySelectorAdapter
+        
+        strategy_to_check = strategy
+        if isinstance(strategy_to_check, StrategySelectorAdapter):
+            strategy_to_check = getattr(strategy_to_check, 'selector', strategy_to_check)
+        
+        if isinstance(strategy_to_check, StrategySelector):
             needs_adx = True  # Dynamic selector uses ADX for regime detection
     except Exception:
         pass
@@ -977,14 +995,23 @@ class TradingLoop:
                         except Exception:
                             pass
             
-            # If using StrategySelector, inspect child strategies
+            # If using StrategySelector (or StrategySelectorAdapter), inspect child strategies
             try:
                 from cthulu.strategy.strategy_selector import StrategySelector
-                if isinstance(self.ctx.strategy, StrategySelector):
-                    for s in self.ctx.strategy.strategies.values():
+                from cthulu.strategy.selector_adapter import StrategySelectorAdapter
+                
+                # Handle StrategySelectorAdapter wrapping a StrategySelector
+                strategy_to_inspect = self.ctx.strategy
+                if isinstance(strategy_to_inspect, StrategySelectorAdapter):
+                    strategy_to_inspect = getattr(strategy_to_inspect, 'selector', strategy_to_inspect)
+                
+                if isinstance(strategy_to_inspect, StrategySelector):
+                    for s in strategy_to_inspect.strategies.values():
                         collect_ema_periods(s)
                 else:
                     collect_ema_periods(self.ctx.strategy)
+            except ImportError:
+                collect_ema_periods(self.ctx.strategy)
             except Exception:
                 collect_ema_periods(self.ctx.strategy)
             
@@ -1042,8 +1069,14 @@ class TradingLoop:
                     # If scalping is present among runtime strategies, add defaults (5,10) as safe fallback
                     try:
                         from cthulu.strategy.strategy_selector import StrategySelector
-                        if isinstance(self.ctx.strategy, StrategySelector):
-                            if 'scalping' in (name.lower() for name in self.ctx.strategy.strategies.keys()):
+                        from cthulu.strategy.selector_adapter import StrategySelectorAdapter
+                        
+                        strategy_to_check = self.ctx.strategy
+                        if isinstance(strategy_to_check, StrategySelectorAdapter):
+                            strategy_to_check = getattr(strategy_to_check, 'selector', strategy_to_check)
+                        
+                        if isinstance(strategy_to_check, StrategySelector):
+                            if 'scalping' in (name.lower() for name in strategy_to_check.strategies.keys()):
                                 scalping_periods.update({5, 10})
                     except Exception:
                         # Direct strategy instance
@@ -1107,11 +1140,17 @@ class TradingLoop:
             except Exception:
                 self.ctx.logger.exception('Failed to log indicator presence before strategy signal')
             
-            # If dynamic selector, use its generator method
+            # If dynamic selector (or adapter wrapping one), use its generator method
             try:
                 from cthulu.strategy.strategy_selector import StrategySelector
-                if isinstance(self.ctx.strategy, StrategySelector):
-                    signal = self.ctx.strategy.generate_signal(df, current_bar)
+                from cthulu.strategy.selector_adapter import StrategySelectorAdapter
+                
+                strategy_to_use = self.ctx.strategy
+                if isinstance(strategy_to_use, StrategySelectorAdapter):
+                    # Adapter wraps selector - use adapter's on_bar which delegates properly
+                    signal = strategy_to_use.on_bar(current_bar)
+                elif isinstance(strategy_to_use, StrategySelector):
+                    signal = strategy_to_use.generate_signal(df, current_bar)
                 else:
                     signal = self.ctx.strategy.on_bar(current_bar)
             except Exception:

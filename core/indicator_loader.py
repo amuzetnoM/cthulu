@@ -258,14 +258,20 @@ class IndicatorRequirementResolver:
     def _analyze_dynamic_strategies(self):
         """Extract requirements from dynamic strategy selector."""
         try:
-            # Check if using StrategySelector
+            # Check if using StrategySelector (or StrategySelectorAdapter wrapping one)
             from cthulu.strategy.strategy_selector import StrategySelector
-            if isinstance(self.strategy, StrategySelector):
+            from cthulu.strategy.selector_adapter import StrategySelectorAdapter
+            
+            strategy_to_check = self.strategy
+            if isinstance(strategy_to_check, StrategySelectorAdapter):
+                strategy_to_check = getattr(strategy_to_check, 'selector', strategy_to_check)
+            
+            if isinstance(strategy_to_check, StrategySelector):
                 # ADX needed for regime detection
                 self.needs_adx = True
                 
                 # Analyze each sub-strategy
-                for sub_strategy in self.strategy.strategies.values():
+                for sub_strategy in strategy_to_check.strategies.values():
                     self._extract_from_strategy(sub_strategy)
         
         except Exception as e:
