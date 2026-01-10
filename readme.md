@@ -1,7 +1,7 @@
 # INDEX
 
 > <AI-NATIVE BRANCH> <br>
-> UNSTABLE
+> STABLE
 
 
 ![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
