@@ -47,6 +47,41 @@ export interface OrderBook {
   spreadPct: number;
 }
 
+// Chart drawings from Chart Manager
+export interface ChartZone {
+  id: string;
+  type: string;
+  upper: number;
+  lower: number;
+  midpoint: number;
+  state: string;
+  strength: number;
+  color: string;
+  style: {
+    fill_opacity: number;
+    border_style: string;
+    border_width: number;
+  };
+}
+
+export interface ChartLevel {
+  price: number;
+  type: 'support' | 'resistance';
+  color: string;
+  style: string;
+  label: string;
+}
+
+export interface ChartDrawings {
+  symbol: string;
+  timeframe: string;
+  timestamp: string;
+  zones: ChartZone[];
+  levels: ChartLevel[];
+  trend_lines: any[];
+  channels: any[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -59,10 +94,14 @@ export class HeraldService {
   // State Signals
   readonly price = signal<number>(0); // 0 indicates unknown
   readonly priceHistory = signal<{ time: number, value: number }[]>([]);
+  readonly ohlcHistory = signal<{ time: number, open: number, high: number, low: number, close: number }[]>([]);
   readonly trades = signal<Trade[]>([]);
   readonly logs = signal<LogEntry[]>([]);
   readonly signals = signal<SignalEntry[]>([]);
   readonly orderBook = signal<OrderBook>({ asks: [], bids: [], spread: 0, spreadPct: 0 });
+
+  // Chart Drawings from Chart Manager
+  readonly chartDrawings = signal<ChartDrawings | null>(null);
 
   // System Status
   readonly isRunning = signal<boolean>(true);
@@ -115,6 +154,13 @@ export class HeraldService {
       this.trades.update(t => [trade, ...t].slice(0, 100));
       this.localLog('TRADE', `${trade.type} ${trade.size} @ ${trade.price}`, 'SYSTEM');
     });
+
+    // Listen for chart drawings updates
+    this.socket.on('drawings', (data: ChartDrawings) => {
+      if (data) {
+        this.chartDrawings.set(data);
+      }
+    });
   }
 
   private initPolling() {
@@ -125,10 +171,14 @@ export class HeraldService {
       this.fetchTrades();
       this.fetchLogs();
       this.fetchSignals();
+      this.fetchDrawings();
+      this.fetchOrderBook();
     }, 3000); // 3s for non-price data
 
     // Initial Load
     this.fetchHistory();
+    this.fetchDrawings();
+    this.fetchOrderBook();
   }
 
   private async checkStatus() {
@@ -152,6 +202,17 @@ export class HeraldService {
         if (data && data.length > 0) {
           const history = data.map(d => ({ time: d.time, value: d.close }));
           this.priceHistory.set(history);
+          
+          // Set OHLC data for TradingView chart
+          const ohlc = data.map(d => ({
+            time: d.time,
+            open: d.open || d.close,
+            high: d.high || d.close,
+            low: d.low || d.close,
+            close: d.close
+          }));
+          this.ohlcHistory.set(ohlc);
+          
           const closes = history.map(h => h.value);
           this.currentRSI.set(this.calculateRSI(closes));
         }
@@ -178,6 +239,19 @@ export class HeraldService {
     });
   }
 
+  private fetchDrawings() {
+    this.http.get<ChartDrawings>(`${this.API_URL}/drawings`).subscribe({
+      next: (data) => { if (data && data.zones) this.chartDrawings.set(data); }
+    });
+  }
+
+  private fetchOrderBook() {
+    this.http.get<OrderBook>(`${this.API_URL}/orderbook`).subscribe({
+      next: (data) => { if (data) this.orderBook.set(data); },
+      error: () => { }
+    });
+  }
+
   private fetchMetrics() { }
 
   private updatePrice(newPrice: number) {
@@ -188,6 +262,37 @@ export class HeraldService {
       const newHistory = [...h, { time: Date.now(), value: newPrice }];
       if (newHistory.length > 500) newHistory.shift(); // Keep more history
       return newHistory;
+    });
+
+    // Update OHLC for real-time candle building
+    const now = Date.now();
+    const candleInterval = 60000; // 1 minute candles
+    this.ohlcHistory.update(ohlc => {
+      if (ohlc.length === 0) {
+        return [{ time: now, open: newPrice, high: newPrice, low: newPrice, close: newPrice }];
+      }
+      
+      const lastCandle = ohlc[ohlc.length - 1];
+      const candleStart = Math.floor(lastCandle.time / candleInterval) * candleInterval;
+      const currentCandleStart = Math.floor(now / candleInterval) * candleInterval;
+      
+      if (currentCandleStart === candleStart) {
+        // Update current candle
+        const updated = [...ohlc];
+        updated[updated.length - 1] = {
+          ...lastCandle,
+          high: Math.max(lastCandle.high, newPrice),
+          low: Math.min(lastCandle.low, newPrice),
+          close: newPrice
+        };
+        return updated;
+      } else {
+        // New candle
+        const newCandle = { time: currentCandleStart, open: newPrice, high: newPrice, low: newPrice, close: newPrice };
+        const newOhlc = [...ohlc, newCandle];
+        if (newOhlc.length > 500) newOhlc.shift();
+        return newOhlc;
+      }
     });
 
     // Update RSI on every tick (simplified)

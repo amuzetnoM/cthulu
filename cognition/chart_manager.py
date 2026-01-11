@@ -43,6 +43,7 @@ from __future__ import annotations
 import asyncio
 import threading
 import queue
+import os
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass, field
@@ -1236,3 +1237,276 @@ def shutdown_chart_manager():
     if _chart_manager:
         _chart_manager.shutdown()
         _chart_manager = None
+
+
+# ============================================================================
+# JSON EXPORT - For MT5 EA and External Charting
+# ============================================================================
+
+class ChartDrawingsExporter:
+    """
+    Exports chart drawings to JSON format for:
+    1. MT5 Expert Advisor (reads file to draw on chart)
+    2. Angular UI via WebSocket (TradingView widget)
+    
+    JSON Schema:
+    {
+        "symbol": "BTCUSD#",
+        "timestamp": "2026-01-11T16:00:00Z",
+        "version": 1,
+        "zones": [...],
+        "trend_lines": [...],
+        "channels": [...],
+        "levels": [...],
+        "annotations": [...]
+    }
+    """
+    
+    def __init__(self, output_dir: str = None):
+        """
+        Initialize the exporter.
+        
+        Args:
+            output_dir: Directory for JSON output files.
+                       Default: C:\\workspace\\cthulu\\data\\drawings
+        """
+        self.output_dir = output_dir or r"C:\workspace\cthulu\data\drawings"
+        self.logger = logging.getLogger("Cthulu.chart_exporter")
+        
+        # Ensure output directory exists
+        import os
+        os.makedirs(self.output_dir, exist_ok=True)
+        
+        # Version for schema compatibility
+        self.schema_version = 1
+    
+    def export_to_json(
+        self,
+        chart_manager: ChartManager,
+        symbol: str,
+        timeframe: str = "M30",
+        include_expired: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Export chart state to JSON format.
+        
+        Args:
+            chart_manager: ChartManager instance
+            symbol: Trading symbol
+            timeframe: Chart timeframe
+            include_expired: Include broken/expired zones
+            
+        Returns:
+            JSON-serializable dictionary
+        """
+        state = chart_manager.get_chart_state(symbol, timeframe)
+        
+        # Convert zones to JSON format
+        zones_json = []
+        for zone in state.zones.values():
+            if not include_expired and not zone.is_valid:
+                continue
+            
+            zones_json.append({
+                "id": zone.id,
+                "type": zone.zone_type.value,
+                "upper": zone.upper,
+                "lower": zone.lower,
+                "midpoint": zone.midpoint,
+                "state": zone.state.name,
+                "strength": round(zone.effective_strength, 3),
+                "touches": zone.touch_count,
+                "rejections": zone.rejection_count,
+                "created_at": zone.created_at.isoformat(),
+                "last_touched": zone.last_touched.isoformat() if zone.last_touched else None,
+                "source": zone.source_module,
+                "color": self._get_zone_color(zone),
+                "style": self._get_zone_style(zone)
+            })
+        
+        # Convert trend lines to JSON format
+        trendlines_json = []
+        for tl in state.trend_lines.values():
+            if not tl.is_valid:
+                continue
+            
+            trendlines_json.append({
+                "id": tl.id,
+                "direction": tl.direction.name,
+                "start_price": tl.start_price,
+                "start_time": tl.start_time.isoformat(),
+                "end_price": tl.end_price,
+                "end_time": tl.end_time.isoformat(),
+                "slope": tl.slope,
+                "touches": tl.touches,
+                "strength": round(tl.strength, 3),
+                "color": "#FFD700" if tl.direction == TrendDirection.UP else "#FF6B6B",
+                "style": "dashed" if tl.touches < 2 else "solid"
+            })
+        
+        # Convert channels to JSON format
+        channels_json = []
+        for ch in state.channels.values():
+            if not ch.is_valid:
+                continue
+            
+            channels_json.append({
+                "id": ch.id,
+                "direction": ch.direction.name,
+                "upper_line": {
+                    "start_price": ch.upper_line.start_price,
+                    "end_price": ch.upper_line.end_price,
+                    "start_time": ch.upper_line.start_time.isoformat(),
+                    "end_time": ch.upper_line.end_time.isoformat()
+                },
+                "lower_line": {
+                    "start_price": ch.lower_line.start_price,
+                    "end_price": ch.lower_line.end_price,
+                    "start_time": ch.lower_line.start_time.isoformat(),
+                    "end_time": ch.lower_line.end_time.isoformat()
+                },
+                "width": ch.width,
+                "fill_color": "rgba(100, 149, 237, 0.1)",
+                "border_color": "#6495ED"
+            })
+        
+        # Get key levels as horizontal lines
+        levels = chart_manager.get_key_levels(symbol, 0, num_levels=10, timeframe=timeframe)
+        levels_json = []
+        
+        for price in levels.get('support', []):
+            levels_json.append({
+                "price": price,
+                "type": "support",
+                "color": "#00FF9D",
+                "style": "dotted",
+                "label": f"S {price:.2f}"
+            })
+        
+        for price in levels.get('resistance', []):
+            levels_json.append({
+                "price": price,
+                "type": "resistance",
+                "color": "#FF3E3E",
+                "style": "dotted",
+                "label": f"R {price:.2f}"
+            })
+        
+        # Build final JSON structure
+        export_data = {
+            "symbol": symbol,
+            "timeframe": timeframe,
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "version": self.schema_version,
+            "trend": {
+                "direction": state.current_trend.name,
+                "strength": state.trend_strength
+            },
+            "zones": zones_json,
+            "trend_lines": trendlines_json,
+            "channels": channels_json,
+            "levels": levels_json,
+            "stats": chart_manager.get_summary(symbol, timeframe)
+        }
+        
+        return export_data
+    
+    def export_to_file(
+        self,
+        chart_manager: ChartManager,
+        symbol: str,
+        timeframe: str = "M30"
+    ) -> str:
+        """
+        Export chart state to JSON file.
+        
+        Args:
+            chart_manager: ChartManager instance
+            symbol: Trading symbol
+            timeframe: Chart timeframe
+            
+        Returns:
+            Path to exported file
+        """
+        export_data = self.export_to_json(chart_manager, symbol, timeframe)
+        
+        # Create filename
+        safe_symbol = symbol.replace("#", "").replace("/", "_")
+        filename = f"{safe_symbol}_{timeframe}_drawings.json"
+        filepath = os.path.join(self.output_dir, filename)
+        
+        # Write JSON file
+        with open(filepath, 'w') as f:
+            json.dump(export_data, f, indent=2)
+        
+        self.logger.debug(f"Exported drawings to {filepath}")
+        return filepath
+    
+    def _get_zone_color(self, zone: PriceZone) -> str:
+        """Get display color for zone type."""
+        color_map = {
+            ZoneType.ORDER_BLOCK_BULLISH: "#00FF9D",   # Green
+            ZoneType.ORDER_BLOCK_BEARISH: "#FF3E3E",   # Red
+            ZoneType.ORB_HIGH: "#FFD700",              # Gold
+            ZoneType.ORB_LOW: "#FFD700",               # Gold
+            ZoneType.SUPPORT: "#00CED1",              # Dark Cyan
+            ZoneType.RESISTANCE: "#FF6B6B",           # Light Red
+            ZoneType.FVG_BULLISH: "#32CD32",          # Lime Green
+            ZoneType.FVG_BEARISH: "#DC143C",          # Crimson
+            ZoneType.TREND_SUPPORT: "#4169E1",        # Royal Blue
+            ZoneType.TREND_RESISTANCE: "#8B0000",     # Dark Red
+            ZoneType.CHANNEL_UPPER: "#6495ED",        # Cornflower Blue
+            ZoneType.CHANNEL_LOWER: "#6495ED",        # Cornflower Blue
+            ZoneType.FIBONACCI: "#DDA0DD",            # Plum
+            ZoneType.VWAP: "#9370DB",                 # Medium Purple
+            ZoneType.POC: "#FF8C00"                   # Dark Orange
+        }
+        return color_map.get(zone.zone_type, "#808080")
+    
+    def _get_zone_style(self, zone: PriceZone) -> Dict[str, Any]:
+        """Get display style for zone."""
+        # Opacity based on strength
+        opacity = 0.1 + (zone.effective_strength * 0.3)
+        
+        # Border style based on state
+        border_style = "solid"
+        if zone.state == ZoneState.TESTED:
+            border_style = "dashed"
+        elif zone.state == ZoneState.WEAKENED:
+            border_style = "dotted"
+        
+        return {
+            "fill_opacity": round(opacity, 2),
+            "border_style": border_style,
+            "border_width": 1 if zone.effective_strength < 0.5 else 2
+        }
+
+
+# Export function for external use
+def export_chart_drawings(
+    symbol: str,
+    timeframe: str = "M30",
+    to_file: bool = True
+) -> Dict[str, Any]:
+    """
+    Export chart drawings for a symbol.
+    
+    Convenience function that uses the global chart manager.
+    
+    Args:
+        symbol: Trading symbol
+        timeframe: Chart timeframe
+        to_file: Also write to JSON file
+        
+    Returns:
+        JSON-serializable dictionary of drawings
+    """
+    cm = get_chart_manager()
+    exporter = ChartDrawingsExporter()
+    
+    data = exporter.export_to_json(cm, symbol, timeframe)
+    
+    if to_file:
+        exporter.export_to_file(cm, symbol, timeframe)
+    
+    return data
