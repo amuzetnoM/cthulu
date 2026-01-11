@@ -292,6 +292,56 @@ print(f"Final loss: {result.final_loss:.4f}")
 
 ---
 
+### 7. Chart Manager (Visual Reasoning Layer)
+Dynamic zone and level management - represents how Cthulu "sees" the chart.
+
+**Architecture:**
+- **Read Layer (Sync):** Fast, thread-safe reads for real-time decision making
+- **Write Layer (Async):** Non-blocking zone creation/updates via background thread
+- **Event System:** Callbacks for zone touches, breaks, rejections
+
+**Zone Types:**
+- Order Blocks (bullish/bearish)
+- ORB High/Low
+- Support/Resistance
+- Fair Value Gaps (FVG)
+- Trend Lines & Channels
+- Fibonacci levels
+- VWAP & Point of Control
+
+**Zone Lifecycle:**
+```
+PENDING → ACTIVE → TESTED → WEAKENED → BROKEN/MITIGATED/EXPIRED
+```
+
+**Usage:**
+```python
+from cthulu.cognition import get_chart_manager
+
+cm = get_chart_manager()
+
+# Get zone analysis for entry decision
+analysis = cm.get_zones_for_entry('BTCUSD', 'long', current_price, atr)
+print(f"Zone score: {analysis['zone_score']:.2%}")
+print(f"Supporting zones: {len(analysis['supporting_zones'])}")
+print(f"Warnings: {analysis['warnings']}")
+
+# Get key levels for S/R
+levels = cm.get_key_levels('BTCUSD', current_price)
+print(f"Support: {levels['support']}")
+print(f"Resistance: {levels['resistance']}")
+
+# Get R:R context from zone structure
+rr = cm.get_risk_reward_context('BTCUSD', entry_price, 'long')
+print(f"Suggested SL: {rr['suggested_sl']}, TP: {rr['suggested_tp']}")
+print(f"R:R Ratio: {rr['rr_ratio']:.2f}")
+```
+
+**Integration with Entry Confluence:**
+The Chart Manager automatically syncs with order_blocks.py, session_orb.py, and structure_detector.py. Zone analysis is incorporated into the confluence scoring.
+
+---
+
 ## Files
 
 | File | Description |
@@ -303,6 +353,7 @@ print(f"Final loss: {result.final_loss:.4f}")
 | `exit_oracle.py` | Exit signal generation |
 | `order_blocks.py` | ICT Order Block detection (BOS/ChoCH) |
 | `session_orb.py` | Session-based Opening Range Breakout |
+| `chart_manager.py` | Dynamic zone/level tracking & visual reasoning |
 | `tier_optimizer.py` | ML-based tier optimization |
 | `instrumentation.py` | Event logging for ML training |
 

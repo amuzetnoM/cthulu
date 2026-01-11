@@ -126,6 +126,9 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 | Module | Description | Documentation |
 |--------|-------------|---------------|
 | **cognition/pattern_recognition** | Chart pattern detection with semantic analysis | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
+| **cognition/chart_manager** | Visual reasoning - dynamic zone/level tracking | [README](cognition/README.md) |
+| **cognition/order_blocks** | ICT Order Block detection (BOS/ChoCH) | [README](cognition/README.md) |
+| **cognition/session_orb** | Session Opening Range Breakout (London/NY) | [README](cognition/README.md) |
 | **integrations/ml_exporter** | ML training data export (CSV, Parquet, JSON) | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
 | **integrations/performance_analyzer** | Semantic performance analytics | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
 | **backtesting/ui_server** | Web-based backtesting UI with real-time updates | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
@@ -159,6 +162,8 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 - **🆕 ML Training Data Pipeline**
 - **🆕 Automated Configuration Optimization**
 - **🆕 Web-Based Backtesting UI**
+- **🆕 Chart Manager - Visual Reasoning Layer**
+- **🆕 ICT Order Blocks & Session ORB Detection**
 
 ### Quick Start Commands
 ```bash

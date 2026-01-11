@@ -114,6 +114,21 @@ from .session_orb import (
     OpeningRange,
 )
 
+# Chart Manager (Visual Reasoning Layer)
+from .chart_manager import (
+    ChartManager,
+    ChartState,
+    PriceZone,
+    TrendLine,
+    Channel,
+    ZoneType,
+    ZoneState,
+    ZoneEvent,
+    TrendDirection,
+    get_chart_manager,
+    shutdown_chart_manager,
+)
+
 __all__ = [
     # Regime
     'MarketRegimeClassifier',
@@ -183,4 +198,17 @@ __all__ = [
     'SessionConfig',
     'SessionType',
     'OpeningRange',
+    
+    # Chart Manager (Visual Reasoning)
+    'ChartManager',
+    'ChartState',
+    'PriceZone',
+    'TrendLine',
+    'Channel',
+    'ZoneType',
+    'ZoneState',
+    'ZoneEvent',
+    'TrendDirection',
+    'get_chart_manager',
+    'shutdown_chart_manager',
 ]

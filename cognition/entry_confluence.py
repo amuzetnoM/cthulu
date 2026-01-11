@@ -43,6 +43,18 @@ try:
 except ImportError:
     HAS_STRUCTURE_DETECTORS = False
 
+# Import Chart Manager for zone tracking and visual reasoning
+try:
+    from cthulu.cognition.chart_manager import (
+        get_chart_manager,
+        ChartManager,
+        ZoneType,
+        ZoneState
+    )
+    HAS_CHART_MANAGER = True
+except ImportError:
+    HAS_CHART_MANAGER = False
+
 logger = logging.getLogger("Cthulu.entry_confluence")
 
 
@@ -158,9 +170,113 @@ class EntryConfluenceFilter:
         # Initialize Order Block and Session ORB detectors
         self._order_block_detector = None
         self._session_orb_detector = None
+        self._chart_manager = None
         self._init_structure_detectors()
+        self._init_chart_manager()
         
-        self.logger.info("EntryConfluenceFilter initialized with OB/ORB integration")
+        self.logger.info("EntryConfluenceFilter initialized with OB/ORB/ChartManager integration")
+    
+    def _init_chart_manager(self):
+        """Initialize Chart Manager for zone tracking and visual reasoning."""
+        if not HAS_CHART_MANAGER:
+            self.logger.warning("Chart Manager not available - zone tracking disabled")
+            return
+        
+        try:
+            cm_config = self.config.get('chart_manager', {})
+            self._chart_manager = get_chart_manager(config=cm_config)
+            self.logger.debug("Chart Manager initialized")
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize Chart Manager: {e}")
+            self._chart_manager = None
+    
+    def _sync_zones_to_chart_manager(
+        self,
+        symbol: str,
+        market_data: pd.DataFrame,
+        atr: float
+    ):
+        """Sync detected zones from OB/ORB detectors to Chart Manager."""
+        if self._chart_manager is None:
+            return
+        
+        timeframe = self.config.get('timeframe', 'M30')
+        
+        # Sync Order Blocks
+        if self._order_block_detector is not None:
+            try:
+                active_obs = self._order_block_detector.get_active_order_blocks()
+                self._chart_manager.sync_from_order_blocks(active_obs, symbol, timeframe)
+            except Exception as e:
+                self.logger.debug(f"Failed to sync order blocks: {e}")
+        
+        # Sync Session ORB
+        if self._session_orb_detector is not None:
+            try:
+                active_ranges = self._session_orb_detector.get_active_ranges()
+                self._chart_manager.sync_from_session_orb(active_ranges, symbol, timeframe)
+            except Exception as e:
+                self.logger.debug(f"Failed to sync session ORB: {e}")
+    
+    def _get_chart_manager_analysis(
+        self,
+        symbol: str,
+        direction: str,
+        current_price: float,
+        atr: float
+    ) -> Tuple[float, List[str]]:
+        """
+        Get zone analysis from Chart Manager for confluence scoring.
+        
+        Returns:
+            Tuple of (score_modifier, reasons)
+        """
+        if self._chart_manager is None:
+            return 0.0, []
+        
+        timeframe = self.config.get('timeframe', 'M30')
+        reasons = []
+        score_mod = 0.0
+        
+        try:
+            analysis = self._chart_manager.get_zones_for_entry(
+                symbol=symbol,
+                direction=direction,
+                current_price=current_price,
+                atr=atr,
+                timeframe=timeframe
+            )
+            
+            # Process supporting zones
+            if analysis['supporting_zones']:
+                count = len(analysis['supporting_zones'])
+                avg_strength = sum(z.effective_strength for z in analysis['supporting_zones']) / count
+                score_mod += avg_strength * 0.15  # Up to 15% boost
+                reasons.append(f"ChartMgr: {count} supporting zones (strength={avg_strength:.2f})")
+            
+            # Process opposing zones - penalty
+            if analysis['opposing_zones']:
+                count = len(analysis['opposing_zones'])
+                avg_strength = sum(z.effective_strength for z in analysis['opposing_zones']) / count
+                score_mod -= avg_strength * 0.10  # Up to 10% penalty
+                reasons.append(f"ChartMgr WARNING: {count} opposing zones")
+            
+            # Zone score integration
+            zone_score = analysis['zone_score']
+            if zone_score > 0.7:
+                score_mod += 0.05
+                reasons.append(f"ChartMgr: Strong zone confluence ({zone_score:.2f})")
+            elif zone_score < 0.3:
+                score_mod -= 0.05
+                reasons.append(f"ChartMgr: Weak zone confluence ({zone_score:.2f})")
+            
+            # Add any warnings from chart manager
+            reasons.extend(analysis.get('warnings', []))
+            
+        except Exception as e:
+            self.logger.debug(f"Chart Manager analysis failed: {e}")
+        
+        return score_mod, reasons
     
     def _init_structure_detectors(self):
         """Initialize Order Block and Session ORB detectors."""
@@ -288,7 +404,16 @@ class EntryConfluenceFilter:
         )
         reasons.extend(orb_reasons)
         
-        # 9. Check for signal drift (price moved away from signal)
+        # 9. CHART MANAGER ANALYSIS - Zone tracking and visual reasoning
+        cm_score_mod, cm_reasons = self._get_chart_manager_analysis(
+            symbol, signal_direction, current_price, atr
+        )
+        reasons.extend(cm_reasons)
+        
+        # Sync zones to chart manager (async write - non-blocking)
+        self._sync_zones_to_chart_manager(symbol, market_data, atr)
+        
+        # 10. Check for signal drift (price moved away from signal)
         drift_penalty = 0.0
         if signal_entry_price is not None:
             drift = abs(current_price - signal_entry_price) / atr if atr > 0 else 0
@@ -308,7 +433,7 @@ class EntryConfluenceFilter:
             bos_score * self.bos_weight +
             ob_score * self.order_block_weight +
             orb_score * self.session_orb_weight
-        ) * 100 - drift_penalty
+        ) * 100 - drift_penalty + (cm_score_mod * 100)  # Apply chart manager modifier
         
         # CRITICAL: Counter-trend penalty (applied BEFORE bonuses)
         # Trading against the trend is inherently risky
