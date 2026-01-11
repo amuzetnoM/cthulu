@@ -36,6 +36,8 @@ from .exit_oracle import (
     ExitOracle, ExitSignal, ExitUrgency, PositionContext,
     get_exit_oracle, evaluate_exits
 )
+from .order_blocks import OrderBlockDetector, OrderBlock, OrderBlockType
+from .session_orb import SessionORBDetector, SessionType, OpeningRange
 
 logger = logging.getLogger("Cthulu.cognition")
 
@@ -151,6 +153,8 @@ class CognitionEngine:
         enable_prediction: bool = True,
         enable_sentiment: bool = True,
         enable_exit_oracle: bool = True,
+        enable_order_blocks: bool = True,
+        enable_session_orb: bool = True,
         model_dir: Optional[str] = None,
         hektor_adapter: Optional[Any] = None,
         hektor_retriever: Optional[Any] = None
@@ -159,6 +163,8 @@ class CognitionEngine:
         self.enable_prediction = enable_prediction
         self.enable_sentiment = enable_sentiment
         self.enable_exit_oracle = enable_exit_oracle
+        self.enable_order_blocks = enable_order_blocks
+        self.enable_session_orb = enable_session_orb
         
         # Hektor (Vector Studio) integration for semantic memory
         self.hektor_adapter = hektor_adapter
@@ -175,6 +181,8 @@ class CognitionEngine:
         self._price_predictor: Optional[PricePredictor] = None
         self._sentiment_analyzer: Optional[SentimentAnalyzer] = None
         self._exit_oracle: Optional[ExitOracle] = None
+        self._order_block_detector: Optional[OrderBlockDetector] = None
+        self._session_orb_detector: Optional[SessionORBDetector] = None
         
         # State tracking
         self._last_state: Optional[CognitionState] = None
@@ -185,7 +193,8 @@ class CognitionEngine:
         
         logger.info(f"CognitionEngine initialized: regime={enable_regime}, "
                    f"prediction={enable_prediction}, sentiment={enable_sentiment}, "
-                   f"exit_oracle={enable_exit_oracle}, hektor={self.enable_hektor}")
+                   f"exit_oracle={enable_exit_oracle}, order_blocks={enable_order_blocks}, "
+                   f"session_orb={enable_session_orb}, hektor={self.enable_hektor}")
     
     def _get_semantic_context(self, signal: Any, market_data: pd.DataFrame) -> Dict[str, Any]:
         """
@@ -289,6 +298,21 @@ class CognitionEngine:
                 regime_classifier=self._regime_classifier,
                 price_predictor=self._price_predictor,
                 sentiment_analyzer=self._sentiment_analyzer
+            )
+        
+        if self.enable_order_blocks:
+            self._order_block_detector = OrderBlockDetector(
+                swing_lookback=5,
+                min_move_atr=1.5,
+                max_age_bars=100,
+                use_body_only=True
+            )
+        
+        if self.enable_session_orb:
+            self._session_orb_detector = SessionORBDetector(
+                sessions=[SessionType.LONDON, SessionType.NEW_YORK],
+                range_duration_minutes=30,
+                confirm_bars=1
             )
     
     def analyze(self, symbol: str, market_data: pd.DataFrame) -> CognitionState:
@@ -544,6 +568,126 @@ class CognitionEngine:
         
         return self._exit_oracle.evaluate_exits(contexts, market_data, indicators)
     
+    def get_order_block_signal(
+        self,
+        market_data: pd.DataFrame,
+        current_price: float,
+        atr: float,
+        timestamp: datetime = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get entry signal from Order Block detector.
+        
+        Uses ICT methodology to detect institutional order blocks
+        and generate signals when price revisits these zones.
+        
+        Args:
+            market_data: OHLCV DataFrame
+            current_price: Current market price
+            atr: Current ATR value
+            timestamp: Current timestamp
+            
+        Returns:
+            Signal dict with direction, entry, SL, TP, confidence, reason
+            or None if no signal
+        """
+        if not self._order_block_detector:
+            return None
+        
+        try:
+            return self._order_block_detector.update(
+                df=market_data,
+                current_price=current_price,
+                atr=atr,
+                timestamp=timestamp
+            )
+        except Exception as e:
+            logger.warning(f"Order block detection error: {e}")
+            return None
+    
+    def get_session_orb_signal(
+        self,
+        market_data: pd.DataFrame,
+        current_price: float,
+        atr: float,
+        timestamp: datetime = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get entry signal from Session ORB detector.
+        
+        Detects opening range breakouts for London and New York sessions.
+        
+        Args:
+            market_data: OHLCV DataFrame
+            current_price: Current market price
+            atr: Current ATR value
+            timestamp: Current timestamp
+            
+        Returns:
+            Signal dict with direction, entry, SL, TP, confidence, reason
+            or None if no signal
+        """
+        if not self._session_orb_detector:
+            return None
+        
+        try:
+            return self._session_orb_detector.update(
+                df=market_data,
+                current_price=current_price,
+                atr=atr,
+                timestamp=timestamp
+            )
+        except Exception as e:
+            logger.warning(f"Session ORB detection error: {e}")
+            return None
+    
+    def get_structure_signals(
+        self,
+        market_data: pd.DataFrame,
+        current_price: float,
+        atr: float,
+        timestamp: datetime = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get all structure-based signals (Order Blocks + Session ORB).
+        
+        Combines ICT order block signals with session-based ORB signals.
+        
+        Args:
+            market_data: OHLCV DataFrame
+            current_price: Current market price
+            atr: Current ATR value
+            timestamp: Current timestamp
+            
+        Returns:
+            List of signal dicts from both detectors
+        """
+        signals = []
+        
+        ob_signal = self.get_order_block_signal(market_data, current_price, atr, timestamp)
+        if ob_signal:
+            ob_signal['source'] = 'order_block'
+            signals.append(ob_signal)
+        
+        orb_signal = self.get_session_orb_signal(market_data, current_price, atr, timestamp)
+        if orb_signal:
+            orb_signal['source'] = 'session_orb'
+            signals.append(orb_signal)
+        
+        return signals
+    
+    def get_active_order_blocks(self) -> List[OrderBlock]:
+        """Get currently active (unmitigated) order blocks."""
+        if not self._order_block_detector:
+            return []
+        return self._order_block_detector.get_active_order_blocks()
+    
+    def get_active_session_ranges(self) -> Dict[str, OpeningRange]:
+        """Get currently active session opening ranges."""
+        if not self._session_orb_detector:
+            return {}
+        return self._session_orb_detector.get_active_ranges()
+    
     def get_strategy_affinity(self, strategy_name: str) -> float:
         """
         Get affinity score for a strategy based on current regime.
@@ -645,7 +789,9 @@ class CognitionEngine:
                 'regime': self.enable_regime,
                 'prediction': self.enable_prediction,
                 'sentiment': self.enable_sentiment,
-                'exit_oracle': self.enable_exit_oracle
+                'exit_oracle': self.enable_exit_oracle,
+                'order_blocks': self.enable_order_blocks,
+                'session_orb': self.enable_session_orb
             },
             'state_history_length': len(self._state_history)
         }
@@ -674,6 +820,39 @@ class CognitionEngine:
         
         if self._exit_oracle:
             result['exit_oracle'] = self._exit_oracle.to_dict()
+        
+        # Order Blocks state
+        if self._order_block_detector:
+            active_obs = self.get_active_order_blocks()
+            result['order_blocks'] = {
+                'active_count': len(active_obs),
+                'blocks': [
+                    {
+                        'type': ob.block_type.value,
+                        'high': ob.high,
+                        'low': ob.low,
+                        'touches': ob.touches,
+                        'structure_break': ob.structure_break.value
+                    }
+                    for ob in active_obs[:5]  # Top 5 most recent
+                ]
+            }
+        
+        # Session ORB state
+        if self._session_orb_detector:
+            active_ranges = self.get_active_session_ranges()
+            result['session_orb'] = {
+                'active_sessions': list(active_ranges.keys()),
+                'ranges': {
+                    name: {
+                        'high': r.high,
+                        'low': r.low,
+                        'is_complete': r.is_complete,
+                        'breakout_direction': r.breakout_direction
+                    }
+                    for name, r in active_ranges.items()
+                }
+            }
         
         return result
 
@@ -708,6 +887,8 @@ def create_cognition_engine(
         enable_prediction=cognition_config.get('enable_prediction', True),
         enable_sentiment=cognition_config.get('enable_sentiment', True),
         enable_exit_oracle=cognition_config.get('enable_exit_oracle', True),
+        enable_order_blocks=cognition_config.get('enable_order_blocks', True),
+        enable_session_orb=cognition_config.get('enable_session_orb', True),
         model_dir=cognition_config.get('model_dir'),
         hektor_adapter=hektor_adapter,
         hektor_retriever=hektor_retriever

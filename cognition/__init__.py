@@ -97,6 +97,23 @@ from .training_logger import (
     log_trade_outcome,
 )
 
+# Order Blocks (ICT methodology)
+from .order_blocks import (
+    OrderBlockDetector,
+    OrderBlock,
+    OrderBlockType,
+    StructureBreak,
+    SwingPoint,
+)
+
+# Session ORB (Opening Range Breakout)
+from .session_orb import (
+    SessionORBDetector,
+    SessionConfig,
+    SessionType,
+    OpeningRange,
+)
+
 __all__ = [
     # Regime
     'MarketRegimeClassifier',
@@ -153,4 +170,17 @@ __all__ = [
     'get_training_logger',
     'log_trade_decision',
     'log_trade_outcome',
+    
+    # Order Blocks (ICT)
+    'OrderBlockDetector',
+    'OrderBlock',
+    'OrderBlockType',
+    'StructureBreak',
+    'SwingPoint',
+    
+    # Session ORB
+    'SessionORBDetector',
+    'SessionConfig',
+    'SessionType',
+    'OpeningRange',
 ]

@@ -19,6 +19,8 @@
 | **Price Predictor** | ✅ IMPLEMENTED | Softmax/Argmax direction forecasting |
 | **Sentiment Analyzer** | ✅ IMPLEMENTED | News/calendar/fear-greed integration |
 | **Exit Oracle** | ✅ IMPLEMENTED | High-confluence exit signals |
+| **Order Block Detector** | ✅ IMPLEMENTED | ICT methodology - institutional supply/demand zones |
+| **Session ORB Detector** | ✅ IMPLEMENTED | Opening Range Breakout for London/NY sessions |
 | **Cognition Engine** | ✅ IMPLEMENTED | Central orchestration layer |
 
 ---
@@ -137,6 +139,64 @@ for sig in signals:
     print(f"[{sig.urgency.value}] Close {sig.recommended_close_pct}% of #{sig.ticket}")
 ```
 
+### 5. Order Block Detector (ICT Methodology)
+Detects institutional order blocks based on Inner Circle Trader concepts.
+
+**Concepts:**
+- **Break of Structure (BOS):** Price closes beyond prior swing high/low
+- **Change of Character (ChoCH):** Failure to continue trend
+- **Order Block:** Last opposing candle before structure break
+- **Mitigation:** When price returns to fill the zone
+
+**Usage:**
+```python
+from cthulu.cognition import get_cognition_engine
+
+engine = get_cognition_engine()
+
+# Get order block signals
+signal = engine.get_order_block_signal(market_data, current_price, atr)
+if signal:
+    print(f"Order Block {signal['direction']}: {signal['reason']}")
+    print(f"Entry: {signal['entry_price']}, SL: {signal['stop_loss']}")
+
+# Get active order blocks
+active_obs = engine.get_active_order_blocks()
+for ob in active_obs:
+    print(f"{ob.block_type.value}: {ob.low:.2f} - {ob.high:.2f}")
+```
+
+### 6. Session ORB Detector (Opening Range Breakout)
+Detects opening range breakouts for major trading sessions.
+
+**Sessions:**
+- **London:** 08:00-08:30 UTC
+- **New York:** 13:30-14:00 UTC
+- **Asian:** 00:00-00:30 UTC (optional)
+
+**Logic:**
+1. Define opening range (high/low) during first 30 minutes
+2. Wait for breakout above high (bullish) or below low (bearish)
+3. Execute trade with SL at opposite range boundary
+
+**Usage:**
+```python
+from cthulu.cognition import get_cognition_engine
+
+engine = get_cognition_engine()
+
+# Get ORB signal
+signal = engine.get_session_orb_signal(market_data, current_price, atr)
+if signal:
+    print(f"ORB {signal['direction']}: {signal['reason']}")
+    print(f"Range: {signal['range_low']:.2f} - {signal['range_high']:.2f}")
+
+# Get all structure signals (OB + ORB combined)
+signals = engine.get_structure_signals(market_data, current_price, atr)
+for sig in signals:
+    print(f"[{sig['source']}] {sig['direction']}: {sig['reason']}")
+```
+
 ---
 
 ## ML Pipeline (Legacy)
@@ -177,15 +237,23 @@ Design principles: simple, explainable, versioned, and auditable. Keep processin
 │         │                │                │                 │
 │         └────────────────┼────────────────┘                 │
 │                          │                                  │
-│                    ┌─────┴─────┐                            │
-│                    │   Exit    │                            │
-│                    │  Oracle   │                            │
-│                    └───────────┘                            │
+│  ┌─────────────┐  ┌──────┴──────┐  ┌─────────────┐         │
+│  │Order Block  │  │    Exit     │  │ Session ORB │         │
+│  │ Detector    │  │   Oracle    │  │  Detector   │         │
+│  │   (ICT)     │  │             │  │(London/NY)  │         │
+│  └──────┬──────┘  └─────────────┘  └──────┬──────┘         │
+│         │                                  │                 │
+│         └──────────────────────────────────┘                 │
+│                          │                                  │
+│              get_structure_signals()                        │
 │                                                             │
 ├─────────────────────────────────────────────────────────────┤
 │  analyze() → CognitionState                                 │
 │  enhance_signal() → SignalEnhancement                       │
 │  get_exit_signals() → List[ExitSignal]                      │
+│  get_order_block_signal() → Optional[Dict]                  │
+│  get_session_orb_signal() → Optional[Dict]                  │
+│  get_structure_signals() → List[Dict]                       │
 │  should_trade() → (bool, reason)                            │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -233,6 +301,8 @@ print(f"Final loss: {result.final_loss:.4f}")
 | `price_predictor.py` | Direction forecasting |
 | `sentiment_analyzer.py` | News/calendar integration |
 | `exit_oracle.py` | Exit signal generation |
+| `order_blocks.py` | ICT Order Block detection (BOS/ChoCH) |
+| `session_orb.py` | Session-based Opening Range Breakout |
 | `tier_optimizer.py` | ML-based tier optimization |
 | `instrumentation.py` | Event logging for ML training |
 
