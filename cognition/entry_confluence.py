@@ -26,6 +26,23 @@ from datetime import datetime, timedelta
 from enum import Enum
 import logging
 
+# Import Order Block and Session ORB detectors
+try:
+    from cthulu.cognition.order_blocks import (
+        OrderBlockDetector,
+        OrderBlock,
+        OrderBlockType,
+        StructureBreak
+    )
+    from cthulu.cognition.session_orb import (
+        SessionORBDetector,
+        SessionType,
+        OpeningRange
+    )
+    HAS_STRUCTURE_DETECTORS = True
+except ImportError:
+    HAS_STRUCTURE_DETECTORS = False
+
 logger = logging.getLogger("Cthulu.entry_confluence")
 
 
@@ -121,16 +138,74 @@ class EntryConfluenceFilter:
         
         # Momentum parameters
         self.momentum_bars = self.config.get('momentum_bars', 5)
-        self.momentum_weight = self.config.get('momentum_weight', 0.25)
-        self.level_weight = self.config.get('level_weight', 0.40)
-        self.timing_weight = self.config.get('timing_weight', 0.20)
-        self.structure_weight = self.config.get('structure_weight', 0.15)
+        
+        # Score component weights - MUST sum to 1.0
+        # Distribution: Level=0.18, Momentum=0.15, Timing=0.10, Structure=0.08,
+        #               Trend=0.17, BOS=0.12, OrderBlock=0.12, SessionORB=0.08
+        self.level_weight = self.config.get('level_weight', 0.18)
+        self.momentum_weight = self.config.get('momentum_weight', 0.15)
+        self.timing_weight = self.config.get('timing_weight', 0.10)
+        self.structure_weight = self.config.get('structure_weight', 0.08)
+        self.trend_weight = self.config.get('trend_weight', 0.17)
+        self.bos_weight = self.config.get('bos_weight', 0.12)
+        self.order_block_weight = self.config.get('order_block_weight', 0.12)
+        self.session_orb_weight = self.config.get('session_orb_weight', 0.08)
         
         # State: tracked levels and pending entries
         self._price_levels: Dict[str, List[PriceLevel]] = {}
         self._pending_entries: Dict[str, Dict[str, Any]] = {}
         
-        self.logger.info("EntryConfluenceFilter initialized")
+        # Initialize Order Block and Session ORB detectors
+        self._order_block_detector = None
+        self._session_orb_detector = None
+        self._init_structure_detectors()
+        
+        self.logger.info("EntryConfluenceFilter initialized with OB/ORB integration")
+    
+    def _init_structure_detectors(self):
+        """Initialize Order Block and Session ORB detectors."""
+        if not HAS_STRUCTURE_DETECTORS:
+            self.logger.warning("Structure detectors not available - OB/ORB confluence disabled")
+            return
+        
+        try:
+            # Order Block Detector - ICT methodology
+            ob_config = self.config.get('order_blocks', {})
+            self._order_block_detector = OrderBlockDetector(
+                swing_lookback=ob_config.get('swing_lookback', 5),
+                min_move_atr=ob_config.get('min_move_atr', 1.5),
+                max_age_bars=ob_config.get('max_age_bars', 100),
+                use_body_only=ob_config.get('use_body_only', True)
+            )
+            self.logger.debug("Order Block detector initialized")
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize Order Block detector: {e}")
+            self._order_block_detector = None
+        
+        try:
+            # Session ORB Detector - London/NY sessions
+            orb_config = self.config.get('session_orb', {})
+            sessions = []
+            for s in orb_config.get('sessions', ['london', 'new_york']):
+                if s.lower() == 'london':
+                    sessions.append(SessionType.LONDON)
+                elif s.lower() in ['new_york', 'ny']:
+                    sessions.append(SessionType.NEW_YORK)
+                elif s.lower() in ['asian', 'asia', 'tokyo']:
+                    sessions.append(SessionType.ASIAN)
+            
+            if not sessions:
+                sessions = [SessionType.LONDON, SessionType.NEW_YORK]
+            
+            self._session_orb_detector = SessionORBDetector(
+                sessions=sessions,
+                range_duration_minutes=orb_config.get('range_duration_minutes', 30),
+                confirm_bars=orb_config.get('confirm_bars', 1)
+            )
+            self.logger.debug("Session ORB detector initialized")
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize Session ORB detector: {e}")
+            self._session_orb_detector = None
     
     def analyze_entry(
         self,
@@ -201,7 +276,19 @@ class EntryConfluenceFilter:
         )
         reasons.extend(trend_reasons)
         
-        # 7. Check for signal drift (price moved away from signal)
+        # 7. ORDER BLOCK SCORE - ICT institutional zones
+        ob_score, ob_aligned, ob_reasons, ob_signal = self._score_order_blocks(
+            signal_direction, current_price, market_data, atr
+        )
+        reasons.extend(ob_reasons)
+        
+        # 8. SESSION ORB SCORE - Opening Range Breakout alignment
+        orb_score, orb_aligned, orb_reasons, orb_signal = self._score_session_orb(
+            signal_direction, current_price, market_data, atr
+        )
+        reasons.extend(orb_reasons)
+        
+        # 9. Check for signal drift (price moved away from signal)
         drift_penalty = 0.0
         if signal_entry_price is not None:
             drift = abs(current_price - signal_entry_price) / atr if atr > 0 else 0
@@ -209,33 +296,59 @@ class EntryConfluenceFilter:
                 drift_penalty = min(drift * 10, 30)  # Max 30 point penalty
                 warnings.append(f"Price drifted {drift:.1f} ATR from signal")
         
-        # Calculate weighted total score (including trend and BOS/ChoCH)
-        # Weights sum to 1.0 after adjustment
-        trend_weight = 0.12
-        bos_weight = 0.15  # BOS/ChoCH is important for entry confirmation
-        adjusted_weights = {
-            'level': self.level_weight * 0.73,      # ~0.29
-            'momentum': self.momentum_weight * 0.73, # ~0.18
-            'timing': self.timing_weight * 0.73,     # ~0.15
-            'structure': self.structure_weight * 0.73, # ~0.11
-            'trend': trend_weight,                    # 0.12
-            'bos': bos_weight                         # 0.15
-        }
-        
+        # Calculate weighted total score
+        # Weights sum to 1.0: level=0.18, momentum=0.15, timing=0.10, structure=0.08,
+        #                     trend=0.17, bos=0.12, order_block=0.12, session_orb=0.08
         total_score = (
-            level_score * adjusted_weights['level'] +
-            momentum_score * adjusted_weights['momentum'] +
-            timing_score * adjusted_weights['timing'] +
-            structure_score * adjusted_weights['structure'] +
-            trend_score * adjusted_weights['trend'] +
-            bos_score * adjusted_weights['bos']
+            level_score * self.level_weight +
+            momentum_score * self.momentum_weight +
+            timing_score * self.timing_weight +
+            structure_score * self.structure_weight +
+            trend_score * self.trend_weight +
+            bos_score * self.bos_weight +
+            ob_score * self.order_block_weight +
+            orb_score * self.session_orb_weight
         ) * 100 - drift_penalty
         
-        # BOS confirmation boost: if structure strongly confirms, boost score
+        # CRITICAL: Counter-trend penalty (applied BEFORE bonuses)
+        # Trading against the trend is inherently risky
+        if not trend_aligned:
+            counter_trend_penalty = 25  # Base penalty
+            # Extra penalty if ADX shows strong trend
+            adx = market_data['adx'].iloc[-1] if 'adx' in market_data.columns else None
+            if adx is not None and not (np.isnan(adx) if isinstance(adx, float) else False):
+                if adx > 30:
+                    counter_trend_penalty += 10  # Strong trend = bigger penalty
+                if adx > 40:
+                    counter_trend_penalty += 10  # Very strong trend
+            total_score -= counter_trend_penalty
+            reasons.append(f"COUNTER-TREND PENALTY: -{counter_trend_penalty} points")
+        else:
+            # Bonus for trading WITH the trend
+            total_score += 8
+            reasons.append("TREND ALIGNMENT BONUS: +8 points")
+        
+        # BONUS/PENALTY SYSTEM
+        # Order Block alignment bonus (strong institutional confluence)
+        if ob_aligned and ob_score > 0.7:
+            total_score += 8
+            reasons.append("OB BONUS: Strong institutional level confluence")
+        
+        # Session ORB breakout bonus (momentum confirmation)
+        if orb_aligned and orb_score > 0.7:
+            total_score += 5
+            reasons.append("ORB BONUS: Session breakout confluence")
+        
+        # Combined OB + ORB super confluence
+        if ob_aligned and orb_aligned and ob_score > 0.6 and orb_score > 0.6:
+            total_score += 7
+            reasons.append("SUPER CONFLUENCE: OB + ORB aligned")
+        
+        # BOS confirmation boost
         if bos_confirmed and bos_score > 0.6:
-            total_score += 5  # Bonus for structure confirmation
+            total_score += 5
         elif not bos_confirmed:
-            total_score -= 10  # Penalty for trading against structure
+            total_score -= 10
         
         total_score = max(0, min(100, total_score))
         
@@ -314,9 +427,11 @@ class EntryConfluenceFilter:
         """
         Check if signal direction aligns with macro trend.
         
-        Uses multiple EMAs and ADX to determine trend.
+        Uses multiple EMAs, ADX, and price action to determine trend.
         LONG signals should be in uptrend or neutral.
         SHORT signals should be in downtrend or neutral.
+        
+        CRITICAL: Counter-trend trades receive significant penalties.
         """
         if len(data) < 50:
             return True, 0.5, []  # Neutral if insufficient data
@@ -324,45 +439,91 @@ class EntryConfluenceFilter:
         reasons = []
         score = 0.5  # Neutral
         aligned = True
+        trend = 'neutral'
         
         close = data['close'].iloc[-1]
         
-        # Check EMA alignment
+        # Check EMA alignment - handle NaN values properly
         ema_20 = data['ema_20'].iloc[-1] if 'ema_20' in data.columns else None
         ema_50 = data['ema_50'].iloc[-1] if 'ema_50' in data.columns else None
         sma_50 = data['sma_50'].iloc[-1] if 'sma_50' in data.columns else None
+        
+        # Filter out NaN values
+        if ema_20 is not None and (np.isnan(ema_20) if isinstance(ema_20, float) else False):
+            ema_20 = None
+        if ema_50 is not None and (np.isnan(ema_50) if isinstance(ema_50, float) else False):
+            ema_50 = None
+        if sma_50 is not None and (np.isnan(sma_50) if isinstance(sma_50, float) else False):
+            sma_50 = None
         
         # Use whatever we have
         fast_ma = ema_20
         slow_ma = ema_50 or sma_50
         
-        if fast_ma is not None and slow_ma is not None:
-            # Trend direction based on MA alignment
+        # If EMAs not available, calculate trend from price action
+        if fast_ma is None or slow_ma is None:
+            # Use simple price-based trend detection
+            lookback = min(50, len(data))
+            recent_highs = data['high'].iloc[-lookback:].rolling(10).max()
+            recent_lows = data['low'].iloc[-lookback:].rolling(10).min()
+            
+            if len(recent_highs.dropna()) > 2 and len(recent_lows.dropna()) > 2:
+                # Higher highs and higher lows = uptrend
+                # Lower highs and lower lows = downtrend
+                start_high = recent_highs.dropna().iloc[0]
+                end_high = recent_highs.dropna().iloc[-1]
+                start_low = recent_lows.dropna().iloc[0]
+                end_low = recent_lows.dropna().iloc[-1]
+                
+                if end_high > start_high and end_low > start_low:
+                    trend = 'up'
+                    if direction == 'long':
+                        score += 0.25
+                        reasons.append("Trend UP: Higher highs/lows")
+                        aligned = True
+                    else:
+                        score -= 0.35  # Strong penalty for shorting uptrend
+                        reasons.append("COUNTER-TREND: Shorting in uptrend")
+                        aligned = False
+                elif end_high < start_high and end_low < start_low:
+                    trend = 'down'
+                    if direction == 'short':
+                        score += 0.25
+                        reasons.append("Trend DOWN: Lower highs/lows")
+                        aligned = True
+                    else:
+                        score -= 0.35  # Strong penalty for buying downtrend
+                        reasons.append("COUNTER-TREND: Buying in downtrend")
+                        aligned = False
+                else:
+                    reasons.append("Trend: Neutral/ranging (mixed structure)")
+        else:
+            # EMA-based trend detection
             if fast_ma > slow_ma:
                 trend = 'up'
                 if direction == 'long':
-                    score += 0.3
+                    score += 0.35  # Increased boost for aligned trades
                     reasons.append("Trend UP: EMAs bullish aligned")
                     aligned = True
                 else:  # short in uptrend
-                    score -= 0.2
-                    reasons.append("WARNING: Shorting in uptrend")
+                    score -= 0.4  # Strong penalty for counter-trend
+                    reasons.append("COUNTER-TREND: Shorting in uptrend (EMAs bullish)")
                     aligned = False
             elif fast_ma < slow_ma:
                 trend = 'down'
                 if direction == 'short':
-                    score += 0.3
+                    score += 0.35  # Increased boost for aligned trades
                     reasons.append("Trend DOWN: EMAs bearish aligned")
                     aligned = True
                 else:  # long in downtrend
-                    score -= 0.2
-                    reasons.append("WARNING: Buying in downtrend")
+                    score -= 0.4  # Strong penalty for counter-trend
+                    reasons.append("COUNTER-TREND: Buying in downtrend (EMAs bearish)")
                     aligned = False
             else:
                 trend = 'neutral'
                 reasons.append("Trend NEUTRAL: EMAs flat")
         
-        # Price vs MA check
+        # Price vs MA check - additional penalty for price position
         if slow_ma is not None:
             if direction == 'long' and close < slow_ma:
                 score -= 0.15
@@ -375,19 +536,22 @@ class EntryConfluenceFilter:
                 if aligned:
                     aligned = close < slow_ma * 1.02  # Allow 2% above
         
-        # ADX trend strength check
+        # ADX trend strength check - stronger penalties when trend is strong
         adx = data['adx'].iloc[-1] if 'adx' in data.columns else None
-        if adx is not None:
+        if adx is not None and not (np.isnan(adx) if isinstance(adx, float) else False):
             if adx < 20:
-                # Weak trend - all directions acceptable
+                # Weak trend - all directions acceptable, override alignment
                 score += 0.1
                 reasons.append(f"ADX weak ({adx:.1f}) - ranging market")
                 aligned = True  # Override - ranging markets accept both directions
-            elif adx > 40:
-                # Strong trend - be very careful trading against it
-                if not aligned:
-                    score -= 0.2
-                    reasons.append(f"ADX strong ({adx:.1f}) - risky to fade trend")
+            elif adx > 30:
+                # Strong trend - boost aligned trades, penalize counter-trend
+                if aligned:
+                    score += 0.1  # Bonus for trading with strong trend
+                    reasons.append(f"ADX strong ({adx:.1f}) - trend confirmed")
+                else:
+                    score -= 0.25  # Heavy penalty for fading strong trend
+                    reasons.append(f"ADX strong ({adx:.1f}) - RISKY to fade this trend")
         
         return aligned, max(0, min(1, score)), reasons
     
@@ -453,6 +617,270 @@ class EntryConfluenceFilter:
             self.logger.debug(f"BOS/ChoCH check failed: {e}")
         
         return confirmed, max(0, min(1, score)), reasons
+    
+    def _score_order_blocks(
+        self,
+        direction: str,
+        current_price: float,
+        data: pd.DataFrame,
+        atr: float
+    ) -> Tuple[float, bool, List[str], Optional[Dict[str, Any]]]:
+        """
+        Score entry based on Order Block (ICT) proximity and alignment.
+        
+        Order Blocks represent institutional supply/demand zones.
+        - Bullish OB: Last bearish candle before bullish BOS (demand zone)
+        - Bearish OB: Last bullish candle before bearish BOS (supply zone)
+        
+        For LONG: We want price at or near a bullish order block (demand)
+        For SHORT: We want price at or near a bearish order block (supply)
+        
+        Args:
+            direction: 'long' or 'short'
+            current_price: Current market price
+            data: OHLCV DataFrame
+            atr: Current ATR
+            
+        Returns:
+            Tuple of (score, aligned, reasons, signal_if_any)
+        """
+        if self._order_block_detector is None:
+            return 0.5, True, [], None  # Neutral if detector not available
+        
+        reasons = []
+        score = 0.5  # Neutral starting point
+        aligned = True
+        signal = None
+        
+        try:
+            # Update detector with current market data
+            timestamp = data.index[-1] if hasattr(data.index[-1], 'timestamp') else datetime.utcnow()
+            signal = self._order_block_detector.update(
+                df=data,
+                current_price=current_price,
+                atr=atr,
+                timestamp=timestamp
+            )
+            
+            # Get active order blocks
+            active_obs = self._order_block_detector.get_active_order_blocks()
+            
+            if not active_obs:
+                reasons.append("No active order blocks detected")
+                return score, aligned, reasons, signal
+            
+            # Find order blocks near current price
+            tolerance = atr * 1.5
+            
+            bullish_obs_near = []
+            bearish_obs_near = []
+            
+            for ob in active_obs:
+                # Check if price is within OB zone (between high and low) or very close
+                in_zone = ob.low <= current_price <= ob.high
+                near_zone = abs(current_price - ob.mid_price) < tolerance
+                
+                if in_zone or near_zone:
+                    if ob.block_type == OrderBlockType.BULLISH:
+                        bullish_obs_near.append(ob)
+                    else:
+                        bearish_obs_near.append(ob)
+            
+            # Score based on direction and OB proximity
+            if direction == 'long':
+                if bullish_obs_near:
+                    # Excellent: Long signal at bullish OB (demand zone)
+                    best_ob = max(bullish_obs_near, key=lambda x: x.strength)
+                    score = 0.6 + min(0.35, best_ob.strength * 0.4)
+                    aligned = True
+                    
+                    # Extra boost for fresh (untouched) order blocks
+                    if best_ob.touches == 0:
+                        score += 0.1
+                        reasons.append(f"FRESH bullish OB @ {best_ob.low:.2f}-{best_ob.high:.2f}")
+                    else:
+                        reasons.append(f"Bullish OB @ {best_ob.low:.2f}-{best_ob.high:.2f} (touched {best_ob.touches}x)")
+                    
+                    # BOS/ChoCH context boost
+                    if best_ob.structure_break == StructureBreak.BOS:
+                        score += 0.05
+                        reasons.append("OB confirmed by BOS")
+                    elif best_ob.structure_break == StructureBreak.CHOCH:
+                        score += 0.08
+                        reasons.append("OB confirmed by ChoCH (trend reversal)")
+                
+                elif bearish_obs_near:
+                    # Warning: Long signal at bearish OB (supply zone - resistance)
+                    score = 0.35
+                    aligned = False
+                    reasons.append(f"WARNING: Long near bearish OB (supply) @ {bearish_obs_near[0].low:.2f}")
+                else:
+                    reasons.append("No nearby order blocks for long")
+            
+            elif direction == 'short':
+                if bearish_obs_near:
+                    # Excellent: Short signal at bearish OB (supply zone)
+                    best_ob = max(bearish_obs_near, key=lambda x: x.strength)
+                    score = 0.6 + min(0.35, best_ob.strength * 0.4)
+                    aligned = True
+                    
+                    if best_ob.touches == 0:
+                        score += 0.1
+                        reasons.append(f"FRESH bearish OB @ {best_ob.low:.2f}-{best_ob.high:.2f}")
+                    else:
+                        reasons.append(f"Bearish OB @ {best_ob.low:.2f}-{best_ob.high:.2f} (touched {best_ob.touches}x)")
+                    
+                    if best_ob.structure_break == StructureBreak.BOS:
+                        score += 0.05
+                        reasons.append("OB confirmed by BOS")
+                    elif best_ob.structure_break == StructureBreak.CHOCH:
+                        score += 0.08
+                        reasons.append("OB confirmed by ChoCH (trend reversal)")
+                
+                elif bullish_obs_near:
+                    # Warning: Short signal at bullish OB (demand zone - support)
+                    score = 0.35
+                    aligned = False
+                    reasons.append(f"WARNING: Short near bullish OB (demand) @ {bullish_obs_near[0].high:.2f}")
+                else:
+                    reasons.append("No nearby order blocks for short")
+            
+            # If we got a signal from detector that matches our direction, boost
+            if signal and signal.get('direction') == direction:
+                score += 0.1
+                reasons.append(f"OB detector signal: {signal.get('reason', 'OB signal')}")
+            
+        except Exception as e:
+            self.logger.debug(f"Order block scoring failed: {e}")
+        
+        return max(0, min(1, score)), aligned, reasons, signal
+    
+    def _score_session_orb(
+        self,
+        direction: str,
+        current_price: float,
+        data: pd.DataFrame,
+        atr: float
+    ) -> Tuple[float, bool, List[str], Optional[Dict[str, Any]]]:
+        """
+        Score entry based on Session Opening Range Breakout alignment.
+        
+        Sessions tracked: London (08:00 UTC), New York (13:30 UTC)
+        
+        Logic:
+        - If session range is forming, neutral (wait for breakout)
+        - If breakout occurred in our direction, boost score
+        - If breakout occurred against our direction, reduce score
+        - If price is testing range boundaries, context-dependent scoring
+        
+        Args:
+            direction: 'long' or 'short'
+            current_price: Current market price
+            data: OHLCV DataFrame
+            atr: Current ATR
+            
+        Returns:
+            Tuple of (score, aligned, reasons, signal_if_any)
+        """
+        if self._session_orb_detector is None:
+            return 0.5, True, [], None  # Neutral if detector not available
+        
+        reasons = []
+        score = 0.5  # Neutral starting point
+        aligned = True
+        signal = None
+        
+        try:
+            # Update detector
+            timestamp = data.index[-1] if hasattr(data.index[-1], 'timestamp') else datetime.utcnow()
+            signal = self._session_orb_detector.update(
+                df=data,
+                current_price=current_price,
+                atr=atr,
+                timestamp=timestamp
+            )
+            
+            # Get active session ranges
+            active_ranges = self._session_orb_detector.get_active_ranges()
+            
+            if not active_ranges:
+                # No active session ranges - could be outside trading hours
+                return score, aligned, reasons, signal
+            
+            for session_name, range_obj in active_ranges.items():
+                if not range_obj.is_complete:
+                    # Range still forming
+                    reasons.append(f"{session_name} ORB forming ({range_obj.low:.2f}-{range_obj.high:.2f})")
+                    continue
+                
+                range_size = range_obj.high - range_obj.low
+                
+                # Check for breakout
+                if range_obj.breakout_direction:
+                    if range_obj.breakout_direction == 'bullish':
+                        if direction == 'long':
+                            # Perfect: Long signal with bullish ORB breakout
+                            score = 0.75
+                            aligned = True
+                            reasons.append(f"{session_name} BULLISH ORB breakout confirmed")
+                            
+                            # Extra boost if price is pulling back to range high
+                            if abs(current_price - range_obj.high) < atr * 0.5:
+                                score += 0.1
+                                reasons.append("Pullback to ORB high (optimal entry)")
+                        else:
+                            # Short against bullish breakout
+                            score = 0.3
+                            aligned = False
+                            reasons.append(f"WARNING: Short against {session_name} bullish breakout")
+                    
+                    elif range_obj.breakout_direction == 'bearish':
+                        if direction == 'short':
+                            # Perfect: Short signal with bearish ORB breakout
+                            score = 0.75
+                            aligned = True
+                            reasons.append(f"{session_name} BEARISH ORB breakout confirmed")
+                            
+                            # Extra boost if price is pulling back to range low
+                            if abs(current_price - range_obj.low) < atr * 0.5:
+                                score += 0.1
+                                reasons.append("Pullback to ORB low (optimal entry)")
+                        else:
+                            # Long against bearish breakout
+                            score = 0.3
+                            aligned = False
+                            reasons.append(f"WARNING: Long against {session_name} bearish breakout")
+                
+                else:
+                    # No breakout yet - price within range
+                    if range_obj.low <= current_price <= range_obj.high:
+                        # Trading within range - neutral but note the levels
+                        if direction == 'long':
+                            # Better if near range low
+                            if current_price < range_obj.low + range_size * 0.3:
+                                score = 0.6
+                                reasons.append(f"Long near {session_name} ORB low (support)")
+                            else:
+                                score = 0.45
+                                reasons.append(f"Long within {session_name} range (wait for breakout)")
+                        else:
+                            # Better if near range high
+                            if current_price > range_obj.high - range_size * 0.3:
+                                score = 0.6
+                                reasons.append(f"Short near {session_name} ORB high (resistance)")
+                            else:
+                                score = 0.45
+                                reasons.append(f"Short within {session_name} range (wait for breakout)")
+            
+            # If we got a signal from detector that matches our direction, boost
+            if signal and signal.get('direction') == direction:
+                score = max(score, 0.8)
+                reasons.append(f"ORB signal confirmed: {signal.get('reason', 'ORB breakout')}")
+            
+        except Exception as e:
+            self.logger.debug(f"Session ORB scoring failed: {e}")
+        
+        return max(0, min(1, score)), aligned, reasons, signal
     
     def register_pending_entry(
         self,
@@ -669,6 +1097,23 @@ class EntryConfluenceFilter:
                     notes=f"EMA {period}"
                 ))
         
+        # 5. ORDER BLOCK LEVELS (ICT Institutional Zones)
+        if self._order_block_detector is not None:
+            try:
+                # Get active order blocks from detector
+                active_obs = self._order_block_detector.get_active_order_blocks()
+                for ob in active_obs[:10]:  # Limit to top 10
+                    # Use mid-price of order block as the level
+                    levels.append(PriceLevel(
+                        price=float(ob.mid_price),
+                        level_type=PriceLevelType.ORDER_BLOCK,
+                        strength=min(0.9, 0.6 + ob.strength * 0.3),  # OBs are strong levels
+                        touches=ob.touches,
+                        notes=f"{ob.block_type.value} OB ({ob.structure_break.value})"
+                    ))
+            except Exception as e:
+                self.logger.debug(f"Failed to get order block levels: {e}")
+        
         # Cache levels
         self._price_levels[symbol] = levels
         
@@ -715,6 +1160,16 @@ class EntryConfluenceFilter:
                         # Bad for long: entering at resistance
                         score -= level_contribution * 0.15
                         reasons.append(f"Warning: Near {level.level_type.value} @ {level.price:.2f}")
+                    # Order Block handling for longs
+                    elif level.level_type == PriceLevelType.ORDER_BLOCK:
+                        if 'bullish' in level.notes.lower():
+                            # Bullish OB = demand zone = good for long
+                            score += level_contribution * 0.25
+                            reasons.append(f"Near bullish OB @ {level.price:.2f}")
+                        else:
+                            # Bearish OB = supply zone = resistance for long
+                            score -= level_contribution * 0.1
+                            reasons.append(f"Near bearish OB @ {level.price:.2f} (resistance)")
                 
                 elif direction == 'short':
                     if level.level_type in [PriceLevelType.RESISTANCE,
@@ -727,6 +1182,16 @@ class EntryConfluenceFilter:
                         # Bad for short: entering at support
                         score -= level_contribution * 0.15
                         reasons.append(f"Warning: Near {level.level_type.value} @ {level.price:.2f}")
+                    # Order Block handling for shorts
+                    elif level.level_type == PriceLevelType.ORDER_BLOCK:
+                        if 'bearish' in level.notes.lower():
+                            # Bearish OB = supply zone = good for short
+                            score += level_contribution * 0.25
+                            reasons.append(f"Near bearish OB @ {level.price:.2f}")
+                        else:
+                            # Bullish OB = demand zone = support for short
+                            score -= level_contribution * 0.1
+                            reasons.append(f"Near bullish OB @ {level.price:.2f} (support)")
                 
                 # Round numbers are neutral-to-good for both directions
                 if level.level_type == PriceLevelType.ROUND_NUMBER:
