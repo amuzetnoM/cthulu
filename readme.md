@@ -197,17 +197,17 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 - Enterprise Risk Management
 - Real-Time Monitoring & Alerts
 - 185+ Passing Tests, 95% Coverage
-- **🆕 16 Chart Patterns with AI Analysis**
-- **🆕 Semantic Performance Analytics**
-- **🆕 ML Training Data Pipeline**
-- **🆕 Automated Configuration Optimization**
-- **🆕 Web-Based Backtesting UI**
-- **🆕 Chart Manager - Visual Reasoning Layer**
-- **🆕 ICT Order Blocks & Session ORB Detection**
-- **🆕 Advanced UI Components (Order Book, Stats Ticker, Terminal, Trade Panel)**
-- **🆕 WebSocket Real-Time Updates**
-- **🆕 Enhanced SL/TP Management with Symbol-Aware Distance Enforcement**
-- **🆕 Interactive System Map & Analysis Toolkit**
+- 16 Chart Patterns with AI Analysis**
+- Semantic Performance Analytics**
+- ML Training Data Pipeline**
+- Automated Configuration Optimization**
+- Web-Based Backtesting UI**
+- Chart Manager - Visual Reasoning Layer**
+- ICT Order Blocks & Session ORB Detection**
+- Advanced UI Components (Order Book, Stats Ticker, Terminal, Trade Panel)**
+- WebSocket Real-Time Updates**
+- Enhanced SL/TP Management with Symbol-Aware Distance Enforcement**
+- Interactive System Map & Analysis Toolkit**
 
 ### Quick Start Commands
 ```bash
