@@ -180,6 +180,10 @@ class TradeAdoptionManager:
             open_time = trade.get('time', datetime.now())
             if isinstance(open_time, (int, float)):
                 open_time = datetime.fromtimestamp(open_time)
+            # Ensure timezone awareness for comparison
+            if open_time.tzinfo is None:
+                from datetime import timezone as tz
+                open_time = open_time.replace(tzinfo=tz.utc)
             
             # Check symbol whitelist
             if self.policy.allowed_symbols and symbol not in self.policy.allowed_symbols:
@@ -196,8 +200,10 @@ class TradeAdoptionManager:
                 logger.debug(f"Trade {ticket} magic {magic} is excluded")
                 return False
             
-            # Check age limits
-            age = datetime.now() - open_time
+            # Check age limits - use timezone-aware datetime
+            from datetime import timezone as tz
+            now = datetime.now(tz.utc)
+            age = now - open_time
             if self.policy.max_age_hours and age > timedelta(hours=self.policy.max_age_hours):
                 logger.debug(f"Trade {ticket} too old ({age.total_seconds() / 3600:.1f}h)")
                 return False
