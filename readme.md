@@ -162,7 +162,7 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 | **training** | ML/RL model training and validation | [README](training/README.md) |
 | **audit** | Security audits and compliance reports | [README](audit/README.md) |
 
-### AI/ML Integrations (🆕 Hektor-Powered)
+### AI/ML Integrations (Vector Database)
 | Module | Description | Documentation |
 |--------|-------------|---------------|
 | **cognition/pattern_recognition** | Chart pattern detection with semantic analysis | [Hektor Enhancement](HEKTOR_ENHANCEMENT_README.md) |
