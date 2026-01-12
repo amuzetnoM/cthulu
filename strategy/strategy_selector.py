@@ -127,7 +127,7 @@ class StrategySelector:
         self.regime_history = deque(maxlen=20)
         
         # Configuration
-        self.regime_check_interval = self.config.get('regime_check_interval', 300)  # 5 minutes
+        self.regime_check_interval = self.config.get('regime_check_interval', 30)  # Check regime every 30 seconds
         self.min_strategy_signals = self.config.get('min_strategy_signals', 5)
         self.performance_weight = self.config.get('performance_weight', 0.4)
         self.regime_weight = self.config.get('regime_weight', 0.4)
@@ -233,76 +233,82 @@ class StrategySelector:
         Returns:
             Market regime classification
         """
-        if len(data) < 50:
-            return MarketRegime.RANGING_TIGHT
+        try:
+            if len(data) < 50:
+                self.logger.warning("Insufficient data for regime detection (need 50 bars)")
+                return MarketRegime.RANGING_TIGHT
+                
+            # Get latest values (coerce to safe numeric defaults when missing)
+            adx = data['adx'].iloc[-1] if 'adx' in data.columns and pd.notna(data['adx'].iloc[-1]) else 0.0
+            rsi = data['rsi'].iloc[-1] if 'rsi' in data.columns and pd.notna(data['rsi'].iloc[-1]) else 50.0
+            macd = data['macd'].iloc[-1] if 'macd' in data.columns and pd.notna(data['macd'].iloc[-1]) else 0.0
+            macd_signal = data['macd_signal'].iloc[-1] if 'macd_signal' in data.columns and pd.notna(data['macd_signal'].iloc[-1]) else 0.0
+            bb_upper = data['bb_upper'].iloc[-1] if 'bb_upper' in data.columns and pd.notna(data['bb_upper'].iloc[-1]) else data['high'].iloc[-1]
+            bb_lower = data['bb_lower'].iloc[-1] if 'bb_lower' in data.columns and pd.notna(data['bb_lower'].iloc[-1]) else data['low'].iloc[-1]
             
-        # Get latest values (coerce to safe numeric defaults when missing)
-        adx = data['adx'].iloc[-1] if 'adx' in data.columns and pd.notna(data['adx'].iloc[-1]) else 0.0
-        rsi = data['rsi'].iloc[-1] if 'rsi' in data.columns and pd.notna(data['rsi'].iloc[-1]) else 50.0
-        macd = data['macd'].iloc[-1] if 'macd' in data.columns and pd.notna(data['macd'].iloc[-1]) else 0.0
-        macd_signal = data['macd_signal'].iloc[-1] if 'macd_signal' in data.columns and pd.notna(data['macd_signal'].iloc[-1]) else 0.0
-        bb_upper = data['bb_upper'].iloc[-1] if 'bb_upper' in data.columns and pd.notna(data['bb_upper'].iloc[-1]) else data['high'].iloc[-1]
-        bb_lower = data['bb_lower'].iloc[-1] if 'bb_lower' in data.columns and pd.notna(data['bb_lower'].iloc[-1]) else data['low'].iloc[-1]
-        
-        # Calculate additional metrics (guard against NaN)
-        returns = data['close'].pct_change(20).iloc[-1]
-        returns = returns if pd.notna(returns) else 0.0
-        volatility = data['close'].pct_change().rolling(20).std().iloc[-1]
-        volatility = volatility if pd.notna(volatility) else 0.0
-        bb_width = (bb_upper - bb_lower) / data['close'].iloc[-1] if pd.notna(data['close'].iloc[-1]) and (bb_upper - bb_lower) != 0 else 0.0  # Normalized BB width
-        
-        # Trend strength indicators
-        trend_strength = adx if adx else abs(returns) * 100
-        
-        # MACD momentum
-        macd_histogram = macd - macd_signal
-        macd_trend = 1 if macd_histogram > 0 else -1
-        
-        # Price position in BB
-        price_pos = (data['close'].iloc[-1] - bb_lower) / (bb_upper - bb_lower) if bb_upper != bb_lower else 0.5
-        
-        # Regime classification logic
-        regime = MarketRegime.RANGING_TIGHT  # Default
-        
-        # Strong trending regimes
-        if trend_strength > 30:
-            if returns > 0.005:  # Strong uptrend
-                regime = MarketRegime.TRENDING_UP_STRONG
-            elif returns < -0.005:  # Strong downtrend
-                regime = MarketRegime.TRENDING_DOWN_STRONG
-            elif returns > 0.002:  # Weak uptrend
-                regime = MarketRegime.TRENDING_UP_WEAK
-            elif returns < -0.002:  # Weak downtrend
-                regime = MarketRegime.TRENDING_DOWN_WEAK
-        
-        # Volatile regimes
-        elif volatility > 0.015:  # High volatility
-            if bb_width > 0.03:  # Wide bands = potential breakout
-                regime = MarketRegime.VOLATILE_BREAKOUT
-            else:  # Tight bands = consolidation before move
-                regime = MarketRegime.VOLATILE_CONSOLIDATION
-        
-        # Ranging regimes
-        elif bb_width < 0.015:  # Tight range
-            regime = MarketRegime.RANGING_TIGHT
-        elif bb_width > 0.025:  # Wide range
-            regime = MarketRegime.RANGING_WIDE
-        
-        # Consolidation (low volatility, medium trend)
-        elif trend_strength < 20 and volatility < 0.01:
-            regime = MarketRegime.CONSOLIDATING
-        
-        # Reversal signals (RSI extreme + MACD divergence)
-        elif ((rsi > 70 and macd_trend < 0) or (rsi < 30 and macd_trend > 0)):
-            regime = MarketRegime.REVERSAL
-        
-        # Log regime with details
-        self.logger.info(
-            f"Market regime: {regime} "
-            f"(ADX={adx:.1f}, RSI={rsi:.1f}, Returns={returns:.3f}, Vol={volatility:.3f}, BB={bb_width:.3f})"
-        )
-        
-        return regime
+            # Calculate additional metrics (guard against NaN)
+            returns = data['close'].pct_change(20).iloc[-1]
+            returns = returns if pd.notna(returns) else 0.0
+            volatility = data['close'].pct_change().rolling(20).std().iloc[-1]
+            volatility = volatility if pd.notna(volatility) else 0.0
+            bb_width = (bb_upper - bb_lower) / data['close'].iloc[-1] if pd.notna(data['close'].iloc[-1]) and (bb_upper - bb_lower) != 0 else 0.0  # Normalized BB width
+            
+            # Trend strength indicators
+            trend_strength = adx if adx else abs(returns) * 100
+            
+            # MACD momentum
+            macd_histogram = macd - macd_signal
+            macd_trend = 1 if macd_histogram > 0 else -1
+            
+            # Price position in BB
+            price_pos = (data['close'].iloc[-1] - bb_lower) / (bb_upper - bb_lower) if bb_upper != bb_lower else 0.5
+            
+            # Regime classification logic
+            regime = MarketRegime.RANGING_TIGHT  # Default
+            
+            # Strong trending regimes
+            if trend_strength > 30:
+                if returns > 0.005:  # Strong uptrend
+                    regime = MarketRegime.TRENDING_UP_STRONG
+                elif returns < -0.005:  # Strong downtrend
+                    regime = MarketRegime.TRENDING_DOWN_STRONG
+                elif returns > 0.002:  # Weak uptrend
+                    regime = MarketRegime.TRENDING_UP_WEAK
+                elif returns < -0.002:  # Weak downtrend
+                    regime = MarketRegime.TRENDING_DOWN_WEAK
+            
+            # Volatile regimes
+            elif volatility > 0.015:  # High volatility
+                if bb_width > 0.03:  # Wide bands = potential breakout
+                    regime = MarketRegime.VOLATILE_BREAKOUT
+                else:  # Tight bands = consolidation before move
+                    regime = MarketRegime.VOLATILE_CONSOLIDATION
+            
+            # Ranging regimes
+            elif bb_width < 0.015:  # Tight range
+                regime = MarketRegime.RANGING_TIGHT
+            elif bb_width > 0.025:  # Wide range
+                regime = MarketRegime.RANGING_WIDE
+            
+            # Consolidation (low volatility, medium trend)
+            elif trend_strength < 20 and volatility < 0.01:
+                regime = MarketRegime.CONSOLIDATING
+            
+            # Reversal signals (RSI extreme + MACD divergence)
+            elif ((rsi > 70 and macd_trend < 0) or (rsi < 30 and macd_trend > 0)):
+                regime = MarketRegime.REVERSAL
+            
+            # Log regime with details
+            self.logger.info(
+                f"Market regime: {regime} "
+                f"(ADX={adx:.1f}, RSI={rsi:.1f}, Returns={returns:.3f}, Vol={volatility:.3f}, BB={bb_width:.3f})"
+            )
+            
+            return regime
+            
+        except Exception as e:
+            self.logger.exception(f"Error in regime detection: {e}")
+            return MarketRegime.RANGING_TIGHT
         
     def select_strategy(self, data: pd.DataFrame) -> Strategy:
         """
@@ -316,11 +322,14 @@ class StrategySelector:
         """
         # Update market regime if needed
         now = datetime.now()
-        if (self.last_regime_check is None or 
-            (now - self.last_regime_check).total_seconds() > self.regime_check_interval):
-            
+        time_since_check = (now - self.last_regime_check).total_seconds() if self.last_regime_check else float('inf')
+        
+        if self.last_regime_check is None or time_since_check > self.regime_check_interval:
+            self.logger.info(f"Updating market regime (last check: {time_since_check:.1f}s ago)")
             self.current_regime = self.detect_market_regime(data)
             self.last_regime_check = now
+        else:
+            self.logger.debug(f"Using cached regime: {self.current_regime} (checked {time_since_check:.1f}s ago)")
             
         # Calculate scores for each strategy
         scores = {}

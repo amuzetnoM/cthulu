@@ -656,6 +656,19 @@ class MT5Connector:
         except Exception:
             return None
 
+    def get_point(self, symbol: str) -> float:
+        """Return point size for symbol (minimum price increment)."""
+        try:
+            info = self.get_symbol_info(symbol)
+            if not info:
+                return 0.00001  # default for forex
+            point = info.get('point')
+            if point is not None:
+                return float(point)
+            return 0.00001
+        except Exception:
+            return 0.00001
+
     def get_min_lot(self, symbol: str) -> float:
         """Return minimum tradable lot size for symbol."""
         try:

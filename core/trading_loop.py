@@ -985,12 +985,12 @@ class TradingLoop:
                 if obj is None:
                     return
                 # Common attribute names used across strategies
-                for attr in ('fast_period', 'slow_period', 'fast_ema', 'slow_ema', 'short_window', 'long_window'):
+                for attr in ('fast_period', 'slow_period', 'fast_ema', 'slow_ema', 'short_window', 'long_window', 'fast_ma', 'slow_ma'):
                     if hasattr(obj, attr):
                         try:
                             val = int(getattr(obj, attr))
-                            # skip sma names (short/long windows already handled)
-                            if 'ema' in attr or 'fast_period' in attr or 'slow_period' in attr or 'fast_ema' in attr or 'slow_ema' in attr:
+                            # Collect EMA periods from MA-related attributes
+                            if any(x in attr for x in ('ema', 'fast_period', 'slow_period', 'fast_ma', 'slow_ma')):
                                 required_emas.add(val)
                         except Exception:
                             pass
@@ -1030,7 +1030,7 @@ class TradingLoop:
                 if strat_cfg.get('type') == 'dynamic':
                     for s in strat_cfg.get('strategies', []):
                         params = s.get('params', {}) if isinstance(s.get('params', {}), dict) else {}
-                        for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window'):
+                        for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window', 'fast_ma', 'slow_ma'):
                             if key in params and params[key]:
                                 try:
                                     required_emas.add(int(params[key]))
@@ -1038,7 +1038,7 @@ class TradingLoop:
                                     pass
                 else:
                     params = strat_cfg.get('params', {}) if isinstance(strat_cfg.get('params', {}), dict) else {}
-                    for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window'):
+                    for key in ('fast_ema', 'slow_ema', 'fast_period', 'slow_period', 'short_window', 'long_window', 'fast_ma', 'slow_ma'):
                         if key in params and params[key]:
                             try:
                                 required_emas.add(int(params[key]))
@@ -1099,6 +1099,7 @@ class TradingLoop:
             
             # Compute EMA columns
             if required_emas:
+                self.ctx.logger.info(f"Computing EMA periods: {sorted(required_emas)}")
                 for p in sorted(required_emas):
                     col = f'ema_{p}'
                     if col not in df.columns:
@@ -1147,8 +1148,8 @@ class TradingLoop:
                 
                 strategy_to_use = self.ctx.strategy
                 if isinstance(strategy_to_use, StrategySelectorAdapter):
-                    # Adapter wraps selector - use adapter's on_bar which delegates properly
-                    signal = strategy_to_use.on_bar(current_bar)
+                    # Use full dataframe for proper regime detection
+                    signal = strategy_to_use.generate_signal_with_data(df, current_bar)
                 elif isinstance(strategy_to_use, StrategySelector):
                     signal = strategy_to_use.generate_signal(df, current_bar)
                 else:

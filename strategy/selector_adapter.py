@@ -51,6 +51,28 @@ class StrategySelectorAdapter(Strategy):
             self.logger.error(f"Selector adapter on_bar failed: {e}")
             return None
 
+    def generate_signal_with_data(self, df: pd.DataFrame, bar: pd.Series) -> Optional[Signal]:
+        """
+        Generate signal using provided full DataFrame instead of internal accumulation.
+        This is useful when the trading loop already has the full data available.
+        
+        Args:
+            df: Full market data DataFrame with indicators
+            bar: Latest bar
+            
+        Returns:
+            Signal if generated, None otherwise
+        """
+        try:
+            # Use full dataframe directly for regime detection etc.
+            signal = self.selector.generate_signal(df, bar)
+            if signal:
+                signal.metadata.setdefault("generated_by", self.selector.current_strategy.name if self.selector.current_strategy else self.name)
+            return signal
+        except Exception as e:
+            self.logger.error(f"Selector adapter generate_signal_with_data failed: {e}")
+            return None
+
     def reset(self):
         self._bars.clear()
         # If underlying selector has reset, call it
