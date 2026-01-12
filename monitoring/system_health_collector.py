@@ -10,7 +10,10 @@ Output: metrics/system_health.csv
 import os
 import csv
 import time
-import psutil
+try:
+    import psutil
+except Exception:
+    psutil = None
 import logging
 import threading
 from pathlib import Path
@@ -144,36 +147,57 @@ class SystemHealthCollector:
             update_interval: Seconds between CSV writes (default: 5.0)
         """
         self.logger = logging.getLogger("cthulu.system_health_collector")
-        
+
+        # If psutil is not available, disable this collector gracefully
+        if psutil is None:
+            self.disabled = True
+            self.logger.warning("psutil not available; system health collector disabled")
+            # Set minimal attributes so other code can inspect CSV path if needed
+            if csv_path is None:
+                cthulu_root = Path(__file__).parent.parent
+                metrics_dir = cthulu_root / "metrics"
+                try:
+                    metrics_dir.mkdir(parents=True, exist_ok=True)
+                except Exception:
+                    pass
+                csv_path = str(metrics_dir / "system_health.csv")
+            self.csv_path = csv_path
+            self.update_interval = update_interval
+            self._running = False
+            self._writer_thread = None
+            return
+
+        # Else: full initialization
+        self.disabled = False
         # Set path - CSV goes to centralized metrics/ directory
         if csv_path is None:
             cthulu_root = Path(__file__).parent.parent
             metrics_dir = cthulu_root / "metrics"
             metrics_dir.mkdir(parents=True, exist_ok=True)
             csv_path = str(metrics_dir / "system_health.csv")
-        
+
         self.csv_path = csv_path
         self.update_interval = update_interval
-        
+
         # Get current process
         self.process = psutil.Process()
         self.process_start_time = time.time()
-        
+
         # Tracking
         self.disk_io_start = psutil.disk_io_counters()
         self.net_io_start = psutil.net_io_counters()
-        
+
         # Current snapshot
         self.current_snapshot = SystemHealthSnapshot()
         self._lock = threading.Lock()
-        
+
         # CSV writer thread
         self._running = False
         self._writer_thread = None
-        
+
         # Initialize CSV
         self._initialize_csv()
-        
+
         self.logger.info(f"System health collector initialized")
         self.logger.info(f"  CSV: {self.csv_path}")
         self.logger.info(f"  PID: {self.process.pid}")
@@ -224,9 +248,13 @@ class SystemHealthCollector:
     
     def start(self):
         """Start background collection and CSV writer thread"""
+        if getattr(self, 'disabled', False):
+            self.logger.info("System health collector is disabled (psutil unavailable); skipping start")
+            return
+
         if self._running:
             return
-        
+
         self._running = True
         self._writer_thread = threading.Thread(target=self._collection_loop, daemon=True)
         self._writer_thread.start()

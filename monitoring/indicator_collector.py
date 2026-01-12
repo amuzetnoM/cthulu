@@ -231,6 +231,17 @@ class IndicatorMetricsCollector:
                 
         except Exception as e:
             self.logger.error(f"Failed to initialize CSV: {e}")
+            try:
+                fallback_base = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'cthulu' / 'metrics'
+                fallback_base.mkdir(parents=True, exist_ok=True)
+                fallback_path = fallback_base / Path(self.csv_path).name
+                with open(fallback_path, 'w', newline='') as f:
+                    writer = csv.DictWriter(f, fieldnames=list(asdict(IndicatorSnapshot()).keys()))
+                    writer.writeheader()
+                self.csv_path = str(fallback_path)
+                self.logger.info(f"Switched indicator CSV to user-local path: {self.csv_path}")
+            except Exception as e2:
+                self.logger.error(f"Fallback indicator CSV init failed: {e2}")
     
     def start(self):
         """Start background CSV writer thread"""
@@ -279,6 +290,18 @@ class IndicatorMetricsCollector:
                 
         except Exception as e:
             self.logger.error(f"Failed to write snapshot: {e}")
+            # Attempt write to user-local fallback directory
+            try:
+                fallback_base = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'cthulu' / 'metrics'
+                fallback_base.mkdir(parents=True, exist_ok=True)
+                fallback_path = fallback_base / Path(self.csv_path).name
+                with open(fallback_path, 'a', newline='') as f:
+                    writer = csv.DictWriter(f, fieldnames=list(snapshot_dict.keys()))
+                    writer.writerow(snapshot_dict)
+                self.logger.info(f"Wrote indicator snapshot to fallback CSV: {fallback_path}")
+                self.csv_path = str(fallback_path)
+            except Exception as e2:
+                self.logger.error(f"Failed to write to fallback indicator CSV: {e2}")
     
     def update_snapshot(self, **kwargs):
         """

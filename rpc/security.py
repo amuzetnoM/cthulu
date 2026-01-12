@@ -553,6 +553,23 @@ class AuditLogger:
             if not self._audit_logger.handlers:
                 self._audit_logger.addHandler(handler)
             
+        except PermissionError as e:
+            logger.error(f"Failed to setup audit logger at '{self.config.audit_log_path}': {e}")
+            # Try per-user fallback location
+            try:
+                fallback_base = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'cthulu' / 'logs'
+                fallback_base.mkdir(parents=True, exist_ok=True)
+                fallback_path = fallback_base / Path(self.config.audit_log_path).name
+                handler = logging.FileHandler(str(fallback_path), encoding='utf-8')
+                handler.setFormatter(logging.Formatter(
+                    '%(asctime)s [AUDIT] %(message)s',
+                    datefmt='%Y-%m-%dT%H:%M:%S'
+                ))
+                if not self._audit_logger.handlers:
+                    self._audit_logger.addHandler(handler)
+                logger.info(f"Switched audit log to user-local path: {fallback_path}")
+            except Exception as e2:
+                logger.error(f"Fallback audit logger init failed: {e2}")
         except Exception as e:
             logger.error(f"Failed to setup audit logger: {e}")
     

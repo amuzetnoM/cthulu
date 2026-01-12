@@ -677,12 +677,24 @@ def confirm_and_save(config: Dict[str, Any], config_path: str) -> bool:
         config_file = Path(config_path)
         if config_file.exists():
             backup_path = config_file.with_suffix('.json.bak')
-            backup_path.write_text(config_file.read_text())
-            print_info(f"Backed up existing config to {backup_path.name}")
+            try:
+                backup_path.write_text(config_file.read_text())
+                print_info(f"Backed up existing config to {backup_path.name}")
+            except PermissionError as e:
+                print_warning(f"Could not create backup {backup_path.name} (permission denied). Continuing without backup: {e}")
+            except Exception as e:
+                print_warning(f"Could not create backup {backup_path.name}: {e}")
 
         # Save new config
-        with open(config_path, 'w') as f:
-            json.dump(config, f, indent=2)
+        try:
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=2)
+        except PermissionError as e:
+            print_error(f"Failed to write config to {config_path}: {e}")
+            return False
+        except Exception as e:
+            print_error(f"Failed to write config to {config_path}: {e}")
+            return False
 
         print_success(f"Configuration saved to {config_path}")
         return True

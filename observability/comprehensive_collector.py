@@ -19,7 +19,11 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field, asdict
 from collections import deque
-import psutil
+try:
+    import psutil
+except Exception:
+    psutil = None
+
 
 
 @dataclass
@@ -304,6 +308,18 @@ class ComprehensiveMetricsCollector:
                 
         except Exception as e:
             self.logger.error(f"Failed to initialize CSV: {e}")
+            # Try fallback to per-user metrics directory
+            try:
+                fallback_base = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'cthulu' / 'metrics'
+                fallback_base.mkdir(parents=True, exist_ok=True)
+                fallback_path = fallback_base / self.csv_path.name
+                with open(fallback_path, 'w', newline='') as f:
+                    writer = csv.DictWriter(f, fieldnames=list(asdict(self.current).keys()))
+                    writer.writeheader()
+                self.csv_path = fallback_path
+                self.logger.info(f"Switched metrics CSV to user-local path: {self.csv_path}")
+            except Exception as e2:
+                self.logger.error(f"Fallback CSV initialization failed: {e2}")
     
     def start(self):
         """Start the metrics collection thread"""
@@ -357,17 +373,22 @@ class ComprehensiveMetricsCollector:
                 if self.mt5_connect_time:
                     self.current.mt5_connection_uptime_seconds = time.time() - self.mt5_connect_time
                 
-                # CPU and memory
-                process = psutil.Process(os.getpid())
-                self.current.cpu_usage_pct = process.cpu_percent(interval=0.1)
-                mem_info = process.memory_info()
-                self.current.memory_usage_mb = mem_info.rss / (1024 * 1024)
-                self.current.memory_usage_pct = process.memory_percent()
-                
-                # Disk usage
-                disk = psutil.disk_usage('/')
-                self.current.disk_usage_gb = disk.used / (1024 ** 3)
-                
+                # CPU and memory (psutil optional)
+                if psutil:
+                    process = psutil.Process(os.getpid())
+                    self.current.cpu_usage_pct = process.cpu_percent(interval=0.1)
+                    mem_info = process.memory_info()
+                    self.current.memory_usage_mb = mem_info.rss / (1024 * 1024)
+                    self.current.memory_usage_pct = process.memory_percent()
+                    # Disk usage
+                    disk = psutil.disk_usage('/')
+                    self.current.disk_usage_gb = disk.used / (1024 ** 3)
+                else:
+                    # psutil not available - set conservative defaults
+                    self.current.cpu_usage_pct = 0.0
+                    self.current.memory_usage_mb = 0.0
+                    self.current.memory_usage_pct = 0.0
+                    self.current.disk_usage_gb = 0.0
         except Exception as e:
             self.logger.error(f"Error updating system metrics: {e}")
     
@@ -383,6 +404,19 @@ class ComprehensiveMetricsCollector:
                 
         except Exception as e:
             self.logger.error(f"Error writing to CSV: {e}")
+            # Try fallback to per-user metrics CSV if permission error
+            if isinstance(e, PermissionError) or 'Permission' in str(e):
+                try:
+                    fallback_base = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'cthulu' / 'metrics'
+                    fallback_base.mkdir(parents=True, exist_ok=True)
+                    fallback_path = fallback_base / self.csv_path.name
+                    with open(fallback_path, 'a', newline='') as f:
+                        writer = csv.DictWriter(f, fieldnames=list(data.keys()))
+                        writer.writerow(data)
+                    self.logger.info(f"Wrote metrics to fallback CSV: {fallback_path}")
+                    self.csv_path = fallback_path
+                except Exception as e2:
+                    self.logger.error(f"Failed to write to fallback CSV: {e2}")
     
     def record_trade_completed(self, is_win: bool, pnl: float, duration_seconds: float):
         """

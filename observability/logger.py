@@ -7,6 +7,7 @@ JSON format for production, human-readable for development.
 
 import logging
 import sys
+import os
 from typing import Optional
 from pathlib import Path
 
@@ -65,12 +66,33 @@ def setup_logger(
     # File handler (optional)
     if log_file:
         log_path = Path(log_file)
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
-        file_handler.setLevel(logging.DEBUG)  # Log everything to file
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        try:
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            file_handler = logging.FileHandler(log_file, encoding='utf-8')
+            file_handler.setLevel(logging.DEBUG)  # Log everything to file
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+        except PermissionError as e:
+            # Cannot write to specified log location; attempt to fallback to per-user logs
+            console_handler.emit(logging.LogRecord(name, logging.WARNING, __file__, 0,
+                                                  f"Could not open log file '{log_file}' for writing: {e}", None, None))
+            try:
+                fallback_base = Path(os.getenv('LOCALAPPDATA') or Path.home()) / 'cthulu' / 'logs'
+                fallback_base.mkdir(parents=True, exist_ok=True)
+                fallback_log = fallback_base / Path(log_file).name
+                file_handler = logging.FileHandler(str(fallback_log), encoding='utf-8')
+                file_handler.setLevel(logging.DEBUG)
+                file_handler.setFormatter(formatter)
+                logger.addHandler(file_handler)
+                console_handler.emit(logging.LogRecord(name, logging.INFO, __file__, 0,
+                                                      f"Switched log file to user-local path: {fallback_log}", None, None))
+            except Exception as e2:
+                console_handler.emit(logging.LogRecord(name, logging.WARNING, __file__, 0,
+                                                      f"Fallback log init failed: {e2}", None, None))
+        except Exception as e:
+            # Other unexpected errors while setting up file logging
+            console_handler.emit(logging.LogRecord(name, logging.WARNING, __file__, 0,
+                                                  f"Failed to initialize file logging for '{log_file}': {e}", None, None))
     
     return logger
 
