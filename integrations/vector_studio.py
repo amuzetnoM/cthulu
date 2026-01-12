@@ -65,7 +65,7 @@ class VectorStudioAdapter:
             config: Vector Studio configuration
         """
         self.config = config
-        self.logger = logging.getLogger("Cthulu.integrations.vector_studio")
+        self.logger = logging.getLogger("cthulu.integrations.vector_studio")
         self._connected = False
         self._db = None
         self._using_fallback = False

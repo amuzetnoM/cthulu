@@ -8,7 +8,7 @@ from cthulu.indicators.macd import MACD
 from cthulu.indicators.bollinger import BollingerBands
 from cthulu.indicators.stochastic import Stochastic
 
-logger = logging.getLogger('Cthulu.tests')
+logger = logging.getLogger('cthulu.tests')
 
 
 def _make_ohlcv(n=300):

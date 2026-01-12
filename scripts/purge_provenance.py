@@ -6,7 +6,7 @@ from cthulu.persistence.database import Database
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--db', default='Cthulu.db', help='Path to DB file')
+    p.add_argument('--db', default='cthulu.db', help='Path to DB file')
     p.add_argument('--days', type=int, required=True, help='Delete rows older than DAYS days')
     args = p.parse_args()
 

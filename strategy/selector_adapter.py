@@ -18,7 +18,7 @@ class StrategySelectorAdapter(Strategy):
 
     def __init__(self, selector: StrategySelector, name: Optional[str] = None, max_history: int = 500):
         super().__init__(name or f"dynamic_selector_{id(selector)}", config={})
-        self.logger = logging.getLogger("Cthulu.strategy.selector_adapter")
+        self.logger = logging.getLogger("cthulu.strategy.selector_adapter")
         self.selector = selector
         self.max_history = max_history
         self._bars = []  # list of dict rows to build DataFrame

@@ -38,7 +38,7 @@ class ContextRetriever:
             embedder: TradeEmbedder instance (optional, will create if None)
         """
         self.adapter = adapter
-        self.logger = logging.getLogger("Cthulu.integrations.retriever")
+        self.logger = logging.getLogger("cthulu.integrations.retriever")
         
         if embedder is None:
             from .embedder import TradeEmbedder

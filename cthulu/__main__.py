@@ -259,7 +259,7 @@ def main():
     # Setup logger
     logger = setup_logger(
         name="Cthulu",
-        log_file="logs/Cthulu.log",
+        log_file="logs/cthulu.log",
         level=logging.INFO
     )
     

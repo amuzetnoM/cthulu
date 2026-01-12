@@ -80,7 +80,7 @@ class TestTradeManager(unittest.TestCase):
         trades = manager.scan_for_external_trades()
         self.assertEqual(trades, [])
         
-    @patch('Cthulu.position.trade_manager.mt5')
+    @patch('cthulu.position.trade_manager.mt5')
     def test_scan_detects_external_trade(self, mock_mt5):
         """Test that scan detects external trades."""
         # Create mock MT5 position with different magic number
@@ -111,7 +111,7 @@ class TestTradeManager(unittest.TestCase):
         self.assertEqual(trades[0].symbol, "EURUSD")
         self.assertEqual(trades[0].side, "BUY")
         
-    @patch('Cthulu.position.trade_manager.mt5')
+    @patch('cthulu.position.trade_manager.mt5')
     def test_scan_ignores_Cthulu_trades(self, mock_mt5):
         """Test that scan ignores Cthulu's own trades."""
         # Create mock MT5 position with Cthulu's magic number
@@ -138,7 +138,7 @@ class TestTradeManager(unittest.TestCase):
         # Should be empty since it's Cthulu's trade
         self.assertEqual(len(trades), 0)
         
-    @patch('Cthulu.position.trade_manager.mt5')
+    @patch('cthulu.position.trade_manager.mt5')
     def test_scan_respects_symbol_filter(self, mock_mt5):
         """Test that scan respects adopt_symbols filter."""
         policy = TradeAdoptionPolicy(enabled=True, adopt_symbols=["GBPUSD"])
@@ -170,7 +170,7 @@ class TestTradeManager(unittest.TestCase):
         # Should be empty since EURUSD not in adopt_symbols
         self.assertEqual(len(trades), 0)
         
-    @patch('Cthulu.position.trade_manager.mt5')
+    @patch('cthulu.position.trade_manager.mt5')
     def test_scan_respects_ignore_symbols(self, mock_mt5):
         """Test that scan respects ignore_symbols filter."""
         policy = TradeAdoptionPolicy(enabled=True, ignore_symbols=["XAUUSD"])

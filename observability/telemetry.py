@@ -1,13 +1,13 @@
 """Telemetry helper for provenance and long-term order auditing.
 
-Provides a small wrapper around `Cthulu.persistence.database.Database` to record
+Provides a small wrapper around `cthulu.persistence.database.Database` to record
 order provenance entries and expose simple query helpers.
 """
 from typing import Dict, Any, List, Optional
 import logging
 from cthulu.persistence.database import Database
 
-logger = logging.getLogger('Cthulu.telemetry')
+logger = logging.getLogger('cthulu.telemetry')
 
 class Telemetry:
     def __init__(self, db: Database):

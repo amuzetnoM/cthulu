@@ -55,7 +55,7 @@ import logging
 import json
 import uuid
 
-logger = logging.getLogger("Cthulu.chart_manager")
+logger = logging.getLogger("cthulu.chart_manager")
 
 
 # ============================================================================
@@ -315,7 +315,7 @@ class ChartManager:
                 - async_writes: Use async write queue
         """
         self.config = config or {}
-        self.logger = logging.getLogger("Cthulu.chart_manager")
+        self.logger = logging.getLogger("cthulu.chart_manager")
         
         # Configuration
         self.max_zones_per_type = self.config.get('max_zones_per_type', 20)
@@ -1302,7 +1302,7 @@ class ChartDrawingsExporter:
                        Default: C:\\workspace\\cthulu\\data\\drawings
         """
         self.output_dir = output_dir or r"C:\workspace\cthulu\data\drawings"
-        self.logger = logging.getLogger("Cthulu.chart_exporter")
+        self.logger = logging.getLogger("cthulu.chart_exporter")
         
         # Ensure output directory exists
         import os

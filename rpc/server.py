@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 from threading import Thread
 from typing import Optional, Dict, Any
 
-logger = logging.getLogger('Cthulu.rpc')
+logger = logging.getLogger('cthulu.rpc')
 
 # Import security manager
 try:

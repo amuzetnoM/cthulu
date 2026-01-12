@@ -11,7 +11,7 @@ import json
 
 
 class TestExecutionEngine(unittest.TestCase):
-    @patch('Cthulu.execution.engine.mt5')
+    @patch('cthulu.execution.engine.mt5')
     def test_place_order_resolves_position_ticket(self, mock_mt5):
         # Mock MT5 constants
         mock_mt5.TRADE_RETCODE_DONE = 10009
@@ -80,7 +80,7 @@ class TestExecutionEngine(unittest.TestCase):
         except Exception:
             pass
 
-    @patch('Cthulu.execution.engine.mt5')
+    @patch('cthulu.execution.engine.mt5')
     def test_ml_collector_receives_provenance_id(self, mock_mt5):
         # Mock MT5 constants
         mock_mt5.TRADE_RETCODE_DONE = 10009

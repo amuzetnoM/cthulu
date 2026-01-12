@@ -342,7 +342,7 @@ class CthuluBootstrap:
             Initialized Database instance
         """
         self.logger.info("Initializing database...")
-        db_path = config.get('database', {}).get('path', 'Cthulu.db')
+        db_path = config.get('database', {}).get('path', 'cthulu.db')
         database = Database(db_path)
         return database
     

@@ -82,7 +82,7 @@ class EnsembleStrategy(Strategy):
         super().__init__(name, {})
         self.strategies = strategies
         self.config = config or EnsembleConfig()
-        self.logger = logging.getLogger(f"Cthulu.backtesting.ensemble.{name}")
+        self.logger = logging.getLogger(f"cthulu.backtesting.ensemble.{name}")
         
         # State
         self.weights: Dict[str, float] = {s.name: 1.0 / len(strategies) for s in strategies}

@@ -7,7 +7,7 @@ from .manager import NewsManager
 from .base import NewsAdapter, NewsEvent
 from cthulu.training.instrumentation import MLDataCollector
 
-logger = logging.getLogger('Cthulu.news.ingest')
+logger = logging.getLogger('cthulu.news.ingest')
 
 
 class NewsIngestor:

@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from enum import Enum
 import logging
 
-logger = logging.getLogger("Cthulu.multi_rrr_exit")
+logger = logging.getLogger("cthulu.multi_rrr_exit")
 
 
 class ExitTier(Enum):

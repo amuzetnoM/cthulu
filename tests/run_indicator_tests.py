@@ -1,7 +1,7 @@
 import logging
 import importlib
 
-logger = logging.getLogger('Cthulu.tests')
+logger = logging.getLogger('cthulu.tests')
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)

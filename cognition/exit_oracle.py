@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Tuple, Any
 from datetime import datetime
 import logging
 
-logger = logging.getLogger("Cthulu.cognition.exit_oracle")
+logger = logging.getLogger("cthulu.cognition.exit_oracle")
 
 
 class ExitUrgency(Enum):

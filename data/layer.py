@@ -28,7 +28,7 @@ class DataLayer:
             cache_enabled: Enable data caching for performance
         """
         self.cache_enabled = cache_enabled
-        self.logger = logging.getLogger("Cthulu.data.layer")
+        self.logger = logging.getLogger("cthulu.data.layer")
         self._cache = {}
         
     def normalize_rates(self, rates, timeframe: str = None, symbol: str = None) -> pd.DataFrame:

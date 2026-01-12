@@ -27,7 +27,7 @@ import logging
 import pandas as pd
 import numpy as np
 
-logger = logging.getLogger('Cthulu.market_structure')
+logger = logging.getLogger('cthulu.market_structure')
 
 
 class StructureType(Enum):

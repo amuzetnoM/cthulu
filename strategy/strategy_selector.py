@@ -112,7 +112,7 @@ class StrategySelector:
         """
         self.strategies = {s.name: s for s in strategies}
         self.config = config or {}
-        self.logger = logging.getLogger("Cthulu.strategy_selector")
+        self.logger = logging.getLogger("cthulu.strategy_selector")
         
         # Performance tracking
         self.performance = {

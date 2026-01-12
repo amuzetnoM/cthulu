@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 import logging
 
-logger = logging.getLogger("Cthulu.cognition.regime")
+logger = logging.getLogger("cthulu.cognition.regime")
 
 
 class MarketRegime(Enum):

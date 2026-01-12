@@ -7,7 +7,7 @@ from cthulu.strategy.sma_crossover import SmaCrossover
 from cthulu.indicators.supertrend import Supertrend
 from cthulu.indicators.vwap import VWAP
 
-logger = logging.getLogger('Cthulu.tests')
+logger = logging.getLogger('cthulu.tests')
 
 
 def _make_ohlcv(n=300):

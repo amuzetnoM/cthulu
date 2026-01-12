@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 import logging
 import math
 
-logger = logging.getLogger('Cthulu.profit_scaler')
+logger = logging.getLogger('cthulu.profit_scaler')
 
 # ML Tier Optimizer integration
 try:

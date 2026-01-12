@@ -145,7 +145,7 @@ class ExecutionEngine:
         self.slippage = slippage
         # Optional risk configuration overrides (from app config)
         self.risk_config = risk_config or {}
-        self.logger = logging.getLogger("Cthulu.execution")
+        self.logger = logging.getLogger("cthulu.execution")
         # Optional metrics collector (MetricsCollector)
         self.metrics = metrics
         # Optional ML instrumentation collector

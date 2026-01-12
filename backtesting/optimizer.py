@@ -44,7 +44,7 @@ class WalkForwardOptimizer:
             num_windows: Number of walk-forward windows
             metric_to_optimize: Metric to optimize ('sharpe_ratio', 'profit_factor', etc.)
         """
-        self.logger = logging.getLogger("Cthulu.backtesting.optimizer")
+        self.logger = logging.getLogger("cthulu.backtesting.optimizer")
         self.in_sample_pct = in_sample_pct
         self.num_windows = num_windows
         self.metric_to_optimize = metric_to_optimize
@@ -185,7 +185,7 @@ class MonteCarloSimulator:
         Args:
             num_simulations: Number of simulations to run
         """
-        self.logger = logging.getLogger("Cthulu.backtesting.montecarlo")
+        self.logger = logging.getLogger("cthulu.backtesting.montecarlo")
         self.num_simulations = num_simulations
         
     def simulate(
@@ -323,7 +323,7 @@ class ParameterOptimizer:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger("Cthulu.backtesting.optimizer.parameter")
+        self.logger = logging.getLogger("cthulu.backtesting.optimizer.parameter")
         
     def optimize(
         self,

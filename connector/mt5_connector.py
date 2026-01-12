@@ -80,7 +80,7 @@ class MT5Connector:
         """
         self.config = config
         self.connected = False
-        self.logger = logging.getLogger("Cthulu.connector")
+        self.logger = logging.getLogger("cthulu.connector")
         self._lock = Lock()
         self._last_request_time = 0.0
         self._min_request_interval = 0.1  # 100ms between requests

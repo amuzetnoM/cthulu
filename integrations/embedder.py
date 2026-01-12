@@ -19,7 +19,7 @@ class TradeEmbedder:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger("Cthulu.integrations.embedder")
+        self.logger = logging.getLogger("cthulu.integrations.embedder")
     
     def signal_to_text(
         self,

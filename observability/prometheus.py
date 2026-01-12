@@ -60,7 +60,7 @@ class PrometheusExporter:
         Args:
             prefix: Metric name prefix
         """
-        self.logger = logging.getLogger("Cthulu.prometheus")
+        self.logger = logging.getLogger("cthulu.prometheus")
         self.prefix = prefix
         self._start_time = time.time()
         self._metrics_cache: Dict[str, PrometheusMetric] = {}

@@ -6,7 +6,7 @@ import logging
 from .base import NewsAdapter, NewsEvent
 from datetime import datetime
 
-logger = logging.getLogger('Cthulu.news.fred')
+logger = logging.getLogger('cthulu.news.fred')
 
 
 class FREDAdapter(NewsAdapter):

@@ -7,7 +7,7 @@ from .base import NewsEvent, NewsAdapter
 from .cache import FileCache
 import logging
 
-logger = logging.getLogger('Cthulu.news')
+logger = logging.getLogger('cthulu.news')
 
 class NewsManager:
     def __init__(self, adapters: List[NewsAdapter], cache_ttl: int = 300):
