@@ -3,7 +3,7 @@ title: MATHEMATICS
 description: "Mathematical foundations for Cthulu: risk, sizing, BOS/ChoCH detection, multi-RRR exits and performance optimization."
 tags: [mathematics, risk-management, position-sizing, exit-strategies]
 sidebar_position: 17
-version: 5.2.0
+version: 5.2.33
 ---
 
 ![](https://img.shields.io/badge/Version-2.0.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
@@ -51,7 +51,7 @@ Edge cases & guards:
 
 Volatility scaling (adaptive sizing):
 
-    target_distance = α * ATR(N)   (α e.g., 0.5-2.0)
+    target_distance = α * ATR(N)   (α e.g., 0.5.2.33)
     enforce SL distance >= min_tick * factor
 
 Where ATR(N) = EMA(TrueRange, N)

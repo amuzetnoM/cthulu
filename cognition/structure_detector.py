@@ -12,7 +12,7 @@ Key Philosophy:
 - All signals must be evaluated using closed bars only (no repainting)
 - Fractal pivots provide stable, non-repainting anchors
 
-Part of Cthulu v5.2.0 APEX - Entry Quality System
+Part of Cthulu v5.2.33 APEX - Entry Quality System
 """
 
 from __future__ import annotations

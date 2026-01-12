@@ -3,10 +3,10 @@ title: DEPLOYING CTHULU
 description: Production deployment strategies for Cthulu including Docker, Linux, Windows service, and monitoring setup
 tags: [deployment, docker, production, monitoring]
 sidebar_position: 9
-version: 5.2.0
+version: 5.2.33
 ---
 
- ![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+ ![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
  ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
@@ -70,7 +70,7 @@ docker-compose logs -f Cthulu
 docker build -t Cthulu:latest .
 
 # Or build with specific version
-docker build -t Cthulu:5.2.0 .
+docker build -t Cthulu:5.2.33 .
 ```
 
 #### 2. Environment Configuration
@@ -668,7 +668,7 @@ The fastest way to get started - pull the official image from GHCR:
 docker pull ghcr.io/amuzetnom/cthulu:latest
 
 # Or specific version
-docker pull ghcr.io/amuzetnom/cthulu:5.2.0
+docker pull ghcr.io/amuzetnom/cthulu:5.2.33
 
 # Or major version
 docker pull ghcr.io/amuzetnom/cthulu:5.2
@@ -727,15 +727,15 @@ docker-compose up -d
 
 | Tag | Description |
 |-----|-------------|
-| `latest` | Latest stable release (5.2.0) |
-| `5.2.0` | Specific version 5.2.0 |
+| `latest` | Latest stable release (5.2.33) |
+| `5.2.33` | Specific version 5.2.33 |
 | `5.2` | Latest patch for 5.2.x |
 | `5.1.0` | Previous version 5.1.0 |
 
 ---
 
 **Last Updated**: January 2026  
-**Version**: 5.2.0
+**Version**: 5.2.33
 
 
 

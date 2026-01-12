@@ -1,6 +1,6 @@
 # Ultra-Aggressive Mindset Configuration
 
-> **v5.2.0** | High-Risk, High-Reward Trading Profile
+> **v5.2.33** | High-Risk, High-Reward Trading Profile
 
 ## Overview
 
@@ -72,4 +72,4 @@ significant losses. Always:
 4. Have circuit breakers enabled
 
 ---
-*Part of Cthulu Trading System v5.2.0*
+*Part of Cthulu Trading System v5.2.33*

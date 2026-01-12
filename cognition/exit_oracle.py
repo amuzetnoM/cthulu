@@ -4,7 +4,7 @@ Exit Oracle - The Judgment of Cognition
 Enhanced exit signal generation with multi-indicator confluence.
 Integrates with Cognition modules for intelligent exit timing.
 
-Part of Cthulu Cognition Engine v5.2.0
+Part of Cthulu Cognition Engine v5.2.33
 """
 from __future__ import annotations
 import numpy as np

@@ -4,7 +4,7 @@ description: Comprehensive guide to Cthulu's advanced trading strategies, next-g
 tags: [features, strategies, indicators, dynamic-selection, SAFE]
 slug: /docs/features
 sidebar_position: 5
-version: 5.2.0
+version: 5.2.33
 ---
 ````
 _________   __  .__          .__         
@@ -15,7 +15,7 @@ _________   __  .__          .__
         \/           \/                  
 ````    
 
- ![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+ ![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
  ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
@@ -26,7 +26,7 @@ _________   __  .__          .__
 
 ### SAFE: Set And Forget Engine
 
-👾 Cthulu v5.2.0 continues the SAFE paradigm:
+👾 Cthulu v5.2.33 continues the SAFE paradigm:
 - **S**mart strategy selection with intelligent fallback
 - **A**daptive to all market conditions (ranging, trending, volatile)
 - **F**ully autonomous signal generation without manual intervention
@@ -58,7 +58,7 @@ _________   __  .__          .__
 
 ## Trading Strategies
 
-Cthulu v5.2.0 includes **7 active trading strategies**, each optimized for specific market conditions:
+Cthulu v5.2.33 includes **7 active trading strategies**, each optimized for specific market conditions:
 
 | Strategy | Type | Best Regime | Signal Speed | Crossover Required |
 |----------|------|-------------|--------------|-------------------|
@@ -936,7 +936,7 @@ The GUI automatically connects to the running Cthulu instance and displays data 
 
 ### Overview
 
-Cthulu v5.2.0 provides revolutionary **autonomous position management** that creates self-managing trades. This is the core of the **SAFE (Set And Forget Engine)** paradigm.
+Cthulu v5.2.33 provides revolutionary **autonomous position management** that creates self-managing trades. This is the core of the **SAFE (Set And Forget Engine)** paradigm.
 
 The system comprises four interconnected modules:
 1. **ProfitScaler** - Tiered partial profit taking
@@ -1758,7 +1758,7 @@ Metrics exported to Prometheus for external monitoring:
 
 ## Conclusion
 
-Cthulu v5.2.0 is a **market-destroying beast** with:
+Cthulu v5.2.33 is a **market-destroying beast** with:
 
 ✅ **7 Active Strategies** with intelligent selection
 ✅ **SAFE Engine** for autonomous operation

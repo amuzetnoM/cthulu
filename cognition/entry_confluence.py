@@ -14,7 +14,7 @@ Key concepts:
 3. Liquidity Considerations - Are we entering into liquidity or from it?
 4. Multi-Timeframe Alignment - Does higher TF support this entry?
 
-Part of Cthulu v5.2.0 - Entry Quality System
+Part of Cthulu v5.2.33 - Entry Quality System
 """
 
 from __future__ import annotations

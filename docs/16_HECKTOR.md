@@ -3,7 +3,7 @@ title: HECKTOR INTEGRATION
 description: Technical integration specification between Cthulu autonomous trading system and Vector Studio (Hecktor) high-performance vector database for semantic trade memory
 tags: [integration, vector-database, hecktor, semantic-memory, embeddings]
 sidebar_position: 16
-version: 5.2.0
+version: 5.2.33
 ---
 
 ![](https://img.shields.io/badge/Version-1.0.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
@@ -58,7 +58,7 @@ This document specifies the technical integration between Cthulu (autonomous MT5
 
 ## System Overview: Cthulu
 
-Cthulu v5.2.0 is a multi-strategy autonomous trading system for MetaTrader 5.
+Cthulu v5.2.33 is a multi-strategy autonomous trading system for MetaTrader 5.
 
 ### Core Architecture
 

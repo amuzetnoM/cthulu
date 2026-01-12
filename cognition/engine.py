@@ -7,7 +7,7 @@ Central AI/ML integration layer that coordinates:
 - Sentiment Analysis
 - Enhanced Exit Signals
 
-Part of Cthulu v5.2.0
+Part of Cthulu v5.2.33
 """
 from __future__ import annotations
 import numpy as np

@@ -13,7 +13,7 @@ Key Insight from Research:
 - Splitting entries across 2-3 RRR targets reduces drawdowns by 50%
 - Probability of profitability increases from ~49% to ~62% with 3-trade structure
 
-Part of Cthulu v5.2.0 APEX - Exit Quality System
+Part of Cthulu v5.2.33 APEX - Exit Quality System
 """
 
 from __future__ import annotations

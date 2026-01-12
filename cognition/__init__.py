@@ -22,7 +22,7 @@ Usage:
     # Get exit signals
     exits = engine.get_exit_signals(positions, market_data, indicators)
 
-Part of Cthulu v5.2.0
+Part of Cthulu v5.2.33
 """
 
 # Regime Classifier

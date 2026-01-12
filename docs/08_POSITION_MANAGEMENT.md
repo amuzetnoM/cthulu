@@ -3,10 +3,10 @@ title: POSITION MANAGEMENT
 description: Comprehensive guide to Cthulu's position management system including profit scaling, lifecycle management, and external trade adoption
 tags: [position-management, profit-scaling, trade-adoption, lifecycle]
 sidebar_position: 8
-version: 5.2.0
+version: 5.2.33
 ---
 
-![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
@@ -906,4 +906,4 @@ if cthulu_tickets != mt5_tickets:
 ---
 
 **Last Updated:** 2026-01-05  
-**Version:** 5.2.0
+**Version:** 5.2.33

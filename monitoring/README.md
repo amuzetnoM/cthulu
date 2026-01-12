@@ -1,6 +1,6 @@
 # Monitoring Services
 
- ![Version](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![Version](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white) 
  ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
@@ -14,7 +14,7 @@ Three specialized monitoring services that create comprehensive CSV outputs:
 2. **System Health Monitoring** - Process metrics, resources, and performance tracking
 3. **Comprehensive Metrics** - Trading performance, equity, and position tracking
 
-### v5.2.0
+### v5.2.33
 
 - **Real-Time Dashboard** - HTML dashboard with live charts and benchmarking
 - **RSI Reversal Tracking** - Monitors RSI extreme reversals for signal analysis
@@ -24,7 +24,7 @@ Three specialized monitoring services that create comprehensive CSV outputs:
 ## Architecture
 
 ```
-Cthulu Trading System v5.2.0
+Cthulu Trading System v5.2.33
     ├─→ Indicator Collector → metrics/indicator_metrics.csv
     ├─→ System Health Collector → metrics/system_health.csv
     └─→ Comprehensive Collector → metrics/comprehensive_metrics.csv

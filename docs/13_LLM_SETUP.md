@@ -3,10 +3,10 @@ title: LLM AUTO-TUNE
 description: Configuration and usage of LLM endpoints for AI-assisted summarization and PR generation in the Cthulu trading system
 tags: [llm, ai, auto_tune, integration]
 sidebar_position: 13
-version: 5.2.0
+version: 5.2.33
 ---
 
-![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117)
+![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117)
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 

@@ -1,6 +1,6 @@
 //+------------------------------------------------------------------+
 //|                                           CthulhuDrawings_v2.mq5 |
-//|                                    Cthulu v5.2.0 - Chart Manager |
+//|                                  Cthulu v5.2.33 - Chart Manager |
 //|                      Multi-Timeframe Zone Drawing from JSON v2   |
 //+------------------------------------------------------------------+
 #property copyright "Cthulu Trading System"

@@ -36,7 +36,7 @@ INTEGRATION POINTS:
 - session_orb.py: Feeds ORB levels
 - structure_detector.py: Feeds BOS/ChoCH events
 
-Part of Cthulu v5.2.0 APEX - Visual Reasoning System
+Part of Cthulu v5.2.33 APEX - Visual Reasoning System
 """
 
 from __future__ import annotations

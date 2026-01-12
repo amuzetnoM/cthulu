@@ -1,5 +1,5 @@
 # Cthulu GCP Deployment
-> **Version**: v5.2.0  
+> **Version**: v5.2.33  
 > **Last Updated**: 2026-01-02  
 > **Status**: LIVE
 
