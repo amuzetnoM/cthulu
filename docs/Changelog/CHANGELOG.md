@@ -26,53 +26,50 @@ _________   __  .__          .__
 
 ## UNRELEASED
 
-> Comprehensive documentation polish and reorganization
+> Visual reasoning enhancements, advanced UI components, and critical position management improvements
 
 ### Added
-- Version and last-update badges to all documentation files (minimum 2 badges per file)
-- Proper numbering scheme for all core documentation files (01-19)
-- Comprehensive INDEX.md with links to all module directories and READMEs
-- Module directory index table showing all core trading, infrastructure, and utility modules
-- Quick reference section in INDEX.md with essential commands
+- **Chart Manager Visual Reasoning Layer (`cognition/chart_manager.py`):** Dynamic zone and level tracking with visual analysis capabilities
+- **Order Block Detector (`cognition/order_blocks.py`):** ICT-style Order Block detection with Break of Structure (BOS) and Change of Character (ChoCH) identification
+- **Session ORB Detector (`cognition/session_orb.py`):** Session Opening Range Breakout detection for London and New York sessions
+- **Enhanced Entry Confluence:** Integration of Order Blocks and Session ORB into entry quality assessment
+- **CthulhuDrawings v2 Indicator:** Multi-timeframe zone drawing MQL5 indicator with JSON export capabilities
+- **ChartDrawingsExporter:** JSON export functionality for chart drawings integration
+- **Interactive Cthulu System Map (`tools/system_map.html`):** Interactive architecture visualization tool with comprehensive system overview
+- **System Analysis Toolkit (`tools/`):** Comprehensive analysis tools including ANALYSIS_TOOLKIT_README.md, analyze_cthulu.py, SYSTEM_AUDIT.md, and SYSTEM_MAP_GUIDE.md
+- **Advanced UI Components:** Order Book, Stats Ticker, Terminal, and Trade Panel components for enhanced user interface
+- **WebSocket Support:** Real-time price updates and trade notifications via WebSocket integration
+- **Battle Test Configuration (`config_battle.json`):** Apex Predator Survival Mode configuration with comprehensive trading strategies and risk management
+- **Runtime Indicator Tests (`tests/run_indicator_tests.py`):** Automated testing with logging and error handling for runtime indicators
+- **Inline EMA Computation:** Direct EMA calculation in ensure_runtime_indicators for improved reliability
+- **Enhanced Test Coverage:** New unit tests for SL/TP management, symbol selection, position modification, idempotency checks, and dynamic SL/TP behavior
+- **Security Documentation:** SECURITY.md and PRIVACY_POLICY.md added to documentation suite
 
 ### Changed
-- Renamed README.md to 01_INTRODUCTION.md for proper flow
-- Renumbered all documentation files with professional ordering:
-  - 01_INTRODUCTION.md (formerly README.md)
-  - 02_QUICKSTART.md
-  - 03_USAGE.md
-  - 04_ARCHITECTURE.md
-  - 05_FEATURES_GUIDE.md
-  - 06_MINDSETS.md
-  - 07_RISK.md
-  - 08_POSITION_MANAGEMENT.md (renumbered from unnumbered)
-  - 09_DEPLOYMENT.md (renumbered from 08)
-  - 10_OBSERVABILITY.md (renumbered from 09)
-  - 11_BACKTESTING.md (renumbered from 10)
-  - 12_ML-RL.md (renumbered from 11)
-  - 13_PERFORMANCE_TUNING.md (renumbered from 12)
-  - 14_ADVISORY.md (renumbered from 13)
-  - 15_UTILITIES.md (renumbered from unnumbered)
-  - 16_SECURITY.md (renumbered from 14)
-  - 17_MATHEMATICS.md (renumbered from unnumbered)
-  - 18_HECKTOR.md (renumbered from 16)
-  - 19_PRIVACY_POLICY.md (renumbered from 15)
-- Updated all sidebar_position values to match new numbering
-- Standardized badge format across all files (no alt text, consistent styling)
-- Enhanced INDEX.md to be a true navigational index rather than a README-style document
-- Fixed MATHEMATICS.md YAML frontmatter (missing closing quote on version field)
-- Updated HECKTOR.md title to use proper emoji format: 👾 Cthulu x 👽 Hecktor
-
-### Removed
-- STOP_LOSS_BUG_FIX.md (moved to archive/historical documentation)
-- Alt text from all badge images for cleaner rendering
-- Duplicate badges in documentation files
+- **Enhanced SL/TP Management:** Broker minimum distance checks enforced with symbol-aware distance validation
+- **Position Management Improvements:** Better SL/TP handling with comprehensive logging and idempotency checks to prevent duplicate operations
+- **Strategy Handling:** StrategySelectorAdapter now supported in indicator management for improved flexibility
+- **Branch Status:** Updated README to reflect stable status of AI-native branch (previously marked as unstable)
+- **Trading Configuration:** Optimal trading configuration parameters updated for universal applicability
+- **Documentation Updates:** Introduction updated to reflect Hektor integration for market pattern recognition
+- **Code Cleanup:** Removed outdated documentation files (moved analysis toolkit files to tools/ directory, removed AI_ML_RL_PROPOSAL.md)
 
 ### Fixed
-- YAML frontmatter syntax error in MATHEMATICS.md (line 4 missing closing quote)
-- Inconsistent badge styling across documentation files
-- Missing version badges in multiple files
-- Sidebar position conflicts after file renumbering
+- **SL/TP Symbol-Aware Distance Enforcement:** Corrected distance calculation to respect broker-specific minimum distance requirements per symbol
+- **Position Management Idempotency:** Implemented proper idempotency checks to prevent duplicate position modifications and closures
+- **Dynamic SL/TP Retry Logic:** Enhanced retry mechanism for SL/TP updates with proper error handling
+- **Close Operation Idempotency:** Ensured close operations are idempotent to prevent double-close errors
+- **Symbol Matching Logic:** Improved symbol matching and selection logic for multi-symbol trading scenarios
+- **Breakeven Buffer Handling:** Fixed breakeven buffer calculation in dynamic SL/TP management
+- **Untracked Position Handling:** Better error handling for operations on untracked positions
+
+### Security
+- **Dependency Updates:** Security-related dependency updates via Dependabot:
+  - `flask-cors`: 4.0.0 → 6.0.0 (addresses CORS security improvements)
+  - `python-socketio`: 5.10.0 → 5.14.0 (includes security patches and stability improvements)
+  - `eventlet`: 0.33.3 → 0.40.3 (critical security fixes and performance improvements)
+- **Security Documentation:** Added comprehensive SECURITY.md with security guidelines and best practices
+- **Privacy Policy:** Added PRIVACY_POLICY.md documenting data handling and privacy practices
 
 ---
 
