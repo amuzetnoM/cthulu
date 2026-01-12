@@ -347,6 +347,7 @@ temp/
 analysis_report.json
 codebase_analysis.json
 *.analysis.json
+system_map_screenshot.png
 
 # ============================================================================
 # MISC
