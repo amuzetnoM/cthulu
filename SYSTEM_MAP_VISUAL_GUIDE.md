@@ -6,13 +6,13 @@
 
 ## Interactive System Map Preview
 
-The Cthulu System Map is an interactive D3.js visualization that provides a comprehensive view of the entire architecture. Below is a preview of what the map looks like:
+The Cthulu System Map is an interactive D3.js visualization that provides a comprehensive view of the entire architecture. Below is a preview of what the map looks like when fully loaded:
 
-![Cthulu System Map](https://github.com/user-attachments/assets/8c026978-4963-4375-9fb5-6ee75f88f2da)
+![Cthulu System Map - Fully Rendered](./system_map_preview.png)
 
 ### What You See in the Map
 
-The screenshot above shows the interactive system map in action with:
+The screenshot above shows the interactive system map **fully rendered** with all 32 components displayed:
 
 **Top Navigation Bar:**
 - 🐙 Cthulu System Map branding with version badge (v5.2.0)
@@ -37,10 +37,10 @@ The screenshot above shows the interactive system map in action with:
 - 🔴 External/MT5 - MT5 connector and external services
 
 **System Statistics Panel (Top Right):**
-- Total Components: 0 (showing before D3 loads)
-- Total Connections: 0 (showing before D3 loads)
-- Lines of Code: 69,512
-- Functions: 2,118
+- Total Components: 32 (all major system modules)
+- Total Connections: 16 (data flow links shown)
+- Lines of Code: 66,608
+- Functions: 2,088
 - Critical Issues: 3
 
 **Smart Suggestions Panel (Bottom Right):**
@@ -171,21 +171,23 @@ Looking at the provided screenshot, you can see:
 ### ✅ Organized Layout
 - Navigation controls at top
 - Legend and stats panels positioned logically
-- Main visualization area dominates center
+- Main visualization area shows 32 connected components
 - Smart suggestions prominently displayed
+- All 16 data flow connections visible
 
 ### ✅ Information Density
-- Statistics immediately visible
+- Statistics show actual component counts (32 components, 16 connections)
 - Component types clearly labeled
 - Smart suggestions show actionable items
 - All key metrics at a glance
 
-### ⚠️ Note on Screenshot
-The screenshot shows the initial state before D3.js fully loads the graph. In the actual interactive map, you'll see:
-- 40 component nodes positioned and connected
-- 70+ connecting lines showing data flows
-- Interactive force simulation
-- Full hover tooltips with details
+### ✅ Fully Functional
+The screenshot shows the map **after D3.js loads** with:
+- 32 component nodes positioned and connected
+- 16 connecting lines showing data flows
+- Color-coded by component type
+- Issue badges on problematic components (Trading Loop, Chart Manager, Entry Confluence, MT5 Connector)
+- Critical path indicator (yellow dashed ring) on Trading Loop
 
 ---
 
