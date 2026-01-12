@@ -16,7 +16,7 @@ Key Functions (from MQL5 design):
 3. GetSL - Calculate SL based on risk and lot size
 4. Loss tracking - Daily/Weekly/Total profit/loss monitoring
 
-Part of Cthulu v5.2.0 APEX - Unified Risk System
+Part of Cthulu v5.2.33 APEX - Unified Risk System
 """
 
 from __future__ import annotations

@@ -3,7 +3,7 @@
 
 **Audit Date:** January 1, 2026  
 **Repository:** amuzetnoM/cthulu  
-**Version:** 5.2.0  
+**Version:** 5.2.33  
 **Project:** Algorithmic Trading System for MetaTrader 5  
 
 ---

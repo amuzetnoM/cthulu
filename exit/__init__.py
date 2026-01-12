@@ -5,7 +5,7 @@ Exit strategy implementations for position management.
 
 Includes context-aware exit coordination for intelligent exit decision-making.
 
-**New in v5.2.0:**
+**New in v5.2.33:**
 - AdaptiveLossCurve: Non-linear loss tolerance (hyperbolic/softmax)
 - ConfluenceExitManager: Multi-indicator confluence-based exits
 """
@@ -58,7 +58,7 @@ __all__ = [
     "AggressiveScalingExit",
     "ProfitScaling",
     "AggressiveScaling",
-    # v5.2.0 additions
+    # v5.2.33 additions
     "AdaptiveLossCurve",
     "AdaptiveLossExitStrategy",
     "LossCurveConfig",

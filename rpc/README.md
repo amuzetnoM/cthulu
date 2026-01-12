@@ -2,7 +2,7 @@
 
 Lightweight HTTP-based RPC server for programmatic control of Cthulu at runtime.
 
-![Version](https://img.shields.io/badge/Version-5.2.0-4B0082?style=flat-square)
+![Version](https://img.shields.io/badge/Version-5.2.33-4B0082?style=flat-square)
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=flat-square&logo=calendar)
 ![Security](https://img.shields.io/badge/Security-Hardened-brightgreen?style=flat-square)
 
@@ -51,7 +51,7 @@ Enable in `config.json` or any mindset config:
 
 **IMPORTANT:** RPC must be explicitly enabled. Default is `false`.
 
-## Security Features (v5.2.0)
+## Security Features (v5.2.33)
 
 ### Intelligent Rate Limiting
 

@@ -3,10 +3,10 @@ title: UTILITY MODULES
 description: Infrastructure components including circuit breakers, rate limiters, caching, health monitoring, and retry logic
 tags: [utilities, infrastructure, circuit-breaker, rate-limiter, cache]
 sidebar_position: 18
-version: 5.2.0
+version: 5.2.33
 ---
 
-![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
@@ -828,4 +828,4 @@ def apply_sl_tp(ticket, sl, tp):
 ---
 
 **Last Updated:** 2026-01-05  
-**Version:** 5.2.0
+**Version:** 5.2.33

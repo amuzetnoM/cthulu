@@ -4,7 +4,7 @@
 **Report Date:** 2026-01-06  
 **Auditor:** Automated Security Analysis Tools  
 **Repository:** amuzetnoM/cthulu  
-**Version:** 5.2.0  
+**Version:** 5.2.33  
 
 ---
 

@@ -1,6 +1,6 @@
 # Complete System Overview
 
- ![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white) 
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
@@ -12,7 +12,7 @@
 
 ## System Architecture
 
-### Complete System Architecture (v5.2.0)
+### Complete System Architecture (v5.2.33)
 
 ```mermaid
 flowchart TB
@@ -1069,7 +1069,7 @@ Track system updates and releases in `/docs/changelog/`
 
 ## Version History
 
-- **v5.2.0** - Current (Web backtesting UI, LLM integration, vector DB, profit scaling)
+- **v5.2.33** - Current (Web backtesting UI, LLM integration, vector DB, profit scaling)
    - 207 commits since v5.1.0 with major feature additions
    - Flask-based backtesting UI with interactive charts
    - Ollama LLM integration for AI-powered analysis

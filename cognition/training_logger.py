@@ -4,7 +4,7 @@ ML Training Data Logger - Decision Recording for Model Training
 Records trading decisions, outcomes, and market conditions for 
 supervised learning model training.
 
-Part of Cthulu Cognition Engine v5.2.0
+Part of Cthulu Cognition Engine v5.2.33
 """
 from __future__ import annotations
 import os

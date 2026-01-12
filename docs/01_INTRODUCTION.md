@@ -3,11 +3,11 @@ title: INTRODUCTION
 description: Advanced multi-strategy autonomous trading system with MetaTrader 5 integration, dynamic strategy selection, and comprehensive risk management
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 sidebar_position: 1
-version: 5.2.0
+version: 5.2.33
 
 ---
 ![](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&logo=zap&logoColor=gold)
-![](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
@@ -50,7 +50,7 @@ _________   __  .__          .__
 
 <br>
 
- **NEW in v5.2.0:**<br> 
+ **NEW in v5.2.33:**<br> 
  **Web Backtesting UI, LLM Integration, Vector DB**  
 > 👾 Cthulu evolves with AI-powered insights and professional backtesting tools!
 >
@@ -1068,7 +1068,7 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.2.0
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.2.33
 - **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide
@@ -1081,7 +1081,7 @@ Past performance is not indicative of future results. Use at your own risk.
 
 | Version | Date | Status | Description |
 |---------|------|--------|-------------|
-| **5.2.0** | Jan 2026 | ✅ Current | Web backtesting UI, LLM integration, vector DB, profit scaling |
+| **5.2.33** | Jan 2026 | ✅ Current | Web backtesting UI, LLM integration, vector DB, profit scaling |
 | **5.1.0** | Dec 2025 | ✅ Complete | RSI Reversal, multi-strategy fallback, SAFE engine |
 | **5.1.0** | Dec 2025 | ✅ Complete | **Complete Overhaul** - 6 strategies, 12 indicators, enterprise architecture |
 | **4.0.0** | Dec 2024 | ✅ Complete | **Dynamic Strategy Selection** - Multi-strategy framework, exit strategies |

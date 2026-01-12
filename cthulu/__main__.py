@@ -85,7 +85,7 @@ class SingletonLock:
 # Global singleton lock
 _singleton_lock = SingletonLock()
 
-__version__ = "5.2.0"  # Evolution Release - Intelligence Amplified
+__version__ = "5.2.33"  # Evolution Release - Intelligence Amplified
 
 from core.bootstrap import CthuluBootstrap, SystemComponents
 from core.trading_loop import TradingLoop, TradingLoopContext, ensure_runtime_indicators

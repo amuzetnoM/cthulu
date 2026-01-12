@@ -1,6 +1,6 @@
 # Backtesting Framework
 
- ![Version](https://img.shields.io/badge/Version-5.2.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![Version](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white) 
  ![Last Commit](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
@@ -482,4 +482,4 @@ backtesting/
 
 ---
 
-*Cthulu Backtesting Framework v5.2.0 - Professional-grade strategy validation.*
+*Cthulu Backtesting Framework v5.2.33 - Professional-grade strategy validation.*

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cthulu"
-version = "5.2.0"
+version = "5.2.33"
 description = "Adaptive Trading Intelligence for MetaTrader 5"
 readme = "README.md"
 license = {text = "AGPL-3.0-or-later"}

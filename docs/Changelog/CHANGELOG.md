@@ -17,7 +17,7 @@ _________   __  .__          .__
 
 • [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
- ![](https://img.shields.io/badge/Version-5.2.0_EVOLUTION-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![](https://img.shields.io/badge/Version-5.2.33_EVOLUTION-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
@@ -73,7 +73,7 @@ _________   __  .__          .__
 
 ---
 
-## [5.2.0] "EVOLUTION"
+## [5.2.33] "EVOLUTION"
 > 2026-01-06
 
 **Status:** ✅ RELEASED — *Cthulu evolves with 207 commits of intelligence amplification!*
@@ -319,7 +319,7 @@ This release advances Cthulu from v4.0.0 to v5.1.0 with a major architecture cha
 ## TABLE OF RELEASES
 | Version | Date | Description |
 |---------|------|-------------|
-| [v5.2.0](v5.2.0.md) | 2026-01-06 | MINOR: Web UI, LLM integration, Vector DB, Profit Scaler, Advisory mode, Auto-tune consolidation (207 commits). |
+| [v5.2.33](v5.2.33.md) | 2026-01-06 | MINOR: Web UI, LLM integration, Vector DB, Profit Scaler, Advisory mode, Auto-tune consolidation (207 commits). |
 | [v5.1.0](v5.1.0.md) | 2025-12-28 | Minor branding & stability patch: runtime indicator fixes, monitoring enhancements, Windows/CI improvements. |
 | [v5.0.0](v5.0.0.md) | 2025-12-27 | Major architecture & runtime stability release; runtime namespacing and indicator fallbacks; CI and testing improvements. |
 | [v4.0.0](v4.0.0.md) | 2026-12-25 | MAJOR: Multi-strategy framework, next-gen indicators, GUI and metrics enhancements. |

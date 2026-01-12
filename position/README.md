@@ -1,6 +1,6 @@
 # Position Management Module
 
-![Version](https://img.shields.io/badge/Version-5.2.0-4B0082?style=flat-square)
+![Version](https://img.shields.io/badge/Version-5.2.33-4B0082?style=flat-square)
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=flat-square&logo=calendar)
 
 ## Overview
@@ -278,5 +278,5 @@ RUN_MT5_INTEGRATION=1 python -m pytest tests/integration/ -v
 
 ---
 
-**Module Version:** 5.2.0  
+**Module Version:** 5.2.33  
 **Last Updated:** 2026-01-06

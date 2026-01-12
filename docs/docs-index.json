@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "Cthulu Documentation Index",
-  "version": "5.2.0",
+  "version": "5.2.33",
   "lastUpdated": "2026-01-04T12:19:41.807Z",
   "baseUrl": "./",
   "documents": [

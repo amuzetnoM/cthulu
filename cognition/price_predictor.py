@@ -4,7 +4,7 @@ Price Predictor - The Foresight of Cognition
 Multi-bar ahead price direction forecasting using softmax/argmax.
 Trainable neural predictor with gradient descent optimization.
 
-Part of Cthulu Cognition Engine v5.2.0
+Part of Cthulu Cognition Engine v5.2.33
 """
 from __future__ import annotations
 import numpy as np
