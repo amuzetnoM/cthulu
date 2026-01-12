@@ -48,11 +48,15 @@ class TradeAdoptionPolicy:
     # Magic number filters
     excluded_magic_numbers: Set[int] = None  # Don't adopt these magic numbers
     
-    # Safety
+    # Safety - ATR-based SL/TP (CRITICAL FIX)
     apply_emergency_sl: bool = True  # Add SL if none exists
-    emergency_sl_points: float = 100  # Emergency SL distance
+    use_atr_based_sltp: bool = True  # Use ATR-based calculation (not fixed points)
+    emergency_sl_atr_mult: float = 2.0  # SL distance as multiple of ATR
+    emergency_tp_atr_mult: float = 4.0  # TP distance as multiple of ATR
+    # Fallback fixed points (only used if ATR unavailable)
+    emergency_sl_points: float = 100  # Emergency SL distance (fallback)
     apply_emergency_tp: bool = False  # Add TP if none exists
-    emergency_tp_points: float = 100  # Emergency TP distance
+    emergency_tp_points: float = 100  # Emergency TP distance (fallback)
     
     # Logging
     log_only: bool = False  # If True, only log orphans without adopting
@@ -246,26 +250,95 @@ class TradeAdoptionManager:
             # Convert trade type to string
             type_str = "buy" if trade_type == 0 else "sell"
             
-            # Apply emergency SL/TP if configured
+            # Apply emergency SL/TP if configured - USE ATR-BASED CALCULATION
             if self.policy.apply_emergency_sl and not sl:
-                if type_str == "buy":
-                    sl = open_price - self.policy.emergency_sl_points * self.connector.get_point(symbol)
+                # Try to get ATR for market-condition-based SL/TP
+                atr = None
+                if self.policy.use_atr_based_sltp:
+                    try:
+                        # Try to get ATR from lifecycle's dynamic SLTP manager
+                        if hasattr(self.lifecycle, 'dynamic_sltp_manager') and self.lifecycle.dynamic_sltp_manager:
+                            # Get recent market data to calculate ATR
+                            # Check if connector has method to get recent data
+                            if hasattr(self.connector, 'get_rates'):
+                                import pandas as pd
+                                rates = self.connector.get_rates(symbol, '1H', 100)  # Get last 100 H1 bars
+                                if rates is not None and len(rates) > 0:
+                                    # Calculate ATR if not in data
+                                    if 'atr' in rates.columns:
+                                        atr = rates['atr'].iloc[-1]
+                                    else:
+                                        # Calculate simple ATR
+                                        high_low = rates['high'] - rates['low']
+                                        high_close = abs(rates['high'] - rates['close'].shift())
+                                        low_close = abs(rates['low'] - rates['close'].shift())
+                                        true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+                                        atr = true_range.rolling(14).mean().iloc[-1]
+                                    logger.info(f"Calculated ATR for {symbol}: {atr:.5f}")
+                    except Exception as e:
+                        logger.warning(f"Could not calculate ATR for {symbol}, using fallback: {e}")
+                
+                # Calculate SL based on ATR or fallback to fixed points
+                if atr and atr > 0 and self.policy.use_atr_based_sltp:
+                    # ATR-BASED SL/TP - PROPER MARKET CONDITION ADAPTATION
+                    sl_distance = atr * self.policy.emergency_sl_atr_mult
+                    if type_str == "buy":
+                        sl = open_price - sl_distance
+                    else:
+                        sl = open_price + sl_distance
+                    logger.info(f"Applied ATR-based SL to {ticket}: distance={sl_distance:.5f} ({self.policy.emergency_sl_atr_mult}x ATR={atr:.5f})")
                 else:
-                    sl = open_price + self.policy.emergency_sl_points * self.connector.get_point(symbol)
+                    # Fallback to fixed points
+                    if type_str == "buy":
+                        sl = open_price - self.policy.emergency_sl_points * self.connector.get_point(symbol)
+                    else:
+                        sl = open_price + self.policy.emergency_sl_points * self.connector.get_point(symbol)
+                    logger.warning(f"Applied fixed-point SL to {ticket} (ATR unavailable)")
                 
                 # Modify position with emergency SL
                 self.lifecycle.modify_position(ticket, sl=sl)
-                logger.warning(f"Applied emergency SL to external trade {ticket}")
+                logger.info(f"Applied emergency SL to external trade {ticket}")
             
             if self.policy.apply_emergency_tp and not tp:
-                if type_str == "buy":
-                    tp = open_price + self.policy.emergency_tp_points * self.connector.get_point(symbol)
+                # Try to get ATR for TP calculation
+                atr = None
+                if self.policy.use_atr_based_sltp:
+                    try:
+                        if hasattr(self.connector, 'get_rates'):
+                            import pandas as pd
+                            rates = self.connector.get_rates(symbol, '1H', 100)
+                            if rates is not None and len(rates) > 0:
+                                if 'atr' in rates.columns:
+                                    atr = rates['atr'].iloc[-1]
+                                else:
+                                    high_low = rates['high'] - rates['low']
+                                    high_close = abs(rates['high'] - rates['close'].shift())
+                                    low_close = abs(rates['low'] - rates['close'].shift())
+                                    true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+                                    atr = true_range.rolling(14).mean().iloc[-1]
+                    except Exception as e:
+                        logger.warning(f"Could not calculate ATR for TP: {e}")
+                
+                # Calculate TP based on ATR or fallback
+                if atr and atr > 0 and self.policy.use_atr_based_sltp:
+                    # ATR-BASED TP
+                    tp_distance = atr * self.policy.emergency_tp_atr_mult
+                    if type_str == "buy":
+                        tp = open_price + tp_distance
+                    else:
+                        tp = open_price - tp_distance
+                    logger.info(f"Applied ATR-based TP to {ticket}: distance={tp_distance:.5f} ({self.policy.emergency_tp_atr_mult}x ATR={atr:.5f})")
                 else:
-                    tp = open_price - self.policy.emergency_tp_points * self.connector.get_point(symbol)
+                    # Fallback to fixed points
+                    if type_str == "buy":
+                        tp = open_price + self.policy.emergency_tp_points * self.connector.get_point(symbol)
+                    else:
+                        tp = open_price - self.policy.emergency_tp_points * self.connector.get_point(symbol)
+                    logger.warning(f"Applied fixed-point TP to {ticket} (ATR unavailable)")
                 
                 # Modify position with emergency TP
                 self.lifecycle.modify_position(ticket, tp=tp)
-                logger.warning(f"Applied emergency TP to external trade {ticket}")
+                logger.info(f"Applied emergency TP to external trade {ticket}")
             
             # Create PositionInfo for tracking
             position = PositionInfo(
