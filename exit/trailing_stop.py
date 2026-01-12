@@ -120,16 +120,23 @@ class TrailingStop(ExitStrategy):
                 self.logger.debug(f"{ticket}: New best price {current_price}")
                 
         # Calculate trailing stop distance
-        if atr is not None:
+        if atr is not None and atr > 0:
             stop_distance = atr * self.atr_multiplier
         else:
-            # Fallback: use min_stop_distance in price units
-            # Convert pips to price (assumes symbol has point size)
-            # Rough estimate: 1 pip = 0.0001 for major pairs
-            stop_distance = self.min_stop_distance_pips * 0.0001
+            # Dynamic fallback: use percentage of price instead of hardcoded pip value
+            # This works for any symbol (forex, gold, crypto, indices)
+            fallback_pct = self.params.get('fallback_stop_pct', 0.1)  # 0.1% default
+            stop_distance = current_price * (fallback_pct / 100)
+            self.logger.debug(f"No ATR, using fallback {fallback_pct}% = {stop_distance:.6f}")
             
-        # Ensure minimum stop distance
-        min_distance_price = self.min_stop_distance_pips * 0.0001
+        # Ensure minimum stop distance - DYNAMIC based on price, not hardcoded pips
+        # Get symbol point from current_data if available
+        symbol_point = current_data.get('symbol_info', {}).get('point', None)
+        if symbol_point and symbol_point > 0:
+            min_distance_price = self.min_stop_distance_pips * symbol_point
+        else:
+            # Fallback: percentage-based minimum (works for any instrument)
+            min_distance_price = current_price * 0.0005  # 0.05% minimum
         stop_distance = max(stop_distance, min_distance_price)
         
         # Calculate new stop price

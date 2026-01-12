@@ -52,17 +52,39 @@ class ScaleConfig:
     tier_2_close_pct: float = 35.0   # Close 35% of remaining at tier 2
     tier_3_close_pct: float = 50.0   # Close 50% of remaining at tier 3
     
-    # Micro account adjustments (tighter targets)
-    micro_account_threshold: float = 100.0
+    # Account size thresholds as RATIO of initial balance (dynamic, not hardcoded)
+    # These are multipliers: micro = below 0.2x initial, small = below 0.5x initial
+    micro_ratio_threshold: float = 0.2   # Below 20% of initial = micro mode
+    small_ratio_threshold: float = 0.5   # Below 50% of initial = small mode
+    
+    # Micro account adjustments (tighter targets) - ATR-based multipliers
+    micro_tier_1_atr_mult: float = 0.5   # First tier at 0.5x ATR
+    micro_tier_2_atr_mult: float = 1.0   # Second tier at 1.0x ATR
+    micro_tier_3_atr_mult: float = 1.5   # Third tier at 1.5x ATR
+    
+    # Small account adjustments - ATR-based multipliers
+    small_tier_1_atr_mult: float = 0.75
+    small_tier_2_atr_mult: float = 1.25
+    small_tier_3_atr_mult: float = 2.0
+    
+    # Normal account - ATR-based multipliers
+    normal_tier_1_atr_mult: float = 1.0
+    normal_tier_2_atr_mult: float = 2.0
+    normal_tier_3_atr_mult: float = 3.0
+    
+    # Legacy percentage-based thresholds (fallback if no ATR)
     micro_tier_1_pct: float = 0.15   # Tighter first tier for micro
     micro_tier_2_pct: float = 0.30
     micro_tier_3_pct: float = 0.50
-    
-    # Small account adjustments
-    small_account_threshold: float = 500.0
     small_tier_1_pct: float = 0.20
     small_tier_2_pct: float = 0.40
     small_tier_3_pct: float = 0.70
+    
+    # Giveback protection thresholds (configurable, not hardcoded)
+    tier_1_max_giveback_pct: float = 60.0   # Allow 60% giveback at tier 1
+    tier_2_max_giveback_pct: float = 50.0   # Allow 50% giveback at tier 2
+    tier_3_max_giveback_pct: float = 40.0   # Allow 40% giveback for runner
+    default_max_giveback_pct: float = 70.0  # Default giveback tolerance
     
     # Dynamic adjustments
     volatility_adjust: bool = True   # Adjust targets based on ATR
@@ -117,7 +139,7 @@ class ProfitScalingExit(ExitStrategy):
             priority=55  # Medium-high priority
         )
         
-        # Load configuration
+        # Load configuration with dynamic (not hardcoded) defaults
         self.config = ScaleConfig(
             tier_1_profit_pct=params.get('tier_1_profit_pct', 0.3),
             tier_2_profit_pct=params.get('tier_2_profit_pct', 0.6),
@@ -125,11 +147,37 @@ class ProfitScalingExit(ExitStrategy):
             tier_1_close_pct=params.get('tier_1_close_pct', 30.0),
             tier_2_close_pct=params.get('tier_2_close_pct', 35.0),
             tier_3_close_pct=params.get('tier_3_close_pct', 50.0),
-            micro_account_threshold=params.get('micro_account_threshold', 100.0),
-            small_account_threshold=params.get('small_account_threshold', 500.0),
+            # Dynamic ratio-based thresholds (no hardcoded dollar amounts)
+            micro_ratio_threshold=params.get('micro_ratio_threshold', 0.2),
+            small_ratio_threshold=params.get('small_ratio_threshold', 0.5),
+            # ATR multipliers for each tier (dynamic)
+            micro_tier_1_atr_mult=params.get('micro_tier_1_atr_mult', 0.5),
+            micro_tier_2_atr_mult=params.get('micro_tier_2_atr_mult', 1.0),
+            micro_tier_3_atr_mult=params.get('micro_tier_3_atr_mult', 1.5),
+            small_tier_1_atr_mult=params.get('small_tier_1_atr_mult', 0.75),
+            small_tier_2_atr_mult=params.get('small_tier_2_atr_mult', 1.25),
+            small_tier_3_atr_mult=params.get('small_tier_3_atr_mult', 2.0),
+            normal_tier_1_atr_mult=params.get('normal_tier_1_atr_mult', 1.0),
+            normal_tier_2_atr_mult=params.get('normal_tier_2_atr_mult', 2.0),
+            normal_tier_3_atr_mult=params.get('normal_tier_3_atr_mult', 3.0),
+            # Percentage fallbacks
+            micro_tier_1_pct=params.get('micro_tier_1_pct', 0.15),
+            micro_tier_2_pct=params.get('micro_tier_2_pct', 0.30),
+            micro_tier_3_pct=params.get('micro_tier_3_pct', 0.50),
+            small_tier_1_pct=params.get('small_tier_1_pct', 0.20),
+            small_tier_2_pct=params.get('small_tier_2_pct', 0.40),
+            small_tier_3_pct=params.get('small_tier_3_pct', 0.70),
+            # Configurable giveback thresholds
+            tier_1_max_giveback_pct=params.get('tier_1_max_giveback_pct', 60.0),
+            tier_2_max_giveback_pct=params.get('tier_2_max_giveback_pct', 50.0),
+            tier_3_max_giveback_pct=params.get('tier_3_max_giveback_pct', 40.0),
+            default_max_giveback_pct=params.get('default_max_giveback_pct', 70.0),
             volatility_adjust=params.get('volatility_adjust', True),
             momentum_adjust=params.get('momentum_adjust', True),
         )
+        
+        # Track initial balance for ratio calculations
+        self._initial_balance: Optional[float] = params.get('initial_balance', None)
         
         # State tracking
         self._position_states: Dict[int, PositionScaleState] = {}
@@ -182,9 +230,16 @@ class ProfitScalingExit(ExitStrategy):
         if profit_pct > state.peak_profit_pct:
             state.peak_profit_pct = profit_pct
             state.peak_profit = position.unrealized_pnl
+        
+        # Track initial balance for ratio-based mode selection
+        initial_balance = current_data.get('initial_balance', self._initial_balance)
+        if initial_balance is None and self._initial_balance is None:
+            # First time - set initial balance
+            self._initial_balance = account_balance
+            initial_balance = account_balance
             
-        # Get adjusted targets based on account size and volatility
-        targets = self._get_adjusted_targets(account_balance, indicators)
+        # Get adjusted targets based on account size ratio and volatility
+        targets = self._get_adjusted_targets(account_balance, indicators, initial_balance)
         
         # Check each tier
         scale_signal = self._check_scale_tiers(position, state, profit_pct, targets, current_price)
@@ -213,45 +268,79 @@ class ProfitScalingExit(ExitStrategy):
     def _get_adjusted_targets(
         self,
         account_balance: float,
-        indicators: Dict[str, Any]
+        indicators: Dict[str, Any],
+        initial_balance: Optional[float] = None
     ) -> Dict[str, float]:
-        """Get profit targets adjusted for account size and volatility."""
+        """Get profit targets adjusted for account size and volatility.
         
-        # Base targets
-        if account_balance < self.config.micro_account_threshold:
-            targets = {
-                'tier_1': self.config.micro_tier_1_pct,
-                'tier_2': self.config.micro_tier_2_pct,
-                'tier_3': self.config.micro_tier_3_pct,
-            }
-            logger.debug(f"Using MICRO targets: {targets}")
-        elif account_balance < self.config.small_account_threshold:
-            targets = {
-                'tier_1': self.config.small_tier_1_pct,
-                'tier_2': self.config.small_tier_2_pct,
-                'tier_3': self.config.small_tier_3_pct,
-            }
-            logger.debug(f"Using SMALL targets: {targets}")
+        Uses ATR-based targets when available, falls back to percentage-based.
+        Account size mode is determined by RATIO to initial balance (dynamic).
+        """
+        
+        # Get ATR for dynamic calculations
+        atr = indicators.get('atr', 0)
+        current_price = indicators.get('current_price', indicators.get('close', 0))
+        
+        # Determine account mode based on ratio to initial (not hardcoded values)
+        # Default initial_balance to current if not provided
+        effective_initial = initial_balance if initial_balance and initial_balance > 0 else account_balance
+        balance_ratio = account_balance / effective_initial if effective_initial > 0 else 1.0
+        
+        # Select mode based on ratio thresholds (configurable)
+        if balance_ratio < self.config.micro_ratio_threshold:
+            mode = "MICRO"
+            atr_mults = (self.config.micro_tier_1_atr_mult, 
+                        self.config.micro_tier_2_atr_mult, 
+                        self.config.micro_tier_3_atr_mult)
+            pct_fallbacks = (self.config.micro_tier_1_pct,
+                            self.config.micro_tier_2_pct,
+                            self.config.micro_tier_3_pct)
+        elif balance_ratio < self.config.small_ratio_threshold:
+            mode = "SMALL"
+            atr_mults = (self.config.small_tier_1_atr_mult,
+                        self.config.small_tier_2_atr_mult,
+                        self.config.small_tier_3_atr_mult)
+            pct_fallbacks = (self.config.small_tier_1_pct,
+                            self.config.small_tier_2_pct,
+                            self.config.small_tier_3_pct)
         else:
+            mode = "NORMAL"
+            atr_mults = (self.config.normal_tier_1_atr_mult,
+                        self.config.normal_tier_2_atr_mult,
+                        self.config.normal_tier_3_atr_mult)
+            pct_fallbacks = (self.config.tier_1_profit_pct,
+                            self.config.tier_2_profit_pct,
+                            self.config.tier_3_profit_pct)
+        
+        # Calculate targets using ATR if available, else fall back to percentages
+        if atr > 0 and current_price > 0:
+            # ATR-based targets (convert to percentage of price)
             targets = {
-                'tier_1': self.config.tier_1_profit_pct,
-                'tier_2': self.config.tier_2_profit_pct,
-                'tier_3': self.config.tier_3_profit_pct,
+                'tier_1': (atr * atr_mults[0] / current_price) * 100,
+                'tier_2': (atr * atr_mults[1] / current_price) * 100,
+                'tier_3': (atr * atr_mults[2] / current_price) * 100,
             }
+            logger.debug(f"Using ATR-based {mode} targets: {targets} (ATR={atr:.4f})")
+        else:
+            # Fallback to percentage-based
+            targets = {
+                'tier_1': pct_fallbacks[0],
+                'tier_2': pct_fallbacks[1],
+                'tier_3': pct_fallbacks[2],
+            }
+            logger.debug(f"Using percentage-based {mode} targets: {targets} (no ATR)")
             
-        # Volatility adjustment
-        if self.config.volatility_adjust:
-            atr = indicators.get('atr')
-            if atr and atr > 0:
-                # Higher ATR = wider targets (more volatile = need bigger moves)
-                # Normalize ATR as percentage of price
-                atr_pct = indicators.get('atr_pct', atr * 100)
-                
-                # If ATR is high, widen targets; if low, tighten
-                volatility_mult = max(0.7, min(1.5, atr_pct / 0.5))  # Normalized around 0.5%
-                
-                for key in targets:
-                    targets[key] *= volatility_mult
+        # Volatility adjustment (additional fine-tuning)
+        if self.config.volatility_adjust and atr > 0:
+            # Normalize ATR as percentage of price
+            atr_pct = (atr / current_price * 100) if current_price > 0 else indicators.get('atr_pct', 0)
+            
+            # If ATR is high, widen targets; if low, tighten
+            # Normalized around 0.5% ATR baseline
+            volatility_mult = max(0.7, min(1.5, atr_pct / 0.5)) if atr_pct > 0 else 1.0
+            
+            for key in targets:
+                targets[key] *= volatility_mult
                     
         # Momentum adjustment
         if self.config.momentum_adjust:
@@ -377,7 +466,7 @@ class ProfitScalingExit(ExitStrategy):
         Protect scaled positions from giving back too much profit.
         
         Once we've scaled out, remaining position should not give back
-        more than 50% of peak profit.
+        more than configured percentage of peak profit.
         """
         if state.peak_profit_pct <= 0:
             return None
@@ -386,15 +475,15 @@ class ProfitScalingExit(ExitStrategy):
         giveback = state.peak_profit_pct - profit_pct
         giveback_pct = (giveback / state.peak_profit_pct) * 100 if state.peak_profit_pct > 0 else 0
         
-        # Tighter protection after more scales
+        # Use configurable giveback thresholds (no hardcoding!)
         if state.current_tier == ScaleTier.TIER_1:
-            max_giveback = 60  # Allow 60% giveback at tier 1
+            max_giveback = self.config.tier_1_max_giveback_pct
         elif state.current_tier == ScaleTier.TIER_2:
-            max_giveback = 50  # Allow 50% giveback at tier 2
+            max_giveback = self.config.tier_2_max_giveback_pct
         elif state.current_tier == ScaleTier.TIER_3:
-            max_giveback = 40  # Allow only 40% giveback for runner
+            max_giveback = self.config.tier_3_max_giveback_pct
         else:
-            max_giveback = 70
+            max_giveback = self.config.default_max_giveback_pct
             
         if giveback_pct >= max_giveback and profit_pct > 0:
             remaining_vol = position.volume
@@ -402,7 +491,7 @@ class ProfitScalingExit(ExitStrategy):
             logger.warning(
                 f"[ProfitScaling] Giveback protection for {position.ticket}: "
                 f"Peak {state.peak_profit_pct:.2f}% -> Current {profit_pct:.2f}% "
-                f"({giveback_pct:.1f}% giveback) - closing remaining"
+                f"({giveback_pct:.1f}% giveback, threshold={max_giveback}%) - closing remaining"
             )
             
             state.current_tier = ScaleTier.COMPLETE

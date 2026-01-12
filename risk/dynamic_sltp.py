@@ -89,6 +89,17 @@ class DynamicSLTPManager:
         # Per-symbol absolute minimum SL distance (price units), e.g. {"XAUUSD": 0.1}
         self.per_symbol_min_sl = self.config.get('per_symbol_min_sl', {})
         
+        # DYNAMIC MODE THRESHOLDS (configurable, no hardcoding)
+        # Drawdown thresholds for mode switching
+        self.survival_drawdown_pct = self.config.get('survival_drawdown_pct', 50.0)
+        self.defensive_drawdown_pct = self.config.get('defensive_drawdown_pct', 25.0)
+        self.recovery_drawdown_pct = self.config.get('recovery_drawdown_pct', 10.0)
+        # Gain thresholds for aggressive mode
+        self.aggressive_gain_pct = self.config.get('aggressive_gain_pct', 20.0)
+        self.aggressive_max_drawdown_pct = self.config.get('aggressive_max_drawdown_pct', 5.0)
+        # Balance-equity ratio for recovery
+        self.recovery_balance_equity_ratio = self.config.get('recovery_balance_equity_ratio', 0.95)
+        
         # Mode adjustments
         self.mode_adjustments = {
             SLTPMode.NORMAL: {'sl_mult': 1.0, 'tp_mult': 1.0},
@@ -101,48 +112,90 @@ class DynamicSLTPManager:
         # State tracking
         self.current_mode = SLTPMode.NORMAL
         self.positions_managed: Dict[int, Dict[str, Any]] = {}
+        # Track peak balance for equity-based drawdown
+        self.peak_balance = 0.0
+        self.initial_balance_tracked = 0.0
         
-        logger.info("DynamicSLTPManager initialized")
+        logger.info("DynamicSLTPManager initialized with dynamic thresholds")
     
     def determine_mode(self, drawdown_pct: float, balance: float, 
-                       equity: float, initial_balance: float) -> SLTPMode:
+                       equity: float, initial_balance: float,
+                       atr: Optional[float] = None, 
+                       current_price: Optional[float] = None) -> SLTPMode:
         """
-        Determine operational mode based on account state.
+        Determine operational mode based on account state with EQUITY-BASED drawdown.
         
         Args:
-            drawdown_pct: Current drawdown percentage
+            drawdown_pct: Current drawdown percentage (balance-based, legacy)
             balance: Current balance
             equity: Current equity
             initial_balance: Starting balance
+            atr: Current ATR (optional, for volatility-adjusted thresholds)
+            current_price: Current price (optional, for ATR normalization)
             
         Returns:
             Appropriate SLTPMode
         """
+        # Track peak balance for equity-based drawdown calculation
+        if initial_balance > 0 and self.initial_balance_tracked == 0:
+            self.initial_balance_tracked = initial_balance
+        
+        # Update peak balance (high water mark)
+        if balance > self.peak_balance:
+            self.peak_balance = balance
+        
+        # Calculate EQUITY-BASED drawdown (more accurate than balance-based)
+        equity_drawdown_pct = 0.0
+        if self.peak_balance > 0:
+            equity_drawdown_pct = ((self.peak_balance - equity) / self.peak_balance) * 100
+        
+        # Use the WORSE of balance drawdown or equity drawdown (conservative)
+        effective_drawdown = max(drawdown_pct, equity_drawdown_pct)
+        
+        # Optional: Volatility-adjusted thresholds
+        # In high volatility, be more tolerant; in low volatility, be stricter
+        volatility_factor = 1.0
+        if atr and current_price and current_price > 0:
+            atr_pct = (atr / current_price) * 100
+            # Normalize around 0.5% ATR - higher ATR = more tolerance
+            volatility_factor = min(1.5, max(0.7, atr_pct / 0.5))
+        
+        # Dynamic thresholds (configurable via __init__)
+        survival_threshold = self.survival_drawdown_pct * volatility_factor
+        defensive_threshold = self.defensive_drawdown_pct * volatility_factor
+        recovery_threshold = self.recovery_drawdown_pct * volatility_factor
+        
         # Survival mode: severe drawdown
-        if drawdown_pct >= 50:
+        if effective_drawdown >= survival_threshold:
             self.current_mode = SLTPMode.SURVIVAL
-            logger.warning(f"SLTP Mode: SURVIVAL (drawdown {drawdown_pct:.1f}%)")
+            logger.warning(f"SLTP Mode: SURVIVAL (equity_dd={equity_drawdown_pct:.1f}%, balance_dd={drawdown_pct:.1f}%, threshold={survival_threshold:.1f}%)")
             return SLTPMode.SURVIVAL
         
         # Defensive mode: significant drawdown
-        if drawdown_pct >= 25:
+        if effective_drawdown >= defensive_threshold:
             self.current_mode = SLTPMode.DEFENSIVE
-            logger.info(f"SLTP Mode: DEFENSIVE (drawdown {drawdown_pct:.1f}%)")
+            logger.info(f"SLTP Mode: DEFENSIVE (equity_dd={equity_drawdown_pct:.1f}%, threshold={defensive_threshold:.1f}%)")
             return SLTPMode.DEFENSIVE
         
         # Recovery mode: recovering from drawdown
-        if drawdown_pct >= 10 and balance > equity * 0.95:
+        if effective_drawdown >= recovery_threshold and balance > equity * self.recovery_balance_equity_ratio:
             self.current_mode = SLTPMode.RECOVERY
             return SLTPMode.RECOVERY
         
         # Aggressive mode: account is profitable
-        gain_pct = ((balance - initial_balance) / initial_balance) * 100 if initial_balance > 0 else 0
-        if gain_pct >= 20 and drawdown_pct < 5:
+        gain_pct = ((balance - self.initial_balance_tracked) / self.initial_balance_tracked) * 100 if self.initial_balance_tracked > 0 else 0
+        if gain_pct >= self.aggressive_gain_pct and effective_drawdown < self.aggressive_max_drawdown_pct:
             self.current_mode = SLTPMode.AGGRESSIVE
             return SLTPMode.AGGRESSIVE
         
         self.current_mode = SLTPMode.NORMAL
         return SLTPMode.NORMAL
+    
+    def reset_peak_tracking(self):
+        """Reset peak balance tracking - call when resetting system or recovering."""
+        self.peak_balance = 0.0
+        self.initial_balance_tracked = 0.0
+        logger.info("Peak balance tracking reset")
 
     def _round_to_tick(self, price: float, tick_size: Optional[float]) -> float:
         """Round a price to the nearest tick if tick_size is provided."""
@@ -182,8 +235,9 @@ class DynamicSLTPManager:
         Returns:
             DynamicSLTP with calculated values
         """
-        # Determine mode
-        mode = self.determine_mode(drawdown_pct, balance, equity, initial_balance)
+        # Determine mode with ATR context for volatility-adjusted thresholds
+        mode = self.determine_mode(drawdown_pct, balance, equity, initial_balance, 
+                                   atr=atr, current_price=entry_price)
         
         # Get mode adjustments
         adj = self.mode_adjustments[mode]
@@ -201,14 +255,22 @@ class DynamicSLTPManager:
         if risk_reward_target > min_rr:
             tp_distance = sl_distance * risk_reward_target
         
-        # Balance-based adjustments
-        # Lower balance = tighter stops
-        if balance < 500:
-            sl_distance *= 0.7
-            tp_distance *= 0.6
-        elif balance < 200:
-            sl_distance *= 0.5
-            tp_distance *= 0.4
+        # DYNAMIC balance-based adjustments using initial_balance ratio (no hardcoded values)
+        # Calculate balance ratio relative to initial - this scales with any account size
+        if initial_balance > 0:
+            balance_ratio = balance / initial_balance
+            
+            # If balance has dropped significantly, tighten stops proportionally
+            if balance_ratio < 0.5:  # Below 50% of initial
+                # Scale: at 25% remaining, multiply by 0.5; at 50% remaining, multiply by 0.7
+                scale_factor = 0.5 + (balance_ratio * 0.4)  # Range: 0.5 to 0.7
+                sl_distance *= scale_factor
+                tp_distance *= scale_factor * 0.85  # TP slightly tighter
+                logger.debug(f"Balance protection: ratio={balance_ratio:.2f}, scale={scale_factor:.2f}")
+            elif balance_ratio < 0.75:  # Below 75% of initial
+                scale_factor = 0.7 + ((balance_ratio - 0.5) * 0.6)  # Range: 0.7 to 0.85
+                sl_distance *= scale_factor
+                tp_distance *= scale_factor * 0.9
         
         # Calculate actual prices
         if side.upper() == 'BUY':
