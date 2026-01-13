@@ -159,7 +159,7 @@ else:
     print("1. Ensure config.yaml has your MT5 credentials")
     print("2. Make sure you're using a DEMO account")
     print("3. Run: python main.py")
-    print("\nMonitor logs: Get-Content .\\logs\\Cthulu.log -Wait -Tail 50")
+    print("\nMonitor logs: Get-Content .\\logs\\cthulu.log -Wait -Tail 50")
 
 print("=" * 60)
 

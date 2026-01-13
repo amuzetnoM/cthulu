@@ -6,7 +6,7 @@ from cthulu.__main__ import ensure_runtime_indicators
 from cthulu.strategy.scalping import ScalpingStrategy
 from cthulu.indicators.rsi import RSI
 
-logger = logging.getLogger('Cthulu.tests')
+logger = logging.getLogger('cthulu.tests')
 
 
 def _make_ohlcv(n=500):
@@ -49,7 +49,7 @@ def test_ensure_runtime_indicators_computes_ema_and_rsi():
 
     # Compute EMA columns via TradingLoop helper (simulate main loop behavior)
     from cthulu.core.trading_loop import TradingLoop, TradingLoopContext
-    local_logger = logging.getLogger('Cthulu.tests')
+    local_logger = logging.getLogger('cthulu.tests')
     ctx = TradingLoopContext(
         logger=local_logger,
         connector=None,
@@ -97,7 +97,7 @@ def test_runtime_indicator_rename_on_overlap():
             return pd.Series([1.0]*len(df), index=df.index, name=f'rsi_{self.period}')
 
     # Minimal context
-    logger = logging.getLogger('Cthulu.tests')
+    logger = logging.getLogger('cthulu.tests')
     ctx = TradingLoopContext(
         connector=None,
         data_layer=None,
@@ -149,7 +149,7 @@ def test_adx_runtime_namespace():
                 'minus_di': [8.0]*len(df),
             }, index=df.index)
 
-    logger = logging.getLogger('Cthulu.tests')
+    logger = logging.getLogger('cthulu.tests')
     ctx = TradingLoopContext(
         connector=None,
         data_layer=None,
@@ -194,7 +194,7 @@ def test_rsi_fallback_computes_alias_if_missing():
         rsi_period = 7
         atr_period = 14
 
-    logger = logging.getLogger('Cthulu.tests')
+    logger = logging.getLogger('cthulu.tests')
     ctx = TradingLoopContext(
         connector=None,
         data_layer=None,

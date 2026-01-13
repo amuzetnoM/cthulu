@@ -5,7 +5,7 @@ from cthulu.persistence.database import Database
 
 
 def test_purge_provenance_older_than(tmp_path):
-    db_path = tmp_path / "test_Cthulu.db"
+    db_path = tmp_path / "test_cthulu.db"
     db = Database(str(db_path))
 
     # Insert two provenance rows: one old, one recent

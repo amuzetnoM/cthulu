@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Any, Optional, Tuple, List
 from datetime import datetime, timezone
 
-logger = logging.getLogger('Cthulu.adaptive_loss_curve')
+logger = logging.getLogger('cthulu.adaptive_loss_curve')
 
 
 @dataclass

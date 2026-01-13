@@ -27,7 +27,7 @@ from pathlib import Path
 from threading import Lock, RLock
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
-logger = logging.getLogger('Cthulu.rpc.security')
+logger = logging.getLogger('cthulu.rpc.security')
 
 
 class ThreatLevel(Enum):
@@ -539,7 +539,7 @@ class AuditLogger:
             log_path.parent.mkdir(parents=True, exist_ok=True)
             
             # Create dedicated audit logger
-            self._audit_logger = logging.getLogger('Cthulu.rpc.audit')
+            self._audit_logger = logging.getLogger('cthulu.rpc.audit')
             self._audit_logger.setLevel(logging.INFO)
             
             # File handler with rotation

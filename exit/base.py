@@ -62,7 +62,7 @@ class ExitStrategy(ABC):
         self.name = name
         self.params = params
         self.priority = priority
-        self.logger = logging.getLogger(f"Cthulu.exit.{name}")
+        self.logger = logging.getLogger(f"cthulu.exit.{name}")
         self._state: Dict[str, Any] = {}
         self._enabled = True
         

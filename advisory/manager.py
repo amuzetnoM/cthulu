@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, Optional
 from cthulu.execution.engine import OrderRequest, ExecutionResult, ExecutionEngine, OrderType
 
-logger = logging.getLogger('Cthulu.advisory')
+logger = logging.getLogger('cthulu.advisory')
 
 
 class AdvisoryManager:

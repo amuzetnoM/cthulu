@@ -17,7 +17,7 @@ import json
 import os
 import logging
 
-logger = logging.getLogger("Cthulu.cognition.predictor")
+logger = logging.getLogger("cthulu.cognition.predictor")
 
 
 class PredictionDirection(Enum):

@@ -24,7 +24,7 @@ from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime, timezone
 from enum import Enum
 
-logger = logging.getLogger('Cthulu.confluence_exit')
+logger = logging.getLogger('cthulu.confluence_exit')
 
 
 class ExitClassification(Enum):

@@ -11,9 +11,9 @@ import json
 from unittest.mock import MagicMock
 # Stub missing modules to allow running in isolated test environment
 import types, sys
-mod = types.ModuleType('Cthulu.position')
+mod = types.ModuleType('cthulu.position')
 mod.risk_manager = types.SimpleNamespace()
-sys.modules['Cthulu.position'] = mod
+sys.modules['cthulu.position'] = mod
 
 # Import engine module directly from file to avoid package import side-effects
 from importlib.machinery import SourceFileLoader

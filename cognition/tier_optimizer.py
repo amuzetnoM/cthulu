@@ -31,7 +31,7 @@ from dataclasses import dataclass, field, asdict
 from collections import defaultdict
 import threading
 
-logger = logging.getLogger('Cthulu.ml.tier_optimizer')
+logger = logging.getLogger('cthulu.ml.tier_optimizer')
 
 # Data directory for persistence
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data', 'tier_optimizer')

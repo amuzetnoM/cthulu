@@ -117,7 +117,7 @@ class BenchmarkSuite:
         Args:
             risk_free_rate: Annual risk-free rate (default 2%)
         """
-        self.logger = logging.getLogger("Cthulu.backtesting.benchmarks")
+        self.logger = logging.getLogger("cthulu.backtesting.benchmarks")
         self.risk_free_rate = risk_free_rate
         
     def calculate_metrics(

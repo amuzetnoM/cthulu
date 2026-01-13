@@ -43,7 +43,7 @@ try:
 except ImportError:
     MT5_AVAILABLE = False
 
-LOG_PATH = PROJECT_ROOT / 'Cthulu.log'
+LOG_PATH = PROJECT_ROOT / 'cthulu.log'
 SUMMARY_PATH = PROJECT_ROOT / 'logs' / 'latest_summary.txt'
 STRATEGY_INFO_PATH = PROJECT_ROOT / 'logs' / 'strategy_info.txt'
 
@@ -438,7 +438,7 @@ class CthuluGUI:
         # Database connection
         self.db = None
         try:
-            db_paths = [PROJECT_ROOT / 'Cthulu.db', PROJECT_ROOT / 'Cthulu_ultra_aggressive.db']
+            db_paths = [PROJECT_ROOT / 'cthulu.db', PROJECT_ROOT / 'cthulu_ultra_aggressive.db']
             for p in db_paths:
                 if p.exists():
                     self.db = Database(str(p))
@@ -516,7 +516,7 @@ class CthuluGUI:
             return
         try:
             self.db.close()
-            db_paths = [PROJECT_ROOT / 'Cthulu.db', PROJECT_ROOT / 'Cthulu_ultra_aggressive.db']
+            db_paths = [PROJECT_ROOT / 'cthulu.db', PROJECT_ROOT / 'cthulu_ultra_aggressive.db']
             for p in db_paths:
                 if p.exists():
                     self.db = Database(str(p))

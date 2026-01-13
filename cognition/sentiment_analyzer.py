@@ -18,7 +18,7 @@ import logging
 import re
 from collections import deque
 
-logger = logging.getLogger("Cthulu.cognition.sentiment")
+logger = logging.getLogger("cthulu.cognition.sentiment")
 
 
 class SentimentDirection(Enum):

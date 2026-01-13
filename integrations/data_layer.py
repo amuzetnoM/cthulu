@@ -22,7 +22,7 @@ class DataLayerConfig:
     """Configuration for the unified data layer."""
     
     # SQLite config
-    sqlite_path: str = "Cthulu.db"
+    sqlite_path: str = "cthulu.db"
     
     # Vector Studio config
     vector_studio_enabled: bool = True
@@ -59,7 +59,7 @@ class UnifiedDataLayer:
             config: Data layer configuration
         """
         self.config = config or DataLayerConfig()
-        self.logger = logging.getLogger("Cthulu.data.unified")
+        self.logger = logging.getLogger("cthulu.data.unified")
         
         self._sqlite_db = None
         self._vector_adapter: Optional[VectorStudioAdapter] = None
@@ -402,7 +402,7 @@ class UnifiedDataLayer:
 
 # Convenience function for creating configured data layer
 def create_data_layer(
-    sqlite_path: str = "Cthulu.db",
+    sqlite_path: str = "cthulu.db",
     enable_vector_studio: bool = True,
     vector_path: str = "./vectors/cthulu_memory"
 ) -> UnifiedDataLayer:

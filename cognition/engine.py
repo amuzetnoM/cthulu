@@ -39,7 +39,7 @@ from .exit_oracle import (
 from .order_blocks import OrderBlockDetector, OrderBlock, OrderBlockType
 from .session_orb import SessionORBDetector, SessionType, OpeningRange
 
-logger = logging.getLogger("Cthulu.cognition")
+logger = logging.getLogger("cthulu.cognition")
 
 
 @dataclass

@@ -33,7 +33,7 @@ class ReportGenerator:
     
     def __init__(self):
         """Initialize report generator."""
-        self.logger = logging.getLogger("Cthulu.backtesting.reporter")
+        self.logger = logging.getLogger("cthulu.backtesting.reporter")
         
     def generate(
         self,

@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, Dict, Any
 
-logger = logging.getLogger('Cthulu.ops')
+logger = logging.getLogger('cthulu.ops')
 
 class OpsController:
     """Minimal Ops controller that delegates to runtime components when available.

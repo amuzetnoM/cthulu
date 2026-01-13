@@ -53,7 +53,7 @@ class SoftmaxSelector:
                         - T=10.0: Near-uniform (high exploration)
             min_probability: Minimum probability floor for any strategy
         """
-        self.logger = logging.getLogger("Cthulu.backtesting.ml.softmax")
+        self.logger = logging.getLogger("cthulu.backtesting.ml.softmax")
         self.temperature = temperature
         self.min_probability = min_probability
         
@@ -271,7 +271,7 @@ class PricePredictor:
             num_classes: Number of prediction classes (3 = up/down/neutral)
             neutral_threshold: Price change threshold for neutral classification
         """
-        self.logger = logging.getLogger("Cthulu.backtesting.ml.predictor")
+        self.logger = logging.getLogger("cthulu.backtesting.ml.predictor")
         self.lookback_bars = lookback_bars
         self.prediction_horizon = prediction_horizon
         self.num_classes = num_classes
@@ -587,7 +587,7 @@ class ArgmaxStrategySelector:
             performance_metric: Metric for ranking ('sharpe', 'profit_factor', 'win_rate')
             exploration_rate: Probability of random selection (epsilon-greedy)
         """
-        self.logger = logging.getLogger("Cthulu.backtesting.ml.argmax")
+        self.logger = logging.getLogger("cthulu.backtesting.ml.argmax")
         self.lookback_trades = lookback_trades
         self.performance_metric = performance_metric
         self.exploration_rate = exploration_rate

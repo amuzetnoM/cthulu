@@ -24,7 +24,7 @@ from enum import Enum
 import logging
 import math
 
-logger = logging.getLogger('Cthulu.multi_rrr_exit')
+logger = logging.getLogger('cthulu.multi_rrr_exit')
 
 
 @dataclass

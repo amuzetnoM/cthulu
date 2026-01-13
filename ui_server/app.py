@@ -19,7 +19,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # Configuration
 DB_PATH = r"C:\workspace\cthulu\cthulu.db"
-LOG_FILE = r"C:\workspace\cthulu\logs\Cthulu.log"
+LOG_FILE = r"C:\workspace\cthulu\logs\cthulu.log"
 logger.info(f"DB_PATH: {DB_PATH}")
 
 # Track last known price for live updates

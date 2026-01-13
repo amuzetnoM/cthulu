@@ -55,7 +55,7 @@ try:
 except ImportError:
     HAS_CHART_MANAGER = False
 
-logger = logging.getLogger("Cthulu.entry_confluence")
+logger = logging.getLogger("cthulu.entry_confluence")
 
 
 class EntryQuality(Enum):
@@ -135,7 +135,7 @@ class EntryConfluenceFilter:
     
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
-        self.logger = logging.getLogger("Cthulu.entry_confluence")
+        self.logger = logging.getLogger("cthulu.entry_confluence")
         
         # Configuration
         self.min_score_to_enter = self.config.get('min_score_to_enter', 50)

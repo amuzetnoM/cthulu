@@ -27,7 +27,7 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 import logging
 
-logger = logging.getLogger("Cthulu.unified_risk")
+logger = logging.getLogger("cthulu.unified_risk")
 
 
 class RiskAction(Enum):

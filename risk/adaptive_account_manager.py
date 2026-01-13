@@ -25,7 +25,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional, List, Tuple
 from enum import Enum
 
-logger = logging.getLogger('Cthulu.adaptive_account_manager')
+logger = logging.getLogger('cthulu.adaptive_account_manager')
 
 
 class AccountPhase(Enum):

@@ -89,7 +89,7 @@ class MetricsCollector:
     
     def __init__(self, database=None):
         """Initialize metrics collector."""
-        self.logger = logging.getLogger("Cthulu.metrics")
+        self.logger = logging.getLogger("cthulu.metrics")
         self.database = database
         self.trade_results: List[float] = []
         self.equity_curve: List[float] = [0.0]

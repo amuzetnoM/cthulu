@@ -24,7 +24,7 @@ from datetime import datetime
 from enum import Enum
 import logging
 
-logger = logging.getLogger("Cthulu.structure_detector")
+logger = logging.getLogger("cthulu.structure_detector")
 
 
 class StructureSignalType(Enum):
@@ -114,7 +114,7 @@ class MarketStructureDetector:
                 - auto_detect_length: Auto-adjust length by timeframe
         """
         self.config = config or {}
-        self.logger = logging.getLogger("Cthulu.structure_detector")
+        self.logger = logging.getLogger("cthulu.structure_detector")
         
         # Configuration
         self.auto_detect_length = self.config.get('auto_detect_length', True)

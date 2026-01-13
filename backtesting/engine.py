@@ -132,7 +132,7 @@ class BacktestEngine:
         """
         self.strategies = strategies
         self.config = config or BacktestConfig()
-        self.logger = logging.getLogger("Cthulu.backtesting.engine")
+        self.logger = logging.getLogger("cthulu.backtesting.engine")
         
         # State
         self.equity = self.config.initial_capital

@@ -11,7 +11,7 @@ import logging
 from cthulu.position.manager import PositionInfo, PositionManager
 from cthulu.connector.mt5_connector import mt5
 
-logger = logging.getLogger('Cthulu.trade_manager')
+logger = logging.getLogger('cthulu.trade_manager')
 
 
 @dataclass
