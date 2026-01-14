@@ -75,49 +75,13 @@ class Database:
         Args:
             db_path: Path to SQLite database file
         """
+        self.db_path = Path(db_path)
         self.logger = logging.getLogger("Cthulu.persistence")
-        # Resolve the initial requested path and prefer it if writable
-        initial_path = Path(db_path)
-        try:
-            initial_path.parent.mkdir(parents=True, exist_ok=True)
-            # Quick write test to ensure the directory is writable
-            testfile = initial_path.parent / ".perm_test"
-            with open(testfile, "w") as f:
-                f.write("ok")
-            testfile.unlink()
-
-            # If the DB file exists, verify we can write to it (not just the directory)
-            if initial_path.exists():
-                try:
-                    # Attempt a small SQLite write to ensure the database file is writable
-                    test_conn = sqlite3.connect(str(initial_path), timeout=5)
-                    test_cur = test_conn.cursor()
-                    test_cur.execute("CREATE TABLE IF NOT EXISTS __perm_test_write_test (id INTEGER PRIMARY KEY)")
-                    test_cur.execute("INSERT INTO __perm_test_write_test DEFAULT VALUES")
-                    test_conn.commit()
-                    test_cur.execute("DROP TABLE __perm_test_write_test")
-                    test_conn.commit()
-                    test_conn.close()
-                except Exception:
-                    raise PermissionError("DB file exists but is not writable")
-
-            self.db_path = initial_path
-        except Exception:
-            # Fallback to a user-local writable path (LOCALAPPDATA or home)
-            fallback_dir = Path(os.getenv("LOCALAPPDATA") or Path.home()) / ".cthulu"
-            fallback_dir.mkdir(parents=True, exist_ok=True)
-            self.db_path = fallback_dir / initial_path.name
-            self.logger.warning(f"Database path {initial_path} is not writable; falling back to {self.db_path}")
-            # Try to copy existing DB if readable
-            try:
-                if initial_path.exists():
-                    import shutil
-                    shutil.copy2(str(initial_path), str(self.db_path))
-                    self.logger.info(f"Copied existing DB to fallback location: {self.db_path}")
-            except Exception as e:
-                self.logger.warning(f"Could not copy existing DB to fallback location: {e}")
-
         self.conn: Optional[sqlite3.Connection] = None
+
+        # Create database directory if needed
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+
         # Initialize database
         self._initialize_db()
         
