@@ -344,6 +344,15 @@ class CthuluBootstrap:
         self.logger.info("Initializing database...")
         db_path = config.get('database', {}).get('path', 'cthulu.db')
         database = Database(db_path)
+        # Fail fast if the database is not writable: deployment must ensure ACLs
+        try:
+            database.check_writable()
+        except PermissionError as e:
+            self.logger.error(
+                "Database path '%s' is not writable. Ensure file permissions and ACLs are correct. %s",
+                db_path, e
+            )
+            raise
         return database
     
     def initialize_metrics(self, database: Database) -> MetricsCollector:

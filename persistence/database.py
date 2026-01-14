@@ -525,7 +525,27 @@ class Database:
                 return -1
         
         return -1
-    
+
+    def check_writable(self) -> bool:
+        """
+        Verify the database file is writable by performing a small transactional write.
+        Raises PermissionError if a write cannot be performed.
+        Returns True if writable.
+        """
+        try:
+            test_conn = sqlite3.connect(str(self.db_path), timeout=5)
+            test_cur = test_conn.cursor()
+            test_cur.execute("CREATE TABLE IF NOT EXISTS __health_check(id INTEGER PRIMARY KEY)")
+            test_cur.execute("INSERT INTO __health_check DEFAULT VALUES")
+            test_conn.commit()
+            test_cur.execute("DELETE FROM __health_check")
+            test_conn.commit()
+            test_conn.close()
+            return True
+        except Exception as e:
+            self.logger.error(f"Database write check failed: {e}")
+            raise PermissionError(f"Database not writable: {e}")
+
     def save_position(
         self,
         ticket: int,
