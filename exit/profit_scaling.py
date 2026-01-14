@@ -56,6 +56,11 @@ class ScaleConfig:
     # These are multipliers: micro = below 0.2x initial, small = below 0.5x initial
     micro_ratio_threshold: float = 0.2   # Below 20% of initial = micro mode
     small_ratio_threshold: float = 0.5   # Below 50% of initial = small mode
+
+    # Legacy absolute account thresholds (useful for small/micro quick detection)
+    # Values are in account currency units (e.g., USD) and take precedence when provided
+    micro_account_threshold: float = 100.0
+    small_account_threshold: float = 500.0
     
     # Micro account adjustments (tighter targets) - ATR-based multipliers
     micro_tier_1_atr_mult: float = 0.5   # First tier at 0.5x ATR
@@ -281,13 +286,8 @@ class ProfitScalingExit(ExitStrategy):
         atr = indicators.get('atr', 0)
         current_price = indicators.get('current_price', indicators.get('close', 0))
         
-        # Determine account mode based on ratio to initial (not hardcoded values)
-        # Default initial_balance to current if not provided
-        effective_initial = initial_balance if initial_balance and initial_balance > 0 else account_balance
-        balance_ratio = account_balance / effective_initial if effective_initial > 0 else 1.0
-        
-        # Select mode based on ratio thresholds (configurable)
-        if balance_ratio < self.config.micro_ratio_threshold:
+        # Prefer absolute account thresholds (legacy quick detection) when available
+        if account_balance < self.config.micro_account_threshold:
             mode = "MICRO"
             atr_mults = (self.config.micro_tier_1_atr_mult, 
                         self.config.micro_tier_2_atr_mult, 
@@ -295,7 +295,7 @@ class ProfitScalingExit(ExitStrategy):
             pct_fallbacks = (self.config.micro_tier_1_pct,
                             self.config.micro_tier_2_pct,
                             self.config.micro_tier_3_pct)
-        elif balance_ratio < self.config.small_ratio_threshold:
+        elif account_balance < self.config.small_account_threshold:
             mode = "SMALL"
             atr_mults = (self.config.small_tier_1_atr_mult,
                         self.config.small_tier_2_atr_mult,
@@ -304,13 +304,35 @@ class ProfitScalingExit(ExitStrategy):
                             self.config.small_tier_2_pct,
                             self.config.small_tier_3_pct)
         else:
-            mode = "NORMAL"
-            atr_mults = (self.config.normal_tier_1_atr_mult,
-                        self.config.normal_tier_2_atr_mult,
-                        self.config.normal_tier_3_atr_mult)
-            pct_fallbacks = (self.config.tier_1_profit_pct,
-                            self.config.tier_2_profit_pct,
-                            self.config.tier_3_profit_pct)
+            # Determine account mode based on ratio to initial (dynamic)
+            # Default initial_balance to current if not provided
+            effective_initial = initial_balance if initial_balance and initial_balance > 0 else account_balance
+            balance_ratio = account_balance / effective_initial if effective_initial > 0 else 1.0
+            
+            if balance_ratio < self.config.micro_ratio_threshold:
+                mode = "MICRO"
+                atr_mults = (self.config.micro_tier_1_atr_mult, 
+                            self.config.micro_tier_2_atr_mult, 
+                            self.config.micro_tier_3_atr_mult)
+                pct_fallbacks = (self.config.micro_tier_1_pct,
+                                self.config.micro_tier_2_pct,
+                                self.config.micro_tier_3_pct)
+            elif balance_ratio < self.config.small_ratio_threshold:
+                mode = "SMALL"
+                atr_mults = (self.config.small_tier_1_atr_mult,
+                            self.config.small_tier_2_atr_mult,
+                            self.config.small_tier_3_atr_mult)
+                pct_fallbacks = (self.config.small_tier_1_pct,
+                                self.config.small_tier_2_pct,
+                                self.config.small_tier_3_pct)
+            else:
+                mode = "NORMAL"
+                atr_mults = (self.config.normal_tier_1_atr_mult,
+                            self.config.normal_tier_2_atr_mult,
+                            self.config.normal_tier_3_atr_mult)
+                pct_fallbacks = (self.config.tier_1_profit_pct,
+                                self.config.tier_2_profit_pct,
+                                self.config.tier_3_profit_pct)
         
         # Calculate targets using ATR if available, else fall back to percentages
         if atr > 0 and current_price > 0:
