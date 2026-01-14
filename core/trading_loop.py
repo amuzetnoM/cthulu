@@ -1857,6 +1857,8 @@ class TradingLoop:
                 self.ctx.logger.info(
                     f"Dynamic SL/TP proposal for {position.ticket}: atr={atr_value:.4f}, reason={update.get('reasoning', '')}, action={update.get('action')}"
                 )
+                # Also emit detailed debug for full update payload
+                self.ctx.logger.debug(f"Dynamic SL/TP update detail for {position.ticket}: {update}")
             except Exception:
                 pass
 
