@@ -257,10 +257,12 @@ def main():
         args.skip_setup = True
 
     # Setup logger
+    # Allow overriding log level via environment variable LOG_LEVEL (e.g., DEBUG)
+    log_level = os.getenv('LOG_LEVEL', 'INFO')
     logger = setup_logger(
         name="Cthulu",
-        log_file="logs/cthulu.log",
-        level=logging.INFO
+        log_file="logs/Cthulu.log",
+        level=log_level
     )
     
     logger.info("=" * 80)
