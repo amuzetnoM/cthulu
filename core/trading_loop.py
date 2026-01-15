@@ -1685,6 +1685,17 @@ class TradingLoop:
             atr_value = df['atr'].iloc[-1] if 'atr' in df.columns else None
             
             # PROFIT SCALING - Run scaling cycle for all positions
+            try:
+                ps_present = bool(getattr(self.ctx, 'profit_scaler', None))
+                ps_enabled = False
+                try:
+                    ps_enabled = bool(getattr(getattr(self.ctx, 'profit_scaler', None), 'config', None) and getattr(self.ctx.profit_scaler.config, 'enabled', False))
+                except Exception:
+                    ps_enabled = False
+                self.ctx.logger.debug(f"Profit scaler status: present={ps_present}, enabled={ps_enabled}")
+            except Exception:
+                pass
+
             if self.ctx.profit_scaler and account_info:
                 try:
                     balance = float(account_info.get('balance', 0)) if isinstance(account_info, dict) else float(getattr(account_info, 'balance', 0))
