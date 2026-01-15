@@ -470,13 +470,13 @@ class ProfitScaler:
                 min_lot = 0.01
                 volume_step = 0.01
             
-            # Check if position is already at minimum - can't partial close
-            if pos.volume <= min_lot + 0.0001:
+            # If the position is at minimum lot and the requested close is partial (less than full volume), skip
+            if pos.volume <= min_lot + 0.0001 and volume < pos.volume - 1e-12:
                 logger.debug(f"Partial close skipped for #{ticket}: position at minimum lot ({pos.volume}, min={min_lot})")
                 return {'success': False, 'error': 'Position at minimum lot', 'skipped': True}
-            
+
             if pos.volume < volume:
-                # Adjust volume to what's available
+                # Adjust volume to what's available (allow full close)
                 volume = pos.volume
             
             # Normalize volume to step
