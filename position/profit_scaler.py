@@ -73,6 +73,8 @@ class ScalingConfig:
     
     # Emergency profit lock threshold (% of balance)
     emergency_lock_threshold_pct: float = 0.10  # Lock profits if > 10% of balance
+    # If True, allow a full close when position is at minimum lot to capture profit
+    allow_full_close_on_min_lot: bool = True
 
 
 @dataclass
@@ -231,9 +233,12 @@ class ProfitScaler:
         profit_amount = abs(profit_pips) * state.current_volume * 100  # Rough estimate
         
         # Check each tier - but only if we're actually in meaningful profit
-        # Skip scaling if profit is negligible (< $1 for micro, < $5 for standard)
-        min_meaningful_profit = 1.0 if balance < self.config.micro_account_threshold else 5.0
+        # Use configured minimum profit threshold so behaviour is tunable via config
+        min_meaningful_profit = float(getattr(self.config, 'min_profit_amount', 0.0) or 0.0)
         if profit_amount < min_meaningful_profit:
+            logger.info(
+                f"Skipping scaling for #{ticket}: profit_amount=${profit_amount:.2f} < min_required=${min_meaningful_profit:.2f}"
+            )
             return []  # Don't scale tiny profits
         
         for i, tier in enumerate(tiers):
@@ -257,9 +262,22 @@ class ProfitScaler:
                     min_lot = 0.01
                     volume_step = 0.01
                 
-                # At minimum lot - can't do partial closes, only trail stops
+                # At minimum lot - can't do partial closes, consider full close policy or trailing
                 if state.current_volume <= min_lot + 0.001:  # Allow small tolerance
                     logger.debug(f"Skipping partial close for #{ticket}: position at minimum lot ({state.current_volume:.2f}, min={min_lot})")
+                    # If configured, allow a FULL close when at minimum lot to capture profit
+                    if getattr(self.config, 'allow_full_close_on_min_lot', False):
+                        logger.info(f"Position #{ticket} at min lot and eligible for full close due to config; scheduling full close")
+                        actions.append({
+                            'type': 'close_partial',
+                            'ticket': ticket,
+                            'volume': float(state.current_volume),
+                            'reason': 'full_close_min_lot',
+                            'profit_pct': profit_pct,
+                            'tier': i
+                        })
+                        # We already scheduled an action for this tier; continue to next tier
+                        continue
                     # Still apply trailing stop if configured
                     if tier.trail_pct > 0 and profit_pct > 0:
                         if side.upper() == 'BUY':
@@ -619,12 +637,18 @@ class ProfitScaler:
             
             # Get all open positions
             positions = mt5.positions_get()
+            logger.debug("Running scaling cycle: found %s open positions; tracked states: %s", len(positions) if positions else 0, list(self._position_states.keys()))
             if not positions:
                 return []
                 
             for pos in positions:
                 ticket = pos.ticket
-                
+                # Emit detailed position snapshot for debugging
+                try:
+                    logger.debug("Inspecting position %s: symbol=%s, volume=%s, price_current=%s, sl=%s, tp=%s, profit=%s", ticket, getattr(pos,'symbol',None), getattr(pos,'volume',None), getattr(pos,'price_current',None), getattr(pos,'sl',None), getattr(pos,'tp',None), getattr(pos,'profit',None))
+                except Exception:
+                    pass
+
                 # Auto-register if not tracked
                 if ticket not in self._position_states:
                     side = 'BUY' if pos.type == 0 else 'SELL'
@@ -647,9 +671,16 @@ class ProfitScaler:
                 )
                 
                 if actions:
+                    # Emit an INFO-level message so scaling intent is visible at normal log levels
+                    logger.info(f"Scaling actions scheduled for {ticket}: {actions}")
+                    logger.debug("Scaling actions for %s: %s", ticket, actions)
                     # Pass balance for ML learning
                     results = self.execute_actions(actions, balance=balance)
+                    logger.debug("Scaling results for %s: %s", ticket, results)
                     all_results.extend(results)
+
+            # Emit a concise summary after evaluating all positions in this cycle
+            logger.info(f"Scaling cycle: positions_evaluated={len(positions)}, actions_executed={len(all_results)}")
                     
         except Exception as e:
             logger.exception("Scaling cycle error")
