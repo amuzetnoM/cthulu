@@ -13,6 +13,18 @@ __all__ = [
 
 import sys
 import importlib
+import logging
+logger = logging.getLogger(__name__) 
+
+# Ensure inner package dir (./cthulu) is on __path__ so submodules like
+# `cthulu.llm` are resolvable even when pytest or other tools shadow imports.
+try:
+    import os
+    inner_pkg = os.path.join(os.path.dirname(__file__), 'cthulu')
+    if os.path.isdir(inner_pkg) and inner_pkg not in __path__:
+        __path__.insert(0, inner_pkg)
+except Exception as e:
+    logger.debug("Failed to ensure inner package on __path__: %s", e, exc_info=True)
 
 # Lazy imports to avoid heavy import-time side-effects
 _LAZY_IMPORTS = {
@@ -46,8 +58,8 @@ def _install_herald_shim():
         mod = types.ModuleType(pkg_name)
         mod.__path__ = __path__
         sys.modules[pkg_name] = mod
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Failed to install herald shim: %s", e, exc_info=True)
 
 _install_herald_shim()
 

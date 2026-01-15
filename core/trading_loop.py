@@ -227,8 +227,8 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
                 rsi_period = int(strategy.rsi_period)
             elif hasattr(strategy, 'rsi_oversold') or hasattr(strategy, 'rsi_overbought'):
                 needs_rsi = True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Failed to determine RSI requirement from strategy: %s", e, exc_info=True)
     
     # Check if RSI already exists
     if needs_rsi:
@@ -252,8 +252,8 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
                             extra_indicators.append(RSI(period=rp))
                             logger.debug(f"Added runtime RSI indicator from config (period={rp})")
                             break
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to inspect strategy config for RSI requirement: %s", e, exc_info=True)
     
     # Check for ATR requirement
     needs_atr = False
@@ -267,8 +267,8 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
         # Strategy name-based heuristic (scalping strategies often need ATR)
         elif getattr(strategy, 'name', '').lower().find('scalp') != -1 or strategy.__class__.__name__.lower().find('scalp') != -1:
             needs_atr = True
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Failed to determine ATR requirement from strategy: %s", e, exc_info=True)
     
     if needs_atr:
         has_atr = 'atr' in df.columns or any(getattr(i, 'name', '').upper() == 'ATR' for i in indicators)
@@ -288,8 +288,8 @@ def ensure_runtime_indicators(df: pd.DataFrame, indicators: List, strategy: Stra
         
         if isinstance(strategy_to_check, StrategySelector):
             needs_adx = True  # Dynamic selector uses ADX for regime detection
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Failed to determine ADX requirement: %s", e, exc_info=True)
     
     if needs_adx:
         has_adx = 'adx' in df.columns or any(getattr(i, 'name', '').upper() == 'ADX' for i in indicators)

@@ -202,8 +202,8 @@ class DynamicSLTPManager:
         try:
             if tick_size and tick_size > 0:
                 return round(price / tick_size) * tick_size
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to round to tick (%s): %s", tick_size, e, exc_info=True)
         return price
     
     def calculate_dynamic_sltp(

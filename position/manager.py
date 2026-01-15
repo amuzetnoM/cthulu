@@ -9,6 +9,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional
 import threading
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -58,7 +61,8 @@ class PositionInfo:
                 return (now - dt).total_seconds() / 3600.0
             else:
                 return (now_utc - dt).total_seconds() / 3600.0
-        except Exception:
+        except Exception as e:
+            logger.debug("Failed to compute age hours for position %s: %s", getattr(self, 'ticket', 'unknown'), e, exc_info=True)
             return 0.0
 
     @property
@@ -80,7 +84,8 @@ class PositionInfo:
                 return (self.current_price - self.open_price) * self.volume
             else:
                 return (self.open_price - self.current_price) * self.volume
-        except Exception:
+        except Exception as e:
+            logger.debug("Failed to compute unrealized pnl for position %s: %s", getattr(self, 'ticket', 'unknown'), e, exc_info=True)
             return 0.0
 
 

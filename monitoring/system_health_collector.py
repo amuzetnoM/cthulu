@@ -158,8 +158,8 @@ class SystemHealthCollector:
                 metrics_dir = cthulu_root / "metrics"
                 try:
                     metrics_dir.mkdir(parents=True, exist_ok=True)
-                except Exception:
-                    pass
+                except Exception as e:
+                    self.logger.debug("Failed to create metrics directory for system health collector: %s", e, exc_info=True)
                 csv_path = str(metrics_dir / "system_health.csv")
             self.csv_path = csv_path
             self.update_interval = update_interval
@@ -325,8 +325,8 @@ class SystemHealthCollector:
                     if cpu_freq:
                         snapshot.system_cpu_freq_current = cpu_freq.current
                         snapshot.system_cpu_freq_max = cpu_freq.max
-                except Exception:
-                    pass
+                except Exception as e:
+                    self.logger.debug("Failed to read CPU frequency: %s", e, exc_info=True)
                 
                 # System Memory
                 mem = psutil.virtual_memory()
@@ -337,8 +337,8 @@ class SystemHealthCollector:
                 
                 try:
                     snapshot.system_memory_cached_gb = mem.cached / (1024 ** 3)
-                except AttributeError:
-                    pass
+                except AttributeError as e:
+                    self.logger.debug("Memory object missing 'cached' attribute: %s", e)
                 
                 # System Disk
                 try:
@@ -353,8 +353,8 @@ class SystemHealthCollector:
                     if disk_io and self.disk_io_start:
                         snapshot.disk_read_mb = (disk_io.read_bytes - self.disk_io_start.read_bytes) / (1024 * 1024)
                         snapshot.disk_write_mb = (disk_io.write_bytes - self.disk_io_start.write_bytes) / (1024 * 1024)
-                except Exception:
-                    pass
+                except Exception as e:
+                    self.logger.debug("Failed to collect disk metrics: %s", e, exc_info=True)
                 
                 # Network
                 try:
@@ -366,8 +366,8 @@ class SystemHealthCollector:
                     connections = psutil.net_connections(kind='inet')
                     snapshot.network_connections = len(connections)
                     snapshot.network_connections_established = len([c for c in connections if c.status == 'ESTABLISHED'])
-                except (psutil.AccessDenied, AttributeError):
-                    pass
+                except (psutil.AccessDenied, AttributeError) as e:
+                    self.logger.debug("Failed to collect network metrics: %s", e, exc_info=True)
                 
                 # System Load
                 try:
@@ -375,20 +375,20 @@ class SystemHealthCollector:
                     snapshot.load_avg_1min = load_avg[0]
                     snapshot.load_avg_5min = load_avg[1]
                     snapshot.load_avg_15min = load_avg[2]
-                except (AttributeError, OSError):
-                    pass
+                except (AttributeError, OSError) as e:
+                    self.logger.debug("getloadavg not available on this platform: %s", e)
                 
                 # File Handles
                 try:
                     snapshot.files_open = self.process.num_fds() if hasattr(self.process, 'num_fds') else len(self.process.open_files())
-                except (psutil.AccessDenied, AttributeError):
-                    pass
+                except (psutil.AccessDenied, AttributeError) as e:
+                    self.logger.debug("Failed to read file handle counts: %s", e, exc_info=True)
                 
                 # Uptime
                 try:
                     snapshot.system_uptime_seconds = time.time() - psutil.boot_time()
-                except Exception:
-                    pass
+                except Exception as e:
+                    self.logger.debug("Failed to compute system uptime: %s", e, exc_info=True)
                 
                 snapshot.process_uptime_seconds = time.time() - self.process_start_time
                 
@@ -397,8 +397,8 @@ class SystemHealthCollector:
                     temps = psutil.sensors_temperatures()
                     if temps and 'coretemp' in temps:
                         snapshot.cpu_temp_celsius = temps['coretemp'][0].current
-                except (AttributeError, KeyError):
-                    pass
+                except (AttributeError, KeyError) as e:
+                    self.logger.debug("Failed to read temperature sensors: %s", e, exc_info=True)
                 
         except Exception as e:
             self.logger.error(f"Error collecting metrics: {e}")

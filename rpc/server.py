@@ -212,8 +212,8 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 # Remove used token
                 try:
                     del RPCRequestHandler.confirmation_store[confirm_token]
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("Failed to remove confirmation token: %s", e, exc_info=True)
                 self._send_json(200, {'result': res})
                 return
             except Exception as e:
@@ -290,8 +290,8 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
             auth = self.headers.get('Authorization')
             if auth and auth.startswith('Bearer '):
                 order_req.metadata['auth_hint'] = f"bearer:{auth.split(' ',1)[1][:6]}"
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to attach metadata to RPC order: %s", e, exc_info=True)
 
         # Risk approval (fetch account state if available)
         try:
@@ -300,7 +300,8 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 connector = getattr(self.position_manager, 'connector', None)
                 if connector and hasattr(connector, 'get_account_info'):
                     account_info = connector.get_account_info()
-            except Exception:
+            except Exception as e:
+                logger.debug("Failed to get account info from connector: %s", e, exc_info=True)
                 account_info = None
 
             # The RiskManager was designed for `Signal` objects with attributes like

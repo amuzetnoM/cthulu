@@ -200,8 +200,8 @@ class PositionLifecycle:
                 try:
                     with self._inflight_lock:
                         self._inflight_closes.discard(ticket)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("Failed to clear inflight close for %s: %s", ticket, e, exc_info=True)
 
         except Exception as e:
             logger.error(f"Error closing position {ticket}: {e}", exc_info=True)

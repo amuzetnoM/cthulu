@@ -271,8 +271,8 @@ class ExecutionEngine:
             try:
                 order_req.metadata['provenance'] = provenance
                 order_req.metadata['provenance_logged'] = True
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.debug("Failed to attach provenance to order metadata: %s", e, exc_info=True)
 
             # Persist to telemetry DB if available
             try:
@@ -281,8 +281,8 @@ class ExecutionEngine:
                     provenance['id'] = prov_id
                     try:
                         order_req.metadata['provenance_db_id'] = prov_id
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        self.logger.debug("Failed to write provenance_db_id into metadata: %s", e, exc_info=True)
             except Exception:
                 self.logger.exception('Failed to record provenance into telemetry DB')
 
@@ -335,9 +335,54 @@ class ExecutionEngine:
                 f"Placing {order_req.order_type.value} order: "
                 f"{order_req.side} {order_req.volume} {order_req.symbol}"
             )
-            
-            result = mt5.order_send(request)
-            
+
+            # Use a short timeout wrapper around mt5.order_send to avoid blocking the trading loop
+            try:
+                import concurrent.futures
+                ORDER_SUBMIT_TIMEOUT = getattr(self, 'ORDER_SUBMIT_TIMEOUT', 10)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+                    fut = ex.submit(mt5.order_send, request)
+                    try:
+                        result = fut.result(timeout=ORDER_SUBMIT_TIMEOUT)
+                    except concurrent.futures.TimeoutError:
+                        fut.cancel()
+                        self.logger.error("Order submission to MT5 timed out after %s seconds", ORDER_SUBMIT_TIMEOUT)
+                        # Instrumentation: record failed execution if collector available
+                        try:
+                            if self.ml_collector:
+                                exec_payload = {
+                                    'order_id': None,
+                                    'status': 'REJECTED',
+                                    'error': f"timeout after {ORDER_SUBMIT_TIMEOUT}s"
+                                }
+                                self.ml_collector.record_execution(exec_payload)
+                        except Exception:
+                            self.logger.exception('ML collector failed')
+
+                        return ExecutionResult(
+                            order_id=None,
+                            status=OrderStatus.REJECTED,
+                            executed_price=None,
+                            executed_volume=None,
+                            timestamp=datetime.now(),
+                            error=f"Order submission timed out after {ORDER_SUBMIT_TIMEOUT}s"
+                        )
+            except Exception as e:
+                # Fallback to direct call if threading wrapper is not possible for some reason
+                self.logger.debug("Order submission wrapper failed, falling back to direct call: %s", e, exc_info=True)
+                try:
+                    result = mt5.order_send(request)
+                except Exception as e2:
+                    self.logger.error("Order submission failed outright: %s", e2, exc_info=True)
+                    return ExecutionResult(
+                        order_id=None,
+                        status=OrderStatus.REJECTED,
+                        executed_price=None,
+                        executed_volume=None,
+                        timestamp=datetime.now(),
+                        error=str(e2)
+                    )
+
             if result is None:
                 error = mt5.last_error()
                 self.logger.error(f"Order submission failed: {error}")
@@ -774,10 +819,21 @@ class ExecutionEngine:
                 pass
 
             # Submit modification
+            self.logger.debug("MT5 modify request for %s: %s", ticket, request)
             result = mt5.order_send(request)
+            # Log result details for diagnosis
+            try:
+                rc = getattr(result, 'retcode', None)
+                comment = getattr(result, 'comment', None)
+                self.logger.debug("MT5 order_send result for modify %s: retcode=%s, comment=%s", ticket, rc, comment)
+            except Exception:
+                pass
             
             if result is None:
-                error = mt5.last_error()
+                try:
+                    error = mt5.last_error()
+                except Exception:
+                    error = None
                 self.logger.error(f"Position modification failed for {ticket}: {error}")
                 return False
             

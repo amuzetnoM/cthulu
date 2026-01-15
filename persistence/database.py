@@ -78,6 +78,8 @@ class Database:
         self.db_path = Path(db_path)
         self.logger = logging.getLogger("Cthulu.persistence")
         self.conn: Optional[sqlite3.Connection] = None
+        # Read-only marker (set if filesystem prevents initialization writes)
+        self._read_only = False
 
         # Create database directory if needed
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -94,9 +96,28 @@ class Database:
                 timeout=30.0  # 30 second timeout to reduce lock conflicts
             )
             self.conn.row_factory = sqlite3.Row
-            # Enable WAL mode for better concurrent access
-            self.conn.execute("PRAGMA journal_mode=WAL")
-            self.conn.execute("PRAGMA busy_timeout=30000")
+            # Enable WAL mode for better concurrent access, but tolerate read-only files
+            try:
+                self.conn.execute("PRAGMA journal_mode=WAL")
+            except sqlite3.OperationalError as e:
+                msg = str(e).lower()
+                # If the filesystem disallows writes (e.g., readonly file), mark and continue
+                if 'readonly' in msg or 'attempt to write' in msg:
+                    self.logger.warning("Database file appears read-only; continuing in read-only mode")
+                    self._read_only = True
+                else:
+                    raise
+
+            # If DB is read-only, skip schema creation and migrations (tests expect DB object to init)
+            if getattr(self, '_read_only', False):
+                self.logger.info("Skipping schema initialization due to read-only DB")
+                return
+
+            # Always attempt to set busy timeout if possible
+            try:
+                self.conn.execute("PRAGMA busy_timeout=30000")
+            except Exception:
+                pass
             
             cursor = self.conn.cursor()
             
@@ -532,6 +553,10 @@ class Database:
         Raises PermissionError if a write cannot be performed.
         Returns True if writable.
         """
+        # Quick path: if DB was previously detected as read-only during initialization, fail fast
+        if getattr(self, '_read_only', False):
+            raise PermissionError("Database file appears to be read-only")
+
         try:
             test_conn = sqlite3.connect(str(self.db_path), timeout=5)
             test_cur = test_conn.cursor()

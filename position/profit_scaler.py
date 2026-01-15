@@ -252,7 +252,8 @@ class ProfitScaler:
                     else:
                         min_lot = 0.01
                         volume_step = 0.01
-                except Exception:
+                except Exception as e:
+                    logger.debug("Failed to query symbol info from MT5 for %s: %s", state.symbol, e, exc_info=True)
                     min_lot = 0.01
                     volume_step = 0.01
                 
@@ -474,7 +475,15 @@ class ProfitScaler:
                 logger.debug(f"Partial close skipped for #{ticket}: calculated volume {volume} < min_lot {min_lot}")
                 return {'success': False, 'error': 'Volume below minimum', 'skipped': True}
             
+            # Log the close request for diagnostics
+            logger.debug("Executing partial close for %s: volume=%s", ticket, volume)
             result = self.execution_engine.close_position(ticket, volume=volume)
+            # Log execution result details
+            try:
+                logger.debug("Partial close result for %s: status=%s, error=%s, metadata=%s", ticket, getattr(result, 'status', None), getattr(result, 'error', None), getattr(result, 'metadata', None))
+            except Exception:
+                pass
+            
             if result and result.status.value == 'FILLED':
                 # Safely extract profit from metadata or result
                 profit = 0.0
@@ -486,7 +495,7 @@ class ProfitScaler:
                 logger.info(f"Partial close #{ticket}: {volume} lots, profit: {profit}")
                 return {'success': True, 'profit': profit, 'volume': volume}
             else:
-                error = result.error if result else 'Unknown error'
+                error = (getattr(result, 'error', None) if result else None) or (getattr(result, 'status', None) and getattr(result, 'status', None).value if getattr(result, 'status', None) else None) or 'Unknown error'
                 logger.warning(f"Partial close failed for #{ticket}: {error}")
                 return {'success': False, 'error': error}
         except Exception as e:
@@ -537,13 +546,27 @@ class ProfitScaler:
                 "tp": pos.tp if hasattr(pos, 'tp') else None,
             }
             
+            # Log the modification request for diagnostics
+            logger.debug("MT5 SLTP modification request for %s: %s", ticket, request)
             result = mt5.order_send(request)
+            # Log result details for debugging (retcode/comment/last_error if available)
+            try:
+                rc = getattr(result, 'retcode', None)
+                comment = getattr(result, 'comment', None)
+                logger.debug("MT5 order_send result for SLTP modify #%s: retcode=%s, comment=%s", ticket, rc, comment)
+            except Exception:
+                pass
             
             if result and result.retcode == mt5.TRADE_RETCODE_DONE:
                 logger.info(f"SL modified for #{ticket}: {new_sl}")
                 return {'success': True, 'new_sl': new_sl}
             else:
-                error = result.comment if result else 'Unknown error'
+                # Try to pull last_error for additional context
+                try:
+                    last_err = mt5.last_error()
+                except Exception:
+                    last_err = None
+                error = (getattr(result, 'comment', None) or last_err or 'Unknown error')
                 logger.warning(f"SL modification failed for #{ticket}: {error}")
                 return {'success': False, 'error': error}
                 

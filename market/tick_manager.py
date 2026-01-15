@@ -248,8 +248,8 @@ class TickManager:
                                             "Count of ticks originating from fallback sources",
                                             labels={"symbol": s, "source": tick.get('source')}
                                         )
-                                except Exception:
-                                    pass
+                                except Exception as e:
+                                    self.logger.debug("Failed to update fallback tick source metric for %s: %s", s, e, exc_info=True)
                             else:
                                 # record poll error
                                 self._tick_poll_errors += 1
@@ -260,14 +260,16 @@ class TickManager:
                                         "counter",
                                         "Total tick poll errors"
                                     )
-                                except Exception:
-                                    pass
-                        except Exception:
+                                except Exception as e:
+                                    self.logger.debug("Failed to update tick poll error metric: %s", e, exc_info=True)
+                        except Exception as e:
+                            self.logger.debug("Error processing tick bucket for %s: %s", s, e, exc_info=True)
                             continue
                     # sleep a bit between buckets to avoid tight looping
                     sleep(interval)
 
-            except Exception:
+            except Exception as e:
+                self.logger.debug("Tick manager loop encountered error: %s", e, exc_info=True)
                 sleep(0.5)
 
 

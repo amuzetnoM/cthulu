@@ -113,8 +113,8 @@ class MT5Connector:
                     return True
                 if 'terminal64' in out.lower() or 'terminal' in out.lower() or 'metatrader' in out.lower():
                     return True
-        except Exception:
-            pass
+        except Exception as e:
+            self.logger.debug("Failed to check MT5 process presence: %s", e, exc_info=True)
         return False
 
     def connect(self) -> bool:
@@ -129,8 +129,8 @@ class MT5Connector:
             try:
                 mv = getattr(mt5, '__version__', None) or getattr(mt5, 'version', None)
                 self.logger.debug(f"MT5 python package version: {mv}")
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.debug("Failed to determine MT5 package version: %s", e, exc_info=True)
             try:
                 tinfo = mt5.terminal_info()
                 self.logger.debug(f"MT5 terminal_info: {tinfo}")
