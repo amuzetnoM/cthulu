@@ -11,6 +11,11 @@ Security Features (v5.2.33):
 - Optional TLS support
 """
 from http.server import HTTPServer, BaseHTTPRequestHandler
+# Use ThreadingHTTPServer when available to handle concurrent requests without blocking
+try:
+    from http.server import ThreadingHTTPServer
+except Exception:
+    ThreadingHTTPServer = HTTPServer
 import json
 import logging
 from urllib.parse import urlparse
@@ -629,7 +634,8 @@ def run_rpc_server(
     else:
         logger.warning("RPC running WITHOUT security hardening - security module not available")
 
-    server = HTTPServer((host, port), RPCRequestHandler)
+    server = ThreadingHTTPServer((host, port), RPCRequestHandler)
+    logger.info('Using ThreadingHTTPServer for RPC to allow concurrent request handling')
     
     # Apply TLS if configured
     if SECURITY_AVAILABLE and RPCRequestHandler.security_manager:

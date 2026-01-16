@@ -225,5 +225,59 @@ def test_successful_filled_calls_db_and_track():
     thread.join(timeout=2)
 
 
+def test_concurrent_ops_status_during_long_trade():
+    # Simulate a slow execution engine to ensure RPC server does not block other requests
+    class SlowExec:
+        def __init__(self, delay=5):
+            self.delay = delay
+            self.called = False
+
+        def place_order(self, order_req):
+            import time
+            self.called = True
+            time.sleep(self.delay)
+            return SimpleResult()
+
+    exec_engine = SlowExec(delay=2)
+    risk = DummyRiskManager(approved=True)
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, None, exec_engine, risk, pos, db)
+    port = server.server_port
+    trade_url = f'http://127.0.0.1:{port}/trade'
+    status_url = f'http://127.0.0.1:{port}/ops/status'
+
+    import threading, urllib.request, time
+
+    trade_resp = {}
+
+    def do_trade():
+        try:
+            resp = post(trade_url, {'symbol': 'BTCUSD#m', 'side': 'BUY', 'volume': 0.01})
+            trade_resp['code'] = resp.code
+            trade_resp['body'] = json.loads(resp.read())
+        except Exception as e:
+            trade_resp['error'] = str(e)
+
+    t = threading.Thread(target=do_trade, daemon=True)
+    start = time.time()
+    t.start()
+
+    # Immediately request ops/status which should return quickly even while trade is processing
+    resp = urllib.request.urlopen(status_url)
+    elapsed = time.time() - start
+    assert resp.code == 200
+    assert elapsed < 1.0, f"Status endpoint blocked, took {elapsed}s"
+
+    # Wait for trade to complete
+    t.join(timeout=5)
+    assert exec_engine.called
+    assert trade_resp.get('code') == 200
+
+    server.shutdown()
+    thread.join(timeout=2)
+
+
 
 
