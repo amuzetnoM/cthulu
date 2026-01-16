@@ -20,6 +20,7 @@ All error handling, logging, and state management is preserved from the original
 import time
 import logging
 import os
+import tempfile
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
@@ -2081,16 +2082,16 @@ class TradingLoop:
                         # Use config path if specified, otherwise use platform-appropriate defaults
                         default_path = None
                         if os.name == 'nt':
-                            # Windows: Use user's temp directory or program data
-                            import tempfile
+                            # Windows: Use user's temp directory
                             temp_dir = tempfile.gettempdir()
                             default_path = os.path.join(temp_dir, "cthulu_metrics", "Cthulu_metrics.prom")
                         else:
-                            # Unix/Linux: Use /var/lib or /tmp
-                            if os.path.exists('/var/lib/cthulu'):
-                                default_path = "/var/lib/cthulu/metrics/Cthulu_metrics.prom"
+                            # Unix/Linux: Prefer XDG_RUNTIME_DIR, fall back to /tmp
+                            runtime_dir = os.getenv('XDG_RUNTIME_DIR')
+                            if runtime_dir and os.path.exists(runtime_dir):
+                                default_path = os.path.join(runtime_dir, "cthulu", "metrics", "Cthulu_metrics.prom")
                             else:
-                                default_path = "/tmp/Cthulu_metrics.prom"
+                                default_path = "/tmp/cthulu_metrics/Cthulu_metrics.prom"
                         
                         exporter._file_path = prom_cfg.get('textfile_path') or default_path
                         

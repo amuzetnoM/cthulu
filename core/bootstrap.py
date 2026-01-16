@@ -11,6 +11,7 @@ Extracted from __main__.py for better modularity and testability.
 """
 
 import logging
+import tempfile
 from pathlib import Path
 import os
 from typing import Dict, Any, Optional, Tuple
@@ -447,15 +448,15 @@ class CthuluBootstrap:
                     # Use platform-appropriate default paths
                     if os.name == 'nt':
                         # Windows: Use user's temp directory
-                        import tempfile
                         temp_dir = tempfile.gettempdir()
                         exporter._file_path = os.path.join(temp_dir, "cthulu_metrics", "Cthulu_metrics.prom")
                     else:
-                        # Unix/Linux: Use /var/lib if writable, otherwise /tmp
-                        if os.path.exists('/var/lib/cthulu') and os.access('/var/lib/cthulu', os.W_OK):
-                            exporter._file_path = "/var/lib/cthulu/metrics/Cthulu_metrics.prom"
+                        # Unix/Linux: Prefer XDG_RUNTIME_DIR, fall back to /tmp
+                        runtime_dir = os.getenv('XDG_RUNTIME_DIR')
+                        if runtime_dir and os.path.exists(runtime_dir):
+                            exporter._file_path = os.path.join(runtime_dir, "cthulu", "metrics", "Cthulu_metrics.prom")
                         else:
-                            exporter._file_path = "/tmp/Cthulu_metrics.prom"
+                            exporter._file_path = "/tmp/cthulu_metrics/Cthulu_metrics.prom"
                     
                     # Ensure directory exists
                     try:

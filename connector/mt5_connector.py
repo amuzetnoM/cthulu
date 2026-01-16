@@ -449,7 +449,10 @@ class MT5Connector:
             self.logger.warning(f"Found symbols but failed to select any tradable one: {matches}")
         
         # Log available symbols to help user find correct name
-        self.logger.error(f"Symbol '{symbol}' not found or not selectable")
+        self.logger.warning(
+            f"Symbol '{symbol}' not found. Please use the exact symbol name from MT5 Market Watch. "
+            f"Open MetaTrader 5 → Market Watch (Ctrl+M) → Find your instrument → Use exact name."
+        )
         try:
             sample = mt5.symbols_get()[:20]
             sample_names = [s.name for s in sample]
