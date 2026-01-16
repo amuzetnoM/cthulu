@@ -279,5 +279,48 @@ def test_concurrent_ops_status_during_long_trade():
     thread.join(timeout=2)
 
 
+def test_volume_below_symbol_min_lot_returns_400():
+    """If the connector reports a symbol min lot larger than requested volume, RPC should return 400."""
+    result = SimpleResult()
+
+    class ExecWithConnector(DummyExecutionEngine):
+        def __init__(self, result):
+            # override to echo the requested volume into the result
+            self._result_template = result
+            # provide a connector stub
+            class C:
+                def get_min_lot(self, s):
+                    return 0.1
+                def get_symbol_info(self, s):
+                    return {'volume_step': 0.1}
+            self.connector = C()
+
+        def place_order(self, order_req):
+            # Return result that reflects the actual (possibly adjusted) order_req.volume
+            vol = getattr(order_req, 'volume', 0.0)
+            return SimpleResult(filled_volume=vol, fill_price=getattr(self._result_template, 'fill_price', 123.45), order_id=getattr(self._result_template, 'order_id', 1))
+
+    exec_engine = ExecWithConnector(result)
+    risk = DummyRiskManager(approved=True)
+    pos = DummyPositionManager()
+    db = DummyDatabase()
+
+    thread, server = run_rpc_server('127.0.0.1', 0, None, exec_engine, risk, pos, db)
+    port = server.server_port
+    url = f'http://127.0.0.1:{port}/trade'
+
+    # Request a volume below the connector-specified min
+    data = {'symbol': 'GOLDM#', 'side': 'SELL', 'volume': 0.01}
+    resp = post(url, data)
+    # RPC auto-adjusts to connector min lot + step, so request should succeed
+    assert resp.code == 200
+    body = json.loads(resp.read())
+    # The execution engine/connector should have adjusted to 0.1
+    assert float(body.get('filled_volume')) == 0.1
+    assert body.get('status') is not None
+
+    server.shutdown()
+    thread.join(timeout=2)
+
 
 

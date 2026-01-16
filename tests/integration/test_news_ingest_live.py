@@ -4,9 +4,6 @@ import pytest
 from cthulu.training.instrumentation import MLDataCollector
 
 
-pytestmark = pytest.mark.integration
-
-
 def test_news_ingest_live_one_cycle():
     # Gated: set RUN_NEWS_INTEGRATION=1 to enable this test
     if os.getenv('RUN_NEWS_INTEGRATION') != '1':

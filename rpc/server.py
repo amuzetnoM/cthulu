@@ -21,6 +21,7 @@ import logging
 from urllib.parse import urlparse
 from threading import Thread
 from typing import Optional, Dict, Any
+import socket  # used for request read timeouts and socket exceptions
 
 logger = logging.getLogger('cthulu.rpc')
 
@@ -71,6 +72,14 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         client_ip = self.client_address[0]
+        # Prevent handlers blocking indefinitely when client doesn't send the body
+        try:
+            # short read timeout to fail quickly and free the worker thread
+            self.connection.settimeout(15)
+        except Exception:
+            # best-effort only
+            pass
+        logger.debug('RPC request received: %s from %s', parsed.path, client_ip)  # entry log for tracing
         
         # Security check if security manager is available
         if self.security_manager:
@@ -84,11 +93,22 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                 self._send_json(413, {'error': f'Request too large (max {max_size} bytes)'})
                 return
             
+            # Read body with timeout handling to avoid blocking the worker
             try:
-                raw = self.rfile.read(length)
+                raw = self.rfile.read(length) if length > 0 else b''
+            except socket.timeout:
+                logger.warning('RPC request from %s timed out while reading body', client_ip)
+                self._send_json(408, {'error': 'Request read timeout'})
+                return
+            except Exception as e:
+                logger.warning('Failed reading request body from %s: %s', client_ip, e)
+                self._bad_request('Invalid JSON')
+                return
+
+            try:
                 payload = json.loads(raw.decode('utf-8') if isinstance(raw, (bytes, bytearray)) else raw)
             except Exception as e:
-                logger.warning(f"Invalid JSON from {client_ip}: {e}")
+                logger.warning('Invalid JSON from %s: %s', client_ip, e)
                 self._bad_request('Invalid JSON')
                 return
             
@@ -265,6 +285,51 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
             self._bad_request('volume must be numeric')
             return
 
+        # Validate against symbol-specific trading limits (min lot / step) when connector available
+        connector = getattr(self.execution_engine, 'connector', None)
+        if connector:
+            try:
+                sym_min = connector.get_min_lot(symbol)
+                sym_info = connector.get_symbol_info(symbol) or {}
+                sym_step = sym_info.get('volume_step')
+            except Exception as e:
+                logger.debug('Failed to fetch symbol limits from connector for %s: %s', symbol, e, exc_info=True)
+                sym_min = None
+                sym_step = None
+
+            # Auto-adjust volume up to symbol min and nearest step when possible
+            try:
+                if sym_min is not None:
+                    minf = float(sym_min)
+                    if volume < minf:
+                        # keep record of original requested volume
+                        payload['requested_volume'] = volume
+                        # compute adjusted volume (respect step if available)
+                        adjusted = minf
+                        if sym_step:
+                            try:
+                                stepf = float(sym_step)
+                                multiplier = round(adjusted / stepf)
+                                adjusted = round(max(stepf, multiplier * stepf), 8)
+                            except Exception:
+                                pass
+                        logger.info('Adjusted RPC requested volume for %s: %s -> %s (min=%s, step=%s)', symbol, payload['requested_volume'], adjusted, sym_min, sym_step)
+                        volume = float(adjusted)
+                # Then ensure volume is a multiple of step (round to nearest valid step)
+                if sym_step:
+                    try:
+                        stepf = float(sym_step)
+                        multiplier = round(volume / stepf)
+                        adjusted_v = round(max(stepf, multiplier * stepf), 8)
+                        if abs(adjusted_v - volume) > 1e-9:
+                            payload['requested_volume'] = payload.get('requested_volume', volume)
+                            logger.info('Adjusted RPC volume for %s to match step %s: %s -> %s', symbol, sym_step, volume, adjusted_v)
+                            volume = float(adjusted_v)
+                    except Exception:
+                        logger.debug('Failed to validate/round volume step for %s with step=%s', symbol, sym_step, exc_info=True)
+            except Exception as e:
+                logger.debug('Unexpected error while auto-adjusting volume for %s: %s', symbol, e, exc_info=True)
+
         # Build OrderRequest lazily to avoid importing heavy modules at module import time
         try:
             from cthulu.execution.engine import OrderRequest, OrderType, OrderStatus, ExecutionResult
@@ -328,11 +393,13 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
             signal_like.size_hint = getattr(order_req, 'volume', None)
             signal_like.metadata = {}
 
+            logger.debug('Risk approval: starting approve() for %s', order_req.symbol)
             approved, reason, position_size = self.risk_manager.approve(
                 signal_like,
                 account_info,
                 len(self.position_manager.get_positions(symbol=symbol))
             )
+            logger.debug('Risk approval: done (approved=%s, reason=%s, pos_size=%s)', approved, reason, position_size)
         except Exception as e:
             logger.exception('Risk manager check failed')
             self._send_json(500, {'error': 'Risk manager error'})
@@ -349,7 +416,9 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
 
         # Place the order
         try:
+            logger.debug('Execution engine: placing order for %s %s %s', order_req.symbol, order_req.side, order_req.volume)
             result = self.execution_engine.place_order(order_req)
+            logger.debug('Execution engine: place_order returned: %s', getattr(result, 'status', None))
         except Exception:
             logger.exception('Execution engine error while placing manual order')
             self._send_json(500, {'error': 'Execution failed'})
@@ -391,6 +460,20 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
             'filled_volume': getattr(result, 'filled_volume', None),
             'message': getattr(result, 'message', None)
         }
+
+        # Include adjustment metadata when we auto-adjusted volume
+        try:
+            if payload.get('requested_volume') is not None:
+                resp['requested_volume'] = payload.get('requested_volume')
+                resp['adjusted_volume'] = volume
+            # Also include any engine-level metadata if present
+            if hasattr(result, 'metadata') and result.metadata:
+                if 'adjusted_from' in result.metadata:
+                    resp['adjusted_from'] = result.metadata.get('adjusted_from')
+                if 'adjusted_to' in result.metadata:
+                    resp['adjusted_to'] = result.metadata.get('adjusted_to')
+        except Exception:
+            logger.debug('Failed to attach adjustment metadata to response', exc_info=True)
 
         self._send_json(200, resp)
 
