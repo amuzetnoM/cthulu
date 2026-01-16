@@ -213,20 +213,15 @@ class ProfitScaler:
         else:
             profit_pips = state.entry_price - current_price
         
-        # Calculate profit as % of TP distance (if TP set) or use fixed pip targets
+        # Calculate profit as % of TP distance (if TP set) or use ATR-based fallback
         if state.current_tp and state.current_tp != state.entry_price:
             tp_distance = abs(state.current_tp - state.entry_price)
             profit_pct = profit_pips / tp_distance if tp_distance > 0 else 0
         else:
-            # Fallback: Use symbol-appropriate pip value
-            # For GOLD: $10 move = good scalp profit (~100 pips equivalent)
-            # For FX pairs: 50 pips = good move
-            if 'GOLD' in state.symbol.upper() or 'XAU' in state.symbol.upper():
-                # GOLD: $15 target = 100% of tier threshold
-                pip_target = 15.0  
-            else:
-                # FX: 0.0050 (50 pips) = 100% of tier threshold
-                pip_target = 0.0050
+            # Fallback: Use ATR or generic pip target (no symbol-specific logic)
+            # Use 0.0050 (50 pips equivalent) as universal baseline
+            # This works for both FX pairs and other instruments when normalized
+            pip_target = 0.0050
             profit_pct = profit_pips / pip_target if pip_target > 0 else 0
         
         # Estimate profit in currency

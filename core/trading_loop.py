@@ -2078,7 +2078,27 @@ class TradingLoop:
                         from cthulu.observability.prometheus import PrometheusExporter
                         prom_cfg = self.ctx.config.get('observability', {}).get('prometheus', {}) if getattr(self.ctx, 'config', None) else {}
                         exporter = PrometheusExporter(prefix=prom_cfg.get('prefix', 'Cthulu'))
-                        exporter._file_path = prom_cfg.get('textfile_path') or (r"C:\workspace\cthulu\metrics\Cthulu_metrics.prom" if os.name == 'nt' else "/tmp/Cthulu_metrics.prom")
+                        # Use config path if specified, otherwise use platform-appropriate defaults
+                        default_path = None
+                        if os.name == 'nt':
+                            # Windows: Use user's temp directory or program data
+                            import tempfile
+                            temp_dir = tempfile.gettempdir()
+                            default_path = os.path.join(temp_dir, "cthulu_metrics", "Cthulu_metrics.prom")
+                        else:
+                            # Unix/Linux: Use /var/lib or /tmp
+                            if os.path.exists('/var/lib/cthulu'):
+                                default_path = "/var/lib/cthulu/metrics/Cthulu_metrics.prom"
+                            else:
+                                default_path = "/tmp/Cthulu_metrics.prom"
+                        
+                        exporter._file_path = prom_cfg.get('textfile_path') or default_path
+                        
+                        # Ensure directory exists
+                        try:
+                            os.makedirs(os.path.dirname(exporter._file_path), exist_ok=True)
+                        except Exception as e:
+                            self.ctx.logger.warning(f"Failed to create metrics directory: {e}")
                         http_port = prom_cfg.get('http_port', 8181)
                         try:
                             import threading

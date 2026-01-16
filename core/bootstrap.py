@@ -444,11 +444,24 @@ class CthuluBootstrap:
                 if textfile_path:
                     exporter._file_path = textfile_path
                 else:
-                    # default to workspace metrics path on Windows
+                    # Use platform-appropriate default paths
                     if os.name == 'nt':
-                        exporter._file_path = r"C:\workspace\cthulu\metrics\Cthulu_metrics.prom"
+                        # Windows: Use user's temp directory
+                        import tempfile
+                        temp_dir = tempfile.gettempdir()
+                        exporter._file_path = os.path.join(temp_dir, "cthulu_metrics", "Cthulu_metrics.prom")
                     else:
-                        exporter._file_path = "/tmp/Cthulu_metrics.prom"
+                        # Unix/Linux: Use /var/lib if writable, otherwise /tmp
+                        if os.path.exists('/var/lib/cthulu') and os.access('/var/lib/cthulu', os.W_OK):
+                            exporter._file_path = "/var/lib/cthulu/metrics/Cthulu_metrics.prom"
+                        else:
+                            exporter._file_path = "/tmp/Cthulu_metrics.prom"
+                    
+                    # Ensure directory exists
+                    try:
+                        os.makedirs(os.path.dirname(exporter._file_path), exist_ok=True)
+                    except Exception as e:
+                        logger.warning(f"Failed to create metrics directory: {e}")
                 # Start a simple HTTP metrics server if requested or default to 8181
                 http_port = prom_cfg.get('http_port', 8181)
                 try:

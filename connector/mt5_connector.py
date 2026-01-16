@@ -377,17 +377,13 @@ class MT5Connector:
     def _find_matching_symbol(self, desired: str) -> List[str]:
         """Return a list of available MT5 symbol names that best match `desired`.
 
-        Matching strategy (in order):
-        1. Exact normalized match
-        2. Token-equality on the human-readable name (prefers whole-word matches)
-        3. Prefix match where the remainder is short (e.g., "GOLD" -> "GOLDM") to allow mailbox-style suffixes
-        4. Fallback substring match for longer queries
+        Simplified matching strategy:
+        1. Exact normalized match (case-insensitive, alphanumeric only)
+        2. Exact case-sensitive match as fallback
         
-        This avoids accidental matches like "GOLD" -> "Goldman Sachs" while still allowing
-        reasonable matches like "GOLD" -> "GOLDm#".
+        This uses broker defaults and avoids complex variant matching.
+        If symbol isn't found, user should use exact broker symbol name.
         """
-        import re
-
         matches: List[str] = []
         try:
             all_symbols = mt5.symbols_get()
@@ -398,7 +394,7 @@ class MT5Connector:
 
         desired_norm = self._normalize_symbol(desired)
 
-        # Stage 1: exact normalized match
+        # Stage 1: exact normalized match (case-insensitive)
         for s in all_symbols:
             try:
                 name_norm = self._normalize_symbol(s.name)
@@ -409,72 +405,32 @@ class MT5Connector:
         if matches:
             return matches
 
-        # Stage 2: token-equality on human-readable name
+        # Stage 2: exact case-sensitive match as fallback
         for s in all_symbols:
             try:
-                tokens = re.split(r"[^A-Za-z0-9]+", s.name or "")
-                token_norms = [self._normalize_symbol(t) for t in tokens if t]
-                if desired_norm in token_norms:
+                if s.name == desired:
                     matches.append(s.name)
             except Exception:
                 continue
-        if matches:
-            return matches
-
-        # Stage 3: prefix match where the remainder is short (to allow "GOLD" -> "GOLDM")
-        for s in all_symbols:
-            try:
-                name_norm = self._normalize_symbol(s.name)
-                if name_norm.startswith(desired_norm):
-                    remainder = name_norm[len(desired_norm):]
-                    if len(remainder) > 0 and len(remainder) <= 2:
-                        matches.append(s.name)
-            except Exception:
-                continue
-        if matches:
-            return matches
-
-        # Stage 4: fallback substring match for longer queries only
-        if len(desired_norm) >= 5:
-            for s in all_symbols:
-                try:
-                    name_norm = self._normalize_symbol(s.name)
-                    if desired_norm in name_norm or name_norm in desired_norm:
-                        matches.append(s.name)
-                except Exception:
-                    continue
+        
         return matches
 
     def ensure_symbol_selected(self, symbol: str) -> Optional[str]:
-        """Ensure symbol is selected in MT5, with flexible matching for common suffix/prefix variations.
+        """Ensure symbol is selected in MT5 using broker defaults.
 
         Returns the actual selected symbol name on success, or None on failure.
+        
+        Simplified approach: Uses exact symbol name from broker.
+        Users should specify the exact symbol name as shown in MT5.
         """
-        # Try direct selection
+        # Try direct selection with exact symbol name
         try:
             if mt5.symbol_select(symbol, True):
                 return symbol
         except Exception:
             pass
 
-        # Try common variant swaps (#m <-> m#)
-        variants = []
-        if '#m' in symbol and 'm#' not in symbol:
-            variants.append(symbol.replace('#m', 'm#'))
-        if 'm#' in symbol and '#m' not in symbol:
-            variants.append(symbol.replace('m#', '#m'))
-        # Try removing # or m
-        variants.append(symbol.replace('#', ''))
-        variants.append(symbol.replace('m', ''))
-
-        for v in variants:
-            try:
-                if mt5.symbol_select(v, True):
-                    return v
-            except Exception:
-                continue
-
-        # Try scanning available symbols with normalized comparison
+        # Try normalized matching (case-insensitive) as fallback
         matches = self._find_matching_symbol(symbol)
         if matches:
             self.logger.debug(f"Found candidate symbols for {symbol}: {matches}")
@@ -486,19 +442,20 @@ class MT5Connector:
                         self.logger.debug(f"Skipping non-tradable candidate symbol: {m}")
                         continue
                     if mt5.symbol_select(m, True):
-                        self.logger.info(f"Selected symbol variant: {m} for requested {symbol}")
+                        self.logger.info(f"Selected symbol: {m} (matched from {symbol})")
                         return m
                 except Exception:
                     continue
-            self.logger.warning(f"Found candidate symbols but failed to select any tradable one for {symbol}: {matches}")
-        else:
-            # Include hint about available symbols for debugging
-            try:
-                sample = mt5.symbols_get()[:20]
-                sample_names = [s.name for s in sample]
-                self.logger.debug(f"Available symbols (sample): {sample_names}")
-            except Exception:
-                pass
+            self.logger.warning(f"Found symbols but failed to select any tradable one: {matches}")
+        
+        # Log available symbols to help user find correct name
+        self.logger.error(f"Symbol '{symbol}' not found or not selectable")
+        try:
+            sample = mt5.symbols_get()[:20]
+            sample_names = [s.name for s in sample]
+            self.logger.info(f"Available symbols (sample): {sample_names}")
+        except Exception:
+            pass
 
         return None
 
