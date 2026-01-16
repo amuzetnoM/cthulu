@@ -1,8 +1,8 @@
 """
 Logging Module
 
-Structured logging configuration.
-JSON format for production, human-readable for development.
+Structured logging configuration with color support.
+JSON format for production, human-readable with colors for development.
 """
 
 import logging
@@ -12,20 +12,101 @@ from typing import Optional
 from pathlib import Path
 
 
+# ANSI color codes for terminal output (works on Unix/Linux/Mac and Windows 10+)
+class LogColors:
+    """ANSI color codes for log levels."""
+    RESET = '\033[0m'
+    BOLD = '\033[1m'
+    
+    # Level colors
+    DEBUG = '\033[36m'      # Cyan
+    INFO = '\033[32m'       # Green
+    WARNING = '\033[33m'    # Yellow
+    ERROR = '\033[31m'      # Red
+    CRITICAL = '\033[35m'   # Magenta
+    
+    # Accent colors for special log types
+    SIGNAL = '\033[94m'     # Bright Blue
+    POSITION = '\033[96m'   # Bright Cyan
+    TRADE = '\033[92m'      # Bright Green
+
+
+class ColoredFormatter(logging.Formatter):
+    """Custom formatter with color support."""
+    
+    # Level name to color mapping
+    COLORS = {
+        'DEBUG': LogColors.DEBUG,
+        'INFO': LogColors.INFO,
+        'WARNING': LogColors.WARNING,
+        'ERROR': LogColors.ERROR,
+        'CRITICAL': LogColors.CRITICAL,
+    }
+    
+    def __init__(self, fmt: str, datefmt: str, use_colors: bool = True):
+        """
+        Initialize colored formatter.
+        
+        Args:
+            fmt: Format string
+            datefmt: Date format string
+            use_colors: Whether to use colors (auto-detected for terminal)
+        """
+        super().__init__(fmt, datefmt)
+        self.use_colors = use_colors and self._supports_color()
+    
+    def _supports_color(self) -> bool:
+        """Check if terminal supports colors."""
+        # Check if stdout is a terminal
+        if not hasattr(sys.stdout, 'isatty'):
+            return False
+        if not sys.stdout.isatty():
+            return False
+        
+        # Windows: Check for ANSI support (Windows 10+)
+        if os.name == 'nt':
+            try:
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                # Enable ANSI escape sequences
+                kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+                return True
+            except Exception:
+                return False
+        
+        # Unix/Linux/Mac: Usually supported
+        return True
+    
+    def format(self, record: logging.LogRecord) -> str:
+        """Format log record with colors."""
+        if self.use_colors:
+            # Add color to level name
+            levelname = record.levelname
+            if levelname in self.COLORS:
+                record.levelname = f"{self.COLORS[levelname]}{levelname}{LogColors.RESET}"
+        
+        # Format the message
+        result = super().format(record)
+        
+        return result
+
+
 def setup_logger(
     name: str = "Cthulu",
     level: "str|int" = "INFO",
     log_file: Optional[str] = None,
-    json_format: bool = False
+    json_format: bool = False,
+    use_colors: bool = True
 ) -> logging.Logger:
     """
-    Configure structured logger.
+    Configure structured logger with color support.
     
     Args:
         name: Logger name
         level: Log level (DEBUG, INFO, WARNING, ERROR)
         log_file: Optional file path for logs
-        json_format: Use JSON format (for production)
+        json_format: Use JSON format (for production, disables colors)
+        use_colors: Use color output (auto-detected for terminal)
         
     Returns:
         Configured logger
@@ -47,30 +128,36 @@ def setup_logger(
     console_handler.setLevel(level_value)
     
     if json_format:
-        # JSON format for production
+        # JSON format for production (no colors)
         formatter = logging.Formatter(
             '{"timestamp":"%(asctime)s","level":"%(levelname)s","name":"%(name)s","message":"%(message)s"}',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
     else:
-        # Compact human-readable format for development: short timestamp and no repeated logger name
-        # Example: 2025-12-28T19:07:47 [INFO] Starting up
-        formatter = logging.Formatter(
-            '%(asctime)s [%(levelname)s] %(message)s',
-            datefmt='%Y-%m-%dT%H:%M:%S'
-        )
+        # Compact human-readable format with colors
+        # Format: 16:45:32 [INFO] Message
+        format_str = '%(asctime)s [%(levelname)s] %(message)s'
+        datefmt = '%H:%M:%S'  # Compact time only (no date in every line)
+        
+        formatter = ColoredFormatter(format_str, datefmt, use_colors=use_colors)
     
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     
-    # File handler (optional)
+    # File handler (optional) - no colors in file
     if log_file:
         log_path = Path(log_file)
         try:
             log_path.parent.mkdir(parents=True, exist_ok=True)
             file_handler = logging.FileHandler(log_file, encoding='utf-8')
             file_handler.setLevel(logging.DEBUG)  # Log everything to file
-            file_handler.setFormatter(formatter)
+            
+            # File formatter: full timestamp, no colors
+            file_formatter = logging.Formatter(
+                '%(asctime)s [%(levelname)s] %(name)s - %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            )
+            file_handler.setFormatter(file_formatter)
             logger.addHandler(file_handler)
         except PermissionError as e:
             # Cannot write to specified log location; attempt to fallback to per-user logs
@@ -82,7 +169,12 @@ def setup_logger(
                 fallback_log = fallback_base / Path(log_file).name
                 file_handler = logging.FileHandler(str(fallback_log), encoding='utf-8')
                 file_handler.setLevel(logging.DEBUG)
-                file_handler.setFormatter(formatter)
+                
+                file_formatter = logging.Formatter(
+                    '%(asctime)s [%(levelname)s] %(name)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S'
+                )
+                file_handler.setFormatter(file_formatter)
                 logger.addHandler(file_handler)
                 console_handler.emit(logging.LogRecord(name, logging.INFO, __file__, 0,
                                                       f"Switched log file to user-local path: {fallback_log}", None, None))
