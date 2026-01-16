@@ -365,3 +365,6 @@ Session.vim
 .netrwhist
 tags
 .tags
+# Local data snapshots and debug artifacts
+.data
+
