@@ -42,37 +42,56 @@ class ScalingConfig:
     """Configuration for profit scaling behavior"""
     enabled: bool = True
     
-    # Tiers for profit taking (applied in order)
-    # These align with TP1/TP2/TP3 targets - let trades reach actual targets
+    # RECALIBRATED TIERS - Let trades breathe and develop!
+    # Philosophy: Quality over quantity - let winners run to meaningful targets
     tiers: List[ScalingTier] = field(default_factory=lambda: [
-        ScalingTier(profit_threshold_pct=0.50, close_pct=0.25, move_sl_to_entry=True, trail_pct=0.50),   # TP1 ~50% of target
-        ScalingTier(profit_threshold_pct=0.80, close_pct=0.35, move_sl_to_entry=True, trail_pct=0.60),   # TP2 ~80% of target
-        ScalingTier(profit_threshold_pct=1.20, close_pct=0.50, move_sl_to_entry=True, trail_pct=0.70),   # TP3 ~full target+
+        # First scale: Only after substantial profit (1R = full risk distance)
+        ScalingTier(
+            profit_threshold_pct=1.00,  # Wait for full 1R (not 50%)
+            close_pct=0.20,              # Take only 20% (preserve position)
+            move_sl_to_entry=True,       # Lock in breakeven
+            trail_pct=0.40               # Trail conservatively
+        ),
+        # Second scale: After 1.5R (position well in profit)
+        ScalingTier(
+            profit_threshold_pct=1.50,  # 1.5R
+            close_pct=0.30,              # Take 30% of remaining
+            move_sl_to_entry=True,
+            trail_pct=0.50
+        ),
+        # Third scale: After 2R+ (let winners become big winners)
+        ScalingTier(
+            profit_threshold_pct=2.00,  # Full 2R
+            close_pct=0.40,              # Take 40% of remaining
+            move_sl_to_entry=True,
+            trail_pct=0.60
+        ),
     ])
     
     # Micro account adjustments (balance < threshold)
-    # Even micro accounts need room to breathe - don't choke trades
+    # Still conservative but not choking trades
     micro_account_threshold: float = 100.0
     micro_tiers: List[ScalingTier] = field(default_factory=lambda: [
-        # Still let trades run to meaningful targets, just scale a bit earlier
-        ScalingTier(profit_threshold_pct=0.40, close_pct=0.30, move_sl_to_entry=True, trail_pct=0.40),   # TP1 ~40%
-        ScalingTier(profit_threshold_pct=0.70, close_pct=0.35, move_sl_to_entry=True, trail_pct=0.50),   # TP2 ~70%
-        ScalingTier(profit_threshold_pct=1.00, close_pct=0.50, move_sl_to_entry=True, trail_pct=0.60),   # TP3 full target
+        # Micro: Scale earlier but still let trades develop
+        ScalingTier(profit_threshold_pct=0.80, close_pct=0.25, move_sl_to_entry=True, trail_pct=0.35),
+        ScalingTier(profit_threshold_pct=1.20, close_pct=0.30, move_sl_to_entry=True, trail_pct=0.45),
+        ScalingTier(profit_threshold_pct=1.80, close_pct=0.35, move_sl_to_entry=True, trail_pct=0.55),
     ])
     
     # Minimum profit in account currency to trigger scaling
     # Must be meaningful profit, not pocket change
-    min_profit_amount: float = 2.00
+    min_profit_amount: float = 5.00  # $5 minimum (raised from $2)
     
     # Maximum position age before forced evaluation (hours)
-    max_position_age_hours: float = 4.0
+    # Give trades more time to work out
+    max_position_age_hours: float = 8.0  # 8 hours (raised from 4)
 
     # Minimum number of bars to wait before allowing scaling/close actions.
     # This prevents immediate partial exits right after entry (useful for thin/timezone-sensitive markets)
-    min_time_in_trade_bars: int = 0
+    min_time_in_trade_bars: int = 3  # Wait at least 3 bars (raised from 0)
     
     # Emergency profit lock threshold (% of balance)
-    emergency_lock_threshold_pct: float = 0.10  # Lock profits if > 10% of balance
+    emergency_lock_threshold_pct: float = 0.15  # Lock profits if > 15% of balance (raised from 10%)
     # If True, allow a full close when position is at minimum lot to capture profit
     allow_full_close_on_min_lot: bool = True
 
@@ -213,20 +232,15 @@ class ProfitScaler:
         else:
             profit_pips = state.entry_price - current_price
         
-        # Calculate profit as % of TP distance (if TP set) or use fixed pip targets
+        # Calculate profit as % of TP distance (if TP set) or use ATR-based fallback
         if state.current_tp and state.current_tp != state.entry_price:
             tp_distance = abs(state.current_tp - state.entry_price)
             profit_pct = profit_pips / tp_distance if tp_distance > 0 else 0
         else:
-            # Fallback: Use symbol-appropriate pip value
-            # For GOLD: $10 move = good scalp profit (~100 pips equivalent)
-            # For FX pairs: 50 pips = good move
-            if 'GOLD' in state.symbol.upper() or 'XAU' in state.symbol.upper():
-                # GOLD: $15 target = 100% of tier threshold
-                pip_target = 15.0  
-            else:
-                # FX: 0.0050 (50 pips) = 100% of tier threshold
-                pip_target = 0.0050
+            # Fallback: Use ATR or generic pip target (no symbol-specific logic)
+            # Use 0.0050 (50 pips equivalent) as universal baseline
+            # This works for both FX pairs and other instruments when normalized
+            pip_target = 0.0050
             profit_pct = profit_pips / pip_target if pip_target > 0 else 0
         
         # Estimate profit in currency

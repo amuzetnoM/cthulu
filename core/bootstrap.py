@@ -11,6 +11,7 @@ Extracted from __main__.py for better modularity and testability.
 """
 
 import logging
+import tempfile
 from pathlib import Path
 import os
 from typing import Dict, Any, Optional, Tuple
@@ -444,11 +445,24 @@ class CthuluBootstrap:
                 if textfile_path:
                     exporter._file_path = textfile_path
                 else:
-                    # default to workspace metrics path on Windows
+                    # Use platform-appropriate default paths
                     if os.name == 'nt':
-                        exporter._file_path = r"C:\workspace\cthulu\metrics\Cthulu_metrics.prom"
+                        # Windows: Use user's temp directory
+                        temp_dir = tempfile.gettempdir()
+                        exporter._file_path = os.path.join(temp_dir, "cthulu_metrics", "Cthulu_metrics.prom")
                     else:
-                        exporter._file_path = "/tmp/Cthulu_metrics.prom"
+                        # Unix/Linux: Prefer XDG_RUNTIME_DIR, fall back to /tmp
+                        runtime_dir = os.getenv('XDG_RUNTIME_DIR')
+                        if runtime_dir and os.path.exists(runtime_dir):
+                            exporter._file_path = os.path.join(runtime_dir, "cthulu", "metrics", "Cthulu_metrics.prom")
+                        else:
+                            exporter._file_path = "/tmp/cthulu_metrics/Cthulu_metrics.prom"
+                    
+                    # Ensure directory exists
+                    try:
+                        os.makedirs(os.path.dirname(exporter._file_path), exist_ok=True)
+                    except Exception as e:
+                        logger.warning(f"Failed to create metrics directory: {e}")
                 # Start a simple HTTP metrics server if requested or default to 8181
                 http_port = prom_cfg.get('http_port', 8181)
                 try:
