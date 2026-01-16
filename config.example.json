@@ -106,5 +106,22 @@
   "database": {
     "path": "${DATABASE_PATH}"
   },
-  "cache_enabled": true
+  "cache_enabled": true,
+  "hektor": {
+    "enabled": true,
+    "fallback_to_sqlite": true,
+    "database_path": "./vectors/cthulu_memory",
+    "dimension": 512,
+    "hnsw_m": 16,
+    "hnsw_ef_construction": 200,
+    "hnsw_ef_search": 50,
+    "default_k": 10,
+    "min_similarity_score": 0.7,
+    "max_context_age_days": 90,
+    "batch_size": 100,
+    "async_writes": true,
+    "cache_embeddings": true,
+    "connection_timeout_ms": 5000,
+    "retry_attempts": 3
+  }
 }
