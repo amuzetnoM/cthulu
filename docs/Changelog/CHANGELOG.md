@@ -17,14 +17,14 @@ _________   __  .__          .__
 
 ▸ [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
-![](https://img.shields.io/badge/Version-5.2.35_NEXUS-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.2.4_NEXUS-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 All notable changes are recorded here using [Keep a Changelog](https://keepachangelog.com/) conventions and [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
+## [5.2.4] "NEXUS" — 2026-01-17
 
 ### ◆ Highlight
 
@@ -298,7 +298,7 @@ All notable changes are recorded here using [Keep a Changelog](https://keepachan
 
 | Version | Date | Codename | Description |
 |---------|------|----------|-------------|
-| 5.2.35 | Unreleased | NEXUS | ML/RL infrastructure, Discord integration, trade collection |
+| 5.2.4 | 2026-01-17 | NEXUS | ML/RL infrastructure, Discord integration, trade collection |
 | 5.2.34 | 2026-01-17 | PRECISION | Execution quality, strict gates, momentum detection |
 | 5.2.33 | 2026-01-06 | EVOLUTION | Web UI, LLM, Vector DB, Profit Scaler (207 commits) |
 | 5.1.0 | 2025-12-31 | APEX | RSI Reversal, SAFE engine, adaptive drawdown |
