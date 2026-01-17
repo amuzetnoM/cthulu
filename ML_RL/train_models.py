@@ -21,9 +21,12 @@ from __future__ import annotations
 import os
 import sys
 import json
+import gzip
+import glob
 import argparse
 import logging
-from datetime import datetime, timezone
+import sqlite3
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 import numpy as np
 import pandas as pd
@@ -45,6 +48,8 @@ logger = logging.getLogger("cthulu.ml.train")
 
 # Data directory
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+COGNITION_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cognition', 'data')
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cthulu.db')
 os.makedirs(DATA_DIR, exist_ok=True)
 
 
@@ -69,9 +74,96 @@ class ModelTrainer:
         
         logger.info("ModelTrainer initialized")
     
-    def load_data(self, path: Optional[str] = None, symbol: str = "BTCUSD") -> pd.DataFrame:
+    def load_jsonl_events(self, data_dir: str) -> List[Dict[str, Any]]:
         """
-        Load training data.
+        Load events from compressed JSONL files.
+        
+        Args:
+            data_dir: Directory containing .jsonl.gz files
+            
+        Returns:
+            List of event dictionaries
+        """
+        events = []
+        pattern = os.path.join(data_dir, '*.jsonl.gz')
+        files = sorted(glob.glob(pattern))
+        
+        logger.info(f"Loading events from {len(files)} JSONL files in {data_dir}")
+        
+        for filepath in files:
+            try:
+                with gzip.open(filepath, 'rt', encoding='utf-8') as f:
+                    for line in f:
+                        try:
+                            event = json.loads(line.strip())
+                            events.append(event)
+                        except json.JSONDecodeError:
+                            continue
+            except Exception as e:
+                logger.debug(f"Could not read {filepath}: {e}")
+                
+        logger.info(f"Loaded {len(events)} events from JSONL files")
+        return events
+    
+    def load_trades_from_db(self) -> List[Dict[str, Any]]:
+        """Load trades from SQLite database."""
+        trades = []
+        
+        if not os.path.exists(DB_PATH):
+            logger.warning(f"Database not found: {DB_PATH}")
+            return trades
+            
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            # Load trades
+            cursor.execute('SELECT * FROM trades ORDER BY id')
+            for row in cursor.fetchall():
+                trades.append(dict(row))
+                
+            conn.close()
+            logger.info(f"Loaded {len(trades)} trades from database")
+            
+        except Exception as e:
+            logger.warning(f"Could not load trades from database: {e}")
+            
+        return trades
+    
+    def load_signals_from_db(self) -> List[Dict[str, Any]]:
+        """Load signals from SQLite database."""
+        signals = []
+        
+        if not os.path.exists(DB_PATH):
+            return signals
+            
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute('SELECT * FROM signals ORDER BY id')
+            for row in cursor.fetchall():
+                signals.append(dict(row))
+                
+            conn.close()
+            logger.info(f"Loaded {len(signals)} signals from database")
+            
+        except Exception as e:
+            logger.warning(f"Could not load signals from database: {e}")
+            
+        return signals
+    
+    def load_data(self, path: Optional[str] = None, symbol: str = "GOLD#") -> pd.DataFrame:
+        """
+        Load training data from multiple sources.
+        
+        Priority:
+        1. Explicit CSV path
+        2. MT5 via HistoricalDataManager
+        3. Backtesting cache files
+        4. Synthetic data (fallback)
         
         Args:
             path: Path to CSV file, or None to use default
@@ -80,23 +172,56 @@ class ModelTrainer:
         Returns:
             DataFrame with OHLCV data
         """
+        # 1. Explicit CSV path
         if path and os.path.exists(path):
             df = pd.read_csv(path, parse_dates=['time'] if 'time' in pd.read_csv(path, nrows=1).columns else False)
             logger.info(f"Loaded {len(df)} rows from {path}")
             return df
         
-        # Try to load from database
+        # 2. Try MT5 via backtesting data manager
         try:
-            from cthulu.data.historical_data_manager import HistoricalDataManager
+            from backtesting.data_manager import HistoricalDataManager, DataSource
             dm = HistoricalDataManager()
-            df, _ = dm.fetch_data(symbol, days_back=90, timeframe='M30')
-            logger.info(f"Loaded {len(df)} rows from HistoricalDataManager")
+            
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=90)
+            
+            df, metadata = dm.fetch_data(
+                symbol=symbol,
+                start_date=start_date,
+                end_date=end_date,
+                timeframe='M30',
+                source=DataSource.MT5,
+                use_cache=True
+            )
+            
+            # Reset index to get 'time' as column
+            df = df.reset_index()
+            df.rename(columns={'index': 'time'}, inplace=True)
+            
+            logger.info(f"Loaded {len(df)} rows from MT5/HistoricalDataManager (quality={metadata.data_quality_score:.2f})")
             return df
+            
         except Exception as e:
-            logger.warning(f"Could not load from database: {e}")
+            logger.warning(f"Could not load from MT5: {e}")
         
-        # Generate synthetic data for testing
-        logger.warning("Using synthetic data for training")
+        # 3. Try to find cached pickle files in backtesting cache
+        try:
+            from backtesting import BACKTEST_CACHE_DIR
+            cache_files = glob.glob(os.path.join(BACKTEST_CACHE_DIR, f"{symbol}*.pkl"))
+            if cache_files:
+                import pickle
+                with open(cache_files[0], 'rb') as f:
+                    df, metadata = pickle.load(f)
+                df = df.reset_index()
+                df.rename(columns={'index': 'time'}, inplace=True)
+                logger.info(f"Loaded {len(df)} rows from cache: {cache_files[0]}")
+                return df
+        except Exception as e:
+            logger.debug(f"Could not load from cache: {e}")
+        
+        # 4. Fallback to synthetic data
+        logger.warning("Using synthetic data for training - consider fetching real data")
         return self._generate_synthetic_data(5000)
     
     def _generate_synthetic_data(self, n_bars: int) -> pd.DataFrame:
@@ -218,44 +343,68 @@ class ModelTrainer:
         logger.info("Enhancing tier optimizer")
         
         try:
-            from cthulu.cognition.tier_optimizer import TierOptimizer
+            from ML_RL.tier_optimizer import TierOptimizer
             optimizer = TierOptimizer()
         except ImportError:
-            logger.error("Could not import TierOptimizer")
-            return {"error": "Import failed"}
-        
-        # If no trades provided, try to load from database
-        if not trades_data:
             try:
-                from cthulu.persistence import get_database
-                db = get_database()
-                trades_data = db.get_recent_trades(limit=1000)
-            except Exception as e:
-                logger.warning(f"Could not load trades: {e}")
-                trades_data = []
+                from cognition.tier_optimizer import TierOptimizer
+                optimizer = TierOptimizer()
+            except ImportError:
+                logger.error("Could not import TierOptimizer")
+                return {"error": "Import failed"}
         
-        # Process trades
+        # If no trades provided, load from database
+        if not trades_data:
+            trades_data = self.load_trades_from_db()
+        
+        # Also load from JSONL events for additional data
+        ml_events = self.load_jsonl_events(os.path.join(DATA_DIR, 'raw'))
+        cog_events = self.load_jsonl_events(os.path.join(COGNITION_DATA_DIR, 'raw'))
+        
+        # Process trades from database
         outcomes_added = 0
         for trade in trades_data:
             try:
-                # Extract scaling outcomes
-                if 'scaling_events' in trade:
-                    for event in trade['scaling_events']:
+                # Synthesize scaling outcome from trade data
+                pnl = trade.get('pnl', 0) or trade.get('profit', 0) or 0
+                if pnl != 0:
+                    # Create synthetic tier outcome
+                    optimizer.record_outcome(
+                        ticket=trade.get('ticket', trade.get('id', 0)),
+                        tier='tier_1',
+                        profit_threshold_triggered=abs(pnl) / max(trade.get('volume', 0.01) * 100, 1),
+                        close_pct=0.25,
+                        profit_captured=pnl if pnl > 0 else 0,
+                        remaining_profit=0,
+                        account_balance=1000,
+                        volatility_atr=None,
+                        momentum_adx=None,
+                        symbol=trade.get('symbol', 'GOLD#')
+                    )
+                    outcomes_added += 1
+            except Exception as e:
+                logger.debug(f"Could not process trade: {e}")
+        
+        # Process JSONL events for execution data
+        for event in ml_events + cog_events:
+            try:
+                if event.get('event_type') in ['execution', 'trade_closed', 'position_closed']:
+                    payload = event.get('payload', {})
+                    pnl = payload.get('pnl', 0) or payload.get('profit', 0)
+                    if pnl != 0:
                         optimizer.record_outcome(
-                            ticket=trade.get('ticket', 0),
-                            tier=event.get('tier', 'tier_1'),
-                            profit_threshold_triggered=event.get('profit_pct', 0),
-                            close_pct=event.get('close_pct', 0),
-                            profit_captured=event.get('profit_captured', 0),
-                            remaining_profit=event.get('remaining_profit', 0),
-                            account_balance=trade.get('balance', 1000),
-                            volatility_atr=trade.get('atr', None),
-                            momentum_adx=trade.get('adx', None),
-                            symbol=trade.get('symbol', '')
+                            ticket=payload.get('ticket', 0),
+                            tier='tier_1',
+                            profit_threshold_triggered=abs(pnl) / 100,
+                            close_pct=0.25,
+                            profit_captured=pnl if pnl > 0 else 0,
+                            remaining_profit=0,
+                            account_balance=1000,
+                            symbol=payload.get('symbol', '')
                         )
                         outcomes_added += 1
             except Exception as e:
-                logger.debug(f"Could not process trade: {e}")
+                logger.debug(f"Could not process event: {e}")
         
         # Run optimization
         if outcomes_added >= 10:
@@ -292,16 +441,56 @@ class ModelTrainer:
         """
         logger.info(f"Training RL position sizer: {episodes} episodes")
         
-        # If no trades provided, use simulated episodes
+        # Load trades from database if not provided
         if not trades_data:
-            logger.info("Using simulated training episodes")
-            return self._train_rl_simulated(episodes)
+            trades_data = self.load_trades_from_db()
+            
+        # Also load signals for additional context
+        signals = self.load_signals_from_db()
         
-        # Offline training from historical data
+        # Load ML events for market snapshots
+        ml_events = self.load_jsonl_events(os.path.join(DATA_DIR, 'raw'))
+        
+        # If we have real data, train on it first
+        if trades_data:
+            logger.info(f"Training RL on {len(trades_data)} historical trades")
+            result = self._train_rl_from_trades(trades_data, signals, ml_events)
+        else:
+            result = {"historical_episodes": 0, "historical_reward": 0}
+            
+        # Then run additional simulated episodes
+        sim_episodes = max(episodes - len(trades_data) * 5, 100)
+        logger.info(f"Running {sim_episodes} simulated episodes for exploration")
+        sim_result = self._train_rl_simulated(sim_episodes)
+        
+        # Combine results
+        return {
+            "historical_episodes": result.get("historical_episodes", 0),
+            "simulated_episodes": sim_result["episodes"],
+            "total_reward": result.get("historical_reward", 0) + sim_result["total_reward"],
+            "avg_loss": sim_result["avg_loss"],
+            "epsilon": sim_result["epsilon"]
+        }
+    
+    def _train_rl_from_trades(
+        self,
+        trades: List[Dict[str, Any]],
+        signals: List[Dict[str, Any]],
+        events: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Train RL from historical trade data."""
         total_reward = 0
         losses = []
+        episodes = 0
         
-        for trade in trades_data:
+        # Build signal lookup by timestamp for context
+        signal_lookup = {}
+        for sig in signals:
+            ts = sig.get('timestamp') or sig.get('created_at')
+            if ts:
+                signal_lookup[ts] = sig
+        
+        for trade in trades:
             try:
                 # Build state from trade data
                 state = RLState(
@@ -372,6 +561,8 @@ class ModelTrainer:
                 if loss is not None:
                     losses.append(loss)
                 
+                episodes += 1
+                
             except Exception as e:
                 logger.debug(f"Could not process trade for RL: {e}")
         
@@ -379,13 +570,12 @@ class ModelTrainer:
         self.rl_sizer.save()
         
         avg_loss = np.mean(losses) if losses else 0
-        logger.info(f"RL sizer training complete: total_reward={total_reward:.2f}, avg_loss={avg_loss:.4f}")
+        logger.info(f"RL historical training: {episodes} episodes, reward={total_reward:.2f}, avg_loss={avg_loss:.4f}")
         
         return {
-            "episodes": len(trades_data),
-            "total_reward": total_reward,
-            "avg_loss": avg_loss,
-            "epsilon": self.rl_sizer.epsilon
+            "historical_episodes": episodes,
+            "historical_reward": total_reward,
+            "avg_loss": avg_loss
         }
     
     def _train_rl_simulated(self, episodes: int) -> Dict[str, Any]:

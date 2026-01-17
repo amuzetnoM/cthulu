@@ -369,3 +369,8 @@ tags
 .data
 
 config_battle.json
+
+# ML model weights (stored externally)
+ML_RL/models/rl/*.json
+ML_RL/data/models/*.json
+ML_RL/data/training_results.json

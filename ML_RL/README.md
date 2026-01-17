@@ -2,8 +2,24 @@
 
 ![](https://img.shields.io/badge/Version-5.2.34-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--17-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
+![Models Trained](https://img.shields.io/badge/Models_Trained-3-00FF00?style=for-the-badge&labelColor=0D1117&logo=brain&logoColor=white)
 
 > A lightweight, fast, and reliable ML pipeline for Cthulu trading system.
+
+## Training Status (2026-01-17)
+
+| Component | Status | Accuracy/Reward | Data Used |
+|-----------|--------|-----------------|-----------|
+| Feature Pipeline | ✅ Trained | 31 features | 2,845 bars |
+| Price Predictor | ✅ Trained | 37.4% acc | 2,224 samples |
+| RL Position Sizer | ✅ Trained | 4,852 reward | 1,736 episodes |
+| Tier Optimizer | ⏳ Waiting | - | Needs closed trades |
+| LLM Training Data | ✅ Prepared | 6,056 samples | 181K events |
+
+### Data Sources Used
+- **OHLCV Data**: 2,845 GOLD# M30 bars from MT5 (quality: 99%)
+- **Database**: 66 trades, 878 signals
+- **Event Logs**: 35,873 ML events + 145,769 cognition events
 
 ## Overview
 
