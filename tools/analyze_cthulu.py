@@ -155,23 +155,6 @@ class CodeAnalyzer:
             'repeated_computation': r'for\s+.*:\s*.*\.calculate\(',
             'inefficient_string_concat': r'\+\s*=\s*["\']',
         }
-        # Known ML modules
-        self.ML_MODULES = {'ML_RL', 'training', 'cognition'}
-        
-        # Security patterns to detect
-        self.SECURITY_PATTERNS = {
-            'sql_injection': [r'execute\s*\(.*%.*\)', r'\.format\s*\(.*sql', r'\+.*sql'],
-            'command_injection': [r'os\.system\s*\(', r'subprocess\.call\s*\(.*shell=True'],
-            'hardcoded_secrets': [r'password\s*=\s*["\']', r'api_key\s*=\s*["\']', r'secret\s*=\s*["\']'],
-            'unsafe_deserialization': [r'pickle\.loads', r'yaml\.load\(', r'eval\s*\('],
-        }
-        
-        # Performance anti-patterns
-        self.PERFORMANCE_ANTIPATTERNS = {
-            'loop_in_loop': r'for\s+.*:\s*\n\s+for\s+.*:',
-            'repeated_computation': r'for\s+.*:\s*.*\.calculate\(',
-            'inefficient_string_concat': r'\+\s*=\s*["\']',
-        }
     
     def analyze(self) -> Dict:
         """Run full analysis on codebase."""
