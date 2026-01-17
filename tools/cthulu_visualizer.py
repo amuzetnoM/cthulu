@@ -29,7 +29,8 @@ import argparse
 from pathlib import Path as PathLib
 from typing import Dict, List, Tuple
 import warnings
-warnings.filterwarnings('ignore')
+# Filter only matplotlib font warnings which are cosmetic
+warnings.filterwarnings('ignore', category=UserWarning, module='matplotlib')
 
 # Set style
 sns.set_style("whitegrid")
@@ -97,7 +98,7 @@ class RadarChart:
         self.ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.1))
 
 
-class ChuluVisualizer:
+class CthuluVisualizer:
     """Main visualization class for Cthulu analyzer output."""
     
     def __init__(self, analysis_data: Dict, output_dir: str = 'visualizations'):
@@ -670,7 +671,7 @@ def main():
         return 1
     
     # Create visualizations
-    visualizer = ChuluVisualizer(analysis_data, args.output)
+    visualizer = CthuluVisualizer(analysis_data, args.output)
     visualizer.generate_all()
     
     return 0

@@ -104,12 +104,11 @@ if [ "$VISUALIZE" = true ]; then
     
     cd "$SCRIPT_DIR"
     
-    # Install dependencies if needed
+    # Check dependencies
     if ! python3 -c "import matplotlib" 2>/dev/null; then
-        echo "📦 Installing required packages..."
-        pip install -q matplotlib seaborn numpy 2>/dev/null || {
-            echo "⚠️  Warning: Could not install packages. Trying anyway..."
-        }
+        echo "⚠️  Warning: matplotlib not found"
+        echo "   Install with: pip install matplotlib seaborn numpy"
+        echo "   Attempting to continue anyway..."
     fi
     
     python3 cthulu_visualizer.py --input "$ANALYSIS_OUTPUT" --output "$OUTPUT_DIR"
