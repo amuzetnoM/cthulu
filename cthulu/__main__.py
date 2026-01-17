@@ -345,6 +345,7 @@ def main():
             comprehensive_collector=getattr(components, 'comprehensive_collector', None),
             hektor_adapter=getattr(components, 'hektor_adapter', None),
             hektor_retriever=getattr(components, 'hektor_retriever', None),
+            ml_enhancement_manager=getattr(components, 'ml_enhancement_manager', None),
         )
         
         # Initialize Cognition Engine (AI/ML layer)
