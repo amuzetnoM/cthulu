@@ -329,6 +329,16 @@ class ShutdownHandler:
             except Exception:
                 self.logger.exception('Failed to stop TradeMonitor')
         
+        # Stop trade event bus
+        try:
+            from observability.trade_event_bus import get_event_bus
+            event_bus = get_event_bus()
+            if event_bus._running:
+                event_bus.stop()
+                self.logger.info(f'Trade Event Bus stopped: {event_bus.get_stats()}')
+        except Exception:
+            self.logger.debug('Failed to stop Trade Event Bus (may not be initialized)')
+        
         # Stop observability service process
         if self.observability_process:
             try:

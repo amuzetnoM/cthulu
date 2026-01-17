@@ -448,6 +448,27 @@ class RPCRequestHandler(BaseHTTPRequestHandler):
                     self.database.record_trade(tr)
                 except Exception:
                     logger.exception('Failed to record RPC-placed trade')
+                
+                # ==========================================================
+                # PUBLISH RPC TRADE EVENT TO EVENT BUS (Non-blocking)
+                # ==========================================================
+                try:
+                    from cthulu.observability.trade_event_bus import publish_trade_opened
+                    publish_trade_opened(
+                        ticket=result.order_id,
+                        symbol=order_req.symbol,
+                        side=order_req.side,
+                        volume=result.filled_volume,
+                        price=result.fill_price,
+                        stop_loss=order_req.sl,
+                        take_profit=order_req.tp,
+                        source="rpc",
+                        strategy="rpc_manual",
+                        signal_id=unique_signal_id,
+                        client_ip=self.client_address[0]
+                    )
+                except Exception as e:
+                    logger.debug(f"Event bus publish RPC trade (non-critical): {e}")
 
         except Exception:
             logger.exception('Failed to track or record RPC trade')

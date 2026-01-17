@@ -374,6 +374,25 @@ class TradeAdoptionManager:
             # Mark as adopted
             self._adopted_tickets.add(ticket)
             
+            # ==========================================================
+            # PUBLISH ADOPTED TRADE EVENT TO EVENT BUS (Non-blocking)
+            # ==========================================================
+            try:
+                from cthulu.observability.trade_event_bus import publish_trade_adopted
+                publish_trade_adopted(
+                    ticket=ticket,
+                    symbol=symbol,
+                    side=type_str.upper(),
+                    volume=volume,
+                    price=open_price,
+                    stop_loss=sl,
+                    take_profit=tp,
+                    magic=magic,
+                    original_comment=comment
+                )
+            except Exception as e:
+                logger.debug(f"Event bus publish adopted (non-critical): {e}")
+            
             logger.info(f"Adopted external trade {ticket}: {symbol} {type_str} {volume}")
             return True
             

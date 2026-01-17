@@ -1649,6 +1649,31 @@ class TradingLoop:
             track_metadata['side'] = order_req.side
             self.ctx.position_manager.track_position(result, signal_metadata=track_metadata)
             
+            # ==========================================================
+            # PUBLISH TRADE EVENT TO EVENT BUS (Non-blocking metrics)
+            # ==========================================================
+            try:
+                from cthulu.observability.trade_event_bus import publish_trade_opened
+                account_info = self.ctx.connector.get_account_info()
+                balance = float(account_info.get('balance', 0)) if account_info else 0
+                
+                publish_trade_opened(
+                    ticket=result.order_id,
+                    symbol=signal.symbol,
+                    side=order_req.side,
+                    volume=result.filled_volume,
+                    price=result.fill_price,
+                    stop_loss=signal.stop_loss,
+                    take_profit=signal.take_profit,
+                    source="system",
+                    strategy=self.ctx.strategy.__class__.__name__ if self.ctx.strategy else "",
+                    signal_id=signal.id,
+                    account_balance=balance,
+                    confidence=signal.confidence
+                )
+            except Exception as e:
+                self.ctx.logger.debug(f"Event bus publish (non-critical): {e}")
+            
             # Record in database
             signal_record = SignalRecord(
                 timestamp=signal.timestamp,
@@ -2151,6 +2176,38 @@ class TradingLoop:
                     profit=position.unrealized_pnl,
                     exit_reason=exit_signal.reason
                 )
+                
+                # ==========================================================
+                # PUBLISH TRADE CLOSED EVENT TO EVENT BUS (Non-blocking)
+                # ==========================================================
+                try:
+                    from cthulu.observability.trade_event_bus import publish_trade_closed
+                    account_info = self.ctx.connector.get_account_info()
+                    balance = float(account_info.get('balance', 0)) if account_info else 0
+                    
+                    # Calculate duration
+                    duration_seconds = 0.0
+                    if hasattr(position, 'open_time') and position.open_time:
+                        try:
+                            duration_seconds = (datetime.now() - position.open_time).total_seconds()
+                        except Exception:
+                            pass
+                    
+                    publish_trade_closed(
+                        ticket=position.ticket,
+                        symbol=position.symbol,
+                        side=getattr(position, 'side', getattr(position, 'type', 'BUY')),
+                        volume=position.volume,
+                        entry_price=position.open_price,
+                        exit_price=close_result.fill_price,
+                        pnl=position.unrealized_pnl,
+                        duration_seconds=duration_seconds,
+                        source="system",
+                        exit_reason=exit_signal.reason,
+                        account_balance=balance
+                    )
+                except Exception as e:
+                    self.ctx.logger.debug(f"Event bus publish close (non-critical): {e}")
                 
                 # Store trade outcome in Hektor for semantic memory
                 try:

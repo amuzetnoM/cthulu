@@ -884,6 +884,32 @@ class CthuluBootstrap:
                         self.logger.info("In-process system health collector started for real-time data")
                     except Exception as e:
                         self.logger.warning(f"Failed to start in-process system health collector: {e}")
+                    
+                    # ==========================================================
+                    # INITIALIZE TRADE EVENT BUS (Non-blocking metrics collection)
+                    # ==========================================================
+                    try:
+                        from observability.trade_event_bus import initialize_event_bus
+                        
+                        # Get training logger if ML is enabled
+                        training_logger = None
+                        try:
+                            if config.get('ml', {}).get('training_data', {}).get('enabled', False):
+                                from cognition.training_logger import get_training_logger
+                                training_logger = get_training_logger()
+                        except Exception:
+                            pass
+                        
+                        event_bus = initialize_event_bus(
+                            metrics_collector=metrics,
+                            comprehensive_collector=components.comprehensive_collector,
+                            training_logger=training_logger,
+                            database=database,
+                            ml_collector=ml_collector
+                        )
+                        self.logger.info(f"Trade Event Bus initialized: {event_bus.get_stats()['subscribers']}")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to initialize Trade Event Bus: {e}")
                         
                 except Exception as e:
                     self.logger.warning(f'Failed to start observability suite: {e}')
