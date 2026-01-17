@@ -10,10 +10,10 @@ import pandas as pd
 import os
 import tempfile
 
-from training.feature_pipeline import FeaturePipeline, FeatureSet
-from training.rl_position_sizer import RLPositionSizer, RLState, SizeAction
-from training.llm_analysis import LLMAnalyzer, MarketContext, TradeContext, AnalysisType
-from training.mlops import ModelRegistry, DriftDetector, ModelStatus, DriftType
+from ML_RL.feature_pipeline import FeaturePipeline, FeatureSet
+from ML_RL.rl_position_sizer import RLPositionSizer, RLState, SizeAction
+from ML_RL.llm_analysis import LLMAnalyzer, MarketContext, TradeContext, AnalysisType
+from ML_RL.mlops import ModelRegistry, DriftDetector, ModelStatus, DriftType
 
 
 @pytest.fixture

@@ -23,7 +23,7 @@ if os.getenv('RUN_MT5_INTEGRATION') != '1' and os.getenv('RUN_MT5_CONNECT_TESTS'
 from cthulu.connector.mt5_connector import MT5Connector, ConnectionConfig
 from cthulu.execution.engine import ExecutionEngine, OrderRequest, OrderType, OrderStatus
 from cthulu.training import instrumentation as instr
-from cthulu.training.instrumentation import MLDataCollector
+from cthulu.ML_RL.instrumentation import MLDataCollector
 
 
 def test_ml_instrumentation_end_to_end():
@@ -127,6 +127,7 @@ def test_ml_instrumentation_end_to_end():
             os.remove(p)
         except Exception:
             pass
+
 
 
 

@@ -1,7 +1,7 @@
 import time
 import os
 from cthulu.monitoring.trade_monitor import TradeMonitor
-from cthulu.training.instrumentation import MLDataCollector
+from cthulu.ML_RL.instrumentation import MLDataCollector
 from unittest.mock import MagicMock
 
 
@@ -25,6 +25,7 @@ def test_trade_monitor_records_snapshot():
     collector.close()
     # If no exceptions were raised, basic behavior is OK
     assert True
+
 
 
 

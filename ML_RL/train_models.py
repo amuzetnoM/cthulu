@@ -31,10 +31,10 @@ import pandas as pd
 # Add parent directory for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from training.feature_pipeline import FeaturePipeline, get_feature_pipeline
-from training.mlops import ModelRegistry, DriftDetector, get_model_registry, get_drift_detector
-from training.rl_position_sizer import RLPositionSizer, get_rl_position_sizer, RLState, SizeAction
-from training.llm_analysis import LLMAnalyzer, get_llm_analyzer, MarketContext
+from ML_RL.feature_pipeline import FeaturePipeline, get_feature_pipeline
+from ML_RL.mlops import ModelRegistry, DriftDetector, get_model_registry, get_drift_detector
+from ML_RL.rl_position_sizer import RLPositionSizer, get_rl_position_sizer, RLState, SizeAction
+from ML_RL.llm_analysis import LLMAnalyzer, get_llm_analyzer, MarketContext
 
 # Setup logging
 logging.basicConfig(

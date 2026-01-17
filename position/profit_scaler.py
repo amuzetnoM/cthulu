@@ -21,7 +21,7 @@ logger = logging.getLogger('cthulu.profit_scaler')
 
 # ML Tier Optimizer integration
 try:
-    from cthulu.training.tier_optimizer import get_tier_optimizer, record_scaling_outcome
+    from cthulu.ML_RL.tier_optimizer import get_tier_optimizer, record_scaling_outcome
     ML_OPTIMIZER_AVAILABLE = True
 except ImportError:
     ML_OPTIMIZER_AVAILABLE = False
@@ -811,7 +811,7 @@ class ProfitScaler:
             return {'error': 'ML optimizer not available'}
             
         try:
-            from cthulu.training.tier_optimizer import run_tier_optimization
+            from cthulu.ML_RL.tier_optimizer import run_tier_optimization
             return run_tier_optimization("all")
         except Exception as e:
             logger.exception("ML optimization failed")
@@ -869,3 +869,4 @@ def create_profit_scaler(connector, execution_engine, config_dict: Optional[Dict
             ]
     
     return ProfitScaler(connector, execution_engine, config)
+

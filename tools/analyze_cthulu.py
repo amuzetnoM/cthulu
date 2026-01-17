@@ -8,6 +8,7 @@ This tool scans the Cthulu codebase and generates:
 - Issue detection (oversized files, complexity warnings)
 - JSON output for system map updates
 - Performance bottleneck identification
+- ML/RL component analysis
 
 Usage:
     python analyze_cthulu.py [--output report.json] [--verbose]
@@ -19,8 +20,8 @@ import json
 import re
 import argparse
 from pathlib import Path
-from typing import Dict, List, Tuple, Set
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Tuple, Set, Optional
+from dataclasses import dataclass, asdict, field
 from collections import defaultdict
 import sys
 
@@ -37,6 +38,8 @@ class FileMetrics:
     complexity_score: int
     issues: List[str]
     dependencies: List[str]
+    is_ml_component: bool = False
+    ml_features: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -51,6 +54,20 @@ class ModuleMetrics:
     dependencies: Set[str]
     issues: List[str]
     complexity: str
+    is_ml_module: bool = False
+
+
+@dataclass
+class MLComponentMetrics:
+    """Metrics specifically for ML/RL components."""
+    component_name: str
+    component_type: str  # 'feature_pipeline', 'model', 'training', 'mlops'
+    file_path: str
+    features_count: int
+    model_architecture: Optional[str]
+    training_capabilities: List[str]
+    dependencies: List[str]
+    status: str  # 'implemented', 'partial', 'stub'
 
 
 class CodeAnalyzer:
@@ -60,6 +77,7 @@ class CodeAnalyzer:
         self.root = Path(root_path)
         self.file_metrics: Dict[str, FileMetrics] = {}
         self.module_metrics: Dict[str, ModuleMetrics] = {}
+        self.ml_components: Dict[str, MLComponentMetrics] = {}
         self.global_imports: Set[str] = set()
         
         # Complexity thresholds
@@ -70,9 +88,22 @@ class CodeAnalyzer:
         
         # Directories to skip
         self.SKIP_DIRS = {
-            '.git', '.venv', 'venv', '__pycache__', 'node_modules',
-            '.archive', 'build', 'dist', '.pytest_cache'
+            '.git', '.venv', 'venv', 'venv312', '__pycache__', 'node_modules',
+            '.archive', 'build', 'dist', '.pytest_cache', 'site-packages',
+            '.worktrees', 'worktrees', 'cthulu.worktrees'
         }
+        
+        # ML-related patterns for detection
+        self.ML_PATTERNS = {
+            'neural_network': ['forward', 'backward', 'relu', 'softmax', 'sigmoid', 'Q-Network', 'QNetwork'],
+            'training': ['train', 'fit', 'epoch', 'batch', 'learning_rate', 'optimizer'],
+            'feature_engineering': ['extract_features', 'FeaturePipeline', 'normalize', 'standardize'],
+            'reinforcement_learning': ['Q-learning', 'PPO', 'epsilon', 'replay_buffer', 'reward'],
+            'model_ops': ['registry', 'drift', 'retrain', 'versioning', 'MLOps'],
+        }
+        
+        # Known ML modules
+        self.ML_MODULES = {'ML_RL', 'cognition', 'training'}
     
     def analyze(self) -> Dict:
         """Run full analysis on codebase."""
@@ -89,11 +120,88 @@ class CodeAnalyzer:
         # Aggregate module metrics
         self._aggregate_modules()
         
+        # Analyze ML components specifically
+        self._analyze_ml_components()
+        
         # Generate report
         report = self._generate_report()
         
         print("✅ Analysis complete!")
         return report
+    
+    def _analyze_ml_components(self):
+        """Analyze ML/RL specific components."""
+        ml_files = [
+            f for f in self.file_metrics.values() 
+            if f.is_ml_component or any(m in f.path for m in self.ML_MODULES)
+        ]
+        
+        for metrics in ml_files:
+            component = self._classify_ml_component(metrics)
+            if component:
+                self.ml_components[metrics.path] = component
+    
+    def _classify_ml_component(self, metrics: FileMetrics) -> Optional[MLComponentMetrics]:
+        """Classify a file as an ML component."""
+        path = metrics.path.lower()
+        name = metrics.name.lower()
+        
+        # Determine component type
+        if 'feature' in name or 'pipeline' in name:
+            comp_type = 'feature_pipeline'
+        elif 'rl' in name or 'position_sizer' in name or 'q_' in name:
+            comp_type = 'reinforcement_learning'
+        elif 'train' in name:
+            comp_type = 'training'
+        elif 'mlops' in name or 'registry' in name or 'drift' in name:
+            comp_type = 'mlops'
+        elif 'predict' in name or 'model' in name:
+            comp_type = 'model'
+        elif 'llm' in name or 'analysis' in name:
+            comp_type = 'llm_analysis'
+        else:
+            comp_type = 'other'
+        
+        # Count features (heuristic based on class attributes)
+        features_count = len(metrics.ml_features)
+        
+        # Determine model architecture
+        architecture = None
+        for feature in metrics.ml_features:
+            if 'QNetwork' in feature or 'Q-Network' in feature:
+                architecture = 'Q-Learning Network'
+            elif 'PolicyNetwork' in feature:
+                architecture = 'Policy Network (PPO)'
+            elif 'Softmax' in feature:
+                architecture = 'Softmax Classifier'
+        
+        # Determine training capabilities
+        training_caps = []
+        if any('train' in f.lower() for f in metrics.ml_features):
+            training_caps.append('supervised_training')
+        if any('replay' in f.lower() for f in metrics.ml_features):
+            training_caps.append('experience_replay')
+        if any('batch' in f.lower() for f in metrics.ml_features):
+            training_caps.append('batch_training')
+        
+        # Determine status
+        if metrics.functions > 5 and metrics.lines > 100:
+            status = 'implemented'
+        elif metrics.functions > 2:
+            status = 'partial'
+        else:
+            status = 'stub'
+        
+        return MLComponentMetrics(
+            component_name=metrics.name.replace('.py', ''),
+            component_type=comp_type,
+            file_path=metrics.path,
+            features_count=features_count,
+            model_architecture=architecture,
+            training_capabilities=training_caps,
+            dependencies=metrics.dependencies,
+            status=status
+        )
     
     def _find_python_files(self) -> List[Path]:
         """Find all Python files in the repository."""
@@ -128,12 +236,20 @@ class CodeAnalyzer:
             functions = []
             classes = []
             imports = []
+            ml_features = []
             
             for node in ast.walk(tree):
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     functions.append(node.name)
+                    # Check for ML-related functions
+                    if any(p in node.name.lower() for p in ['train', 'predict', 'forward', 'backward', 'extract']):
+                        ml_features.append(f"function:{node.name}")
                 elif isinstance(node, ast.ClassDef):
                     classes.append(node.name)
+                    # Check for ML-related classes
+                    for pattern_name, patterns in self.ML_PATTERNS.items():
+                        if any(p.lower() in node.name.lower() for p in patterns):
+                            ml_features.append(f"class:{node.name}")
                 elif isinstance(node, (ast.Import, ast.ImportFrom)):
                     if isinstance(node, ast.Import):
                         for alias in node.names:
@@ -141,6 +257,9 @@ class CodeAnalyzer:
                     else:
                         if node.module:
                             imports.append(node.module)
+            
+            # Detect ML content in file
+            is_ml = self._detect_ml_content(content, file_path, imports)
             
             # Calculate complexity score (simple heuristic)
             complexity_score = self._calculate_complexity(tree, lines, len(functions))
@@ -162,7 +281,9 @@ class CodeAnalyzer:
                 imports=imports,
                 complexity_score=complexity_score,
                 issues=issues,
-                dependencies=dependencies
+                dependencies=dependencies,
+                is_ml_component=is_ml,
+                ml_features=ml_features
             )
             
             # Track global imports
@@ -170,6 +291,27 @@ class CodeAnalyzer:
             
         except Exception as e:
             print(f"⚠️  Error analyzing {file_path}: {e}")
+    
+    def _detect_ml_content(self, content: str, file_path: Path, imports: List[str]) -> bool:
+        """Detect if file contains ML-related code."""
+        # Check file path
+        if any(m in str(file_path) for m in self.ML_MODULES):
+            return True
+        
+        # Check imports
+        ml_imports = ['numpy', 'sklearn', 'tensorflow', 'torch', 'pandas']
+        if any(imp in imports for imp in ml_imports):
+            return True
+        
+        # Check content patterns
+        content_lower = content.lower()
+        ml_keywords = ['neural', 'network', 'gradient', 'softmax', 'q-learning', 
+                      'reinforcement', 'prediction', 'feature extraction',
+                      'model training', 'epoch', 'batch_size']
+        if any(kw in content_lower for kw in ml_keywords):
+            return True
+        
+        return False
     
     def _calculate_complexity(self, tree: ast.AST, lines: int, functions: int) -> int:
         """Calculate complexity score for a file."""
@@ -315,6 +457,9 @@ class CodeAnalyzer:
         # Generate dependency graph
         dependency_graph = self._build_dependency_graph()
         
+        # Generate ML analysis
+        ml_analysis = self._generate_ml_analysis()
+        
         report = {
             'summary': {
                 'total_files': len(self.file_metrics),
@@ -323,12 +468,14 @@ class CodeAnalyzer:
                 'total_classes': total_classes,
                 'total_modules': len(self.module_metrics),
                 'critical_issues': len(critical_issues),
-                'warning_issues': len(warning_issues)
+                'warning_issues': len(warning_issues),
+                'ml_components': len(self.ml_components)
             },
             'modules': {
                 name: asdict(metrics) 
                 for name, metrics in self.module_metrics.items()
             },
+            'ml_analysis': ml_analysis,
             'top_issues': {
                 'critical': critical_issues,
                 'warnings': warning_issues[:10]
@@ -356,6 +503,45 @@ class CodeAnalyzer:
         }
         
         return report
+    
+    def _generate_ml_analysis(self) -> Dict:
+        """Generate detailed ML/RL analysis."""
+        # Group by component type
+        by_type = defaultdict(list)
+        for path, comp in self.ml_components.items():
+            by_type[comp.component_type].append(asdict(comp))
+        
+        # Count ML metrics
+        ml_files = [f for f in self.file_metrics.values() if f.is_ml_component]
+        total_ml_lines = sum(f.lines for f in ml_files)
+        total_ml_functions = sum(f.functions for f in ml_files)
+        
+        # Identify architectures
+        architectures = set()
+        for comp in self.ml_components.values():
+            if comp.model_architecture:
+                architectures.add(comp.model_architecture)
+        
+        # Identify capabilities
+        all_capabilities = set()
+        for comp in self.ml_components.values():
+            all_capabilities.update(comp.training_capabilities)
+        
+        return {
+            'summary': {
+                'total_ml_files': len(ml_files),
+                'total_ml_lines': total_ml_lines,
+                'total_ml_functions': total_ml_functions,
+                'ml_architectures': list(architectures),
+                'training_capabilities': list(all_capabilities)
+            },
+            'components_by_type': dict(by_type),
+            'implementation_status': {
+                'implemented': len([c for c in self.ml_components.values() if c.status == 'implemented']),
+                'partial': len([c for c in self.ml_components.values() if c.status == 'partial']),
+                'stub': len([c for c in self.ml_components.values() if c.status == 'stub'])
+            }
+        }
     
     def _build_dependency_graph(self) -> Dict[str, List[str]]:
         """Build module dependency graph."""
@@ -407,6 +593,28 @@ class CodeAnalyzer:
         print(f"\n⚠️  Issues Detected:")
         print(f"   Critical: {summary['critical_issues']}")
         print(f"   Warnings: {summary['warning_issues']}")
+        
+        # ML/RL Analysis
+        if 'ml_analysis' in report:
+            ml = report['ml_analysis']
+            print(f"\n🤖 ML/RL Components:")
+            print(f"   ML Files: {ml['summary']['total_ml_files']}")
+            print(f"   ML Lines: {ml['summary']['total_ml_lines']:,}")
+            print(f"   ML Functions: {ml['summary']['total_ml_functions']:,}")
+            if ml['summary']['ml_architectures']:
+                print(f"   Architectures: {', '.join(ml['summary']['ml_architectures'])}")
+            if ml['summary']['training_capabilities']:
+                print(f"   Capabilities: {', '.join(ml['summary']['training_capabilities'])}")
+            print(f"\n   Implementation Status:")
+            print(f"     ✅ Implemented: {ml['implementation_status']['implemented']}")
+            print(f"     🔶 Partial: {ml['implementation_status']['partial']}")
+            print(f"     ⬜ Stub: {ml['implementation_status']['stub']}")
+            
+            # List components by type
+            if ml['components_by_type']:
+                print(f"\n   Components by Type:")
+                for comp_type, components in ml['components_by_type'].items():
+                    print(f"     {comp_type}: {len(components)} files")
         
         if report['top_issues']['critical']:
             print(f"\n🔴 Top Critical Issues:")
