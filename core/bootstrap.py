@@ -73,6 +73,9 @@ class SystemComponents:
     # Hektor (Vector Studio) integration
     hektor_adapter: Any = None
     hektor_retriever: Any = None
+    
+    # ML Enhancement Manager (auto-initialized with trading loop)
+    ml_enhancement_manager: Any = None
 
 
 class CthuluBootstrap:
@@ -793,6 +796,29 @@ class CthuluBootstrap:
         # Initialize exit strategies
         exit_strategies = self.initialize_exit_strategies(config)
         
+        # ==========================================================
+        # INITIALIZE ML ENHANCEMENT MANAGER (Auto-ML Integration)
+        # This ensures ML enhancements are ALWAYS active with trading
+        # ==========================================================
+        ml_enhancement_manager = None
+        try:
+            ml_config = config.get('ml', {}) if isinstance(config, dict) else {}
+            ml_enabled = ml_config.get('enabled', True)  # ML enabled by default
+            
+            if ml_enabled:
+                from core.ml_enhancement import initialize_ml_enhancements
+                ml_enhancement_manager = initialize_ml_enhancements(
+                    config=config,
+                    hektor_adapter=hektor_adapter,
+                    hektor_retriever=hektor_retriever
+                )
+                self.logger.info(f"ML Enhancement Manager initialized: {ml_enhancement_manager.get_state()['components']}")
+            else:
+                self.logger.info("ML Enhancement Manager disabled via config (ml.enabled=false)")
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize ML Enhancement Manager: {e}")
+            self.logger.info("Continuing without ML enhancements - system will operate with rule-based logic only")
+        
         # Create components container
         components = SystemComponents(
             config=config,
@@ -817,7 +843,8 @@ class CthuluBootstrap:
             profit_scaler=profit_scaler,
             exit_strategies=exit_strategies,
             hektor_adapter=hektor_adapter,
-            hektor_retriever=hektor_retriever
+            hektor_retriever=hektor_retriever,
+            ml_enhancement_manager=ml_enhancement_manager
         )
         # Expose trade_adoption_policy for convenience
         try:

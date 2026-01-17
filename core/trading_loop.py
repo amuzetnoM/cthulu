@@ -135,6 +135,9 @@ class TradingLoopContext:
     hektor_adapter: Optional[Any] = None
     hektor_retriever: Optional[Any] = None
     
+    # ML Enhancement Manager (automatic ML integration)
+    ml_enhancement_manager: Optional[Any] = None
+    
     # CLI args
     args: Optional[Any] = None
 
@@ -479,23 +482,86 @@ class TradingLoop:
         signal,
         base_size: float,
         entry_confluence_result=None,
-        balance: float = 0.0
+        balance: float = 0.0,
+        market_data: Optional[pd.DataFrame] = None
     ) -> PositionSizeDecision:
         """
         Centralized position sizing with full audit trail.
         
         All position size adjustments happen here for transparency and debugging.
+        Now includes ML Enhancement Manager for intelligent position sizing.
         
         Args:
             signal: Trading signal
             base_size: Base position size from risk manager
             entry_confluence_result: Optional entry confluence analysis result
             balance: Current account balance
+            market_data: Optional market data for ML features
             
         Returns:
             PositionSizeDecision with full reasoning trail
         """
         decision = PositionSizeDecision(base_size=base_size)
+        
+        # ==========================================================
+        # ML ENHANCEMENT: Get ML-driven position size recommendation
+        # This integrates RL Position Sizer + Cognition Engine
+        # ==========================================================
+        if self.ctx.ml_enhancement_manager and market_data is not None:
+            try:
+                # Build account state for ML
+                account_info = self.ctx.connector.get_account_info()
+                equity = float(account_info.get('equity', balance)) if account_info else balance
+                
+                # Calculate drawdown
+                peak_balance = balance  # Simplified - could track actual peak
+                drawdown_pct = max(0, (peak_balance - equity) / peak_balance * 100) if peak_balance > 0 else 0
+                
+                # Get recent win rate from metrics
+                recent_win_rate = 0.5
+                try:
+                    if self.ctx.metrics:
+                        stats = self.ctx.metrics.get_statistics()
+                        recent_win_rate = stats.get('win_rate', 0.5)
+                except Exception:
+                    pass
+                
+                # Get current exposure
+                current_exposure = 0.0
+                try:
+                    positions = self.ctx.position_manager.get_positions(symbol=self.ctx.symbol)
+                    for pos in positions:
+                        current_exposure += getattr(pos, 'volume', 0) * 0.01  # Rough exposure calc
+                except Exception:
+                    pass
+                
+                account_state = {
+                    'balance': balance,
+                    'equity': equity,
+                    'drawdown_pct': drawdown_pct,
+                    'recent_win_rate': recent_win_rate,
+                    'exposure_pct': current_exposure,
+                    'max_position_pct': self.ctx.config.get('risk', {}).get('max_position_size_percent', 2.0) / 100,
+                    'remaining_daily_risk': 1.0  # Simplified
+                }
+                
+                ml_mult, ml_details = self.ctx.ml_enhancement_manager.get_position_size_recommendation(
+                    signal=signal,
+                    market_data=market_data,
+                    account_state=account_state,
+                    base_size=base_size
+                )
+                
+                if ml_mult != 1.0:
+                    # Build reason string from ML details
+                    ml_reasons = ml_details.get('reasons', [])
+                    reason_str = ', '.join(ml_reasons) if ml_reasons else 'ML'
+                    decision.apply_adjustment(f"ml({reason_str})", ml_mult)
+                    
+                    self.ctx.logger.info(f"🤖 ML sizing: {ml_mult:.2f}x - {ml_reasons}")
+                    
+            except Exception as e:
+                self.ctx.logger.debug(f"ML enhancement sizing failed: {e}")
         
         # 1. Entry Quality Adjustment (from confluence filter)
         if entry_confluence_result and hasattr(entry_confluence_result, 'position_mult'):
@@ -531,9 +597,11 @@ class TradingLoop:
                 self.ctx.logger.debug(f"Loss curve adjustment failed: {e}")
         
         # 3. Cognition Size Multiplier (from AI/ML signal enhancement)
+        # Note: This is now also handled by ML Enhancement Manager, but kept for backward compatibility
         try:
             cognition_mult = getattr(signal, '_cognition_size_mult', 1.0)
-            if cognition_mult != 1.0:
+            if cognition_mult != 1.0 and not self.ctx.ml_enhancement_manager:
+                # Only apply if ML manager not already handling this
                 decision.apply_adjustment("cognition", cognition_mult)
         except Exception:
             pass
@@ -586,6 +654,22 @@ class TradingLoop:
                             f"comprehensive={self.ctx.comprehensive_collector is not None}, "
                             f"system_health={self.ctx.system_health_collector is not None}")
         
+        # ==========================================================
+        # ML ENHANCEMENT: Log ML status at startup
+        # ==========================================================
+        if self.ctx.ml_enhancement_manager:
+            ml_state = self.ctx.ml_enhancement_manager.get_state()
+            self.ctx.logger.info(f"🤖 ML Enhancement ACTIVE: {ml_state['components']}")
+            
+            # Wire cognition engine from ML manager if not already set
+            if not self.ctx.cognition_engine:
+                cognition = self.ctx.ml_enhancement_manager.get_cognition_engine()
+                if cognition:
+                    self.ctx.cognition_engine = cognition
+                    self.ctx.logger.info("Cognition engine wired from ML Enhancement Manager")
+        else:
+            self.ctx.logger.info("ML Enhancement not active - using rule-based logic only")
+        
         try:
             while not self._shutdown_requested:
                 self.loop_count += 1
@@ -617,10 +701,23 @@ class TradingLoop:
         
         except KeyboardInterrupt:
             self.ctx.logger.info("Keyboard interrupt received")
+            # Save ML models on shutdown
+            if self.ctx.ml_enhancement_manager:
+                try:
+                    self.ctx.ml_enhancement_manager.shutdown()
+                except Exception as e:
+                    self.ctx.logger.debug(f"ML shutdown error: {e}")
             raise  # Re-raise to allow main shutdown handler to catch it
         except Exception as e:
             self.ctx.logger.error(f"Fatal error in main loop: {e}", exc_info=True)
             return 1
+        
+        # Graceful shutdown - save ML models
+        if self.ctx.ml_enhancement_manager:
+            try:
+                self.ctx.ml_enhancement_manager.shutdown()
+            except Exception as e:
+                self.ctx.logger.debug(f"ML shutdown error: {e}")
         
         return 0
     
@@ -1565,13 +1662,23 @@ class TradingLoop:
             # ==========================================================
             # CENTRALIZED POSITION SIZING - Full audit trail
             # All adjustments happen in one place for transparency
+            # Now with ML Enhancement Manager integration
             # ==========================================================
             if approved and position_size > 0:
+                # Get market data for ML features (use cached from confluence filter or fetch fresh)
+                ml_market_data = df if 'df' in dir() and df is not None else None
+                if ml_market_data is None:
+                    try:
+                        ml_market_data = self.ctx.data_layer.get_cached_data(self.ctx.symbol)
+                    except Exception:
+                        pass
+                
                 size_decision = self._calculate_final_position_size(
                     signal=signal,
                     base_size=position_size,
                     entry_confluence_result=entry_confluence_result,
-                    balance=balance
+                    balance=balance,
+                    market_data=ml_market_data
                 )
                 position_size = size_decision.final_size
                 
@@ -2078,8 +2185,8 @@ class TradingLoop:
                         if point and stops_level and update.get('update_sl') and new_sl is not None:
                             min_dist = float(point) * float(stops_level)
                             diff = abs(current_price - float(new_sl))
-                        self.ctx.logger.debug(f"Broker min check: point={point}, stops_level={stops_level}, min_dist={min_dist}, diff={diff}")
-                        if diff < min_dist - 1e-12:
+                            self.ctx.logger.debug(f"Broker min check: point={point}, stops_level={stops_level}, min_dist={min_dist}, diff={diff}")
+                            if diff < min_dist - 1e-12:
                                 self.ctx.logger.warning(
                                     f"Skipping SL update for {position.ticket}: desired SL {new_sl} is within broker min stop distance {min_dist} of current price {current_price}"
                                 )
@@ -2094,18 +2201,19 @@ class TradingLoop:
                     pass
 
                 # If still needs update, attempt modify
+                success = False
                 if update.get('update_sl') or update.get('update_tp'):
                     success = self.ctx.position_lifecycle.modify_position(
                         position.ticket, sl=new_sl, tp=new_tp
                     )
-                # Retry once after refreshing tracker from MT5 to handle transient state mismatches
-                if not success:
-                    try:
-                        self.ctx.position_lifecycle.refresh_positions()
-                        success = self.ctx.position_lifecycle.modify_position(position.ticket, sl=new_sl, tp=new_tp)
-                    except Exception:
-                        # Ignore errors during retry
-                        pass
+                    # Retry once after refreshing tracker from MT5 to handle transient state mismatches
+                    if not success:
+                        try:
+                            self.ctx.position_lifecycle.refresh_positions()
+                            success = self.ctx.position_lifecycle.modify_position(position.ticket, sl=new_sl, tp=new_tp)
+                        except Exception:
+                            # Ignore errors during retry
+                            pass
 
                 if success:
                     self.ctx.logger.info(
@@ -2181,8 +2289,15 @@ class TradingLoop:
                     exit_reason=exit_signal.reason
                 )
                 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+                # Calculate trade duration
+                duration_seconds = 0
+                try:
+                    open_time = getattr(position, 'open_time', None)
+                    if open_time:
+                        duration_seconds = (exit_time - open_time).total_seconds()
+                except Exception:
+                    pass
+                
                 # ==========================================================
                 # PUBLISH TRADE CLOSED EVENT TO EVENT BUS (Non-blocking)
                 # ==========================================================
@@ -2190,14 +2305,6 @@ class TradingLoop:
                     from cthulu.observability.trade_event_bus import publish_trade_closed
                     account_info = self.ctx.connector.get_account_info()
                     balance = float(account_info.get('balance', 0)) if account_info else 0
-                    
-                    # Calculate duration
-                    duration_seconds = 0.0
-                    if hasattr(position, 'open_time') and position.open_time:
-                        try:
-                            duration_seconds = (datetime.now() - position.open_time).total_seconds()
-                        except Exception:
-                            pass
                     
                     publish_trade_closed(
                         ticket=position.ticket,
@@ -2214,17 +2321,6 @@ class TradingLoop:
                     )
                 except Exception as e:
                     self.ctx.logger.debug(f"Event bus publish close (non-critical): {e}")
-=======
-=======
->>>>>>> Stashed changes
-                # Calculate trade duration
-                duration_seconds = 0
-                try:
-                    open_time = getattr(position, 'open_time', None)
-                    if open_time:
-                        duration_seconds = (exit_time - open_time).total_seconds()
-                except Exception:
-                    pass
                 
                 # Record trade completed for comprehensive metrics (ML training)
                 try:
@@ -2238,6 +2334,25 @@ class TradingLoop:
                 except Exception:
                     self.ctx.logger.debug('Failed to record trade in comprehensive collector', exc_info=True)
                 
+                # ==========================================================
+                # ML ENHANCEMENT: Record trade outcome for RL learning
+                # ==========================================================
+                try:
+                    if self.ctx.ml_enhancement_manager:
+                        poll_interval = self.ctx.poll_interval or 60
+                        duration_bars = int(duration_seconds / poll_interval) if poll_interval > 0 else 0
+                        
+                        self.ctx.ml_enhancement_manager.record_trade_outcome(
+                            ticket=position.ticket,
+                            pnl=pnl,
+                            exit_price=exit_price,
+                            duration_bars=duration_bars,
+                            exit_reason=exit_signal.reason
+                        )
+                        self.ctx.logger.debug(f"🤖 ML learning: recorded trade outcome pnl={pnl:.2f}")
+                except Exception as e:
+                    self.ctx.logger.debug(f'ML enhancement trade recording failed: {e}')
+                
                 # Record outcome in training data logger for ML
                 try:
                     from cthulu.cognition.training_logger import log_trade_outcome
@@ -2249,13 +2364,9 @@ class TradingLoop:
                         exit_price=exit_price
                     )
                 except ImportError:
-                    pass  # Training logger not available
+                    pass
                 except Exception:
                     self.ctx.logger.debug('Failed to log trade outcome for ML training', exc_info=True)
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
                 
                 # Store trade outcome in Hektor for semantic memory
                 try:

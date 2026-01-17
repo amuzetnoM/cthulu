@@ -39,7 +39,7 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 > **Strict Quality Gate**: Only GOOD/PREMIUM entries execute (v5.2.34) <br>
 > **Momentum-Aware Scaling**: Profit scaler detects momentum to let winners run (v5.2.34) <br>
 > **Code Analysis Toolkit**: Enhanced analyzer with 176 code improvement suggestions and future readiness scoring (v5.2.40) <br>
-> **Star Visualizations**: -adapted visualization toolkit with 6 chart types for system health monitoring (v5.2.40) <br>
+> **Star Visualizations**: System Visualization toolkit with 6 chart types for system health monitoring (v5.2.40) <br>
 
 ### BENCHMARKS
 
