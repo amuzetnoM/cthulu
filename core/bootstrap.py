@@ -910,6 +910,33 @@ class CthuluBootstrap:
                         self.logger.info(f"Trade Event Bus initialized: {event_bus.get_stats()['subscribers']}")
                     except Exception as e:
                         self.logger.warning(f"Failed to initialize Trade Event Bus: {e}")
+                    
+                    # ==========================================================
+                    # INITIALIZE DISCORD NOTIFIER (Non-blocking alerts)
+                    # ==========================================================
+                    try:
+                        discord_cfg = config.get('discord', {}) if isinstance(config, dict) else {}
+                        if discord_cfg.get('enabled', True):  # Enabled by default if webhooks exist
+                            from integrations.discord_notifier import initialize_discord_notifier
+                            import os
+                            
+                            discord_notifier = initialize_discord_notifier(
+                                alerts_webhook=discord_cfg.get('webhook_alerts') or os.getenv('DISCORD_WEBHOOK_ALERTS', ''),
+                                health_webhook=discord_cfg.get('webhook_health') or os.getenv('DISCORD_WEBHOOK_HEALTH', ''),
+                                signals_webhook=discord_cfg.get('webhook_signals') or os.getenv('DISCORD_WEBHOOK_SIGNALS', ''),
+                                config={
+                                    'notify_trades': discord_cfg.get('notify_trades', True),
+                                    'notify_adoptions': discord_cfg.get('notify_adoptions', True),
+                                    'notify_risk': discord_cfg.get('notify_risk', True),
+                                    'min_pnl_notify': discord_cfg.get('min_pnl_notify', 0)
+                                }
+                            )
+                            if discord_notifier.enabled:
+                                self.logger.info("Discord notifier initialized and connected to event bus")
+                            else:
+                                self.logger.info("Discord notifier disabled (no webhooks configured)")
+                    except Exception as e:
+                        self.logger.warning(f"Failed to initialize Discord notifier: {e}")
                         
                 except Exception as e:
                     self.logger.warning(f'Failed to start observability suite: {e}')

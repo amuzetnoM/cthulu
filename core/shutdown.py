@@ -339,6 +339,14 @@ class ShutdownHandler:
         except Exception:
             self.logger.debug('Failed to stop Trade Event Bus (may not be initialized)')
         
+        # Stop Discord notifier
+        try:
+            from integrations.discord_notifier import stop_discord_notifier
+            stop_discord_notifier()
+            self.logger.info('Discord notifier stopped')
+        except Exception:
+            self.logger.debug('Failed to stop Discord notifier (may not be initialized)')
+        
         # Stop observability service process
         if self.observability_process:
             try:
