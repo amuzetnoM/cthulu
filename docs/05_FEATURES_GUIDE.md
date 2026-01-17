@@ -26,7 +26,7 @@ _________   __  .__          .__
 
 ### SAFE: Set And Forget Engine
 
-👾 Cthulu v5.2.40 "PRECISION" continues the SAFE paradigm with enhanced quality controls:
+👾 Cthulu v5.3.0 "EVOQUE" continues the SAFE paradigm with enhanced quality controls:
 - **S**mart strategy selection with intelligent fallback
 - **A**daptive to all market conditions (ranging, trending, volatile)
 - **F**ully autonomous signal generation without manual intervention
@@ -40,7 +40,7 @@ _________   __  .__          .__
 2. [Next-Generation Indicators](#next-generation-indicators)
 3. [Dynamic Strategy Selection](#dynamic-strategy-selection)
 4. [Multi-Strategy Fallback](#multi-strategy-fallback)
-5. [Entry Quality Gate (v5.2.40)](#entry-quality-gate)
+5. [Entry Quality Gate (v5.3.0)](#entry-quality-gate)
 6. [Ultra-Aggressive Mode](#ultra-aggressive-mode)
 7. [Equity Curve Management](#equity-curve-management)
 8. [Exit Management System](#exit-management-system)
@@ -61,7 +61,7 @@ _________   __  .__          .__
 
 ## Trading Strategies
 
-Cthulu v5.2.40 includes **7 active trading strategies**, each optimized for specific market conditions:
+Cthulu v5.3.0 includes **7 active trading strategies**, each optimized for specific market conditions:
 
 | Strategy | Type | Best Regime | Signal Speed | Crossover Required |
 |----------|------|-------------|--------------|-------------------|

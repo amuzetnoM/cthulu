@@ -61,14 +61,14 @@ _________   __  .__          .__
         \/           \/                  
                                          
     ─────────────────────────────
-           Cthulu v5.2.33
+           Cthulu v5.3.0
     Interactive Setup Wizard
     """
     try:
         safe_print("\033[96m" + banner + "\033[0m")
     except Exception:
         # Fallback to a plain ASCII banner
-        safe_print("*** Cthulu v5.2.33 - Interactive Setup Wizard ***")
+        safe_print("*** Cthulu v5.3.0 - Interactive Setup Wizard ***")
 
 
 def print_section(title: str, step: int = None, total_steps: int = None):
