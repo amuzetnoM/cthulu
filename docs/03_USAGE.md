@@ -3,10 +3,10 @@ title: TERMS OF USE
 description: Terms of use, disclaimers, and legal notices for the Cthulu trading system
 tags: [terms, legal, disclaimer, risk-disclosure]
 sidebar_position: 3
-version: 5.2.33
+version: 5.2.40
 ---
 
-![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.40-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)  
 

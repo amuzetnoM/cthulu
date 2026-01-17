@@ -6,7 +6,7 @@ sidebar_position: 8
 version: 5.2.34
 ---
 
-![](https://img.shields.io/badge/Version-5.2.34-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.40-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--17-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
@@ -141,7 +141,7 @@ The Profit Scaler implements a sophisticated tiered profit-taking system that:
 - Trails stop loss after each tier
 - Integrates with ML Tier Optimizer (optional)
 - Protects against profit giveback
-- **NEW in v5.2.34:** Momentum detection to let winners run
+- **NEW in v5.2.40:** Momentum detection to let winners run
 
 ### How It Works
 
@@ -166,7 +166,7 @@ flowchart TD
     K --> B
 ```
 
-### Scaling Tiers (Recalibrated v5.2.34)
+### Scaling Tiers (Recalibrated v5.2.40)
 
 #### Standard Account (≥ $100)
 
@@ -186,7 +186,7 @@ More conservative to let trades develop:
 | 2    | 120%             | 30%     | ✅ Yes           | 45%     |
 | 3    | 180%             | 35%     | ✅ Yes           | 55%     |
 
-### Momentum Detection (NEW in v5.2.34)
+### Momentum Detection (NEW in v5.2.40)
 
 The profit scaler now checks for strong momentum before scaling:
 

@@ -1,6 +1,6 @@
 # INDEX
 
-![](https://img.shields.io/badge/Version-5.2.34-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.40-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
 ![](https://img.shields.io/badge/Tests-243%20Passing-4B0082?style=for-the-badge&labelColor=0D1117&logo=pytest&logoColor=white)
 ![](https://img.shields.io/badge/Coverage-95%25-4B0082?style=for-the-badge&labelColor=0D1117&logo=codecov&logoColor=white)
 ![](https://img.shields.io/badge/Uptime-98.5%25-4B0082?style=for-the-badge&labelColor=0D1117&logo=uptimerobot&logoColor=white)
@@ -20,7 +20,7 @@
 
 Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring 7 active trading strategies, 12 technical indicators, and the revolutionary SAFE™️ (Set And Forget Engine) paradigm for fully autonomous operation.
 
-**Current Version:** v5.2.34 "PRECISION"
+**Current Version:** v5.2.40 "APEX"
 
 ### ✪ AI-Native
 
@@ -38,6 +38,8 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 > **WebSocket Integration**: Live price updates and trade notifications <br>
 > **Strict Quality Gate**: Only GOOD/PREMIUM entries execute (v5.2.34) <br>
 > **Momentum-Aware Scaling**: Profit scaler detects momentum to let winners run (v5.2.34) <br>
+> **Code Analysis Toolkit**: Enhanced analyzer with 176 code improvement suggestions and future readiness scoring (v5.2.40) <br>
+> **PRIDE-Star Visualizations**: TradeMaster-adapted visualization toolkit with 6 chart types for system health monitoring (v5.2.40) <br>
 
 ### BENCHMARKS
 

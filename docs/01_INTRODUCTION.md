@@ -3,11 +3,11 @@ title: INTRODUCTION
 description: Advanced multi-strategy autonomous trading system with MetaTrader 5 integration, dynamic strategy selection, and comprehensive risk management
 tags: [trading, mt5, autonomous, multi-strategy, risk-management]
 sidebar_position: 1
-version: 5.2.33
+version: 5.2.40
 
 ---
 ![](https://img.shields.io/badge/LEGENDARY-6A00FF?style=for-the-badge&logo=zap&logoColor=gold)
-![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.2.40-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
@@ -50,7 +50,7 @@ _________   __  .__          .__
 
 <br>
 
- **NEW in v5.2.33:**<br> 
+ **NEW in v5.2.40:**<br> 
  **Web Backtesting UI, LLM Integration, Vector DB**  
 > 👾 Cthulu evolves with AI-powered insights and professional backtesting tools!
 >
@@ -1068,7 +1068,7 @@ Past performance is not indicative of future results. Use at your own risk.
 ## Documentation
 
 ### Core Documentation
-- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.2.33
+- **[CHANGELOG](docs/CHANGELOG.md)** - Complete version history from v1.0.0 to v5.2.40
 - **[Build Plan](docs/build_plan.md)** - Roadmap (archival)
 - **[Architecture](docs/ARCHITECTURE.md)** - System architecture and design patterns
 - **[Guide](docs/GUIDE.md)** - Comprehensive user guide

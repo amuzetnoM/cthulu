@@ -3,7 +3,7 @@ title: MATHEMATICS
 description: "Mathematical foundations for Cthulu: risk, sizing, BOS/ChoCH detection, multi-RRR exits and performance optimization."
 tags: [mathematics, risk-management, position-sizing, exit-strategies]
 sidebar_position: 17
-version: 5.2.33
+version: 5.2.40
 ---
 
 ![](https://img.shields.io/badge/Version-2.0.0-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
