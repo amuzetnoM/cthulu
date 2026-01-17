@@ -57,7 +57,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
+            background:
                 radial-gradient(ellipse at 20% 30%, rgba(0, 255, 170, 0.08) 0%, transparent 40%),
                 radial-gradient(ellipse at 80% 70%, rgba(136, 136, 170, 0.06) 0%, transparent 50%),
                 radial-gradient(ellipse at 50% 50%, rgba(192, 192, 208, 0.03) 0%, transparent 60%),
@@ -73,7 +73,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
+            background-image:
                 radial-gradient(1px 1px at 20% 30%, rgba(192, 192, 208, 0.15), transparent),
                 radial-gradient(1px 1px at 60% 70%, rgba(168, 168, 184, 0.12), transparent),
                 radial-gradient(1px 1px at 50% 50%, rgba(144, 144, 152, 0.1), transparent),
@@ -89,10 +89,13 @@
         }
 
         @keyframes shimmer {
-            0%, 100% {
+
+            0%,
+            100% {
                 background-position: 0% 0%, 50% 50%, 100% 100%, 0% 100%, 100% 0%, 50% 100%;
                 opacity: 0.4;
             }
+
             50% {
                 background-position: 100% 100%, 50% 50%, 0% 0%, 100% 0%, 0% 100%, 50% 0%;
                 opacity: 0.6;
@@ -148,12 +151,12 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: clamp(3rem, 8vw, 6rem);
             font-weight: 700;
-            background: linear-gradient(135deg, 
-                var(--metallic-1) 0%, 
-                var(--accent) 25%, 
-                var(--metallic-2) 50%, 
-                var(--accent-dim) 75%, 
-                var(--metallic-3) 100%);
+            background: linear-gradient(135deg,
+                    var(--metallic-1) 0%,
+                    var(--accent) 25%,
+                    var(--metallic-2) 50%,
+                    var(--accent-dim) 75%,
+                    var(--metallic-3) 100%);
             background-size: 200% 200%;
             -webkit-background-clip: text;
             background-clip: text;
@@ -165,8 +168,15 @@
         }
 
         @keyframes metallicShine {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
         }
 
         .version-badge {
@@ -348,8 +358,13 @@
 
         /* Subtle scan line effect */
         @keyframes scan {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100vh); }
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(100vh);
+            }
         }
 
         .scanline {
@@ -381,8 +396,8 @@
 
             <!-- Mysterious Tagline -->
             <p class="tagline">
-                An <strong>autonomous intelligence</strong> navigating the depths of financial markets. 
-                Born from <strong>machine learning</strong>, forged in <strong>reinforcement learning</strong>, 
+                An <strong>autonomous intelligence</strong> navigating the depths of financial markets.
+                Born from <strong>machine learning</strong>, forged in <strong>reinforcement learning</strong>,
                 evolved through <strong>continuous adaptation</strong>.
             </p>
 
@@ -391,37 +406,43 @@
                 <div class="capability-card">
                     <div class="capability-icon">🧠</div>
                     <h3 class="capability-title">ML/RL Intelligence</h3>
-                    <p class="capability-desc">Neural networks, Q-Learning, PPO, and deep reinforcement learning for adaptive strategy evolution</p>
+                    <p class="capability-desc">Neural networks, Q-Learning, PPO, and deep reinforcement learning for
+                        adaptive strategy evolution</p>
                 </div>
 
                 <div class="capability-card">
                     <div class="capability-icon">⚡</div>
                     <h3 class="capability-title">7 Active Strategies</h3>
-                    <p class="capability-desc">Multi-strategy arsenal with automatic regime detection and intelligent fallback mechanisms</p>
+                    <p class="capability-desc">Multi-strategy arsenal with automatic regime detection and intelligent
+                        fallback mechanisms</p>
                 </div>
 
                 <div class="capability-card">
                     <div class="capability-icon">🎯</div>
                     <h3 class="capability-title">Precision Execution</h3>
-                    <p class="capability-desc">Sub-30ms latency, adaptive risk management, and momentum-aware profit scaling</p>
+                    <p class="capability-desc">Sub-30ms latency, adaptive risk management, and momentum-aware profit
+                        scaling</p>
                 </div>
 
                 <div class="capability-card">
                     <div class="capability-icon">🔮</div>
                     <h3 class="capability-title">Autonomous Operation</h3>
-                    <p class="capability-desc">Set And Forget Engine (SAFE™) with semantic pattern recognition and self-optimization</p>
+                    <p class="capability-desc">Set And Forget Engine (SAFE™) with semantic pattern recognition and
+                        self-optimization</p>
                 </div>
 
                 <div class="capability-card">
                     <div class="capability-icon">📊</div>
                     <h3 class="capability-title">Vector Intelligence</h3>
-                    <p class="capability-desc">Hektor Studio integration for semantic search, pattern analysis, and performance analytics</p>
+                    <p class="capability-desc">Hektor Studio integration for semantic search, pattern analysis, and
+                        performance analytics</p>
                 </div>
 
                 <div class="capability-card">
                     <div class="capability-icon">🛡️</div>
                     <h3 class="capability-title">Enterprise Grade</h3>
-                    <p class="capability-desc">95% test coverage, 98.5% uptime, comprehensive audit trail, and emergency safeguards</p>
+                    <p class="capability-desc">95% test coverage, 98.5% uptime, comprehensive audit trail, and emergency
+                        safeguards</p>
                 </div>
             </div>
 
