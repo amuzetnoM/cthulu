@@ -374,3 +374,5 @@ config_battle.json
 ML_RL/models/rl/*.json
 ML_RL/data/models/*.json
 ML_RL/data/training_results.json
+tools/visualizations/
+!tools/demo_visualizations/

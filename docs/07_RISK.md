@@ -6,7 +6,7 @@ sidebar_position: 7
 version: 5.2.34
 ---
 
-![](https://img.shields.io/badge/Version-5.2.34-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![](https://img.shields.io/badge/Version-5.2.40-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
 ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--17-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white) 
 
@@ -15,7 +15,7 @@ version: 5.2.34
 
 > This document describes the risk-management features in Cthulu and how the system adapts position sizing and stop-loss placement to account conditions.
 
-### Key Features (v5.2.34)
+### Key Features (v5.2.40)
 
 - **Performance-Based Sizing**: Adjusts position size based on recent win rate
 - **Centralized Position Sizing**: Full audit trail with `PositionSizeDecision` dataclass
@@ -47,7 +47,7 @@ Key configuration entries (in `config.json` under `risk`):
 }
 ```
 
-### Position Sizing Pipeline (v5.2.34)
+### Position Sizing Pipeline (v5.2.40)
 
 All position size adjustments are now centralized with full audit trail:
 
