@@ -368,3 +368,4 @@ tags
 # Local data snapshots and debug artifacts
 .data
 
+config_battle.json
