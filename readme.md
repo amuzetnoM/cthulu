@@ -18,28 +18,61 @@
 
 ## OVERVIEW
 
-Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring 7 active trading strategies, 12 technical indicators, and the revolutionary SAFE™️ (Set And Forget Engine) paradigm for fully autonomous operation.
+👾 Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring 7 active trading strategies, 12 technical indicators, and the revolutionary SAFE™️ (Set And Forget Engine) paradigm for fully autonomous operation.
 
 **Current Version:** v5.3.0 "EVOQUE"
 
 ### ✪ AI-Native
 
-Cthulu now features **semantic pattern recognition**, **ML model training**, and **automated optimization** powered by Hektor Vector Studio:
+The system features **semantic pattern recognition**, **ML model training**, and **automated optimization** powered by <br> ⬜HEKTOR: Vector Studio <br> (see `/docs/18_HECKTOR.md` for details).
 
-> **Pattern Recognition**: Detect and analyze 16 chart patterns with historical outcome analysis <br>
-> **Performance Analytics**: Identify optimal trading conditions using semantic search <br>
-> **ML Training Pipeline**: Export structured data for machine learning model training <br>
-> **Automated Optimization**: AI-powered configuration discovery with Bayesian optimization <br>
-> **Backtesting UI**: Web-based backtesting with real-time progress updates <br>
-> **Chart Manager**: Visual reasoning layer with dynamic zone and level tracking <br>
-> **Order Block Detection**: ICT-style Order Blocks with BOS/ChoCH identification <br>
-> **Session ORB**: London/NY session Opening Range Breakout detection <br> 
-> **Advanced UI Components**: Real-time Order Book, Stats Ticker, Terminal, and Trade Panel <br>
-> **WebSocket Integration**: Live price updates and trade notifications <br>
-> **Strict Quality Gate**: Only GOOD/PREMIUM entries execute  <br>
-> **Momentum-Aware Scaling**: Profit scaler detects momentum to let winners run  <br>
-> **Code Analysis Toolkit**: Enhanced analyzer with 176 code improvement suggestions and future readiness scoring  <br>
-> **Star Visualizations**: System Visualization toolkit with 6 chart types for system health monitoring <br>
+> Check out Cthulu on Hugging Face !  <br> 
+> https://huggingface.co/amuzetnoM/CTHULU
+
+## MODEL CARD
+
+| Metric | Value | Description |
+|--------|-------|-------------|
+| **Version** | `5.3.0-EVOQUE` | Release codename |
+| **Model ID** | `cthulu-evoque-v5.3.0` | Unique identifier |
+| **Parameters** | ~3,715 | Total trainable params |
+| **License** | AGPL-3.0 | Open source |
+
+### COMPONENT METRICS
+
+| Component | Architecture | Params | Key Metric | Status |
+|-----------|--------------|--------|------------|--------|
+| **RL Position Sizer** | 11→64→32→6 | 3,200 | Reward: 595.84 | ✅ Trained |
+| **Price Predictor** | 12→32→3 | 515 | Accuracy: 58% | ✅ Trained |
+| **Tier Optimizer** | Bayesian | N/A | +8% capture | ⚠️ In-Progress |
+| **Feature Pipeline** | StandardScaler | N/A | 6,847 samples | ✅ Fitted |
+
+### TRAINING SUMMARY
+
+| Metric | Value |
+|--------|-------|
+| **Total Episodes** | 1,429 (929 historical + 500 exploration) |
+| **Training Samples** | 6,847 market snapshots |
+| **Signal Events** | 879 strategy signals |
+| **Final Epsilon** | 0.05 (converged) |
+| **Total Reward** | 595.84 |
+
+### INFERENCE PERFORMANCE
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **Inference Time** | <1ms | Single forward pass |
+| **Memory** | <5MB | All models combined |
+| **Dependencies** | NumPy only | No deep learning framework needed |
+
+### RISK METRICS
+
+| Parameter | Value |
+|-----------|-------|
+| Max Position Size | 10% equity |
+| Daily Risk Limit | 3% equity |
+| Max Concurrent Positions | 5 |
+| Drawdown Threshold | 30% |
 
 ### BENCHMARKS
 
