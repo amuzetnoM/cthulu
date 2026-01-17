@@ -2163,20 +2163,26 @@ class TradingLoop:
             )
             
             if close_result.status == OrderStatus.FILLED:
+                pnl = position.unrealized_pnl
+                exit_price = close_result.fill_price
+                exit_time = datetime.now()
+                
                 self.ctx.logger.info(
                     f"Position closed: ticket={position.ticket}, "
-                    f"P&L={position.unrealized_pnl:.2f}"
+                    f"P&L={pnl:.2f}"
                 )
                 
-                # Update database
+                # Update database with CLOSED status
                 self.ctx.database.update_trade_exit(
                     order_id=position.ticket,
-                    exit_price=close_result.fill_price,
-                    exit_time=datetime.now(),
-                    profit=position.unrealized_pnl,
+                    exit_price=exit_price,
+                    exit_time=exit_time,
+                    profit=pnl,
                     exit_reason=exit_signal.reason
                 )
                 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 # ==========================================================
                 # PUBLISH TRADE CLOSED EVENT TO EVENT BUS (Non-blocking)
                 # ==========================================================
@@ -2208,14 +2214,56 @@ class TradingLoop:
                     )
                 except Exception as e:
                     self.ctx.logger.debug(f"Event bus publish close (non-critical): {e}")
+=======
+=======
+>>>>>>> Stashed changes
+                # Calculate trade duration
+                duration_seconds = 0
+                try:
+                    open_time = getattr(position, 'open_time', None)
+                    if open_time:
+                        duration_seconds = (exit_time - open_time).total_seconds()
+                except Exception:
+                    pass
+                
+                # Record trade completed for comprehensive metrics (ML training)
+                try:
+                    if self.ctx.comprehensive_collector:
+                        is_win = pnl > 0
+                        self.ctx.comprehensive_collector.record_trade_completed(
+                            is_win=is_win,
+                            pnl=pnl,
+                            duration_seconds=duration_seconds
+                        )
+                except Exception:
+                    self.ctx.logger.debug('Failed to record trade in comprehensive collector', exc_info=True)
+                
+                # Record outcome in training data logger for ML
+                try:
+                    from cthulu.cognition.training_logger import log_trade_outcome
+                    outcome = 'WIN' if pnl > 0 else ('LOSS' if pnl < 0 else 'BREAKEVEN')
+                    log_trade_outcome(
+                        ticket=position.ticket,
+                        outcome=outcome,
+                        pnl=pnl,
+                        exit_price=exit_price
+                    )
+                except ImportError:
+                    pass  # Training logger not available
+                except Exception:
+                    self.ctx.logger.debug('Failed to log trade outcome for ML training', exc_info=True)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
                 
                 # Store trade outcome in Hektor for semantic memory
                 try:
                     outcome = {
-                        'pnl': position.unrealized_pnl,
-                        'result': 'WIN' if position.unrealized_pnl > 0 else 'LOSS' if position.unrealized_pnl < 0 else 'BREAKEVEN',
-                        'exit_price': close_result.fill_price,
-                        'exit_time': datetime.now().isoformat(),
+                        'pnl': pnl,
+                        'result': 'WIN' if pnl > 0 else 'LOSS' if pnl < 0 else 'BREAKEVEN',
+                        'exit_price': exit_price,
+                        'exit_time': exit_time.isoformat(),
                         'exit_reason': exit_signal.reason,
                         'symbol': position.symbol
                     }
@@ -2226,11 +2274,13 @@ class TradingLoop:
                 # Record position closed for metrics
                 try:
                     self.ctx.metrics.record_position_closed(position.symbol)
+                    # Also record the trade result with PnL
+                    self.ctx.metrics.record_trade(pnl, position.symbol)
                 except Exception:
                     self.ctx.logger.debug('Failed to record position closed in metrics', exc_info=True)
                 
                 # Update risk manager
-                self.ctx.risk_manager.record_trade_result(position.unrealized_pnl)
+                self.ctx.risk_manager.record_trade_result(pnl)
             else:
                 self.ctx.logger.error(
                     f"Failed to close position {position.ticket}: "

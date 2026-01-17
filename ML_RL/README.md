@@ -184,8 +184,8 @@ from training.mlops import get_model_registry, get_drift_detector
 # Model registry
 registry = get_model_registry()
 model_id = registry.register(
-    model_type="price_predictor",
-    version="1.0.0",
+    model_type="cthulu-predictor",  # Format: cthulu-[component]-v[version]
+    version="v5.3.0",
     metrics={"accuracy": 0.65},
     ...
 )

@@ -297,8 +297,8 @@ class ModelTrainer:
         
         # Register model
         model_id = self.model_registry.register(
-            model_type="price_predictor",
-            version="5.2.34",
+            model_type="cthulu-predictor",
+            version="v5.3.0",
             metrics={
                 "accuracy": result.accuracy,
                 "final_loss": result.final_loss,

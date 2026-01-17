@@ -169,11 +169,12 @@ class ModelRegistry:
         Returns:
             model_id: Unique identifier for the model
         """
-        # Generate model ID
+        # Generate model ID - format: cthulu-[codename]-v[version]
         timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
         hash_input = f"{model_type}_{version}_{timestamp}".encode()
         model_hash = hashlib.md5(hash_input).hexdigest()[:8]
-        model_id = f"{model_type}_{version}_{model_hash}"
+        # Clean model_id: cthulu-type-vX.Y.Z_hash
+        model_id = f"{model_type}-{version}_{model_hash}"
         
         # Create metadata
         now = datetime.now(timezone.utc).isoformat()

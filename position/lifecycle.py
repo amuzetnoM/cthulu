@@ -161,16 +161,38 @@ class PositionLifecycle:
                 self._inflight_closes.add(ticket)
 
             try:
+                # Store position data before close for PnL calculation
+                pre_close_position = {
+                    'ticket': ticket,
+                    'symbol': getattr(position, 'symbol', 'UNKNOWN'),
+                    'type': getattr(position, 'type', getattr(position, 'side', 'UNKNOWN')),
+                    'volume': getattr(position, 'volume', 0),
+                    'open_price': getattr(position, 'open_price', 0),
+                    'current_price': getattr(position, 'current_price', 0),
+                    'profit': getattr(position, 'profit', 0),
+                    'sl': getattr(position, 'sl', None),
+                    'tp': getattr(position, 'tp', None),
+                    'open_time': getattr(position, 'open_time', None),
+                    'magic_number': getattr(position, 'magic_number', 0),
+                    'strategy_name': getattr(position, 'strategy_name', 'unknown'),
+                }
+                
                 # Close via execution engine
                 result = self.execution_engine.close_position(ticket)
 
                 # Support both legacy boolean return values and ExecutionResult objects
                 success = False
+                exit_price = None
+                profit = None
                 try:
                     # If engine returned an ExecutionResult-like object, inspect status
                     if hasattr(result, 'status'):
                         from cthulu.execution.engine import OrderStatus
                         success = (getattr(result, 'status', None) == OrderStatus.FILLED)
+                        exit_price = getattr(result, 'executed_price', None) or getattr(result, 'price', None)
+                        # Try to get profit from result metadata
+                        if hasattr(result, 'metadata') and result.metadata:
+                            profit = result.metadata.get('profit')
                     else:
                         # Fallback: truthiness for legacy boolean API
                         success = bool(result)
@@ -179,13 +201,33 @@ class PositionLifecycle:
                     success = bool(result) if result else False
 
                 if success:
+                    # Calculate PnL if not provided
+                    if profit is None:
+                        profit = pre_close_position.get('profit', 0)
+                    if exit_price is None:
+                        exit_price = pre_close_position.get('current_price', pre_close_position.get('open_price', 0))
+                    
+                    # Calculate duration
+                    duration_seconds = 0
+                    try:
+                        open_time = pre_close_position.get('open_time')
+                        if open_time:
+                            from datetime import datetime, timezone
+                            now = datetime.now(timezone.utc) if hasattr(open_time, 'tzinfo') and open_time.tzinfo else datetime.now()
+                            duration_seconds = (now - open_time).total_seconds()
+                    except Exception:
+                        pass
+                    
+                    # Emit TRADE_CLOSED event for ML collection
+                    self._emit_trade_closed_event_from_dict(pre_close_position, exit_price, profit, reason or "manual_close", duration_seconds)
+                    
                     # Remove from tracker
                     self.tracker.remove_position(ticket)
 
                     # Remove from database (closed positions don't need to persist)
                     self.db.remove_position(ticket)
 
-                    logger.info(f"Closed position {ticket}: {reason}")
+                    logger.info(f"Closed position {ticket}: {reason} | PnL: {profit:.2f}")
                     return True
                 else:
                     logger.error(f"Failed to close position {ticket}")
@@ -206,6 +248,48 @@ class PositionLifecycle:
         except Exception as e:
             logger.error(f"Error closing position {ticket}: {e}", exc_info=True)
             return False
+
+    def _emit_trade_closed_event_from_dict(self, position_dict: dict, exit_price: float, 
+                                            profit: float, exit_reason: str, 
+                                            duration_seconds: float) -> None:
+        """
+        Emit TRADE_CLOSED event from position dict data.
+        Helper for close_position which stores position data before close.
+        """
+        try:
+            ml_collector = getattr(self.execution_engine, 'ml_collector', None)
+            
+            if ml_collector:
+                outcome = 'WIN' if profit > 0 else ('LOSS' if profit < 0 else 'BREAKEVEN')
+                
+                trade_closed_payload = {
+                    'event_type': 'TRADE_CLOSED',
+                    'ticket': position_dict.get('ticket'),
+                    'symbol': position_dict.get('symbol', 'UNKNOWN'),
+                    'side': position_dict.get('type', 'UNKNOWN'),
+                    'volume': position_dict.get('volume', 0),
+                    'entry_price': position_dict.get('open_price', 0),
+                    'exit_price': exit_price,
+                    'stop_loss': position_dict.get('sl'),
+                    'take_profit': position_dict.get('tp'),
+                    'pnl': profit,
+                    'outcome': outcome,
+                    'exit_reason': exit_reason,
+                    'duration_seconds': duration_seconds,
+                    'magic_number': position_dict.get('magic_number', 0),
+                    'strategy_name': position_dict.get('strategy_name', 'unknown'),
+                    'timestamp': datetime.now().isoformat()
+                }
+                
+                if hasattr(ml_collector, 'record_event'):
+                    ml_collector.record_event('trade_closed', trade_closed_payload)
+                elif hasattr(ml_collector, 'record_execution'):
+                    ml_collector.record_execution(trade_closed_payload)
+                    
+                logger.debug(f"Emitted TRADE_CLOSED event for #{position_dict.get('ticket')}: {outcome}, PnL={profit:.2f}")
+                
+        except Exception as e:
+            logger.debug(f"Failed to emit TRADE_CLOSED event: {e}")
     
     def close_all_positions(self, symbol: Optional[str] = None) -> int:
         """
@@ -470,6 +554,9 @@ class PositionLifecycle:
     def refresh_positions(self) -> None:
         """
         Refresh all tracked positions with latest data from MT5.
+        
+        CRITICAL: This method detects positions closed at broker level (SL/TP hit)
+        and records the trade completion for ML training data.
         """
         try:
             for position in self.tracker.get_all_positions():
@@ -482,12 +569,151 @@ class PositionLifecycle:
                         mt5_position.get('profit', position.profit)
                     )
                 else:
-                    # Position no longer exists in MT5 - remove from tracker
-                    logger.warning(f"Position {position.ticket} not found in MT5, removing from tracker")
+                    # Position no longer exists in MT5 - it was closed (SL/TP hit or manual close)
+                    # CRITICAL: Record trade closure with PnL for ML training
+                    self._record_broker_closed_trade(position)
                     self.tracker.remove_position(position.ticket)
                     
         except Exception as e:
             logger.error(f"Error refreshing positions: {e}", exc_info=True)
+
+    def _record_broker_closed_trade(self, position) -> None:
+        """
+        Record a trade that was closed at the broker level (SL/TP hit).
+        
+        This ensures trades closed by broker-side stop/target orders are properly
+        recorded for ML training data collection.
+        
+        Args:
+            position: The tracked position that is no longer open in MT5
+        """
+        try:
+            from cthulu.connector.mt5_connector import mt5
+            
+            # Query deal history to get actual exit details
+            exit_price = None
+            exit_time = None
+            profit = None
+            exit_reason = "broker_close"
+            
+            # Try to get deal history for this position
+            try:
+                # Query recent deals for this ticket
+                from datetime import datetime, timedelta, timezone
+                end_time = datetime.now(timezone.utc)
+                start_time = end_time - timedelta(days=1)  # Look back 1 day
+                
+                deals = mt5.history_deals_get(
+                    position=position.ticket,
+                    from_date=start_time,
+                    to_date=end_time
+                )
+                
+                if deals:
+                    # Find the closing deal (type 1 = close)
+                    for deal in deals:
+                        if hasattr(deal, 'entry') and deal.entry == 1:  # DEAL_ENTRY_OUT
+                            exit_price = getattr(deal, 'price', None)
+                            exit_time = datetime.fromtimestamp(deal.time, tz=timezone.utc) if hasattr(deal, 'time') else datetime.now(timezone.utc)
+                            profit = getattr(deal, 'profit', None)
+                            
+                            # Determine exit reason from deal comment or type
+                            comment = getattr(deal, 'comment', '') or ''
+                            if 'sl' in comment.lower() or 'stop' in comment.lower():
+                                exit_reason = "stop_loss"
+                            elif 'tp' in comment.lower() or 'profit' in comment.lower():
+                                exit_reason = "take_profit"
+                            break
+            except Exception as e:
+                logger.debug(f"Could not query deal history for {position.ticket}: {e}")
+            
+            # Fallback: estimate PnL from last known position data
+            if profit is None:
+                profit = getattr(position, 'profit', 0) or getattr(position, 'unrealized_pnl', 0) or 0
+            if exit_price is None:
+                exit_price = getattr(position, 'current_price', position.open_price)
+            if exit_time is None:
+                from datetime import datetime, timezone
+                exit_time = datetime.now(timezone.utc)
+            
+            # Log the closure
+            logger.info(f"Broker-closed trade detected: #{position.ticket} | "
+                       f"Exit: {exit_price} | PnL: {profit:.2f} | Reason: {exit_reason}")
+            
+            # Update database with trade exit
+            try:
+                self.db.update_trade_exit(
+                    order_id=position.ticket,
+                    exit_price=exit_price,
+                    exit_time=exit_time,
+                    profit=profit,
+                    exit_reason=exit_reason
+                )
+            except Exception as e:
+                logger.warning(f"Failed to update trade exit in database: {e}")
+            
+            # Calculate trade duration
+            duration_seconds = 0
+            try:
+                open_time = getattr(position, 'open_time', None)
+                if open_time:
+                    if hasattr(open_time, 'timestamp'):
+                        duration_seconds = (exit_time - open_time).total_seconds()
+                    else:
+                        duration_seconds = 0
+            except Exception:
+                pass
+            
+            # Emit TRADE_CLOSED event for ML collection
+            self._emit_trade_closed_event(position, exit_price, profit, exit_reason, duration_seconds)
+            
+        except Exception as e:
+            logger.error(f"Error recording broker-closed trade {position.ticket}: {e}", exc_info=True)
+
+    def _emit_trade_closed_event(self, position, exit_price: float, profit: float, 
+                                  exit_reason: str, duration_seconds: float) -> None:
+        """
+        Emit TRADE_CLOSED event for ML data collection.
+        
+        This event is consumed by the ML collector to build training datasets
+        with actual trade outcomes.
+        """
+        try:
+            # Get ML collector if available via execution engine
+            ml_collector = getattr(self.execution_engine, 'ml_collector', None)
+            
+            if ml_collector:
+                outcome = 'WIN' if profit > 0 else ('LOSS' if profit < 0 else 'BREAKEVEN')
+                
+                trade_closed_payload = {
+                    'event_type': 'TRADE_CLOSED',
+                    'ticket': position.ticket,
+                    'symbol': getattr(position, 'symbol', 'UNKNOWN'),
+                    'side': getattr(position, 'type', getattr(position, 'side', 'UNKNOWN')),
+                    'volume': getattr(position, 'volume', 0),
+                    'entry_price': getattr(position, 'open_price', 0),
+                    'exit_price': exit_price,
+                    'stop_loss': getattr(position, 'sl', None),
+                    'take_profit': getattr(position, 'tp', None),
+                    'pnl': profit,
+                    'outcome': outcome,
+                    'exit_reason': exit_reason,
+                    'duration_seconds': duration_seconds,
+                    'magic_number': getattr(position, 'magic_number', 0),
+                    'strategy_name': getattr(position, 'strategy_name', 'unknown'),
+                    'timestamp': datetime.now().isoformat()
+                }
+                
+                # Record via ML collector
+                if hasattr(ml_collector, 'record_event'):
+                    ml_collector.record_event('trade_closed', trade_closed_payload)
+                elif hasattr(ml_collector, 'record_execution'):
+                    ml_collector.record_execution(trade_closed_payload)
+                    
+                logger.debug(f"Emitted TRADE_CLOSED event for #{position.ticket}: {outcome}, PnL={profit:.2f}")
+                
+        except Exception as e:
+            logger.debug(f"Failed to emit TRADE_CLOSED event: {e}")
     
     def persist_position(self, position) -> None:
         """

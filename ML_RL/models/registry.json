@@ -169,5 +169,49 @@
     "tags": [],
     "description": "Price predictor trained on 2845 bars",
     "path": "C:\\workspace\\cthulu\\ML_RL\\models\\price_predictor_5.2.34_4a2519e9.json"
+  },
+  "comprehensive_v5.3_5.3.0-EVOQUE_d6d17574": {
+    "model_id": "comprehensive_v5.3_5.3.0-EVOQUE_d6d17574",
+    "model_type": "comprehensive_v5.3",
+    "version": "5.3.0-EVOQUE",
+    "status": "training",
+    "created_at": "2026-01-17T16:34:24.530245+00:00",
+    "updated_at": "2026-01-17T16:34:24.530245+00:00",
+    "metrics": {
+      "trades_trained": 0,
+      "signals_processed": 879,
+      "total_reward": 633.4927439717499
+    },
+    "hyperparameters": {
+      "training_date": "2026-01-17T16:34:24.530245+00:00"
+    },
+    "feature_names": [],
+    "training_samples": 0,
+    "validation_accuracy": 0,
+    "tags": [],
+    "description": "Comprehensive training on all available data",
+    "path": "C:\\workspace\\cthulu\\ML_RL\\models\\comprehensive_v5.3_5.3.0-EVOQUE_d6d17574.json"
+  },
+  "comprehensive_v5.3_5.3.0-EVOQUE_1220af78": {
+    "model_id": "comprehensive_v5.3_5.3.0-EVOQUE_1220af78",
+    "model_type": "comprehensive_v5.3",
+    "version": "5.3.0-EVOQUE",
+    "status": "training",
+    "created_at": "2026-01-17T16:36:53.968510+00:00",
+    "updated_at": "2026-01-17T16:36:53.968510+00:00",
+    "metrics": {
+      "trades_trained": 929,
+      "signals_processed": 879,
+      "total_reward": 595.8366560103143
+    },
+    "hyperparameters": {
+      "training_date": "2026-01-17T16:36:53.968510+00:00"
+    },
+    "feature_names": [],
+    "training_samples": 929,
+    "validation_accuracy": 0,
+    "tags": [],
+    "description": "Comprehensive training on all available data",
+    "path": "C:\\workspace\\cthulu\\ML_RL\\models\\comprehensive_v5.3_5.3.0-EVOQUE_1220af78.json"
   }
 }
