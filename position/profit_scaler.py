@@ -171,7 +171,72 @@ class ProfitScaler:
             return self.config.micro_tiers
         return self.config.tiers
     
-    def register_position(self, ticket: int, symbol: str, volume: float, 
+    def _has_strong_momentum(self, state: PositionScalingState, side: str) -> Tuple[bool, str]:
+        """
+        Check if price has strong momentum in our favor.
+        
+        Don't interrupt winning trades when momentum is strong - let them run!
+        
+        Args:
+            state: Position scaling state
+            side: 'BUY' or 'SELL'
+            
+        Returns:
+            Tuple of (has_strong_momentum, reason)
+        """
+        try:
+            # Get recent price action from connector
+            rates = self.connector.get_rates(
+                symbol=state.symbol,
+                timeframe=1,  # M1 for micro-momentum, fallback handled by connector
+                count=10
+            )
+            
+            if rates is None or len(rates) < 5:
+                return False, "insufficient_data"
+            
+            # Get recent closes
+            recent_closes = [r['close'] for r in rates[-5:]]
+            
+            # Determine if we're long or short
+            is_long = side.upper() == 'BUY'
+            
+            # Count consecutive moves in our favor
+            momentum_score = 0
+            for i in range(1, len(recent_closes)):
+                if is_long:
+                    # For long: higher closes = momentum in our favor
+                    if recent_closes[i] > recent_closes[i-1]:
+                        momentum_score += 1
+                    elif recent_closes[i] < recent_closes[i-1]:
+                        momentum_score -= 1
+                else:
+                    # For short: lower closes = momentum in our favor
+                    if recent_closes[i] < recent_closes[i-1]:
+                        momentum_score += 1
+                    elif recent_closes[i] > recent_closes[i-1]:
+                        momentum_score -= 1
+            
+            # Strong momentum = 3+ consecutive moves in our direction (out of 4 possible)
+            if momentum_score >= 3:
+                return True, f"strong_momentum_score_{momentum_score}"
+            
+            # Also check for acceleration (bars getting bigger)
+            price_changes = [abs(recent_closes[i] - recent_closes[i-1]) for i in range(1, len(recent_closes))]
+            if len(price_changes) >= 3:
+                # If last 2 bars are bigger than first 2 bars = acceleration
+                recent_avg = sum(price_changes[-2:]) / 2
+                older_avg = sum(price_changes[:2]) / 2
+                if recent_avg > older_avg * 1.5:  # 50% larger bars = acceleration
+                    return True, "price_accelerating"
+            
+            return False, f"momentum_score_{momentum_score}"
+            
+        except Exception as e:
+            logger.debug(f"Momentum check failed for #{state.ticket}: {e}")
+            return False, f"error_{str(e)[:20]}"
+    
+    def register_position(self, ticket: int, symbol: str, volume: float,
                          entry_price: float, sl: Optional[float] = None, 
                          tp: Optional[float] = None) -> PositionScalingState:
         """Register a new position for profit scaling"""
@@ -254,6 +319,39 @@ class ProfitScaler:
                 f"Skipping scaling for #{ticket}: profit_amount=${profit_amount:.2f} < min_required=${min_meaningful_profit:.2f}"
             )
             return []  # Don't scale tiny profits
+        
+        # ==========================================================
+        # MOMENTUM CHECK - Don't interrupt winning trades!
+        # If price has strong momentum in our favor, let it run
+        # ==========================================================
+        has_momentum, momentum_reason = self._has_strong_momentum(state, side)
+        if has_momentum:
+            logger.info(
+                f"🚀 Deferring scaling for #{ticket}: Strong momentum detected ({momentum_reason}) - let it run!"
+            )
+            # Still allow trailing stop updates, but skip partial closes
+            # We'll only add trailing stop actions, not close_partial
+            trail_only_actions = []
+            for i, tier in enumerate(tiers):
+                if i in state.tiers_executed:
+                    continue
+                if profit_pct >= tier.profit_threshold_pct and tier.trail_pct > 0:
+                    if side.upper() == 'BUY':
+                        trail_sl = state.entry_price + (profit_pips * tier.trail_pct)
+                    else:
+                        trail_sl = state.entry_price - (profit_pips * tier.trail_pct)
+                    
+                    if state.current_sl is None or \
+                       (side.upper() == 'BUY' and trail_sl > state.current_sl) or \
+                       (side.upper() == 'SELL' and trail_sl < state.current_sl):
+                        trail_only_actions.append({
+                            'type': 'trail_sl',
+                            'ticket': ticket,
+                            'new_sl': trail_sl,
+                            'reason': f'Momentum trailing: {tier.trail_pct*100:.0f}% of profit ({momentum_reason})'
+                        })
+                        break  # Only one trailing update per evaluation
+            return trail_only_actions
         
         for i, tier in enumerate(tiers):
             if i in state.tiers_executed:

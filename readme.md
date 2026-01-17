@@ -1,12 +1,12 @@
 # INDEX
 
-![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
-![](https://img.shields.io/badge/Tests-185%2B%20Passing-4B0082?style=for-the-badge&labelColor=0D1117&logo=pytest&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.34-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![](https://img.shields.io/badge/Tests-243%20Passing-4B0082?style=for-the-badge&labelColor=0D1117&logo=pytest&logoColor=white)
 ![](https://img.shields.io/badge/Coverage-95%25-4B0082?style=for-the-badge&labelColor=0D1117&logo=codecov&logoColor=white)
 ![](https://img.shields.io/badge/Uptime-98.5%25-4B0082?style=for-the-badge&labelColor=0D1117&logo=uptimerobot&logoColor=white)
 <br>
 
-![](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
+![](https://img.shields.io/badge/Last_Update-2026--01--17-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 > STABLE <br>
@@ -20,7 +20,7 @@
 
 Cthulu is an autonomous multi-strategy trading system for MetaTrader 5 featuring 7 active trading strategies, 12 technical indicators, and the revolutionary SAFE™️ (Set And Forget Engine) paradigm for fully autonomous operation.
 
-**Current Version:** v5.2.33
+**Current Version:** v5.2.34 "PRECISION"
 
 ### ✪ AI-Native
 
@@ -36,6 +36,8 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 > **Session ORB**: London/NY session Opening Range Breakout detection <br> 
 > **Advanced UI Components**: Real-time Order Book, Stats Ticker, Terminal, and Trade Panel <br>
 > **WebSocket Integration**: Live price updates and trade notifications <br>
+> **Strict Quality Gate**: Only GOOD/PREMIUM entries execute (v5.2.34) <br>
+> **Momentum-Aware Scaling**: Profit scaler detects momentum to let winners run (v5.2.34) <br>
 
 ### BENCHMARKS
 
@@ -43,7 +45,7 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 
 | Metric | Result | Notes |
 |--------|--------|-------|
-| Test Coverage | 185+ passing tests / 95% coverage | Unit + integration suite (CI gated) |
+| Test Coverage | 243 passing tests / 95% coverage | Unit + integration suite (CI gated) |
 | Uptime (stress) | ~98.5% | Measured across 24–72h continuous stress sessions |
 | Trade Throughput | 690+ RPC trades / stress session | Sustained bursts with backpressure handling |
 | Signal-to-Fill Latency | ~30% reduction | End-to-end measured (signal → send order → fill ack) |

@@ -4,7 +4,7 @@ description: Comprehensive guide to Cthulu's advanced trading strategies, next-g
 tags: [features, strategies, indicators, dynamic-selection, SAFE]
 slug: /docs/features
 sidebar_position: 5
-version: 5.2.33
+version: 5.2.34
 ---
 ````
 _________   __  .__          .__         
@@ -15,8 +15,8 @@ _________   __  .__          .__
         \/           \/                  
 ````    
 
- ![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
- ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
+ ![](https://img.shields.io/badge/Version-5.2.34-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+ ![Last Update](https://img.shields.io/badge/Last_Update-2026--01--17-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
 
@@ -26,11 +26,13 @@ _________   __  .__          .__
 
 ### SAFE: Set And Forget Engine
 
-👾 Cthulu v5.2.33 continues the SAFE paradigm:
+👾 Cthulu v5.2.34 "PRECISION" continues the SAFE paradigm with enhanced quality controls:
 - **S**mart strategy selection with intelligent fallback
 - **A**daptive to all market conditions (ranging, trending, volatile)
 - **F**ully autonomous signal generation without manual intervention
 - **E**xpert-level risk management with survival mode protection
+- **NEW:** Strict quality gate - only GOOD/PREMIUM entries execute
+- **NEW:** Momentum-aware profit scaling - let winners run
 
 ## Table of Contents
 
@@ -38,16 +40,17 @@ _________   __  .__          .__
 2. [Next-Generation Indicators](#next-generation-indicators)
 3. [Dynamic Strategy Selection](#dynamic-strategy-selection)
 4. [Multi-Strategy Fallback](#multi-strategy-fallback)
-5. [Ultra-Aggressive Mode](#ultra-aggressive-mode)
-6. [Equity Curve Management](#equity-curve-management)
-7. [Exit Management System](#exit-management-system)
-8. [Adaptive Loss Curve](#adaptive-loss-curve)
-9. [Confluence Exit Manager](#confluence-exit-manager)
-10. [Micro Account Protection](#micro-account-protection)
-11. [Profit Scaling System](#profit-scaling-system)
-12. [Adaptive Account Manager](#adaptive-account-manager)
-13. [Liquidity Trap Detection](#liquidity-trap-detection)
-14. [SPARTA Mode](#sparta-mode-battle-testing)
+5. [Entry Quality Gate (v5.2.34)](#entry-quality-gate)
+6. [Ultra-Aggressive Mode](#ultra-aggressive-mode)
+7. [Equity Curve Management](#equity-curve-management)
+8. [Exit Management System](#exit-management-system)
+9. [Adaptive Loss Curve](#adaptive-loss-curve)
+10. [Confluence Exit Manager](#confluence-exit-manager)
+11. [Micro Account Protection](#micro-account-protection)
+12. [Profit Scaling System](#profit-scaling-system)
+13. [Adaptive Account Manager](#adaptive-account-manager)
+14. [Liquidity Trap Detection](#liquidity-trap-detection)
+15. [SPARTA Mode](#sparta-mode-battle-testing)
 15. [Create Your Own Mode](#create-your-own-mode)
 16. [Real-Time Observability](#real-time-observability)
 17. [Configuration Guide](#configuration-guide)

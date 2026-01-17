@@ -3,17 +3,77 @@ title: RISK MANAGEMENT
 description: Risk management configuration and stop-loss strategies for Cthulu trading system
 tags: [risk-management, stop-loss, position-sizing]
 sidebar_position: 7
-version: 5.2.33
+version: 5.2.34
 ---
 
-![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
-![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.34-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--17-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white) 
 
 
 ## Overview
 
-> This document describes the lightweight risk-management knobs added to Cthulu and how the system adapts stop-loss placement to account size.
+> This document describes the risk-management features in Cthulu and how the system adapts position sizing and stop-loss placement to account conditions.
+
+### Key Features (v5.2.34)
+
+- **Performance-Based Sizing**: Adjusts position size based on recent win rate
+- **Centralized Position Sizing**: Full audit trail with `PositionSizeDecision` dataclass
+- **Strict Quality Gate**: Only GOOD/PREMIUM entries execute
+- **Momentum-Aware Scaling**: Profit scaler detects momentum to let winners run
+- **Drawdown Halt**: Automatic trading halt at configurable drawdown threshold
+
+### Configuration
+
+Key configuration entries (in `config.json` under `risk`):
+
+```json
+{
+  "risk": {
+    "max_position_size": 2.0,
+    "default_position_size": 0.01,
+    "max_daily_loss": 5.0,
+    "max_positions_per_symbol": 3,
+    "max_total_positions": 4,
+    "position_size_pct": 10.0,
+    "use_kelly_sizing": true,
+    "emergency_stop_loss_pct": 12.0,
+    "circuit_breaker_enabled": true,
+    "circuit_breaker_threshold_pct": 7.0,
+    "performance_based_sizing": true,
+    "min_risk_reward_ratio": 1.5,
+    "drawdown_halt_percent": 40.0
+  }
+}
+```
+
+### Position Sizing Pipeline (v5.2.34)
+
+All position size adjustments are now centralized with full audit trail:
+
+```python
+@dataclass
+class PositionSizeDecision:
+    base_size: float                      # From RiskEvaluator
+    adjustments: List[Tuple[str, float]]  # (reason, multiplier)
+    final_size: float
+    reasoning: str                        # Full audit string
+```
+
+**Adjustment Sources:**
+1. **Entry Quality** - GOOD/PREMIUM multiplier (0.85-1.0)
+2. **Loss Curve** - Adaptive loss curve adjustment
+3. **Cognition** - AI/ML signal enhancement multiplier
+4. **Performance** - Win-rate based adjustment (if enabled)
+
+**Example Log Output:**
+```
+💰 Position sizing: 0.10 × (entry_quality(good)=0.85 × cognition=1.10) → 0.09
+```
+
+---
+
+## Stop-Loss Management
 
 Key configuration entries (in `config_schema.py` under `risk`):
 

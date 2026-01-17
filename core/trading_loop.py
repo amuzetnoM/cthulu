@@ -22,8 +22,8 @@ import logging
 import os
 import tempfile
 from datetime import datetime
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass
+from typing import Dict, Any, List, Optional, Tuple
+from dataclasses import dataclass, field
 import pandas as pd
 
 from cthulu.strategy.base import Strategy, SignalType
@@ -36,6 +36,45 @@ from cthulu.persistence.database import Database, TradeRecord, SignalRecord
 from cthulu.observability.metrics import MetricsCollector
 from cthulu.connector.mt5_connector import MT5Connector
 from cthulu.data.layer import DataLayer
+
+
+@dataclass
+class PositionSizeDecision:
+    """
+    Complete position sizing decision with full audit trail.
+    
+    Centralizes all position size adjustments into a single, traceable decision.
+    """
+    base_size: float
+    adjustments: List[Tuple[str, float]] = field(default_factory=list)  # (reason, multiplier)
+    final_size: float = 0.0
+    reasoning: str = ""
+    
+    def apply_adjustment(self, reason: str, multiplier: float) -> None:
+        """Apply an adjustment to the position size."""
+        self.adjustments.append((reason, multiplier))
+        
+    def compute_final(self, min_lot: float = 0.01, volume_step: float = 0.01) -> float:
+        """Compute final size after all adjustments."""
+        current = self.base_size
+        for reason, mult in self.adjustments:
+            current *= mult
+        
+        # Round to volume step
+        if volume_step > 0:
+            current = round(round(current / volume_step) * volume_step, 2)
+        
+        # Ensure minimum lot
+        self.final_size = max(min_lot, current)
+        
+        # Build reasoning string
+        if self.adjustments:
+            parts = [f"{reason}={mult:.2f}" for reason, mult in self.adjustments]
+            self.reasoning = f"{self.base_size:.2f} × ({' × '.join(parts)}) → {self.final_size:.2f}"
+        else:
+            self.reasoning = f"{self.base_size:.2f} → {self.final_size:.2f} (no adjustments)"
+        
+        return self.final_size
 
 
 @dataclass
@@ -435,6 +474,103 @@ class TradingLoop:
             self._consecutive_same_direction = 1
         self._last_signal_direction = direction
     
+    def _calculate_final_position_size(
+        self, 
+        signal,
+        base_size: float,
+        entry_confluence_result=None,
+        balance: float = 0.0
+    ) -> PositionSizeDecision:
+        """
+        Centralized position sizing with full audit trail.
+        
+        All position size adjustments happen here for transparency and debugging.
+        
+        Args:
+            signal: Trading signal
+            base_size: Base position size from risk manager
+            entry_confluence_result: Optional entry confluence analysis result
+            balance: Current account balance
+            
+        Returns:
+            PositionSizeDecision with full reasoning trail
+        """
+        decision = PositionSizeDecision(base_size=base_size)
+        
+        # 1. Entry Quality Adjustment (from confluence filter)
+        if entry_confluence_result and hasattr(entry_confluence_result, 'position_mult'):
+            mult = entry_confluence_result.position_mult
+            if mult != 1.0:
+                decision.apply_adjustment(
+                    f"entry_quality({entry_confluence_result.quality.value})", 
+                    mult
+                )
+        
+        # 2. Adaptive Loss Curve Adjustment
+        if self.ctx.adaptive_loss_curve and balance > 0:
+            try:
+                max_loss = self.ctx.adaptive_loss_curve.get_max_loss(balance, per_trade=True)
+                entry_price = getattr(signal, 'price', 0) or getattr(signal, 'entry_price', 0)
+                stop_loss = getattr(signal, 'stop_loss', 0)
+                
+                if entry_price > 0 and stop_loss > 0:
+                    pip_distance = abs(entry_price - stop_loss)
+                    if pip_distance > 0:
+                        # Calculate what size respects max loss
+                        loss_adjusted_size = max_loss / (pip_distance * 10)  # Rough pip value
+                        current_projected = base_size
+                        for _, m in decision.adjustments:
+                            current_projected *= m
+                        
+                        if loss_adjusted_size < current_projected:
+                            # Need to reduce - calculate multiplier
+                            loss_mult = loss_adjusted_size / current_projected if current_projected > 0 else 1.0
+                            if loss_mult < 1.0:
+                                decision.apply_adjustment("loss_curve", loss_mult)
+            except Exception as e:
+                self.ctx.logger.debug(f"Loss curve adjustment failed: {e}")
+        
+        # 3. Cognition Size Multiplier (from AI/ML signal enhancement)
+        try:
+            cognition_mult = getattr(signal, '_cognition_size_mult', 1.0)
+            if cognition_mult != 1.0:
+                decision.apply_adjustment("cognition", cognition_mult)
+        except Exception:
+            pass
+        
+        # 4. Performance-based adjustment (optional - based on recent win rate)
+        # Disabled by default - enable via config: risk.performance_based_sizing: true
+        performance_sizing_enabled = self.ctx.config.get('risk', {}).get('performance_based_sizing', False)
+        if performance_sizing_enabled:
+            try:
+                if self.ctx.metrics:
+                    stats = self.ctx.metrics.get_statistics()
+                    win_rate = stats.get('win_rate', 0.5)
+                    if win_rate < 0.35:
+                        # Struggling - reduce size
+                        decision.apply_adjustment("low_win_rate", 0.75)
+                    elif win_rate > 0.65:
+                        # Performing well - can increase slightly
+                        decision.apply_adjustment("high_win_rate", 1.10)
+            except Exception:
+                pass
+        
+        # Get volume constraints from broker
+        min_lot = 0.01
+        volume_step = 0.01
+        try:
+            symbol_info = self.ctx.connector.get_symbol_info(self.ctx.symbol)
+            if symbol_info:
+                min_lot = symbol_info.get('volume_min', 0.01)
+                volume_step = symbol_info.get('volume_step', 0.01)
+        except Exception:
+            pass
+        
+        # Compute final size
+        decision.compute_final(min_lot=min_lot, volume_step=volume_step)
+        
+        return decision
+
     def run(self) -> int:
         """
         Execute the main trading loop.
@@ -1332,7 +1468,40 @@ class TradingLoop:
                         if entry_confluence_result.warnings:
                             self.ctx.logger.warning(f"  Entry warnings: {entry_confluence_result.warnings}")
                         
-                        # GATE: Check if entry quality is acceptable
+                        # ==========================================================
+                        # STRICT QUALITY GATE - Only GOOD/PREMIUM entries proceed
+                        # MARGINAL entries get queued, POOR/REJECT are blocked
+                        # ==========================================================
+                        from cthulu.cognition.entry_confluence import EntryQuality
+                        
+                        # REJECT: Signal invalidated - block entirely
+                        if entry_confluence_result.quality == EntryQuality.REJECT:
+                            self.ctx.logger.info(f"❌ Entry REJECTED: {entry_confluence_result.quality.value} "
+                                                f"(score={entry_confluence_result.score:.0f}) - Signal invalidated")
+                            return
+                        
+                        # POOR: Bad entry conditions - block entirely (don't even queue)
+                        if entry_confluence_result.quality == EntryQuality.POOR:
+                            self.ctx.logger.info(f"⏸️ Entry POOR quality: score={entry_confluence_result.score:.0f} - "
+                                                f"Waiting for better market conditions")
+                            return
+                        
+                        # MARGINAL: Suboptimal entry - queue for better price, don't execute now
+                        if entry_confluence_result.quality == EntryQuality.MARGINAL:
+                            if entry_confluence_result.optimal_entry:
+                                confluence_filter.register_pending_entry(
+                                    signal_id=signal.id,
+                                    signal_direction=signal_direction,
+                                    optimal_entry=entry_confluence_result.optimal_entry,
+                                    symbol=self.ctx.symbol
+                                )
+                                self.ctx.logger.info(f"⏳ Entry QUEUED (MARGINAL): Waiting for better price @ "
+                                                    f"{entry_confluence_result.optimal_entry:.5f}")
+                            else:
+                                self.ctx.logger.info(f"⏸️ Entry MARGINAL with no better level identified - SKIP")
+                            return
+                        
+                        # Legacy gate check (for should_enter=False that isn't covered above)
                         if not entry_confluence_result.should_enter:
                             self.ctx.logger.info(f"Entry rejected by confluence filter: "
                                                 f"{entry_confluence_result.quality.value} quality, "
@@ -1347,8 +1516,11 @@ class TradingLoop:
                                     symbol=self.ctx.symbol
                                 )
                                 self.ctx.logger.info(f"Signal queued: waiting for better entry at "
-                                                    f"{entry_confluence_result.optimal_entry:.2f}")
+                                                    f"{entry_confluence_result.optimal_entry:.5f}")
                             return
+                        
+                        # At this point, only GOOD or PREMIUM quality entries proceed
+                        self.ctx.logger.info(f"✅ Entry quality APPROVED: {entry_confluence_result.quality.value}")
                             
                 except ImportError:
                     self.ctx.logger.debug("Entry confluence filter not available, proceeding without")
@@ -1390,42 +1562,21 @@ class TradingLoop:
                 current_positions=current_positions
             )
             
-            # Apply entry confluence position multiplier
-            if approved and entry_confluence_result and position_size > 0:
-                if entry_confluence_result.position_mult < 1.0:
-                    original_size = position_size
-                    position_size = max(0.01, round(position_size * entry_confluence_result.position_mult, 2))
-                    self.ctx.logger.info(f"Entry quality adjustment: {original_size:.2f} → {position_size:.2f} lots "
-                                        f"({entry_confluence_result.quality.value})")
-            
-            # Apply adaptive loss curve adjustment (if available)
-            if approved and self.ctx.adaptive_loss_curve and position_size > 0:
-                try:
-                    max_loss = self.ctx.adaptive_loss_curve.get_max_loss(balance, per_trade=True)
-                    entry_price = getattr(signal, 'price', 0) or getattr(signal, 'entry_price', 0)
-                    stop_loss = getattr(signal, 'stop_loss', 0)
-                    
-                    if entry_price > 0 and stop_loss > 0:
-                        pip_distance = abs(entry_price - stop_loss)
-                        # Adjust position size to respect max loss
-                        if pip_distance > 0:
-                            adjusted_size = max_loss / (pip_distance * 10)  # Rough pip value
-                            if adjusted_size < position_size:
-                                self.ctx.logger.info(f"Loss curve adjustment: {position_size:.2f} → {adjusted_size:.2f}")
-                                position_size = max(0.01, round(adjusted_size, 2))
-                except Exception as e:
-                    self.ctx.logger.debug(f"Loss curve adjustment failed: {e}")
-            
-            # Apply cognition size multiplier (if available from signal enhancement)
+            # ==========================================================
+            # CENTRALIZED POSITION SIZING - Full audit trail
+            # All adjustments happen in one place for transparency
+            # ==========================================================
             if approved and position_size > 0:
-                try:
-                    cognition_mult = getattr(signal, '_cognition_size_mult', 1.0)
-                    if cognition_mult != 1.0:
-                        original_size = position_size
-                        position_size = max(0.01, round(position_size * cognition_mult, 2))
-                        self.ctx.logger.info(f"Cognition size adjustment: {original_size:.2f} → {position_size:.2f}")
-                except Exception:
-                    pass
+                size_decision = self._calculate_final_position_size(
+                    signal=signal,
+                    base_size=position_size,
+                    entry_confluence_result=entry_confluence_result,
+                    balance=balance
+                )
+                position_size = size_decision.final_size
+                
+                # Log the complete sizing decision
+                self.ctx.logger.info(f"💰 Position sizing: {size_decision.reasoning}")
             
             if approved:
                 self.ctx.logger.info(f"Risk approved: {position_size:.2f} lots - {reason}")

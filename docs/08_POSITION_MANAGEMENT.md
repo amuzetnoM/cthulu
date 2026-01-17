@@ -3,11 +3,11 @@ title: POSITION MANAGEMENT
 description: Comprehensive guide to Cthulu's position management system including profit scaling, lifecycle management, and external trade adoption
 tags: [position-management, profit-scaling, trade-adoption, lifecycle]
 sidebar_position: 8
-version: 5.2.33
+version: 5.2.34
 ---
 
-![](https://img.shields.io/badge/Version-5.2.33-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
-![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.34-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white)
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--17-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white)
 
 # Position Management System
@@ -141,45 +141,65 @@ The Profit Scaler implements a sophisticated tiered profit-taking system that:
 - Trails stop loss after each tier
 - Integrates with ML Tier Optimizer (optional)
 - Protects against profit giveback
+- **NEW in v5.2.34:** Momentum detection to let winners run
 
 ### How It Works
 
 ```mermaid
 flowchart TD
-    A[Position in Profit] --> B{Check Profit Level}
-    B -->|30% Profit| C[Close 25%]
-    C --> D[Move SL to Entry]
-    D --> E[Trail SL 50%]
-    E --> B
-    B -->|60% Profit| F[Close 35%]
-    F --> G[Trail SL 60%]
-    G --> B
-    B -->|100% Profit| H[Close 50%]
-    H --> I[Trail SL 70%]
-    I --> B
-    B -->|Below Threshold| J[Monitor]
-    J --> B
+    A[Position in Profit] --> B{Check Momentum}
+    B -->|Strong Momentum| M[Defer Scaling]
+    M --> N[Trail SL Only]
+    N --> B
+    B -->|Normal| C{Check Profit Level}
+    C -->|100% Profit 1R| D[Close 20%]
+    D --> E[Move SL to Entry]
+    E --> F[Trail SL 40%]
+    F --> C
+    C -->|150% Profit 1.5R| G[Close 30%]
+    G --> H[Trail SL 50%]
+    H --> C
+    C -->|200% Profit 2R| I[Close 40%]
+    I --> J[Trail SL 60%]
+    J --> C
+    C -->|Below Threshold| K[Monitor]
+    K --> B
 ```
 
-### Scaling Tiers
+### Scaling Tiers (Recalibrated v5.2.34)
 
 #### Standard Account (≥ $100)
 
 | Tier | Profit Threshold | Close % | Move SL to Entry | Trail % |
 |------|------------------|---------|------------------|---------|
-| 1    | 30%              | 25%     | ✅ Yes           | 50%     |
-| 2    | 60%              | 35%     | ✅ Yes           | 60%     |
-| 3    | 100%             | 50%     | ✅ Yes           | 70%     |
+| 1    | 100% (1R)        | 20%     | ✅ Yes           | 40%     |
+| 2    | 150% (1.5R)      | 30%     | ✅ Yes           | 50%     |
+| 3    | 200% (2R)        | 40%     | ✅ Yes           | 60%     |
 
 #### Micro Account (< $100)
 
-More aggressive profit-taking for capital preservation:
+More conservative to let trades develop:
 
 | Tier | Profit Threshold | Close % | Move SL to Entry | Trail % |
 |------|------------------|---------|------------------|---------|
-| 1    | 15%              | 30%     | ✅ Yes           | 40%     |
-| 2    | 30%              | 40%     | ✅ Yes           | 50%     |
-| 3    | 50%              | 50%     | ✅ Yes           | 60%     |
+| 1    | 80%              | 25%     | ✅ Yes           | 35%     |
+| 2    | 120%             | 30%     | ✅ Yes           | 45%     |
+| 3    | 180%             | 35%     | ✅ Yes           | 55%     |
+
+### Momentum Detection (NEW in v5.2.34)
+
+The profit scaler now checks for strong momentum before scaling:
+
+```python
+# When strong momentum detected:
+# - Defer partial closes (let winners run!)
+# - Allow trailing stop updates
+# - Log: "🚀 Deferring scaling: Strong momentum detected"
+
+# Momentum detection criteria:
+# - 3+ consecutive bars moving in trade direction
+# - OR price acceleration (recent bars 50%+ bigger than older bars)
+```
 
 ### Configuration
 
@@ -187,17 +207,19 @@ More aggressive profit-taking for capital preservation:
 {
   "profit_scaling": {
     "enabled": true,
-    "micro_account_threshold": 100.0,
-    "min_profit_amount": 0.10,
-    "max_position_age_hours": 4.0,
-    "emergency_lock_threshold_pct": 0.10,
+    "min_profit_amount": 5.0,
+    "min_time_in_trade_bars": 3,
+    "max_position_age_hours": 8.0,
+    "emergency_lock_threshold_pct": 0.15,
+    "allow_full_close_on_min_lot": true,
+    "momentum_check_enabled": true,
     "tiers": [
-      {
-        "profit_threshold_pct": 0.30,
-        "close_pct": 0.25,
-        "move_sl_to_entry": true,
-        "trail_pct": 0.50
-      },
+      {"profit_threshold_pct": 1.0, "close_pct": 0.20, "trail_pct": 0.40},
+      {"profit_threshold_pct": 1.5, "close_pct": 0.30, "trail_pct": 0.50},
+      {"profit_threshold_pct": 2.0, "close_pct": 0.40, "trail_pct": 0.60}
+    ]
+  }
+}
       {
         "profit_threshold_pct": 0.60,
         "close_pct": 0.35,

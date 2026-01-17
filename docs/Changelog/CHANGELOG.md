@@ -17,10 +17,109 @@ _________   __  .__          .__
 
 • [View releases on GitHub](https://github.com/amuzetnoM/Cthulu/releases)
 
- ![](https://img.shields.io/badge/Version-5.2.33_EVOLUTION-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+ ![](https://img.shields.io/badge/Version-5.2.34_PRECISION-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
  ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?branch=main&style=for-the-badge&logo=github&labelColor=0D1117&color=6A00FF)
 
  All notable changes are recorded here using Keep a Changelog conventions and Semantic Versioning (https://semver.org/).
+
+---
+
+## [5.2.34] "PRECISION" — 2026-01-17
+
+> Execution quality improvements based on comprehensive system audit
+
+**Status:** ✅ RELEASED — *Cthulu achieves precision trading with enhanced quality gates and momentum-aware scaling!*
+
+**Summary & Highlights:**
+- 🎯 **Strict Quality Gate (NEW):** Only GOOD/PREMIUM entries execute; MARGINAL queued, POOR/REJECT blocked
+- 🚀 **Momentum Detection (NEW):** Profit scaler now detects strong momentum and defers scaling to let winners run
+- 💰 **Centralized Position Sizing (NEW):** Full audit trail with `PositionSizeDecision` dataclass
+- 📊 **Recalibrated Profit Tiers:** Scale at 1R/1.5R/2R instead of 0.5R/0.8R/1.2R
+- ⚙️ **Optimized Configuration:** Performance-based sizing, stricter confluence, trend alignment required
+
+### Added
+- **Strict Entry Quality Gate (`core/trading_loop.py`):**
+  - Explicit `EntryQuality` enum checks (PREMIUM, GOOD, MARGINAL, POOR, REJECT)
+  - REJECT/POOR entries blocked entirely
+  - MARGINAL entries queued for better price, not executed with reduced size
+  - Only GOOD (score ≥70) and PREMIUM (score ≥85) proceed to execution
+  - Visual indicators in logs: ❌ ⏸️ ⏳ ✅
+
+- **Momentum Detection in Profit Scaler (`position/profit_scaler.py`):**
+  - New `_has_strong_momentum()` method checking recent price action
+  - Counts consecutive moves in trade direction
+  - Detects price acceleration (bars getting bigger)
+  - When momentum strong: defers partial closes, allows trailing stop updates
+  - Prevents cutting winning trades prematurely
+
+- **Centralized Position Sizing (`core/trading_loop.py`):**
+  - New `PositionSizeDecision` dataclass with full audit trail
+  - All adjustments in single `_calculate_final_position_size()` method
+  - Tracks: entry quality, loss curve, cognition, performance multipliers
+  - Complete reasoning string logged: `💰 Position sizing: 0.10 × (entry_quality(good)=0.85) → 0.09`
+
+- **Performance-Based Sizing (configurable):**
+  - Adjusts position size based on recent win rate
+  - Low win rate (<35%): reduce to 75%
+  - High win rate (>65%): increase to 110%
+  - Disabled by default, enable via `risk.performance_based_sizing: true`
+
+- **New Config Options:**
+  - `risk.performance_based_sizing`: Enable win-rate based sizing
+  - `risk.min_risk_reward_ratio`: Explicit R:R minimum (1.5)
+  - `risk.drawdown_halt_percent`: Stop trading threshold (40%)
+  - `entry_confluence.strict_quality_gate`: Enable strict quality filtering
+  - `entry_confluence.trend_weight`: Weight for trend alignment scoring
+  - `profit_scaling`: New section with explicit tier configuration
+
+### Changed
+- **Entry Confluence Configuration:**
+  - `min_score_to_enter`: 40 → 50 (higher quality threshold)
+  - `min_score_for_full_size`: 65 → 70 (stricter full-size gate)
+  - `require_trend_alignment`: false → true (trade with trend)
+  - `min_confirmation_strategies`: 1 → 2 (require 2 strategies)
+  - `max_wait_bars`: 6 → 8 (more patience for better entries)
+
+- **Profit Scaler Tiers (Recalibrated):**
+  - Tier 1: 50% → 100% profit threshold, 25% → 20% close
+  - Tier 2: 80% → 150% profit threshold, 35% → 30% close
+  - Tier 3: 120% → 200% profit threshold, 50% → 40% close
+  - `min_profit_amount`: $2 → $5 (meaningful profit only)
+  - `min_time_in_trade_bars`: 0 → 3 (prevent immediate scaling)
+
+- **Dynamic SL/TP:**
+  - `breakeven_activation_pct`: 0.15 → 0.20 (later breakeven)
+  - `trail_activation_pct`: 0.10 → 0.15 (later trailing)
+  - `partial_tp_enabled`: true → false (use profit_scaling instead)
+
+- **Adaptive Drawdown:**
+  - `survival_threshold_pct`: 50% → 40% (earlier survival mode)
+  - `critical_threshold_pct`: 35% → 30%
+  - `danger_threshold_pct`: 20% → 15%
+
+- **Trading Configuration:**
+  - `confidence_threshold`: 0.4 → 0.5 (higher confidence required)
+  - `min_time_in_trade_bars`: 0 → 3 (prevent immediate exits)
+  - `time_based` exit: disabled → enabled (24h max hold)
+  - Trailing stop activation: 5 → 10 pips
+
+- **Multi-RRR Exit:** Disabled to avoid conflict with profit_scaling
+
+### Fixed
+- **test_auto_tune_runner.py:** Fixed by properly mocking `HistoricalDataManager`
+- **test_symbol_matching.py:** Updated tests to reflect intentional refactoring (exact symbol match required per REFACTORING_SUMMARY.md)
+
+### Documentation
+- Updated config.json with audit notes and optimization comments
+- All changes documented with rationale from AUDIT_EXECUTION_LOOP.md and AUDIT_MAIN_LOOP.md
+
+### Philosophy
+This release embodies **quality over quantity**:
+1. Stricter entry gates — only best setups execute
+2. Let winners run — higher profit thresholds, momentum-aware scaling  
+3. Protect capital — earlier drawdown protection
+4. Full transparency — centralized sizing with audit trail
+5. Trade with trend — alignment required for entry
 
 ---
 
@@ -319,6 +418,7 @@ This release advances Cthulu from v4.0.0 to v5.1.0 with a major architecture cha
 ## TABLE OF RELEASES
 | Version | Date | Description |
 |---------|------|-------------|
+| [v5.2.34](v5.2.34.md) | 2026-01-17 | PATCH: Execution quality improvements - strict quality gate, momentum detection, centralized position sizing. |
 | [v5.2.33](v5.2.33.md) | 2026-01-06 | MINOR: Web UI, LLM integration, Vector DB, Profit Scaler, Advisory mode, Auto-tune consolidation (207 commits). |
 | [v5.1.0](v5.1.0.md) | 2025-12-28 | Minor branding & stability patch: runtime indicator fixes, monitoring enhancements, Windows/CI improvements. |
 | [v5.0.0](v5.0.0.md) | 2025-12-27 | Major architecture & runtime stability release; runtime namespacing and indicator fallbacks; CI and testing improvements. |
