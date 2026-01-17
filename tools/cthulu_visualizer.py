@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 Cthulu Visualization Toolkit
-Adapted from TradeMaster PRUDEX-Compass for system-centric code analysis
+Professional visualization system for system-centric code analysis
 
 This toolkit provides comprehensive visualizations for:
-1. PRIDE-Star: Radar charts for key system metrics
+1. Star: Radar charts for key system metrics
 2. Performance Profile: Score distributions across components
 3. Rank Distribution: Relative rankings of modules
 4. Component Analysis: Module-level visualizations
@@ -43,7 +43,7 @@ plt.rcParams['font.sans-serif'] = ['Arial']
 class RadarChart:
     """
     Create radar/star charts for multi-dimensional metrics.
-    Adapted from TradeMaster PRIDE-Star for Cthulu system metrics.
+    Adapted from Cthulu Star for Cthulu system metrics.
     """
     
     def __init__(self, fig, variables, rect=None):
@@ -127,12 +127,12 @@ class CthuluVisualizer:
         
         self.module_colors = sns.color_palette("husl", 32)
     
-    def create_pride_star(self):
+    def create_star(self):
         """
-        Create PRIDE-Star radar chart for future readiness metrics.
+        Create Star radar chart for future readiness metrics.
         Shows: Extensibility, Scalability, ML Maturity, Documentation, Test Coverage, Overall Health
         """
-        print("Creating PRIDE-Star radar chart...")
+        print("Creating Star radar chart...")
         
         if 'future_readiness' not in self.data:
             print("  No future readiness data available")
@@ -170,11 +170,11 @@ class CthuluVisualizer:
         
         radar.plot(scores, label=f'Cthulu System ({assessment})', 
                   color=color, alpha=0.3)
-        radar.set_title('Cthulu System PRIDE-Star\nFuture Readiness Assessment')
+        radar.set_title('Cthulu System Star\nFuture Readiness Assessment')
         radar.add_legend()
         
         # Save
-        output_path = self.output_dir / 'pride_star_future_readiness.png'
+        output_path = self.output_dir / 'star_future_readiness.png'
         plt.tight_layout()
         plt.savefig(output_path, bbox_inches='tight', facecolor='white')
         plt.close()
@@ -625,7 +625,7 @@ class CthuluVisualizer:
         print("Generating comprehensive system visualizations...")
         print("="*70 + "\n")
         
-        self.create_pride_star()
+        self.create_star()
         self.create_module_comparison()
         self.create_improvement_distribution()
         self.create_ml_analysis_dashboard()

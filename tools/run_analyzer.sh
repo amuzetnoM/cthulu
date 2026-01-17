@@ -135,7 +135,7 @@ if [ "$VISUALIZE" = true ]; then
     echo "🎨 Visualizations: $OUTPUT_DIR"
     echo ""
     echo "Generated visualizations:"
-    echo "  • pride_star_future_readiness.png"
+    echo "  • star_future_readiness.png"
     echo "  • module_comparison_radar.png"
     echo "  • improvement_distribution.png"
     echo "  • ml_analysis_dashboard.png"
