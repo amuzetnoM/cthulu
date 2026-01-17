@@ -36,10 +36,10 @@ Cthulu now features **semantic pattern recognition**, **ML model training**, and
 > **Session ORB**: London/NY session Opening Range Breakout detection <br> 
 > **Advanced UI Components**: Real-time Order Book, Stats Ticker, Terminal, and Trade Panel <br>
 > **WebSocket Integration**: Live price updates and trade notifications <br>
-> **Strict Quality Gate**: Only GOOD/PREMIUM entries execute (v5.2.34) <br>
-> **Momentum-Aware Scaling**: Profit scaler detects momentum to let winners run (v5.2.34) <br>
-> **Code Analysis Toolkit**: Enhanced analyzer with 176 code improvement suggestions and future readiness scoring (v5.2.40) <br>
-> **Star Visualizations**: System Visualization toolkit with 6 chart types for system health monitoring (v5.2.40) <br>
+> **Strict Quality Gate**: Only GOOD/PREMIUM entries execute  <br>
+> **Momentum-Aware Scaling**: Profit scaler detects momentum to let winners run  <br>
+> **Code Analysis Toolkit**: Enhanced analyzer with 176 code improvement suggestions and future readiness scoring  <br>
+> **Star Visualizations**: System Visualization toolkit with 6 chart types for system health monitoring <br>
 
 ### BENCHMARKS
 
