@@ -1,13 +1,13 @@
 ---
 title: OBSERVABILITY
-description: Performance metrics, Prometheus exporter, and guidance for monitoring Cthulu
-tags: [observability, metrics, prometheus]
+description: Performance metrics, Prometheus exporter, Discord notifications, and guidance for monitoring Cthulu
+tags: [observability, metrics, prometheus, discord, notifications]
 sidebar_position: 10
-version: 5.2.40
+version: 5.2.41
 ---
 
-![](https://img.shields.io/badge/Version-5.2.40-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
-![Last Update](https://img.shields.io/badge/Last_Update-2026--01--06-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
+![](https://img.shields.io/badge/Version-5.2.41-4B0082?style=for-the-badge&labelColor=0D1117&logo=git&logoColor=white) 
+![Last Update](https://img.shields.io/badge/Last_Update-2026--01--17-4B0082?style=for-the-badge&labelColor=0D1117&logo=calendar&logoColor=white)
 ![](https://img.shields.io/github/last-commit/amuzetnoM/cthulu?style=for-the-badge&labelColor=0D1117&logo=github&logoColor=white) 
 
 
@@ -198,6 +198,111 @@ The dashboard calculates grades based on:
 | C | >50% | >1.5 | Acceptable performance |
 | D | >45% | >1.0 | Below average |
 | F | <45% | <1.0 | Needs improvement |
+
+---
+
+## Discord Notifications (Since v5.2.41)
+
+Cthulu includes a comprehensive Discord notification system for real-time alerts and reports.
+
+### Overview
+
+The Discord integration provides:
+- **Non-blocking notifications** via background thread
+- **Rate limiting** respecting Discord API limits (30/min)
+- **Message batching** for efficiency (up to 5 embeds per message)
+- **Priority queue** for critical alerts
+- **Event bus integration** for automatic notifications
+
+### Notification Channels
+
+| Channel | Webhook ENV Variable | Purpose |
+|---------|---------------------|---------|
+| **Alerts** | `DISCORD_WEBHOOK_ALERTS` | Trade executions, risk alerts, system health, adoptions |
+| **Health** | `DISCORD_WEBHOOK_HEALTH` | Session summaries, model performance, portfolio snapshots |
+| **Signals** | `DISCORD_WEBHOOK_SIGNALS` | Signal quality, regime changes, milestones |
+
+### Configuration
+
+Add to your `.env` file:
+
+```env
+# Discord Webhooks (Cthulu Category)
+DISCORD_WEBHOOK_ALERTS=https://discord.com/api/webhooks/...
+DISCORD_WEBHOOK_HEALTH=https://discord.com/api/webhooks/...
+DISCORD_WEBHOOK_SIGNALS=https://discord.com/api/webhooks/...
+```
+
+And/or in `config.json`:
+
+```json
+{
+  "discord": {
+    "enabled": true,
+    "notify_trades": true,
+    "notify_adoptions": true,
+    "notify_risk": true,
+    "min_pnl_notify": 0
+  }
+}
+```
+
+### Notification Types
+
+#### Alerts Channel
+- **Trade Opened**: Symbol, direction, volume, entry price, SL/TP
+- **Trade Closed**: P&L, duration, exit reason
+- **Trade Adopted**: When Cthulu takes over a manual trade
+- **Risk Alert**: Drawdown warnings, margin calls, position limits
+- **System Health**: Connection failures, API errors, exceptions
+
+#### Health Channel
+- **Session Summary**: Daily wins/losses, P&L, trade count, win rate
+- **Model Performance**: ML accuracy, predictions, drift warnings
+- **Portfolio Snapshot**: Open positions, exposure, unrealized P&L
+
+#### Signals Channel
+- **Signal Quality**: High-confidence setups detected
+- **Regime Change**: Market condition shifts (trending→ranging)
+- **Milestones**: Profit targets hit, new highs
+
+### Event Bus Integration
+
+Discord notifications are automatically triggered via the `TradeEventBus`. When events occur:
+
+1. Event published to bus (e.g., `TRADE_CLOSED`)
+2. `DiscordEventSubscriber` receives event
+3. Formats appropriate notification
+4. Queues for rate-limited delivery
+
+### CLI Commands
+
+```powershell
+# Test Discord webhooks
+python integrations\discord_cli.py test
+
+# Send test to specific channel
+python integrations\discord_cli.py test --channel alerts
+
+# View notification stats
+python integrations\discord_cli.py stats
+```
+
+### Rate Limiting
+
+The system respects Discord's rate limits:
+- **25 requests/minute** per webhook (buffer from 30 limit)
+- **5 embeds/message** batching for efficiency
+- **Priority queue** ensures critical alerts are sent first
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| No notifications | Check webhook URLs in `.env` or config |
+| Rate limited | Reduce notification frequency, check stats |
+| Missing channel | Ensure webhook URL is set for that channel |
+| Delayed alerts | Check `batch_interval` setting (default 5s) |
 
 ---
 
