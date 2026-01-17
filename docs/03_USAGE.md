@@ -17,7 +17,7 @@ version: 5.2.40
 By using the Cthulu autonomous trading system, you agree to these terms. If you do not agree, do not use this software.
 
 #### 2. License
-Cthulu is open-source software released under the MIT License. You are free to use, modify, and distribute the software subject to the license terms.
+Cthulu is open-source software released under the GNU Affero General Public License v3.0 (AGPL-3.0). You are free to use, modify, and distribute the software subject to the license terms. If you modify Cthulu and provide it as a network service, you must make your modified source code available to users of that service.
 
 #### 3. No Warranty
 This software is provided "AS IS" without warranty of any kind, either express or implied, including but not limited to fitness for a particular purpose, merchantability, non-infringement, accuracy of trading signals or strategies, or profitability.
