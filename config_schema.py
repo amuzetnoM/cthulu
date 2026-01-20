@@ -141,6 +141,24 @@ class Config(BaseModel):
     adaptive_drawdown: Dict[str, Any] = Field(default_factory=lambda: {"enabled": False})
     # Features configuration
     features: Dict[str, Any] = Field(default_factory=dict)
+    # Hektor (Vector Studio) integration defaults
+    hektor: Dict[str, Any] = Field(default_factory=lambda: {
+        'enabled': False,
+        'fallback_to_sqlite': True,
+        'database_path': './vectors/cthulu_memory',
+        'dimension': 512,
+        'hnsw_m': 16,
+        'hnsw_ef_construction': 200,
+        'hnsw_ef_search': 50,
+        'default_k': 10,
+        'min_similarity_score': 0.7,
+        'max_context_age_days': 90,
+        'batch_size': 100,
+        'async_writes': True,
+        'cache_embeddings': True,
+        'connection_timeout_ms': 5000,
+        'retry_attempts': 3
+    })
     # Confidence threshold for signal filtering
     confidence_threshold: float = 0.5
 
