@@ -376,6 +376,11 @@ class ExecutionEngine:
                 f"Placing {order_req.order_type.value} order: "
                 f"{order_req.side} {order_req.volume} {order_req.symbol}"
             )
+            
+            # DEBUG: Log exact request being sent to MT5
+            self.logger.info(f"MT5 request dict: {request}")
+            for k, v in request.items():
+                self.logger.debug(f"  {k}: {v} (type={type(v).__name__})")
 
             # Use a short timeout wrapper around mt5.order_send to avoid blocking the trading loop
             try:
