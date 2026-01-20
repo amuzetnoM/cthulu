@@ -1,5 +1,9 @@
 """
+<<<<<<< HEAD
 Cthulu Trading Dashboard v5.3.0
+=======
+Cthulu Trading Dashboard v5.2.0
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
 
 A comprehensive real-time trading dashboard that displays:
 - Live positions from MT5 with real-time P&L
@@ -43,7 +47,11 @@ try:
 except ImportError:
     MT5_AVAILABLE = False
 
+<<<<<<< HEAD
 LOG_PATH = PROJECT_ROOT / 'cthulu.log'
+=======
+LOG_PATH = PROJECT_ROOT / 'Cthulu.log'
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
 SUMMARY_PATH = PROJECT_ROOT / 'logs' / 'latest_summary.txt'
 STRATEGY_INFO_PATH = PROJECT_ROOT / 'logs' / 'strategy_info.txt'
 
@@ -176,7 +184,11 @@ def format_percent(value):
 
 class CthuluGUI:
     """
+<<<<<<< HEAD
     Comprehensive Cthulu Trading Dashboard v5.3.0
+=======
+    Comprehensive Cthulu Trading Dashboard v5.2.0
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
     
     Features:
     - Live MT5 positions with real-time P&L
@@ -189,7 +201,11 @@ class CthuluGUI:
     
     def __init__(self, root):
         self.root = root
+<<<<<<< HEAD
         root.title('Cthulu — Trading Dashboard v5.3.0')
+=======
+        root.title('Cthulu — Trading Dashboard v5.2.0')
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
         root.geometry('1400x900')
         root.minsize(1200, 700)
         root.configure(bg=THEME_BG)
@@ -438,7 +454,11 @@ class CthuluGUI:
         # Database connection
         self.db = None
         try:
+<<<<<<< HEAD
             db_paths = [PROJECT_ROOT / 'cthulu.db', PROJECT_ROOT / 'cthulu_ultra_aggressive.db']
+=======
+            db_paths = [PROJECT_ROOT / 'Cthulu.db', PROJECT_ROOT / 'Cthulu_ultra_aggressive.db']
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
             for p in db_paths:
                 if p.exists():
                     self.db = Database(str(p))
@@ -516,7 +536,11 @@ class CthuluGUI:
             return
         try:
             self.db.close()
+<<<<<<< HEAD
             db_paths = [PROJECT_ROOT / 'cthulu.db', PROJECT_ROOT / 'cthulu_ultra_aggressive.db']
+=======
+            db_paths = [PROJECT_ROOT / 'Cthulu.db', PROJECT_ROOT / 'Cthulu_ultra_aggressive.db']
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
             for p in db_paths:
                 if p.exists():
                     self.db = Database(str(p))

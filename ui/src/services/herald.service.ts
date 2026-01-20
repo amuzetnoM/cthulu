@@ -2,7 +2,10 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { GoogleGenAI } from "@google/genai";
 import { firstValueFrom } from 'rxjs';
+<<<<<<< HEAD
 import { io, Socket } from 'socket.io-client';
+=======
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
 
 export interface Trade {
   id: string;
@@ -88,21 +91,30 @@ export interface ChartDrawings {
 export class HeraldService {
   private http = inject(HttpClient);
   private API_URL = 'http://localhost:5000/api';
+<<<<<<< HEAD
   private WS_URL = 'http://localhost:5000';
   private socket: Socket | null = null;
+=======
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
 
   // State Signals
   readonly price = signal<number>(0); // 0 indicates unknown
   readonly priceHistory = signal<{ time: number, value: number }[]>([]);
+<<<<<<< HEAD
   readonly ohlcHistory = signal<{ time: number, open: number, high: number, low: number, close: number }[]>([]);
+=======
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
   readonly trades = signal<Trade[]>([]);
   readonly logs = signal<LogEntry[]>([]);
   readonly signals = signal<SignalEntry[]>([]);
   readonly orderBook = signal<OrderBook>({ asks: [], bids: [], spread: 0, spreadPct: 0 });
 
+<<<<<<< HEAD
   // Chart Drawings from Chart Manager
   readonly chartDrawings = signal<ChartDrawings | null>(null);
 
+=======
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
   // System Status
   readonly isRunning = signal<boolean>(true);
   readonly isConnected = signal<boolean>(false);
@@ -120,6 +132,7 @@ export class HeraldService {
   private timer: any;
 
   constructor() {
+<<<<<<< HEAD
     this.ai = new GoogleGenAI({ apiKey: '' });
     this.initWebSocket();
     this.initPolling();
@@ -131,6 +144,15 @@ export class HeraldService {
       reconnection: true,
       reconnectionDelay: 1000
     });
+=======
+    this.ai = new GoogleGenAI({ apiKey: process.env['API_KEY'] || '' });
+    this.initPolling();
+  }
+
+  private initPolling() {
+    // Poll faster for status, slower for heavy data
+    setInterval(() => this.checkStatus(), 2000);
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
 
     this.socket.on('connect', () => {
       console.log('WebSocket connected');
@@ -168,6 +190,7 @@ export class HeraldService {
     setInterval(() => this.checkStatus(), 5000);
     this.timer = setInterval(() => {
       if (!this.isConnected()) return;
+<<<<<<< HEAD
       this.fetchTrades();
       this.fetchLogs();
       this.fetchSignals();
@@ -218,23 +241,78 @@ export class HeraldService {
         }
       }
     });
+=======
+      this.tick();
+    }, 1000); // 1s data refresh when online
+  }
+
+  private async checkStatus() {
+    try {
+      await firstValueFrom(this.http.get(`${this.API_URL}/status`));
+      this.isConnected.set(true);
+      this.lastHeartbeat.set(Date.now());
+    } catch (e) {
+      this.isConnected.set(false);
+      // If offline, add a system log once (debounced) if we haven't already recently
+      const lastLog = this.logs()[0];
+      if (!lastLog || lastLog.message !== 'Backend Offline - Waiting for Cthulu...') {
+        this.localLog('ERROR', 'Backend Offline - Waiting for Cthulu...', 'SYSTEM');
+      }
+    }
+  }
+
+  private tick() {
+    this.fetchTrades();
+    this.fetchLogs();
+    this.fetchSignals();
+    this.fetchMetrics();
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
   }
 
   private fetchTrades() {
     this.http.get<Trade[]>(`${this.API_URL}/trades`).subscribe({
+<<<<<<< HEAD
       next: (data) => { if (data) this.trades.set(data); },
       error: () => { }
+=======
+      next: (data) => {
+        if (data) {
+          this.trades.set(data);
+          // Update current price from latest trade if available for some realism
+          if (data.length > 0) {
+            const lastTrade = data[0];
+            // Only update if looks like a valid price
+            if (lastTrade.price > 0) {
+              // this.updatePrice(lastTrade.price); // Optional: drive price from trade data
+            }
+          }
+        }
+      },
+      error: () => { } // Handled by status check
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
     });
   }
 
   private fetchLogs() {
     this.http.get<LogEntry[]>(`${this.API_URL}/logs`).subscribe({
+<<<<<<< HEAD
       next: (data) => { if (data && data.length > 0) this.logs.set(data); }
+=======
+      next: (data) => {
+        // Merge, but keep our local connection logs if possible.
+        // For now, simpler to just prepend backend logs.
+        // We rely on backend providing sorted logs.
+        if (data && data.length > 0) {
+          this.logs.set(data);
+        }
+      }
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
     });
   }
 
   private fetchSignals() {
     this.http.get<any[]>(`${this.API_URL}/signals`).subscribe({
+<<<<<<< HEAD
       next: (data) => { if (data) this.signals.set(data); }
     });
   }
@@ -254,6 +332,25 @@ export class HeraldService {
 
   private fetchMetrics() { }
 
+=======
+      next: (data) => {
+        if (data) {
+          this.signals.set(data);
+          // Try to find a recent price in signals to update UI
+          const recent = data[0];
+          if (recent && recent.price) {
+            this.updatePrice(recent.price);
+          }
+        }
+      }
+    });
+  }
+
+  private fetchMetrics() {
+    // TODO: Bind backend metrics to UI if we adds charts
+  }
+
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
   private updatePrice(newPrice: number) {
     if (newPrice === this.price()) return;
 
@@ -264,6 +361,7 @@ export class HeraldService {
       return newHistory;
     });
 
+<<<<<<< HEAD
     // Update OHLC for real-time candle building
     const now = Date.now();
     const candleInterval = 60000; // 1 minute candles
@@ -324,12 +422,21 @@ export class HeraldService {
   }
 
   // --- Actions ---
+=======
+    // We can't really generate an order book without real L2 data.
+    // Leaving it empty or minimal to avoid "fake" misleading info.
+    this.orderBook.set({ asks: [], bids: [], spread: 0, spreadPct: 0 });
+  }
+
+  // --- Helpers ---
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
 
   public placeManualTrade(type: 'BUY' | 'SELL', size: number) {
     if (!this.isConnected()) {
       this.localLog('ERROR', 'Cannot trade: System Offline', 'SYSTEM');
       return;
     }
+<<<<<<< HEAD
 
     const payload = {
       symbol: "BTCUSD#", // Match config.json
@@ -350,6 +457,9 @@ export class HeraldService {
         this.localLog('ERROR', `RPC Error: ${err.message}`, 'SYSTEM');
       }
     });
+=======
+    this.localLog('WARN', 'Manual trading via UI not yet connected to Cthulu core.', 'SYSTEM');
+>>>>>>> 9435fea82335d1a7c54d2da9eee90b6620f2309a
   }
 
   public toggleSystem() {
