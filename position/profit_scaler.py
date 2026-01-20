@@ -667,13 +667,13 @@ class ProfitScaler:
                     logger.debug(f"SL modification skipped for #{ticket}: new SL {new_sl} > current {pos.sl}")
                     return {'success': False, 'error': 'Would worsen SL', 'skipped': True}
             
-            # Build modification request
+            # Build modification request - explicit type casting for MT5 API
             request = {
                 "action": mt5.TRADE_ACTION_SLTP,
-                "symbol": pos.symbol,
-                "position": ticket,
-                "sl": new_sl,
-                "tp": pos.tp if hasattr(pos, 'tp') else None,
+                "symbol": str(pos.symbol),
+                "position": int(ticket),
+                "sl": float(new_sl) if new_sl is not None else 0.0,
+                "tp": float(pos.tp) if hasattr(pos, 'tp') and pos.tp else 0.0,
             }
             
             # Log the modification request for diagnostics

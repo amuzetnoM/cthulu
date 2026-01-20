@@ -382,52 +382,9 @@ class ExecutionEngine:
             for k, v in request.items():
                 self.logger.debug(f"  {k}: {v} (type={type(v).__name__})")
 
-            # Use a short timeout wrapper around mt5.order_send to avoid blocking the trading loop
-            try:
-                import concurrent.futures
-                ORDER_SUBMIT_TIMEOUT = getattr(self, 'ORDER_SUBMIT_TIMEOUT', 10)
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
-                    fut = ex.submit(mt5.order_send, request)
-                    try:
-                        result = fut.result(timeout=ORDER_SUBMIT_TIMEOUT)
-                    except concurrent.futures.TimeoutError:
-                        fut.cancel()
-                        self.logger.error("Order submission to MT5 timed out after %s seconds", ORDER_SUBMIT_TIMEOUT)
-                        # Instrumentation: record failed execution if collector available
-                        try:
-                            if self.ml_collector:
-                                exec_payload = {
-                                    'order_id': None,
-                                    'status': 'REJECTED',
-                                    'error': f"timeout after {ORDER_SUBMIT_TIMEOUT}s"
-                                }
-                                self.ml_collector.record_execution(exec_payload)
-                        except Exception:
-                            self.logger.exception('ML collector failed')
-
-                        return ExecutionResult(
-                            order_id=None,
-                            status=OrderStatus.REJECTED,
-                            executed_price=None,
-                            executed_volume=None,
-                            timestamp=datetime.now(),
-                            error=f"Order submission timed out after {ORDER_SUBMIT_TIMEOUT}s"
-                        )
-            except Exception as e:
-                # Fallback to direct call if threading wrapper is not possible for some reason
-                self.logger.debug("Order submission wrapper failed, falling back to direct call: %s", e, exc_info=True)
-                try:
-                    result = mt5.order_send(request)
-                except Exception as e2:
-                    self.logger.error("Order submission failed outright: %s", e2, exc_info=True)
-                    return ExecutionResult(
-                        order_id=None,
-                        status=OrderStatus.REJECTED,
-                        executed_price=None,
-                        executed_volume=None,
-                        timestamp=datetime.now(),
-                        error=str(e2)
-                    )
+            # Submit order directly - MT5 Python API is NOT thread-safe
+            # ThreadPoolExecutor causes "Unnamed arguments not allowed" error
+            result = mt5.order_send(request)
 
             if result is None:
                 error = mt5.last_error()

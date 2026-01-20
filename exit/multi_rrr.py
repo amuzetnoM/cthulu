@@ -481,10 +481,10 @@ class MultiRRRExitManager:
             
             request = {
                 "action": mt5.TRADE_ACTION_SLTP,
-                "symbol": pos.symbol,
-                "position": action.ticket,
-                "sl": action.new_sl,
-                "tp": pos.tp if hasattr(pos, 'tp') else None,
+                "symbol": str(pos.symbol),
+                "position": int(action.ticket),
+                "sl": float(action.new_sl) if action.new_sl is not None else 0.0,
+                "tp": float(pos.tp) if hasattr(pos, 'tp') and pos.tp else 0.0,
             }
             
             result = mt5.order_send(request)
