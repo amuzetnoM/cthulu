@@ -558,7 +558,7 @@ class TradingLoop:
                     reason_str = ', '.join(ml_reasons) if ml_reasons else 'ML'
                     decision.apply_adjustment(f"ml({reason_str})", ml_mult)
                     
-                    self.ctx.logger.info(f"🤖 ML sizing: {ml_mult:.2f}x - {ml_reasons}")
+                    self.ctx.logger.info(f"ML sizing: {ml_mult:.2f}x - {ml_reasons}")
                     
             except Exception as e:
                 self.ctx.logger.debug(f"ML enhancement sizing failed: {e}")
@@ -659,7 +659,7 @@ class TradingLoop:
         # ==========================================================
         if self.ctx.ml_enhancement_manager:
             ml_state = self.ctx.ml_enhancement_manager.get_state()
-            self.ctx.logger.info(f"🤖 ML Enhancement ACTIVE: {ml_state['components']}")
+            self.ctx.logger.info(f"ML Enhancement ACTIVE: {ml_state['components']}")
             
             # Wire cognition engine from ML manager if not already set
             if not self.ctx.cognition_engine:
@@ -1683,7 +1683,7 @@ class TradingLoop:
                 position_size = size_decision.final_size
                 
                 # Log the complete sizing decision
-                self.ctx.logger.info(f"💰 Position sizing: {size_decision.reasoning}")
+                self.ctx.logger.info(f"Position sizing: {size_decision.reasoning}")
             
             if approved:
                 self.ctx.logger.info(f"Risk approved: {position_size:.2f} lots - {reason}")
@@ -2349,7 +2349,7 @@ class TradingLoop:
                             duration_bars=duration_bars,
                             exit_reason=exit_signal.reason
                         )
-                        self.ctx.logger.debug(f"🤖 ML learning: recorded trade outcome pnl={pnl:.2f}")
+                        self.ctx.logger.debug(f"ML learning: recorded trade outcome pnl={pnl:.2f}")
                 except Exception as e:
                     self.ctx.logger.debug(f'ML enhancement trade recording failed: {e}')
                 

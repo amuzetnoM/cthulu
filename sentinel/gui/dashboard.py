@@ -205,7 +205,7 @@ class SentinelDashboard:
     
     def _create_process_panel(self, parent):
         """Create process status panel"""
-        content = self._create_card(parent, "📊 PROCESS STATUS", 0, 0)
+        content = self._create_card(parent, "PROCESS STATUS", 0, 0)
         
         # Cthulu status
         cthulu_frame = tk.Frame(content, bg=self.COLORS['bg_card'])
@@ -213,7 +213,7 @@ class SentinelDashboard:
         
         tk.Label(
             cthulu_frame,
-            text="🐙 Cthulu:",
+            text="Cthulu:",
             font=('Segoe UI', 11),
             fg=self.COLORS['text'],
             bg=self.COLORS['bg_card']
@@ -243,7 +243,7 @@ class SentinelDashboard:
         
         tk.Label(
             mt5_frame,
-            text="📈 MetaTrader 5:",
+            text="MetaTrader 5:",
             font=('Segoe UI', 11),
             fg=self.COLORS['text'],
             bg=self.COLORS['bg_card']
@@ -273,7 +273,7 @@ class SentinelDashboard:
         
         tk.Label(
             algo_frame,
-            text="🤖 Algo Trading:",
+            text="Algo Trading:",
             font=('Segoe UI', 11),
             fg=self.COLORS['text'],
             bg=self.COLORS['bg_card']
@@ -311,7 +311,7 @@ class SentinelDashboard:
     
     def _create_metrics_panel(self, parent):
         """Create system metrics panel"""
-        content = self._create_card(parent, "⚡ SYSTEM METRICS", 0, 1)
+        content = self._create_card(parent, "SYSTEM METRICS", 0, 1)
         
         # CPU
         cpu_frame = tk.Frame(content, bg=self.COLORS['bg_card'])
@@ -378,7 +378,7 @@ class SentinelDashboard:
     
     def _create_recovery_panel(self, parent):
         """Create recovery status panel"""
-        content = self._create_card(parent, "🔧 RECOVERY STATUS", 1, 0)
+        content = self._create_card(parent, "RECOVERY STATUS", 1, 0)
         
         # Crash count
         crash_frame = tk.Frame(content, bg=self.COLORS['bg_card'])
@@ -466,7 +466,7 @@ class SentinelDashboard:
     
     def _create_control_panel(self, parent):
         """Create control buttons panel - NO START BUTTON, only recovery controls"""
-        content = self._create_card(parent, "🎮 CONTROLS", 1, 1)
+        content = self._create_card(parent, "CONTROLS", 1, 1)
         
         # Info label
         info_label = tk.Label(
@@ -495,7 +495,7 @@ class SentinelDashboard:
         
         self.auto_restart_checkbox = tk.Checkbutton(
             auto_restart_frame,
-            text="🔄 Auto-Restart on Crash",
+            text="Auto-Restart on Crash",
             variable=self.auto_restart_enabled,
             font=('Segoe UI', 10, 'bold'),
             fg=self.COLORS['accent_green'],
@@ -511,7 +511,7 @@ class SentinelDashboard:
         # Auto-restart status label
         self.auto_restart_status = tk.Label(
             auto_restart_frame,
-            text="✅ Auto-restart ENABLED",
+            text="Auto-restart ENABLED",
             font=('Segoe UI', 9),
             fg=self.COLORS['healthy'],
             bg=self.COLORS['bg_card']
@@ -521,7 +521,7 @@ class SentinelDashboard:
         # Force Recovery - MAIN ACTION BUTTON
         self.recover_btn = tk.Button(
             content,
-            text="🔄 Force Recovery",
+            text="Force Recovery",
             bg=self.COLORS['warning'],
             fg=self.COLORS['bg_dark'],
             command=self._force_recovery,
@@ -532,7 +532,7 @@ class SentinelDashboard:
         # Emergency Stop - RED BUTTON
         self.stop_btn = tk.Button(
             content,
-            text="🛑 Emergency Stop",
+            text="Emergency Stop",
             bg=self.COLORS['critical'],
             fg=self.COLORS['text'],
             command=self._emergency_stop,
@@ -543,7 +543,7 @@ class SentinelDashboard:
         # Enable Algo (helper)
         self.algo_btn = tk.Button(
             content,
-            text="🤖 Enable Algo Trading",
+            text="Enable Algo Trading",
             bg=self.COLORS['accent_green'],
             fg=self.COLORS['bg_dark'],
             command=self._enable_algo,
@@ -838,13 +838,13 @@ class SentinelDashboard:
         if self.guardian:
             def algo_with_feedback():
                 try:
-                    self.root.after(0, lambda: self.status_text.config(text="🤖 Enabling algo trading..."))
+                    self.root.after(0, lambda: self.status_text.config(text="Enabling algo trading..."))
                     self.root.after(0, lambda: self.algo_btn.config(state='disabled'))
                     result = self.guardian.enable_algo_trading()
                     if result:
-                        self.root.after(0, lambda: self.status_text.config(text="✅ Algo trading enabled"))
+                        self.root.after(0, lambda: self.status_text.config(text="Algo trading enabled"))
                     else:
-                        self.root.after(0, lambda: self.status_text.config(text="⚠️ Algo enable failed - try manually in MT5"))
+                        self.root.after(0, lambda: self.status_text.config(text="Algo enable failed - try manually in MT5"))
                 except tk.TclError:
                     pass  # Window closed
                 except Exception as e:

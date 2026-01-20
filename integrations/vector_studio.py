@@ -125,13 +125,22 @@ class VectorStudioAdapter:
             db_path = Path(self.config.database_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
             
-            db = pyvdb.Database(
-                str(db_path),
-                dimension=self.config.dimension,
-                index_type="hnsw",
-                hnsw_m=self.config.hnsw_m,
-                hnsw_ef_construction=self.config.hnsw_ef_construction
-            )
+            # Check if database already exists
+            db_index_file = db_path / "index.bin"  # pyvdb creates this file
+            
+            if db_path.exists() and (db_index_file.exists() or any(db_path.glob("*.bin"))):
+                # Open existing database
+                db = pyvdb.open_database(str(db_path))
+                self.logger.info(f"Opened existing Vector Studio database at {db_path}")
+            else:
+                # Create new database (uses optimized defaults)
+                db_path.mkdir(parents=True, exist_ok=True)
+                db = pyvdb.create_gold_standard_db(str(db_path))
+                db.init()
+                self.logger.info(f"Created new Vector Studio database at {db_path}")
+            
+            if not db.is_ready():
+                db.init()
             
             return db
             

@@ -148,9 +148,9 @@ class SentinelGuardian:
         self._mt5_module = None
         self._load_mt5_module()
         
-        logger.info("🛡️ SENTINEL Guardian initialized")
-        logger.info(f"📁 Cthulu path: {self.config.cthulu_path}")
-        logger.info(f"📄 Last known config: {self._last_known_config}")
+        logger.info("SENTINEL Guardian initialized")
+        logger.info(f"Cthulu path: {self.config.cthulu_path}")
+        logger.info(f"Last known config: {self._last_known_config}")
     
     def _find_last_config(self) -> str:
         """Find the last known good config file"""
@@ -327,11 +327,11 @@ class SentinelGuardian:
     
     def start_mt5(self) -> bool:
         """Start MetaTrader 5"""
-        logger.info("🚀 Starting MetaTrader 5...")
+        logger.info("Starting MetaTrader 5...")
         try:
             if self._mt5_module:
                 if self._mt5_module.initialize():
-                    logger.info("✅ MT5 initialized via Python API")
+                    logger.info("MT5 initialized via Python API")
                     return True
             
             # Fallback: Start via subprocess
@@ -339,7 +339,7 @@ class SentinelGuardian:
                 subprocess.Popen([self.config.mt5_path], 
                                creationflags=subprocess.DETACHED_PROCESS)
                 time.sleep(5)  # Wait for MT5 to start
-                logger.info("✅ MT5 started via subprocess")
+                logger.info("MT5 started via subprocess")
                 return True
             else:
                 logger.error(f"MT5 not found at: {self.config.mt5_path}")
@@ -351,7 +351,7 @@ class SentinelGuardian:
     
     def enable_algo_trading(self) -> bool:
         """Enable algo trading in MT5"""
-        logger.info("🔧 Enabling algo trading...")
+        logger.info("Enabling algo trading...")
         
         if not self._mt5_module:
             logger.warning("Cannot enable algo - MT5 module not loaded")
@@ -514,7 +514,7 @@ class SentinelGuardian:
     
     def recover_from_crash(self) -> bool:
         """Execute crash recovery procedure"""
-        logger.warning("🔥 CRASH RECOVERY INITIATED")
+        logger.warning("CRASH RECOVERY INITIATED")
         
         with self._lock:
             self._crash_timestamps.append(datetime.now())
@@ -591,7 +591,7 @@ class SentinelGuardian:
         
         # Emit state change event
         if old_state != self.metrics.system_state:
-            logger.info(f"📊 State change: {old_state.name} → {self.metrics.system_state.name}")
+            logger.info(f"State change: {old_state.name} -> {self.metrics.system_state.name}")
             self._emit_event("on_state_change", old_state, self.metrics.system_state, self.metrics)
     
     def run(self, poll_interval: float = 5.0, setup_signals: bool = True):
@@ -711,7 +711,7 @@ def main():
             daemon=True
         )
         guardian_thread.start()
-        logger.info("🖥️ Starting GUI Dashboard...")
+        logger.info("Starting GUI Dashboard...")
         
         # Run GUI on main thread
         dashboard = SentinelDashboard(guardian)

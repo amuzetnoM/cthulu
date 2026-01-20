@@ -280,7 +280,7 @@ class DiscordNotifier:
         
         return self.notify(DiscordNotification(
             channel=NotificationChannel.ALERTS,
-            title=f"📈 Trade Opened: {symbol}",
+            title=f"Trade Opened: {symbol}",
             description=f"New {side.upper()} position opened",
             color=color,
             priority=NotificationPriority.HIGH,
@@ -328,7 +328,7 @@ class DiscordNotifier:
         
         return self.notify(DiscordNotification(
             channel=NotificationChannel.ALERTS,
-            title=f"{'💰' if is_profit else '📉'} Trade Closed: {symbol}",
+            title=f"{'PROFIT' if is_profit else 'LOSS'} Trade Closed: {symbol}",
             description=f"Position closed with {pnl_str}",
             color=color,
             priority=NotificationPriority.HIGH,
@@ -346,7 +346,7 @@ class DiscordNotifier:
         """Notify when Cthulu adopts a manual trade"""
         return self.notify(DiscordNotification(
             channel=NotificationChannel.ALERTS,
-            title=f"🤖 Trade Adopted: {symbol}",
+            title=f"Trade Adopted: {symbol}",
             description=f"Cthulu has taken over management of a manual {side.upper()} position",
             color=Colors.CYAN,
             priority=NotificationPriority.HIGH,
@@ -420,25 +420,25 @@ class DiscordNotifier:
     ) -> bool:
         """Send daily session summary"""
         is_profitable = total_pnl > 0
-        emoji = "📈" if is_profitable else "📉"
+        status = "UP" if is_profitable else "DOWN"
         color = Colors.SUCCESS if is_profitable else Colors.DANGER
         pnl_str = f"+${total_pnl:.2f}" if is_profitable else f"-${abs(total_pnl):.2f}"
         
         return self.notify(DiscordNotification(
             channel=NotificationChannel.HEALTH,
-            title=f"{emoji} Daily Session Summary",
+            title=f"{status} Daily Session Summary",
             description=f"Session closed with **{pnl_str}** total P&L",
             color=color,
             priority=NotificationPriority.MEDIUM,
             fields=[
-                {"name": "📊 Total Trades", "value": str(trade_count), "inline": True},
-                {"name": "✅ Wins", "value": str(wins), "inline": True},
-                {"name": "❌ Losses", "value": str(losses), "inline": True},
-                {"name": "🎯 Win Rate", "value": f"{win_rate:.1%}", "inline": True},
-                {"name": "💵 Avg Win", "value": f"${avg_win:.2f}", "inline": True},
-                {"name": "💸 Avg Loss", "value": f"${abs(avg_loss):.2f}", "inline": True},
-                {"name": "🏆 Best Trade", "value": f"${best_trade:.2f}", "inline": True},
-                {"name": "😓 Worst Trade", "value": f"${worst_trade:.2f}", "inline": True},
+                {"name": "Total Trades", "value": str(trade_count), "inline": True},
+                {"name": "Wins", "value": str(wins), "inline": True},
+                {"name": "Losses", "value": str(losses), "inline": True},
+                {"name": "Win Rate", "value": f"{win_rate:.1%}", "inline": True},
+                {"name": "Avg Win", "value": f"${avg_win:.2f}", "inline": True},
+                {"name": "Avg Loss", "value": f"${abs(avg_loss):.2f}", "inline": True},
+                {"name": "Best Trade", "value": f"${best_trade:.2f}", "inline": True},
+                {"name": "Worst Trade", "value": f"${worst_trade:.2f}", "inline": True},
             ]
         ))
     
@@ -459,11 +459,11 @@ class DiscordNotifier:
         ]
         
         if drift_detected:
-            fields.append({"name": "⚠️ Drift", "value": f"Score: {drift_score:.3f}", "inline": True})
+            fields.append({"name": "Drift", "value": f"Score: {drift_score:.3f}", "inline": True})
         
         return self.notify(DiscordNotification(
             channel=NotificationChannel.HEALTH,
-            title=f"🤖 Model Performance: {model_name}",
+            title=f"Model Performance: {model_name}",
             description="Drift detected - consider retraining" if drift_detected else "Model operating normally",
             color=color,
             priority=NotificationPriority.MEDIUM if drift_detected else NotificationPriority.LOW,
@@ -560,7 +560,7 @@ class DiscordNotifier:
         """Notify milestone achievement"""
         return self.notify(DiscordNotification(
             channel=NotificationChannel.SIGNALS,
-            title=f"🏆 Milestone: {milestone_type}",
+            title=f"Milestone: {milestone_type}",
             description=message,
             color=Colors.GOLD,
             priority=NotificationPriority.HIGH,

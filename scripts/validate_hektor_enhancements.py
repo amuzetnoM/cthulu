@@ -178,10 +178,10 @@ def main():
     print(f"\nTotal: {passed}/{total} tests passed")
     
     if passed == total:
-        print("\n🎉 All tests passed! Ready to use Hektor enhancements!")
+        print("\nAll tests passed! Ready to use Hektor enhancements.")
         return 0
     else:
-        print("\n⚠️ Some tests failed. Check errors above.")
+        print("\nSome tests failed. Check errors above.")
         return 1
 
 

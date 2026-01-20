@@ -327,7 +327,7 @@ class ProfitScaler:
         has_momentum, momentum_reason = self._has_strong_momentum(state, side)
         if has_momentum:
             logger.info(
-                f"🚀 Deferring scaling for #{ticket}: Strong momentum detected ({momentum_reason}) - let it run!"
+                f"Deferring scaling for #{ticket}: Strong momentum detected ({momentum_reason}) - let it run!"
             )
             # Still allow trailing stop updates, but skip partial closes
             # We'll only add trailing stop actions, not close_partial
