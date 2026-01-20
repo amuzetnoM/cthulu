@@ -655,16 +655,16 @@ class ExecutionEngine:
             # Build close request
             request = {
                 "action": mt5.TRADE_ACTION_DEAL,
-                "symbol": position.symbol,
-                "volume": close_volume,
-                "type": order_type,
-                "position": ticket,
-                "price": price,
-                "deviation": self.slippage,
-                "magic": self.magic_number,
+                "symbol": str(position.symbol),
+                "volume": float(close_volume),
+                "type": int(order_type),
+                "position": int(ticket),
+                "price": float(price),
+                "deviation": int(self.slippage),
+                "magic": int(self.magic_number),
                 "comment": "Cthulu close",
-                "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_IOC,
+                "type_time": int(mt5.ORDER_TIME_GTC),
+                "type_filling": int(mt5.ORDER_FILLING_IOC),
             }
             
             # Submit close order
@@ -823,11 +823,11 @@ class ExecutionEngine:
             # Build modification request
             request = {
                 "action": mt5.TRADE_ACTION_SLTP,
-                "symbol": position.symbol,
-                "position": ticket,
-                "sl": new_sl,
-                "tp": new_tp,
-                "magic": self.magic_number,
+                "symbol": str(position.symbol),
+                "position": int(ticket),
+                "sl": float(new_sl) if new_sl is not None else 0.0,
+                "tp": float(new_tp) if new_tp is not None else 0.0,
+                "magic": int(self.magic_number),
             }
             
             self.logger.debug(f"Modifying position {ticket}: SL={new_sl}, TP={new_tp}")
@@ -947,15 +947,15 @@ class ExecutionEngine:
 
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
-            "symbol": selected_symbol,
-            "volume": final_volume,
-            "type": mt5_type,
-            "price": price,
-            "deviation": self.slippage,
-            "magic": self.magic_number,
-            "comment": order_req.client_tag or "Cthulu",
-            "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
+            "symbol": str(selected_symbol),
+            "volume": float(final_volume),
+            "type": int(mt5_type),
+            "price": float(price),
+            "deviation": int(self.slippage),
+            "magic": int(self.magic_number),
+            "comment": str(order_req.client_tag or "Cthulu")[:31],  # MT5 comment max 31 chars
+            "type_time": int(mt5.ORDER_TIME_GTC),
+            "type_filling": int(mt5.ORDER_FILLING_IOC),
         }
         
         # Add SL/TP if specified
@@ -1057,9 +1057,9 @@ class ExecutionEngine:
                 order_req.metadata['original_sl_dist_pct'] = sl_dist_pct
         
         if order_req.sl:
-            request["sl"] = order_req.sl
+            request["sl"] = float(order_req.sl)
         if order_req.tp:
-            request["tp"] = order_req.tp
+            request["tp"] = float(order_req.tp)
             
         return request
 
